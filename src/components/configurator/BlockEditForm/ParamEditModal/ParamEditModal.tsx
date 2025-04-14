@@ -1,6 +1,7 @@
 import {Button, Group, Modal, Select, TextInput} from "@mantine/core";
 import { useForm } from '@mantine/form';
 import {IBlockParameter} from "@/entities/ConstructorEntities";
+import {useEffect} from "react";
 
 interface IBlockEditModalProps {
   isOpen: boolean
@@ -10,10 +11,25 @@ interface IBlockEditModalProps {
 }
 export const ParamEditModal  = (props: IBlockEditModalProps) => {
 
-  const form = useForm({
+  const form = useForm<IBlockParameter>({
     mode: 'controlled',
-    initialValues: props.initialData
-  })
+    initialValues: props.initialData || {
+      uuid: "",
+      title: "",
+      description: "",
+      groupUuid: "",
+      dataType: "string",
+      orderNumber: 0,
+    }
+  });
+
+  // Добавляем эффект для обновления формы при изменении initialData
+  useEffect(() => {
+    if (props.initialData) {
+      form.setValues(props.initialData);
+      form.resetDirty(props.initialData);
+    }
+  }, [props.initialData]);
 
   return (
     <>

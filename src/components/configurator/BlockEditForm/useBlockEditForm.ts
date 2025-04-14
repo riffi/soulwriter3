@@ -42,6 +42,7 @@ export const useBlockEditForm = (blockUuid: string, currentGroupUuid?: string) =
   }
 
   const saveParam = (param: IBlockParameter) => {
+    debugger
     if (!param.id) {
       param.uuid = generateUUID()
       param.groupUuid = currentGroupUuid;
@@ -118,14 +119,60 @@ export const useBlockEditForm = (blockUuid: string, currentGroupUuid?: string) =
     });
   }
 
+  const deleteGroup = async (groupUuid: string) => {
+    try {
+      // Удаляем все параметры, связанные с этой группой
+      await configDatabase.blockParameters
+        .where('groupUuid')
+        .equals(groupUuid)
+        .delete();
+
+      // Удаляем группу
+      await configDatabase.blockParameterGroups
+        .where('uuid')
+        .equals(groupUuid)
+        .delete();
+
+      // Обновляем порядковые номера для оставшихся групп
+      const remainingGroups = await configDatabase.blockParameterGroups
+        .where('blockUuid')
+        .equals(blockUuid)
+        .sortBy('orderNumber');
+
+      await Promise.all(
+          remainingGroups.map((group, index) =>
+              configDatabase.blockParameterGroups.update(group.id!, {
+                orderNumber: index
+              })
+          )
+      );
+
+      notifications.show({
+        title: "Успешно",
+        message: "Вкладка и связанные параметры удалены",
+      });
+    } catch (error) {
+      notifications.show({
+        title: "Ошибка",
+        message: "Не удалось удалить вкладку",
+      });
+    }
+  };
+
   const appendDefaultParamGroup = async (blockData: IBlock) => {
-    await configDatabase.blockParameterGroups.add({
-      blockUuid: blockData?.uuid,
+    if (!blockData?.uuid) {
+      throw new Error("Block UUID is required");
+    }
+
+    const defaultGroup = {
+      blockUuid: blockData.uuid,
       uuid: generateUUID(),
       orderNumber: 0,
       description: '',
       title: 'Основное'
-    })
+    };
+
+    await configDatabase.blockParameterGroups.add(defaultGroup);
   }
 
   return {
@@ -138,6 +185,7 @@ export const useBlockEditForm = (blockUuid: string, currentGroupUuid?: string) =
     paramList,
     saveParam,
     moveGroupUp,
-    moveGroupDown
+    moveGroupDown,
+    deleteGroup
   }
 }
