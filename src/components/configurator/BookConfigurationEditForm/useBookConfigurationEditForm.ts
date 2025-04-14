@@ -5,7 +5,7 @@ import {
   IBookConfiguration,
   IBookConfigurationVersion
 } from "@/entities/ConstructorEntities";
-import {configDatabase} from "@/entities/db";
+import {configDatabase} from "@/entities/condiguratorDb";
 import {generateUUID} from "@/utils/UUIDUtils";
 
 export const useBookConfigurationEditForm = (configurationUuid: string,

@@ -23,13 +23,6 @@ export const ParamEditModal  = (props: IBlockEditModalProps) => {
     }
   });
 
-  // Добавляем эффект для обновления формы при изменении initialData
-  useEffect(() => {
-    if (props.initialData) {
-      form.setValues(props.initialData);
-      form.resetDirty(props.initialData);
-    }
-  }, [props.initialData]);
 
   return (
     <>
@@ -40,8 +33,10 @@ export const ParamEditModal  = (props: IBlockEditModalProps) => {
       >
         <form onSubmit={
           form.onSubmit((values) => {
+            console.log("Начало сохранения")
             props.onSave(values)
             props.onClose()
+            console.log("Завершение сохранения")
           })
         }>
           <TextInput

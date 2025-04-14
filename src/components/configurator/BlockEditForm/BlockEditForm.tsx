@@ -7,7 +7,7 @@ import {
   Space,
   Tabs,
   Button,
-  Group, SegmentedControl,Text
+  Group, SegmentedControl, ActionIcon
 } from "@mantine/core";
 import { useBlockEditForm } from "@/components/configurator/BlockEditForm/useBlockEditForm";
 import React, { useEffect, useState } from "react";
@@ -19,8 +19,9 @@ import {
 import { notifications } from "@mantine/notifications";
 import { ParamEditModal } from "@/components/configurator/BlockEditForm/ParamEditModal/ParamEditModal";
 import { ParamTable } from "./ParamTable/ParamTable";
-import { IconEdit } from "@tabler/icons-react";
+import {IconEdit, IconSettings} from "@tabler/icons-react";
 import {GroupsModal} from "@/components/configurator/BlockEditForm/GroupsModal/GroupsModal";
+import classes from "./BlockEditForm.module.css";
 
 interface IBlockEditFormProps {
   blockUuid: string;
@@ -50,8 +51,10 @@ export const BlockEditForm = ({ blockUuid }: IBlockEditFormProps) => {
     configuration,
     paramList,
     saveParam,
+    deleteParam,
     moveGroupUp,
     moveGroupDown,
+    updateGroupTitle,
     deleteGroup
   } = useBlockEditForm(blockUuid, state.currentGroupUuid);
 
@@ -111,17 +114,6 @@ export const BlockEditForm = ({ blockUuid }: IBlockEditFormProps) => {
 
   const renderTabsContent = () => (
       <>
-        <Group position="right" mt="md">
-          <Button
-              onClick={() => setState(prev => ({ ...prev, isGroupsModalOpened: true }))}
-              leftSection={<IconEdit size="1rem" />}
-              size="xs"
-              variant="light"
-              compact
-          >
-            Изменить вкладки
-          </Button>
-        </Group>
         <Tabs
             value={state.currentGroupUuid}
             onChange={(value) => setState(prev => ({
@@ -135,6 +127,15 @@ export const BlockEditForm = ({ blockUuid }: IBlockEditFormProps) => {
                   {group.title}
                 </Tabs.Tab>
             ))}
+            <ActionIcon
+                variant="subtle"
+                color="gray"
+                onClick={() => setState(prev => ({ ...prev, isGroupsModalOpened: true }))}
+                ml="auto"
+                mr="sm"
+            >
+              <IconSettings size="1rem" />
+            </ActionIcon>
           </Tabs.List>
           {paramGroupList?.map((group) => (
               <Tabs.Panel value={group.uuid} key={group.uuid}>
@@ -142,6 +143,7 @@ export const BlockEditForm = ({ blockUuid }: IBlockEditFormProps) => {
                     params={paramList?.filter((param) => param.groupUuid === group.uuid) || []}
                     onAddParam={() => handleParamModalOpen(getInitialParamData())}
                     onEditParam={handleParamModalOpen}
+                    onDeleteParam={deleteParam}
                 />
               </Tabs.Panel>
           ))}
@@ -150,7 +152,7 @@ export const BlockEditForm = ({ blockUuid }: IBlockEditFormProps) => {
   );
 
   return (
-      <Container fluid style={{ backgroundColor: "white"}}>
+      <Container size="lg" py="md" className={classes.container}>
         <h1>Блок: {block?.title}</h1>
         <Breadcrumbs separator="→" separatorMargin="md" mt="xs">
           {breadCrumbs}
@@ -162,8 +164,10 @@ export const BlockEditForm = ({ blockUuid }: IBlockEditFormProps) => {
           <Group>
             <SegmentedControl
                 value={block?.structureKind || IBlockStructureKind.single}
-                onChange={(value) => saveBlock({ ...block, structureKind: value as IBlockStructureKind })}
+                onChange={(value) => saveBlock({ ...block, structureKind: value })}
                 data={structureKindOptions}
+                size="sm"
+                radius="xl"
             />
           </Group>
 
@@ -171,21 +175,26 @@ export const BlockEditForm = ({ blockUuid }: IBlockEditFormProps) => {
         </Group>
         <Checkbox
             checked={block?.useTabs}
-            label="Использовать вкладки"
+            label="Использовать вкладки для группировки параметров"
             onChange={(e) => saveBlock({ ...block, useTabs: e.currentTarget.checked })}
+            mt="md"
+            mb="xl"
         />
+        <Space h="md" />
         {block?.useTabs ? renderTabsContent() : (
             <ParamTable
                 params={paramList || []}
                 onAddParam={() => handleParamModalOpen(getInitialParamData())}
                 onEditParam={handleParamModalOpen}
+                onDeleteParam={deleteParam}
             />
         )}
 
-        <ParamEditModal
+        {state.isParamModalOpened && <ParamEditModal
             isOpen={state.isParamModalOpened}
             onClose={() => setState(prev => ({ ...prev, isParamModalOpened: false }))}
             onSave={(param) => {
+              console.log(param)
               notifications.show({
                 title: "Параметр",
                 message: `Параметр "${param.title}" сохранён`,
@@ -193,7 +202,7 @@ export const BlockEditForm = ({ blockUuid }: IBlockEditFormProps) => {
               saveParam(param);
             }}
             initialData={state.currentParam}
-        />
+        />}
 
         <GroupsModal
             opened={state.isGroupsModalOpened}
@@ -203,6 +212,7 @@ export const BlockEditForm = ({ blockUuid }: IBlockEditFormProps) => {
             onMoveGroupUp={moveGroupUp}
             onMoveGroupDown={moveGroupDown}
             onDeleteGroup={deleteGroup}
+            onUpdateGroupTitle={updateGroupTitle} // Добавить новый проп
         />
       </Container>
   );

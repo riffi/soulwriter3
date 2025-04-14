@@ -8,10 +8,12 @@ import {
 } from "@/entities/ConstructorEntities";
 
 const bookSchema={
+  books: '++id, &uuid, title, author, kind, configurationUuid',
   scenes: '++id, title, order, chapterId',
   chapters: '++id, title, order',
   bookConfiguration: '++id, &uuid, title',
-  blocks: '++id, &uuid, configurationUuid, title', // &id означает, что id является первичным ключом
+  configurationVersions: '++id, &uuid, configurationUuid, versionNumber, isDraft',
+  blocks: '++id, &uuid, configurationVersionUuid, title',
   blockParameterGroups: '++id, &uuid, blockUuid, title',
   blockParameters: '++id, &uuid, groupUuid, dataType, linkedBlockUuid, linkedParameterUuid',
   blockParameterPossibleValues: '++id, &uuid, parameterUuid, value',
@@ -20,7 +22,7 @@ const bookSchema={
 class BookDB extends Dexie{
   scenes!: Dexie.Table<IScene, number>;
   chapters!: Dexie.Table<IScene, number>;
-
+  configurationVersions!: Dexie.Table<IBookConfigurationVersion, number>;
   bookConfiguration!: Dexie.Table<IBookConfiguration, number>;
   blocks!: Dexie.Table<IBlock, number>;
   blockParameterGroups!: Dexie.Table<IBlockParameterGroup, number>;

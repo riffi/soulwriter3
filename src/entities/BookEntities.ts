@@ -5,6 +5,7 @@ export interface IBook {
   author: string;
   kind: string;
   configurationUuid: string;
+  configurationVersionNumber?: number;
 }
 
 

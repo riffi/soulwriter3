@@ -1,7 +1,7 @@
 import {useLiveQuery} from "dexie-react-hooks";
 import { generateUUID } from '@/utils/UUIDUtils';
 import {IBookConfiguration} from "@/entities/ConstructorEntities";
-import {configDatabase} from "@/entities/db";
+import {configDatabase} from "@/entities/condiguratorDb";
 import {useDialog} from "@/providers/DialogProvider/DialogProvider";
 export const useConfigurationManager = () => {
   const { showDialog } = useDialog();

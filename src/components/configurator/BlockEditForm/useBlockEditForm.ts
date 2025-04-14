@@ -1,6 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import {IBlock, IBlockParameter, IBlockParameterGroup} from "@/entities/ConstructorEntities";
-import {configDatabase} from "@/entities/db";
+import {configDatabase} from "@/entities/condiguratorDb";
 import {generateUUID} from "@/utils/UUIDUtils";
 import {notifications} from "@mantine/notifications";
 
@@ -52,6 +52,39 @@ export const useBlockEditForm = (blockUuid: string, currentGroupUuid?: string) =
       configDatabase.blockParameters.update(param.id, param);
     }
   }
+
+
+  const deleteParam = async (paramId: number) => {
+    try {
+      await configDatabase.blockParameters.delete(paramId);
+      notifications.show({
+        title: "Успешно",
+        message: "Параметр удалён",
+      });
+
+      // Update order numbers for remaining parameters in the same group
+      if (currentGroupUuid) {
+        const remainingParams = await configDatabase.blockParameters
+        .where('groupUuid')
+        .equals(currentGroupUuid)
+        .sortBy('orderNumber');
+
+        await Promise.all(
+            remainingParams.map((param, index) =>
+                configDatabase.blockParameters.update(param.id!, {
+                  orderNumber: index
+                })
+            )
+        );
+      }
+    } catch (error) {
+      notifications.show({
+        title: "Ошибка",
+        message: "Не удалось удалить параметр",
+        color: "red",
+      });
+    }
+  };
 
   const saveParamGroup = async (data: IBlockParameterGroup) => {
     try {
@@ -118,6 +151,31 @@ export const useBlockEditForm = (blockUuid: string, currentGroupUuid?: string) =
     });
   }
 
+  const updateGroupTitle = async (groupUuid: string, newTitle: string) => {
+    try {
+      const group = await configDatabase.blockParameterGroups
+      .where('uuid')
+      .equals(groupUuid)
+      .first();
+
+      if (group) {
+        await configDatabase.blockParameterGroups.update(group.id!, {
+          title: newTitle
+        });
+        notifications.show({
+          title: "Успешно",
+          message: `Название вкладки изменено на "${newTitle}"`,
+        });
+      }
+    } catch (error) {
+      notifications.show({
+        title: "Ошибка",
+        message: "Не удалось изменить название вкладки",
+        color: "red",
+      });
+    }
+  };
+
   const deleteGroup = async (groupUuid: string) => {
     try {
       // Удаляем все параметры, связанные с этой группой
@@ -183,8 +241,10 @@ export const useBlockEditForm = (blockUuid: string, currentGroupUuid?: string) =
     configurationVersion,
     paramList,
     saveParam,
+    deleteParam,
     moveGroupUp,
     moveGroupDown,
+    updateGroupTitle,
     deleteGroup
   }
 }

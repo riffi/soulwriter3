@@ -1,9 +1,10 @@
-// GroupsModal.tsx
-import { Modal, Group, TextInput, Button, ActionIcon } from "@mantine/core";
+// Обновленный GroupsModal.tsx
+import {Modal, Group, Button, ActionIcon, TextInput, Flex} from "@mantine/core";
 import { IconPlus, IconArrowUp, IconArrowDown, IconTrash } from "@tabler/icons-react";
 import { notifications } from "@mantine/notifications";
-import {IBlockParameterGroup} from "@/entities/ConstructorEntities";
-import {useState} from "react";
+import { IBlockParameterGroup } from "@/entities/ConstructorEntities";
+import { useState } from "react";
+import {InlineEdit} from "@/components/shared/InlineEdit/InlineEdit";
 
 interface IGroupsModalProps {
   opened: boolean;
@@ -13,6 +14,7 @@ interface IGroupsModalProps {
   onMoveGroupUp: (uuid: string) => void;
   onMoveGroupDown: (uuid: string) => void;
   onDeleteGroup: (uuid: string) => void;
+  onUpdateGroupTitle: (uuid: string, newTitle: string) => void; // Добавлен новый проп
 }
 
 export const GroupsModal = ({
@@ -23,8 +25,8 @@ export const GroupsModal = ({
                               onMoveGroupUp,
                               onMoveGroupDown,
                               onDeleteGroup,
+                              onUpdateGroupTitle, // Добавлен новый проп
                             }: IGroupsModalProps) => {
-
   const [newGroupTitle, setNewGroupTitle] = useState('');
 
   const handleSave = () => {
@@ -60,7 +62,7 @@ export const GroupsModal = ({
           title="Управление вкладками"
           size="lg"
       >
-        <Group mb="md">
+        <Flex justify="flex-start" align="self-end" mb="md" gap="md">
           <TextInput
               label="Название новой вкладки"
               value={newGroupTitle}
@@ -71,15 +73,21 @@ export const GroupsModal = ({
           <Button
               onClick={handleSave}
               leftSection={<IconPlus size="1rem" />}
-              mt={25}
           >
             Добавить вкладку
           </Button>
-        </Group>
+        </Flex>
 
         {paramGroupList?.map((group, index) => (
             <Group key={group.uuid} mb="xs" grow>
-              <TextInput value={group.title} readOnly />
+              <InlineEdit
+                  value={group.title}
+                  onChange={(newTitle) => onUpdateGroupTitle(group.uuid, newTitle)}
+                  placeholder="Название вкладки"
+                  inputProps={{
+                    style: { flex: 1 }
+                  }}
+              />
               <Group gap={5}>
                 <ActionIcon
                     variant="light"

@@ -54,8 +54,14 @@ export const BookManager = () => {
       </Anchor>
   ));
 
-  const getConfigurationTitle = (uuid: string) => {
-    return configurations?.find((c) => c.uuid === uuid)?.title || "Не выбрана";
+  const getConfigurationTitle = (uuid: string, version: number) => {
+    const configuration = configurations?.find((c) => c.uuid === uuid);
+    if (!configuration) {
+      return `${configuration?.title} (${version})`
+    }
+
+    return "Не выбрана";
+
   };
 
   function onSelectBook(book: IBook) {
