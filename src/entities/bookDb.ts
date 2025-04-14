@@ -1,10 +1,10 @@
 import Dexie from "dexie";
-import {IScene} from "@/entities/BookEntities";
+import {IBook, IScene} from "@/entities/BookEntities";
 import {
   IBlock,
   IBlockParameter,
   IBlockParameterGroup, IBlockParameterPossibleValue,
-  IBookConfiguration
+  IBookConfiguration, IBookConfigurationVersion
 } from "@/entities/ConstructorEntities";
 
 const bookSchema={
@@ -21,6 +21,7 @@ const bookSchema={
 
 class BookDB extends Dexie{
   scenes!: Dexie.Table<IScene, number>;
+  books!: Dexie.Table<IBook, number>;
   chapters!: Dexie.Table<IScene, number>;
   configurationVersions!: Dexie.Table<IBookConfigurationVersion, number>;
   bookConfiguration!: Dexie.Table<IBookConfiguration, number>;
@@ -51,9 +52,15 @@ const closeDBConnection = (db)=>{
   db.close();
 }
 
+const deleteBookDatabase = async (uuid: string): Promise<void> => {
+  const dbName = `book_db_${uuid}`;
+  await Dexie.delete(dbName);
+}
+
 export {
   connectToBookDatabase,
-  db as bookDb
+  db as bookDb,
+  deleteBookDatabase
 }
 
 

@@ -1,11 +1,21 @@
-export enum BlockParameterDataType {
-  String = 'string',
-  Text = 'text',
-  Checkbox = 'checkbox',
-  Dropdown = 'dropdown',
-  BlockReference = 'block-reference',
-  BlockParamReference = 'block-param-reference',
+export enum IBlockParameterDataType {
+  string = 'string',
+  text = 'text',
+  checkbox = 'checkbox',
+  dropdown = 'dropdown',
+  blockReference = 'block-reference',
+  blockParamReference = 'block-param-reference',
 }
+
+export enum IBlockParameterDataTypeTitle{
+  string = 'Строка',
+  text = 'Текст',
+  checkbox = 'Галочка',
+  dropdown = 'Выпадающий список',
+  blockReference = 'Ссылка на блок',
+  blockParamReference = 'Ссылка на параметр блока',
+}
+
 
 export enum IBlockStructureKind{
   single = 'single',

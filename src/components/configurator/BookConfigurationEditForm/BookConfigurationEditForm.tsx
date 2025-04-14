@@ -52,7 +52,7 @@ export const BookConfigurationEditForm = ({bookConfigurationUuid}: {bookConfigur
   const {
     configuration,
     versionList,
-    createNewVersion,
+    publishVersion,
     blockList,
     saveBlock,
     paramGroupList
@@ -76,7 +76,7 @@ export const BookConfigurationEditForm = ({bookConfigurationUuid}: {bookConfigur
     if (!result) {
       return;
     }
-    const newVersion = await createNewVersion();
+    const newVersion = await publishVersion();
     if (newVersion) {
       setCurrentVersion(newVersion);
     }

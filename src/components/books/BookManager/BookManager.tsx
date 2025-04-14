@@ -11,7 +11,6 @@ import {
   Text,
   Image,
   Space,
-  Select,
 } from "@mantine/core";
 import {IconCheck, IconEdit, IconPlus, IconTrash} from "@tabler/icons-react";
 import React, { useState } from "react";

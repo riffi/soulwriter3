@@ -1,6 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import {IBlock, IBlockParameter, IBlockParameterGroup} from "@/entities/ConstructorEntities";
-import {configDatabase} from "@/entities/condiguratorDb";
+import {configDatabase} from "@/entities/configuratorDb";
 import {generateUUID} from "@/utils/UUIDUtils";
 import {notifications} from "@mantine/notifications";
 

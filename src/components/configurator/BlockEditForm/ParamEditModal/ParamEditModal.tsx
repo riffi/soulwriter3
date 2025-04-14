@@ -1,7 +1,12 @@
 import {Button, Group, Modal, Select, TextInput} from "@mantine/core";
 import { useForm } from '@mantine/form';
-import {IBlockParameter} from "@/entities/ConstructorEntities";
+import {
+  IBlockParameter, IBlockParameterDataType, IBlockParameterDataTypeTitle,
+  IBlockStructureKind,
+  IBlockStructureKindTitle
+} from "@/entities/ConstructorEntities";
 import {useEffect} from "react";
+import {createOptionsFromEnums} from "@/utils/enumUtils";
 
 interface IBlockEditModalProps {
   isOpen: boolean
@@ -23,6 +28,10 @@ export const ParamEditModal  = (props: IBlockEditModalProps) => {
     }
   });
 
+  const dataTypeOptions = createOptionsFromEnums(
+      IBlockParameterDataType,
+      IBlockParameterDataTypeTitle
+  );
 
   return (
     <>
@@ -54,10 +63,7 @@ export const ParamEditModal  = (props: IBlockEditModalProps) => {
             label="Тип данных"
             placeholder="Выберите тип данных"
             value={form.values.dataType}
-            data={[
-                { value: 'string', label: 'Строка' },
-                { value: 'text', label: 'Текст' },
-            ]}
+            data={dataTypeOptions}
             {...form.getInputProps('dataType')}
             >
           </Select>

@@ -1,5 +1,5 @@
 import { Button, Group, Space, Table, Text, ActionIcon, Box } from "@mantine/core";
-import { IBlockParameter } from "@/entities/ConstructorEntities";
+import {IBlockParameter, IBlockParameterDataTypeTitle} from "@/entities/ConstructorEntities";
 import { IconEdit, IconPlus, IconTrash } from "@tabler/icons-react";
 import React from "react";
 import { useDialog } from "@/providers/DialogProvider/DialogProvider";
@@ -52,7 +52,7 @@ export const ParamTable = ({
                       <Table.Td>{param.title}</Table.Td>
                       <Table.Td>
                         <Text size="sm" c="dimmed">
-                          {param.dataType}
+                          {IBlockParameterDataTypeTitle[param.dataType]}
                         </Text>
                       </Table.Td>
                       <Table.Td>

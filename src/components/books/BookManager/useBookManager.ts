@@ -1,11 +1,11 @@
 import {IBook} from "@/entities/BookEntities";
-import {configDatabase} from "@/entities/condiguratorDb";
+import {configDatabase} from "@/entities/configuratorDb";
 import {generateUUID} from "@/utils/UUIDUtils";
 import {notifications} from "@mantine/notifications";
 import {useLiveQuery} from "dexie-react-hooks";
 import {IBookConfiguration} from "@/entities/ConstructorEntities";
 import {useDialog} from "@/providers/DialogProvider/DialogProvider";
-import {bookDb, connectToBookDatabase} from "@/entities/bookDb";
+import {bookDb, connectToBookDatabase, deleteBookDatabase} from "@/entities/bookDb";
 
 export const useBookManager = () => {
 
@@ -24,8 +24,8 @@ export const useBookManager = () => {
     const configuration = await getBookConfiguration(book.configurationUuid);
 
     if (!configuration) return;
-
-    await copyConfigurationToBookDb(configuration);
+    await bookDb.books.add(book);
+    await copyConfigurationToBookDb(configuration, book.configurationVersionNumber);
   }
 
   // Получение конфигурации по UUID
@@ -37,22 +37,23 @@ export const useBookManager = () => {
   }
 
   // Копирование конфигурации в базу данных книги
-  async function copyConfigurationToBookDb(configuration: IBookConfiguration) {
+  async function copyConfigurationToBookDb(configuration: IBookConfiguration, currentVersion?: number) {
     await bookDb.bookConfiguration.add(configuration);
-    await copyConfigurationVersions(configuration.uuid);
+    await copyConfigurationVersion(configuration.uuid, currentVersion);
   }
 
   // Копирование версий конфигурации в базу данных книги
-  async function copyConfigurationVersions(configurationUuid: string) {
-    const versions = await configDatabase.configurationVersions
-    .where({ configurationUuid })
-    .toArray();
+  async function copyConfigurationVersion(configurationUuid: string, versionNumber?: number) {
+    const version = await configDatabase.configurationVersions
+      .where({ configurationUuid })
+      .and(version => !versionNumber || version.versionNumber === versionNumber)
+      .first();
 
-    await bookDb.configurationVersions.bulkAdd(versions);
+    if (!version) return;
 
-    await Promise.all(versions.map(version =>
-        copyVersionBlocks(version.uuid)
-    ));
+    await bookDb.configurationVersions.add(version);
+
+    await copyVersionBlocks(version.uuid)
   }
 
   // Копирование блоков версии конфигурации в базу данных книги
@@ -110,9 +111,12 @@ export const useBookManager = () => {
       } else {
         book.uuid = generateUUID();
         const version = await configDatabase
-          .configurationVersions
-          .where({configurationUuid: book.configurationUuid, isDraft: false})
-          .last();
+        .configurationVersions
+          .where('configurationUuid')
+          .equals(book.configurationUuid)
+          .and(version => version.isDraft === false)
+          .sortBy('versionNumber')
+          .then(versions => versions[versions.length - 1]);
         book.configurationVersionNumber = version?.versionNumber || 0;
         await configDatabase.books.add(book);
         await initBookDb(book);
@@ -138,6 +142,7 @@ export const useBookManager = () => {
     if (result){
       try {
         await configDatabase.books.delete(book.id);
+        await deleteBookDatabase(book.uuid);
         notifications.show({
           title: "Книга",
           message: `Книга "${book.title}" удалена`,
