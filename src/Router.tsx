@@ -7,6 +7,8 @@ import {BlockCard} from "@/pages/configurator/BlockCard";
 import {BooksPage} from "@/pages/books/BooksPage";
 import {ScenesPage} from "@/pages/scenes/ScenesPage";
 import {SceneCard} from "@/pages/scenes/SceneCard";
+import {BlockInstanceManagerPage} from "@/pages/books/BlockInstanceManagerPage";
+import {BlockInstancePage} from "@/pages/books/BlockInstancePage";
 
 const router = createBrowserRouter([
   {
@@ -37,6 +39,15 @@ const router = createBrowserRouter([
         path: '/scene/card',
         element: <SceneCard/> as ReactNode
       },
+      {
+        path: '/block-instance/manager',
+        element: <BlockInstanceManagerPage/> as ReactNode
+      },
+      {
+        path: '/block-instance/card',
+        element: <BlockInstancePage/> as ReactNode
+      },
+
     ]
   },
 ]);

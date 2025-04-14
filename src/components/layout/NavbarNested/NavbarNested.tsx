@@ -22,7 +22,7 @@ import {
   Space,
 } from '@mantine/core';
 import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useBookStore } from '@/stores/bookStore/bookStore';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { bookDb } from '@/entities/bookDb';
@@ -31,48 +31,69 @@ import classes from './NavbarNested.module.css';
 import { Logo } from './Logo';
 import { UserButton } from '../UserButton/UserButton';
 
-interface NavLinkProps {
-  icon: React.FC<any>;
+interface NavLinkItem {
   label: string;
-  initiallyOpened?: boolean;
-  links?: { label: string; link: string }[];
   link?: string;
+}
+
+interface NavLinkGroup {
+  label: string;
+  icon: React.FC<any>;
+  initiallyOpened?: boolean;
+  links?: NavLinkItem[];
+  link?: string;
+}
+
+interface NavLinkProps extends NavLinkGroup {
   toggleNavbar?: () => void;
 }
 
-function NavLink({ icon: Icon, label, initiallyOpened, links, link, toggleNavbar }: NavLinkProps) {
+const NavLink = ({
+                   icon: Icon,
+                   label,
+                   initiallyOpened = false,
+                   links,
+                   link,
+                   toggleNavbar
+                 }: NavLinkProps) => {
   const navigate = useNavigate();
-  const hasLinks = Array.isArray(links);
-  const [opened, setOpened] = useState(initiallyOpened || false);
+  const [opened, setOpened] = useState(initiallyOpened);
+  const hasLinks = links && links.length > 0;
 
   const handleClick = () => {
     if (link) {
       navigate(link);
       toggleNavbar?.();
-    } else {
-      setOpened((o) => !o);
+    } else if (hasLinks) {
+      setOpened((prev) => !prev);
     }
   };
 
-  const items = (hasLinks ? links : []).map((link) => (
-      <Text<'a'>
-          component="a"
-          className={classes.link}
-          href={link.link}
-          key={link.label}
-          onClick={(event) => {
-            event.preventDefault();
-            navigate(link.link);
-            toggleNavbar?.();
-          }}
-      >
-        {link.label}
-      </Text>
-  ));
+  const linkItems = useMemo(() => (
+      hasLinks ? links.map((item) => (
+          <Text<'a'>
+              component="a"
+              className={classes.link}
+              href={item.link}
+              key={item.label}
+              onClick={(e) => {
+                e.preventDefault();
+                navigate(item.link || '#');
+                toggleNavbar?.();
+              }}
+          >
+            {item.label}
+          </Text>
+      )) : null
+  ), [hasLinks, links, navigate, toggleNavbar]);
 
   return (
       <>
-        <UnstyledButton onClick={handleClick} className={classes.control}>
+        <UnstyledButton
+            onClick={handleClick}
+            className={classes.control}
+            aria-expanded={hasLinks ? opened : undefined}
+        >
           <Group justify="space-between" gap={0}>
             <Box style={{ display: 'flex', alignItems: 'center' }}>
               <ThemeIcon variant="light" size={30}>
@@ -85,92 +106,111 @@ function NavLink({ icon: Icon, label, initiallyOpened, links, link, toggleNavbar
                     className={classes.chevron}
                     stroke={1.5}
                     size={16}
-                    style={{ transform: opened ? 'rotate(-90deg)' : 'none' }}
+                    style={{
+                      transform: opened ? 'rotate(-90deg)' : 'none',
+                      transition: 'transform 200ms ease'
+                    }}
                 />
             )}
           </Group>
         </UnstyledButton>
-        {hasLinks ? <Collapse in={opened}>{items}</Collapse> : null}
+        {hasLinks && (
+            <Collapse in={opened} transitionDuration={200}>
+              {linkItems}
+            </Collapse>
+        )}
       </>
   );
-}
+};
 
-export function NavbarNested({ toggleNavbar }: { toggleNavbar?: () => void }) {
+const BASE_MENU_ITEMS: NavLinkGroup[] = [
+  {
+    label: 'Конфигуратор',
+    icon: IconGauge,
+    link: '/configurator',
+  },
+  {
+    label: 'Книги',
+    icon: IconBooks,
+    link: '/books',
+  },
+];
+
+export const NavbarNested = ({ toggleNavbar }: { toggleNavbar?: () => void }) => {
   const { selectedBook } = useBookStore();
-  const blocks = useLiveQuery<IBlock[]>(() => bookDb.blocks.toArray(), [bookDb]);
+  const blocks = useLiveQuery<IBlock[]>(() => bookDb.blocks.toArray(), []);
 
-  const menuData = [
-    {
-      label: 'Конфигуратор',
-      icon: IconGauge,
-      link: '/configurator',
-    },
-    {
-      label: 'Книги',
-      icon: IconBooks,
-      link: '/books',
-    },
-  ];
+  const menuItems = useMemo(() => {
+    const items = [...BASE_MENU_ITEMS];
 
-  if (selectedBook) {
-    menuData.push({
-      label: 'Сцены',
-      icon: IconNotes,
-      initiallyOpened: true,
-      link: '/scenes',
-    });
+    if (selectedBook) {
+      items.push({
+        label: 'Сцены',
+        icon: IconNotes,
+        initiallyOpened: true,
+        link: '/scenes',
+      });
 
-    const knowledgeLinks =
-        blocks?.map((block) => ({
-          label: block.title,
-          link: '/', // Замените на актуальный путь
-        })) || [];
+      const knowledgeLinks = blocks?.map((block) => ({
+        label: block.title,
+        link: `/block-instance/manager?uuid=${block.uuid}`,
+      })) || [];
 
-    menuData.push({
-      label: 'База знаний',
-      icon: IconBrandDatabricks,
-      initiallyOpened: true,
-      links: knowledgeLinks,
-    });
-  }
+      if (knowledgeLinks.length > 0) {
+        items.push({
+          label: 'База знаний',
+          icon: IconBrandDatabricks,
+          initiallyOpened: true,
+          links: knowledgeLinks,
+        });
+      }
+    }
 
-  const links = menuData.map((item) => (
-      <NavLink
-          {...item}
-          key={item.label}
-          toggleNavbar={toggleNavbar}
-      />
-  ));
+    return items;
+  }, [selectedBook, blocks]);
 
   return (
-      <nav className={classes.navbar}>
+      <nav className={classes.navbar} aria-label="Основное меню">
         <div className={classes.header}>
           <Group justify="space-between">
             <Logo style={{ width: 120 }} />
             <Code fw={700}>v3.1.2</Code>
           </Group>
-          <Space h={20} />
+
           {selectedBook && (
-              <Group gap="xs" align="center">
-                <IconBooks
-                    size={18}
-                    style={{
-                      color: 'var(--mantine-color-blue-6)',
-                      marginRight: 'var(--mantine-spacing-xs)',
-                    }}
-                />
-                <Text fw={700} truncate style={{ maxWidth: 180 }}>
-                  {selectedBook.title}
-                </Text>
-              </Group>
+              <>
+                <Space h={20} />
+                <Group gap="xs" align="center">
+                  <IconBooks
+                      size={18}
+                      style={{
+                        color: 'var(--mantine-color-blue-6)',
+                        marginRight: 'var(--mantine-spacing-xs)',
+                      }}
+                  />
+                  <Text fw={700} truncate style={{ maxWidth: 180 }}>
+                    {selectedBook.title}
+                  </Text>
+                </Group>
+              </>
           )}
         </div>
+
         <ScrollArea className={classes.links}>
-          <div className={classes.linksInner}>{links}</div>
+          <div className={classes.linksInner}>
+            {menuItems.map((item) => (
+                <NavLink
+                    {...item}
+                    key={item.label}
+                    toggleNavbar={toggleNavbar}
+                />
+            ))}
+          </div>
         </ScrollArea>
+
         <div className={classes.footer}>
           <UserButton />
         </div>
       </nav>
   );
-}
+};

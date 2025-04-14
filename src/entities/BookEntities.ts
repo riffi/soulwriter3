@@ -8,6 +8,19 @@ export interface IBook {
   configurationVersionNumber?: number;
 }
 
+export interface IBlockInstance{
+  id?: number;
+  uuid?: string;
+  blockUuid: string;
+  title: string;
+}
+
+export interface IBlockParameterInstance{
+  id?: number;
+  uuid?: string;
+  blockParameterUuid: string
+  value: string;
+}
 
 export interface IScene{
   id?: number;
