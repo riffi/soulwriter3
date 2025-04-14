@@ -42,7 +42,6 @@ export const useBlockEditForm = (blockUuid: string, currentGroupUuid?: string) =
   }
 
   const saveParam = (param: IBlockParameter) => {
-    debugger
     if (!param.id) {
       param.uuid = generateUUID()
       param.groupUuid = currentGroupUuid;

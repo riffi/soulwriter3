@@ -7,6 +7,22 @@ export enum BlockParameterDataType {
   BlockParamReference = 'block-param-reference',
 }
 
+export enum IBlockStructureKind{
+  single = 'single',
+  multiple = 'multiple',
+  tree = 'tree',
+}
+
+export enum IBlockStructureKindTitle{
+  single = 'Одиночный',
+  multiple = 'Множественный',
+  tree = 'Дерево',
+}
+
+enum IBlockKind{
+  ConstructionBlock = 'construction-block',
+}
+
 export interface IBookConfiguration{
   id?: number
   uuid?: string; // Автогенерация UUID
@@ -30,6 +46,7 @@ export interface IBlock {
   configurationVersionUuid: string;
   description: string;
   useTabs: boolean; // Использовать вкладки
+  structureKind: string // Вид структуры
 }
 
 export interface IBlockParameterGroup{

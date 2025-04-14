@@ -7,11 +7,15 @@ import {
   Space,
   Tabs,
   Button,
-  Group,
+  Group, SegmentedControl,Text
 } from "@mantine/core";
 import { useBlockEditForm } from "@/components/configurator/BlockEditForm/useBlockEditForm";
 import React, { useEffect, useState } from "react";
-import { IBlockParameter } from "@/entities/ConstructorEntities";
+import {
+  IBlockParameter,
+  IBlockStructureKind,
+  IBlockStructureKindTitle
+} from "@/entities/ConstructorEntities";
 import { notifications } from "@mantine/notifications";
 import { ParamEditModal } from "@/components/configurator/BlockEditForm/ParamEditModal/ParamEditModal";
 import { ParamTable } from "./ParamTable/ParamTable";
@@ -99,6 +103,12 @@ export const BlockEditForm = ({ blockUuid }: IBlockEditFormProps) => {
 
   };
 
+  const structureKindOptions = [
+    { value: IBlockStructureKind.single, label: IBlockStructureKindTitle.single },
+    { value: IBlockStructureKind.multiple, label: IBlockStructureKindTitle.multiple },
+    { value: IBlockStructureKind.tree, label: IBlockStructureKindTitle.tree },
+  ];
+
   const renderTabsContent = () => (
       <>
         <Group position="right" mt="md">
@@ -140,7 +150,7 @@ export const BlockEditForm = ({ blockUuid }: IBlockEditFormProps) => {
   );
 
   return (
-      <Container fluid>
+      <Container fluid style={{ backgroundColor: "white"}}>
         <h1>Блок: {block?.title}</h1>
         <Breadcrumbs separator="→" separatorMargin="md" mt="xs">
           {breadCrumbs}
@@ -148,12 +158,22 @@ export const BlockEditForm = ({ blockUuid }: IBlockEditFormProps) => {
 
         <Space h="md" />
 
+        <Group align="flex-end" spacing="xl" mb="md">
+          <Group>
+            <SegmentedControl
+                value={block?.structureKind || IBlockStructureKind.single}
+                onChange={(value) => saveBlock({ ...block, structureKind: value as IBlockStructureKind })}
+                data={structureKindOptions}
+            />
+          </Group>
+
+
+        </Group>
         <Checkbox
             checked={block?.useTabs}
             label="Использовать вкладки"
             onChange={(e) => saveBlock({ ...block, useTabs: e.currentTarget.checked })}
         />
-
         {block?.useTabs ? renderTabsContent() : (
             <ParamTable
                 params={paramList || []}
