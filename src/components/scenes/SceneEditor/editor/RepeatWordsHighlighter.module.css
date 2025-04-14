@@ -1,0 +1,22 @@
+/* RepeatWordsHighlighter.module.css */
+.repeatedWord {
+  background-color: #fff3bf;
+  border-bottom: 1px dashed #ffd43b;
+  padding: 0 1px;
+  position: relative;
+}
+
+.repeatedWord:hover::after {
+  content: "Повторяющееся слово";
+  position: absolute;
+  background: #333;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  z-index: 1000;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}

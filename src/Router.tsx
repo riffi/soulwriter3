@@ -1,0 +1,46 @@
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { BaseLayout } from '@/components/layout/BaseLayout/BaseLayout';
+import {ReactNode} from "react";
+import {Configurator} from "@/pages/configurator/Configurator";
+import {ConfigurationCard} from "@/pages/configurator/ConfigurationCard";
+import {BlockCard} from "@/pages/configurator/BlockCard";
+import {BooksPage} from "@/pages/books/BooksPage";
+import {ScenesPage} from "@/pages/scenes/ScenesPage";
+import {SceneCard} from "@/pages/scenes/SceneCard";
+
+const router = createBrowserRouter([
+  {
+    path: '/',
+    element: <BaseLayout/> as ReactNode,
+    children: [
+      {
+        path: '/configurator',
+        element: <Configurator/> as ReactNode
+      },
+      {
+        path: '/configuration/edit',
+        element: <ConfigurationCard/> as ReactNode
+      },
+      {
+        path: '/block/edit',
+        element: <BlockCard/> as ReactNode
+      },
+      {
+        path: '/books',
+        element: <BooksPage/> as ReactNode
+      },
+      {
+        path: '/scenes',
+        element: <ScenesPage/> as ReactNode
+      },
+      {
+        path: '/scene/card',
+        element: <SceneCard/> as ReactNode
+      },
+    ]
+  },
+]);
+
+export function Router() {
+  return <RouterProvider router={router} />;
+}

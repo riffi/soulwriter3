@@ -1,0 +1,15 @@
+.mantine-RichTextEditor-toolbar{
+  --rte-sticky-offset: 0px  !important;
+}
+/* В вашем глобальном CSS */
+@media (max-width: 48em) {
+  .ProseMirror {
+    padding: 0 !important;
+    padding-top: 10px !important;
+    user-select: text;
+  }
+  .mantine-RichTextEditor-toolbar{
+    --rte-sticky-offset: 50px  !important;
+  }
+
+}
