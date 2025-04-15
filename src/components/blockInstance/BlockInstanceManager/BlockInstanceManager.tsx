@@ -63,11 +63,11 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
     .equals(props.blockUuid)
     .first();
     setBlock(block);
-    setNewInstanceName(`Новый блок`);
+    setNewInstanceName(`Новый ${block?.title}`);
   };
 
   const handleAddClick = () => {
-    setNewInstanceName(`Новый блок`);
+    setNewInstanceName(`Новый ${block?.title}`);
     open();
   };
 
@@ -157,7 +157,7 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
                 <Table.Tr>
                   <Table.Td colSpan={2}>
                     <Text c="dimmed" ta="center" py="md" size="sm">
-                      Нет добавленных блоков
+                      Добавьте первого {block?.titleForms?.genitive}
                     </Text>
                   </Table.Td>
                 </Table.Tr>
@@ -168,7 +168,7 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
         <Modal
             opened={opened}
             onClose={close}
-            title="Создание нового экземпляра"
+            title={"Создание " + block?.titleForms?.genitive}
             centered
         >
           <TextInput

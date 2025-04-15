@@ -48,6 +48,16 @@ export interface IBookConfigurationVersion {
   isDraft: boolean; // Является ли черновиком
 }
 
+export interface IBlockTitleForms{
+  nominative : string;
+  genitive: string;
+  dative: string;
+  accusative: string;
+  instrumental: string;
+  prepositional: string;
+  plural: string;
+}
+
 // Строительный блок
 export interface IBlock {
   id?: number
@@ -57,6 +67,7 @@ export interface IBlock {
   description: string;
   useTabs: boolean; // Использовать вкладки
   structureKind: string // Вид структуры
+  titleForms?: IBlockTitleForms
 }
 
 export interface IBlockParameterGroup{

@@ -3,6 +3,7 @@ import {IBlock, IBlockParameter, IBlockParameterGroup} from "@/entities/Construc
 import {configDatabase} from "@/entities/configuratorDb";
 import {generateUUID} from "@/utils/UUIDUtils";
 import {notifications} from "@mantine/notifications";
+import {fetchAndPrepareTitleForms} from "@/api/TextApi";
 
 export const useBlockEditForm = (blockUuid: string, currentGroupUuid?: string) => {
   const block = useLiveQuery<IBlock>( () => {
@@ -31,6 +32,7 @@ export const useBlockEditForm = (blockUuid: string, currentGroupUuid?: string) =
   }, [configurationVersion?.uuid])
 
   const saveBlock = async (blockData: IBlock) => {
+
     if (!blockData.uuid) {
       blockData.uuid = generateUUID()
       const blockId = await configDatabase.blocks.add(blockData)

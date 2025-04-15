@@ -9,12 +9,13 @@ import TextAlign from '@tiptap/extension-text-align';
 import TextStyle from '@tiptap/extension-text-style';
 import Superscript from '@tiptap/extension-superscript';
 import SubScript from '@tiptap/extension-subscript';
-import { useEffect, useCallback } from "react";
+import {useEffect, useCallback, useState} from "react";
 import RepeatedWordsHighlighter2 from "./RepeatedWordsHighlighter2";
 import '@mantine/tiptap/styles.css';
 import { debounce } from 'lodash';
 import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
 import './editor.override.css'
+
 interface SceneRichTextEditorProps {
   initialContent?: string;
   onContentChange?: (content: string) => void;
@@ -43,7 +44,7 @@ export const SceneRichTextEditor = ({ initialContent, onContentChange }: SceneRi
       TextAlign.configure({ types: ['heading', 'paragraph'] }),
       Color,
       TextStyle,
-      RepeatedWordsHighlighter2
+      RepeatedWordsHighlighter2,
     ],
     content: initialContent || '',
     onUpdate: ({ editor }) => {
@@ -73,6 +74,7 @@ export const SceneRichTextEditor = ({ initialContent, onContentChange }: SceneRi
   }, [debouncedContentChange]);
 
   return (
+      <>
       <RichTextEditor
           editor={editor}
           variant="subtle"
@@ -160,5 +162,7 @@ export const SceneRichTextEditor = ({ initialContent, onContentChange }: SceneRi
         </RichTextEditor.Toolbar>
         <RichTextEditor.Content />
       </RichTextEditor>
+
+  </>
   );
 };

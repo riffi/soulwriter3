@@ -7,6 +7,7 @@ import {
 } from "@/entities/ConstructorEntities";
 import {configDatabase} from "@/entities/configuratorDb";
 import {generateUUID} from "@/utils/UUIDUtils";
+import {fetchAndPrepareTitleForms} from "@/api/TextApi";
 
 export const useBookConfigurationEditForm = (configurationUuid: string,
                                              currentVersion?: IBookConfigurationVersion,
@@ -157,6 +158,7 @@ export const useBookConfigurationEditForm = (configurationUuid: string,
     })
   }
   const saveBlock = async (blockData: IBlock) => {
+    blockData.titleForms = await fetchAndPrepareTitleForms(blockData.title)
     if (!blockData.uuid) {
       blockData.uuid = generateUUID()
       const blockId = await configDatabase.blocks.add(blockData)
