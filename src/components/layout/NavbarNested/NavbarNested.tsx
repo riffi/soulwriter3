@@ -26,7 +26,7 @@ import { useState, useMemo } from 'react';
 import { useBookStore } from '@/stores/bookStore/bookStore';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { bookDb } from '@/entities/bookDb';
-import { IBlock } from '@/entities/ConstructorEntities';
+import {IBlock, IBlockStructureKind} from '@/entities/ConstructorEntities';
 import classes from './NavbarNested.module.css';
 import { Logo } from './Logo';
 import { UserButton } from '../UserButton/UserButton';
@@ -135,7 +135,17 @@ const BASE_MENU_ITEMS: NavLinkGroup[] = [
     link: '/books',
   },
 ];
-
+const getBlockPageTitle = (block: IBlock) => {
+  if (block.structureKind === IBlockStructureKind.single){
+    return block.title;
+  }
+  else if (block.structureKind === IBlockStructureKind.multiple){
+    return block.titleForms?.plural
+  }
+  else {
+    return block.title
+  }
+}
 export const NavbarNested = ({ toggleNavbar }: { toggleNavbar?: () => void }) => {
   const { selectedBook } = useBookStore();
   const blocks = useLiveQuery<IBlock[]>(() => bookDb.blocks.toArray(), []);
@@ -152,7 +162,7 @@ export const NavbarNested = ({ toggleNavbar }: { toggleNavbar?: () => void }) =>
       });
 
       const knowledgeLinks = blocks?.map((block) => ({
-        label: block.title,
+        label: getBlockPageTitle(block),
         link: `/block-instance/manager?uuid=${block.uuid}`,
       })) || [];
 
