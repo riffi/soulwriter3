@@ -15,7 +15,7 @@ import {
   Container,
   List
 } from "@mantine/core";
-import { IconArrowLeft, IconEdit, IconPlus, IconTrash, IconCircleCheck } from "@tabler/icons-react";
+import { IconArrowLeft, IconEdit, IconPlus, IconTrash, IconCircleCheck, IconCheck } from "@tabler/icons-react";
 import classes from "./BlockInstanceEditor.module.css";
 import { useState, useEffect } from "react";
 import { IBlockParameterGroup } from "@/entities/ConstructorEntities";
@@ -32,6 +32,8 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [selectedParameter, setSelectedParameter] = useState<string | null>(null);
   const [parameterValue, setParameterValue] = useState("");
+  const [editingParam, setEditingParam] = useState<string | null>(null);
+  const [editValue, setEditValue] = useState("");
 
   const {
     blockInstance,
@@ -82,13 +84,23 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
 
   const handleUpdateParameterValue = async (instance: IBlockParameterInstance, newValue: string) => {
     try {
-      await bookDb.blockParameterInstances.update(instance.blockParameterUuid, {
+      await bookDb.blockParameterInstances.update(instance.id, {
         ...instance,
         value: newValue
       });
     } catch (error) {
       console.error("Error updating parameter instance:", error);
     }
+  };
+
+  const handleStartEdit = (paramUuid: string, currentValue: string) => {
+    setEditingParam(paramUuid);
+    setEditValue(currentValue);
+  };
+
+  const handleSaveEdit = async (instance: IBlockParameterInstance) => {
+    await handleUpdateParameterValue(instance, editValue);
+    setEditingParam(null);
   };
 
   return (
@@ -144,30 +156,57 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
                           Добавить параметр
                         </Button>
 
-                        <List spacing="sm" className={classes.list} icon={<IconCircleCheck size={24} />}>
+                        <Stack gap="sm" className={classes.parametersStack}>
                           {parameterInstances && parameterInstances.length > 0 &&
                               fullParams?.map((fullParam, index) => (
-                                  <List.Item
-                                      key={`instance-${fullParam.instance.blockParameterUuid}-${index}`}>
-                                    <Group justify="space-between" w="100%">
-                                      <Box>
-                                        <Text fw={500}>{fullParam.parameter?.title}</Text>
-                                        <InlineEdit
-                                            value={fullParam.instance.value}
-                                            onChange={(newValue) => handleUpdateParameterValue(fullParam.instance, newValue)}
-                                            placeholder="Click to edit value"
-                                        />
+                                  <Box
+                                      key={`instance-${fullParam.instance.blockParameterUuid}-${index}`}
+                                      className={classes.parameterItem}
+                                      p="md"
+                                  >
+                                    <Group justify="space-between" align="flex-start" w="100%">
+                                      <Box style={{ flex: 1 }}>
+                                        <Text fw={500} mb="xs">{fullParam.parameter?.title}</Text>
+                                        {editingParam === fullParam.instance.blockParameterUuid ? (
+                                            <TextInput
+                                                value={editValue}
+                                                onChange={(e) => setEditValue(e.currentTarget.value)}
+                                                autoFocus
+                                            />
+                                        ) : (
+                                            <Text c="dimmed" size="sm">
+                                              {fullParam.instance.value || "Не указано"}
+                                            </Text>
+                                        )}
                                       </Box>
-                                      <Group gap={4} wrap="nowrap">
-                                        <ActionIcon variant="subtle" color="red">
-                                          <IconTrash size={16} />
-                                        </ActionIcon>
-                                      </Group>
+                                      {editingParam === fullParam.instance.blockParameterUuid ? (
+                                          <ActionIcon
+                                              variant="subtle"
+                                              mt={4}
+                                              onClick={() => handleSaveEdit(fullParam.instance)}
+                                          >
+                                            <IconCheck size={24} />
+                                          </ActionIcon>
+                                      ) : (
+                                          <ActionIcon
+                                              variant="subtle"
+                                              mt={4}
+                                              onClick={() => handleStartEdit(
+                                                  fullParam.instance.blockParameterUuid,
+                                                  fullParam.instance.value || ""
+                                              )}
+                                          >
+                                            <IconEdit size={24} />
+                                          </ActionIcon>
+                                      )}
+                                      <ActionIcon variant="subtle" color="red" mt={4}>
+                                        <IconTrash size={16} />
+                                      </ActionIcon>
                                     </Group>
-                                  </List.Item>
+                                  </Box>
                               ))
                           }
-                        </List>
+                        </Stack>
                       </Box>
                     </Tabs.Panel>
                 )}
