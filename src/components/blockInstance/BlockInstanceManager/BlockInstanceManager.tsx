@@ -63,11 +63,11 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
     .equals(props.blockUuid)
     .first();
     setBlock(block);
-    setNewInstanceName(`Новый ${block?.title}`);
+    setNewInstanceName(`${block?.title}`);
   };
 
   const handleAddClick = () => {
-    setNewInstanceName(`Новый ${block?.title}`);
+    setNewInstanceName(`${block?.title}`);
     open();
   };
 
@@ -157,7 +157,7 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
                 <Table.Tr>
                   <Table.Td colSpan={2}>
                     <Text c="dimmed" ta="center" py="md" size="sm">
-                      Добавьте первого {block?.titleForms?.genitive}
+                      Добавьте {block?.titleForms?.accusative}
                     </Text>
                   </Table.Td>
                 </Table.Tr>

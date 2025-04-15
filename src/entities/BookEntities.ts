@@ -18,7 +18,9 @@ export interface IBlockInstance{
 export interface IBlockParameterInstance{
   id?: number;
   uuid?: string;
+  blockInstanceUuid: string
   blockParameterUuid: string
+  blockParameterGroupUuid: string;
   value: string;
 }
 

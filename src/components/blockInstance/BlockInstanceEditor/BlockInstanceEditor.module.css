@@ -106,3 +106,18 @@
   backdrop-filter: blur(2px);
   border-radius: var(--mantine-radius-md);
 }
+
+.list {
+  background-color: white;
+  border-radius: var(--mantine-radius-md);
+  padding: var(--mantine-spacing-md);
+}
+
+.listItem {
+  padding: var(--mantine-spacing-sm);
+  border-bottom: 1px solid var(--mantine-color-gray-2);
+}
+
+.listItem:last-child {
+  border-bottom: none;
+}

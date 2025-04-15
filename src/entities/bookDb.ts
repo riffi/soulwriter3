@@ -20,7 +20,7 @@ const bookSchema={
   blockParameterPossibleValues: '++id, &uuid, parameterUuid, value',
 
   blockInstances: '++id, &uuid, blockUuid, title',
-  blockParameterInstances: '++id, &uuid, blockParameterUuid',
+  blockParameterInstances: '++id, &uuid, blockParameterUuid, blockInstanceUuid, blockParameterGroupUuid',
 
 }
 
