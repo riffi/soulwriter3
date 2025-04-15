@@ -3,12 +3,15 @@ import {
   Anchor,
   Breadcrumbs,
   Button,
+  Badge,
   Card,
   Container,
-  Grid,
-  Group, SegmentedControl, SimpleGrid,
+  Group,
+  SegmentedControl,
+  SimpleGrid,
   Space,
-  Text
+  Text,
+  Stack
 } from "@mantine/core";
 import React, {useEffect, useState} from "react";
 import {
@@ -17,7 +20,7 @@ import {
 import {IconCheck, IconEdit, IconFilePencil, IconTrash} from "@tabler/icons-react";
 import {notifications} from "@mantine/notifications";
 import {
-  IBlock,
+  IBlock, IBlockStructureKind, IBlockStructureKindTitle,
   IBookConfiguration,
   IBookConfigurationVersion
 } from "@/entities/ConstructorEntities";
@@ -28,20 +31,18 @@ import {useNavigate} from "react-router-dom";
 import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
 import {useDialog} from "@/providers/DialogProvider/DialogProvider";
 
-
-
 export const BookConfigurationEditForm = ({bookConfigurationUuid}: {bookConfigurationUuid: string}) => {
-
   const [currentVersion, setCurrentVersion] = useState<IBookConfigurationVersion>()
-
   const navigate = useNavigate()
+
   const getBlackBlock = (): IBlock => {
     return {
       configurationVersionUuid: currentVersion?.uuid,
       uuid: '',
       title: '',
       description: '',
-      useTabs: false
+      useTabs: false,
+      structureKind: IBlockStructureKind.single,
     }
   }
 
@@ -55,9 +56,9 @@ export const BookConfigurationEditForm = ({bookConfigurationUuid}: {bookConfigur
     publishVersion,
     blockList,
     saveBlock,
-    paramGroupList
+    paramGroupList,
+    removeBlock
   } = useBookConfigurationEditForm(bookConfigurationUuid, currentVersion, currentBlock)
-
 
   const breadCrumbs = [
     { title: 'Конфигуратор', href: '/configurator' },
@@ -70,8 +71,8 @@ export const BookConfigurationEditForm = ({bookConfigurationUuid}: {bookConfigur
 
   const handleVersionPublication = async () => {
     const result = await showDialog(
-      'Опубликовать версию',
-      'Вы действительно хотите опубликовать версию?'
+        'Опубликовать версию',
+        'Вы действительно хотите опубликовать версию?'
     );
     if (!result) {
       return;
@@ -85,6 +86,7 @@ export const BookConfigurationEditForm = ({bookConfigurationUuid}: {bookConfigur
   useEffect(() => {
     setCurrentVersion(versionList?.[versionList?.length - 1])
   }, [versionList])
+
 
   return (
       <>
@@ -100,7 +102,7 @@ export const BookConfigurationEditForm = ({bookConfigurationUuid}: {bookConfigur
                     value={currentVersion?.uuid || versionList[0].uuid}
                     orientation={isMobile ? "vertical" : "horizontal"}
                     onChange={(value)=>{
-                     setCurrentVersion(versionList?.find((v)=>v.uuid === value))
+                      setCurrentVersion(versionList?.find((v)=>v.uuid === value))
                     }}
                     data={versionList.map(version => ({
                       value: version.uuid,
@@ -113,7 +115,7 @@ export const BookConfigurationEditForm = ({bookConfigurationUuid}: {bookConfigur
                             )}
                             <span>
                                Версия {version.versionNumber}
-                               {version.isDraft && ' (черновик)'}
+                              {version.isDraft && ' (черновик)'}
                             </span>
                           </div>
                       ),
@@ -131,54 +133,73 @@ export const BookConfigurationEditForm = ({bookConfigurationUuid}: {bookConfigur
                 <Space h={20}/>
                 <Text size="xl">Строительные блоки</Text>
                 <Button
-                  onClick={() => {
-                    setCurrentBlock(getBlackBlock())
-                    setIsModalOpened(true)
-                  }}
+                    onClick={() => {
+                      setCurrentBlock(getBlackBlock())
+                      setIsModalOpened(true)
+                    }}
                 >
                   Добавить
                 </Button>
               </>)}
           <Space h={20}/>
-          <SimpleGrid cols={{ base: 1, sm: 2, lg: 2, xl: 5 }}>
+          <SimpleGrid cols={{ base: 1, sm: 2, lg: 3, xl: 4 }} spacing="md">
             {blockList?.map((c) =>
-                <Card key={c.uuid}>
-                  <Group justify="space-between" mt="md" mb="xs">
-                    <Button
-                        variant={"subtle"}
-                        onClick={() => {navigate(`/block/edit?uuid=${c.uuid}`)}}
-                    >
-                      {c.title}
-                    </Button>
-                    <ActionIcon
-                        color={"var(--mantine-color-red-9)"}
-                        variant={"subtle"}
-                        onClick={() => {
-                        //  removeConfiguration(c)
-                        }}
-                    >
-                      <IconTrash/>
-                    </ActionIcon>
-                  </Group>
-                  <Text size="sm" c="dimmed">{c.description}</Text>
-                  <Group style={{marginTop: '10px'}}>
-                    <Button
-                        color="blue"
-                        radius="md"
-                        variant={"outline"}
-                        leftSection={<IconEdit/>}
-                        onClick={() => {
-                          setCurrentBlock(c)
-                          setIsModalOpened(true)
-                        }}
-                    >
-                      Переименовать
-                    </Button>
-                  </Group>
+                <Card key={c.uuid} shadow="sm" padding="lg" radius="md" withBorder>
+                  <Stack gap="sm">
+                    <Group justify="space-between" wrap="nowrap">
+                      <Text fw={500} truncate="end">{c.title}</Text>
+                      <ActionIcon
+                          color="red"
+                          variant="light"
+                          onClick={() => removeBlock(c)}
+                      >
+                        <IconTrash size={18}/>
+                      </ActionIcon>
+                    </Group>
+
+                    <Group gap="xs">
+                      <Badge variant="light" color="blue">
+                        {IBlockStructureKindTitle[c.structureKind]}
+                      </Badge>
+                      {c.useTabs && (
+                          <Badge variant="light" color="orange">
+                            С вкладками
+                          </Badge>
+                      )}
+                    </Group>
+
+                    {c.description && (
+                        <Text size="sm" c="dimmed" lineClamp={3}>
+                          {c.description}
+                        </Text>
+                    )}
+
+                    <Group mt="auto" justify="space-between">
+                      <Button
+                          variant="light"
+                          color="blue"
+                          size="sm"
+                          onClick={() => navigate(`/block/edit?uuid=${c.uuid}`)}
+                      >
+                        Открыть
+                      </Button>
+                      <Button
+                          variant="subtle"
+                          color="gray"
+                          size="sm"
+                          leftSection={<IconEdit size={16}/>}
+                          onClick={() => {
+                            setCurrentBlock(c)
+                            setIsModalOpened(true)
+                          }}
+                      >
+                        Изменить
+                      </Button>
+                    </Group>
+                  </Stack>
                 </Card>
             )}
           </SimpleGrid>
-
         </Container>
 
         {isModalOpened && <BlockEditModal

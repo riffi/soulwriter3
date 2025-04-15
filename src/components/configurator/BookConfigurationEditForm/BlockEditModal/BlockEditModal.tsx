@@ -5,6 +5,7 @@ import {
   IBlockStructureKind,
   IBlockStructureKindTitle
 } from "@/entities/ConstructorEntities";
+import {createOptionsFromEnums} from "@/utils/enumUtils";
 
 interface IBlockEditModalProps {
   configurationUuid: string
@@ -14,11 +15,7 @@ interface IBlockEditModalProps {
   initialData?: IBlock
 }
 
-const structureKindOptions = [
-  { value: IBlockStructureKind.single, label: IBlockStructureKindTitle.single },
-  { value: IBlockStructureKind.multiple, label: IBlockStructureKindTitle.multiple },
-  { value: IBlockStructureKind.tree, label: IBlockStructureKindTitle.tree },
-];
+const structureKindOptions = createOptionsFromEnums(IBlockStructureKind, IBlockStructureKindTitle)
 export const BlockEditModal  = (props: IBlockEditModalProps) => {
 
   const form = useForm({
