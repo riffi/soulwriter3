@@ -26,3 +26,19 @@
   background-color: #ff9800;
   box-shadow: 0 0 0 2px #ff5722;
 }
+
+.punctuation-error {
+  position: relative;
+  cursor: help;
+}
+
+.punctuation-error:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  background: #fff3bf;
+  padding: 4px 8px;
+  border: 1px solid #ffd43b;
+  border-radius: 3px;
+  white-space: nowrap;
+  z-index: 1000;
+}

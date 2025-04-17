@@ -23,6 +23,8 @@ import {LoadingOverlay} from "@/components/shared/overlay/LoadingOverlay";
 import {
   CheckRepeatsButton
 } from "@/components/scenes/SceneEditor/editor/toolbar/CheckRepeatsButton";
+import SimpleTextChecker
+  from "@/components/scenes/SceneEditor/editor/SimpleTextChecker";
 
 interface SceneRichTextEditorProps {
   initialContent?: string;
@@ -59,7 +61,7 @@ export const SceneRichTextEditor = ({ initialContent, onContentChange }: SceneRi
       Color,
       TextStyle,
       //Highlight,
-      //RepeatedWordsHighlighter2,
+      SimpleTextChecker,
       RepeatHighlighterExtension,
     ],
     content: localContent || '',
