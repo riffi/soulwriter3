@@ -4,7 +4,7 @@
 /* В вашем глобальном CSS */
 @media (max-width: 48em) {
   .ProseMirror {
-    padding: 0 !important;
+    padding: 10px !important;
     padding-top: 10px !important;
     user-select: text;
   }

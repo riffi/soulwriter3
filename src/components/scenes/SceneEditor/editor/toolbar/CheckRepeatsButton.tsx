@@ -4,6 +4,7 @@ import { PluginKey } from "prosemirror-state";
 import {
   RepeatHighlighterExtension, repeatHighlighterKey
 } from "@/components/scenes/SceneEditor/editor/plugins/RepeatHighlighterExtension";
+import {IconBrandCampaignmonitor} from "@tabler/icons-react";
 
 interface CheckRepeatsButtonProps {
   editor: any;
@@ -77,6 +78,7 @@ export const CheckRepeatsButton = ({ editor, onLoadingChange }: CheckRepeatsButt
   return (
       <RichTextEditor.Control
           onClick={handleCheckRepeats}
+          icon={<IconBrandCampaignmonitor/>}
           title="Проверить повторения"
           aria-pressed={isActive}
           disabled={isLoading}

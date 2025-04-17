@@ -39,7 +39,8 @@ export const RepeatHighlighterExtension = Extension.create({
                       {
                         class: `highlighted-repeat${d.active ? " active" : ""}`,
                         "data-word": d.word,
-                        "data-group-index": d.groupIndex
+                        "data-group-index": d.groupIndex,
+                        "title": "Слово дублируется"
                       }
                   )
               );
