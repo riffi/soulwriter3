@@ -83,10 +83,9 @@ const PUNCTUATION_CHECKS = [
     replace: (match: string) => `»${match}`
   },
 
-  // Ошибка: воскл./вопр. знак после кавычки
   {
     name: "punctuation-outside-quotes",
-    regex: /(\s*[»”])(?=[!?])/g,
+    regex: /(«\s*[А-ЯЁA-Z][^»”]*[^!?»”])([»”])\s*([!?])/g,
     message: "Перенесите знак внутрь кавычек: «Текст!»",
   }
 ];
@@ -100,11 +99,12 @@ const SimpleTextChecker = Extension.create({
       minWordLength: 3,
       checks: PUNCTUATION_CHECKS,
       highlightStyle: "border-bottom: 2px dashed #ff0000;",
+      checkRepeats: false
     };
   },
 
   addProseMirrorPlugins() {
-    const { windowSize, minWordLength, checks, highlightStyle  } = this.options;
+    const { windowSize, minWordLength, checks, highlightStyle, checkRepeats  } = this.options;
 
 
     const findPunctuationErrors = (doc: any) => {
@@ -141,6 +141,7 @@ const SimpleTextChecker = Extension.create({
     };
 
     const findRepeatedWords = (doc) => {
+      if (!checkRepeats) return [];
       const decorations = [];
       let wordBuffer = [];
 
