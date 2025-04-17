@@ -4,7 +4,11 @@ import {
   CheckRepeatsButton
 } from "@/components/scenes/SceneEditor/editor/toolbar/CheckRepeatsButton";
 
-export const EditorToolBar = (editor) => {
+interface EditorToolBarProps {
+  editor: any;
+  children?: React.ReactNode;
+}
+export const EditorToolBar = ({ editor, children }: EditorToolBarProps) => {
 
   const { isMobile} = useMedia();
 
@@ -16,7 +20,7 @@ export const EditorToolBar = (editor) => {
             <RichTextEditor.Italic />
             <RichTextEditor.Underline />
             <RichTextEditor.ClearFormatting />
-            <CheckRepeatsButton editor={editor} />
+            {children}
             {!isMobile &&
                 <>
                   <RichTextEditor.Strikethrough />

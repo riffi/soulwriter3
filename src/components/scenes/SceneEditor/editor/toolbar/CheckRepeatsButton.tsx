@@ -5,8 +5,12 @@ import {
   RepeatHighlighterExtension, repeatHighlighterKey
 } from "@/components/scenes/SceneEditor/editor/plugins/RepeatHighlighterExtension";
 
+interface CheckRepeatsButtonProps {
+  editor: any;
+  onLoadingChange: (isLoading: boolean, message?: string) => void;
+}
 
-export const CheckRepeatsButton = ({ editor }) => {
+export const CheckRepeatsButton = ({ editor, onLoadingChange }: CheckRepeatsButtonProps) => {
   const [isActive, setIsActive] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -17,15 +21,17 @@ export const CheckRepeatsButton = ({ editor }) => {
       return;
     }
 
+    onLoadingChange(true, "Анализ текста на повторения...");
     setIsLoading(true);
     try {
-      const text = editor.editor.getText();
+      const text = editor.getText();
       const repeats = await fetchRepeats(text);
       updateHighlights(repeats);
       setIsActive(true);
     } catch (error) {
       console.error('Error checking repeats:', error);
     } finally {
+      onLoadingChange(false);
       setIsLoading(false);
     }
   };
@@ -56,12 +62,12 @@ export const CheckRepeatsButton = ({ editor }) => {
   };
 
   const updateHighlights = (repeats) => {
-    const tr = editor.editor.state.tr;
+    const tr = editor.state.tr;
     tr.setMeta(repeatHighlighterKey, { // Используем pluginKey вместо строки
       action: "UPDATE_DECORATIONS",
       repeats
     });
-    editor.editor.view.dispatch(tr);
+    editor.view.dispatch(tr);
   };
 
   const clearHighlights = () => {

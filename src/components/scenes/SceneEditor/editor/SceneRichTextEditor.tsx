@@ -19,6 +19,10 @@ import {EditorToolBar} from "@/components/scenes/SceneEditor/editor/toolbar/Edit
 import {
   RepeatHighlighterExtension
 } from "@/components/scenes/SceneEditor/editor/plugins/RepeatHighlighterExtension";
+import {LoadingOverlay} from "@/components/shared/overlay/LoadingOverlay";
+import {
+  CheckRepeatsButton
+} from "@/components/scenes/SceneEditor/editor/toolbar/CheckRepeatsButton";
 
 interface SceneRichTextEditorProps {
   initialContent?: string;
@@ -26,6 +30,11 @@ interface SceneRichTextEditorProps {
 }
 
 export const SceneRichTextEditor = ({ initialContent, onContentChange }: SceneRichTextEditorProps) => {
+
+  const [loadingState, setLoadingState] = useState({
+    isLoading: false,
+    message: ""
+  });
 
   const { isMobile} = useMedia();
   const [localContent, setLocalContent] = useState(initialContent || '');
@@ -85,13 +94,27 @@ export const SceneRichTextEditor = ({ initialContent, onContentChange }: SceneRi
 
 
   return (
-      <>
+  <>
+    <LoadingOverlay
+        visible={loadingState.isLoading}
+        message={loadingState.message}
+    />
       <RichTextEditor
           editor={editor}
           variant="subtle"
 
       >
-        <EditorToolBar editor={editor}/>
+        <EditorToolBar editor={editor}>
+          <CheckRepeatsButton
+              editor={editor}
+              onLoadingChange={(isLoading, message) =>
+                  setLoadingState({
+                    isLoading,
+                    message: message || ""
+                  })
+              }
+          />
+        </EditorToolBar>
         <RichTextEditor.Content />
       </RichTextEditor>
 
