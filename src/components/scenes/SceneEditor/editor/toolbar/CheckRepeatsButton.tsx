@@ -1,5 +1,10 @@
 import { RichTextEditor } from "@mantine/tiptap";
 import { useState } from "react";
+import { PluginKey } from "prosemirror-state";
+import {
+  RepeatHighlighterExtension, repeatHighlighterKey
+} from "@/components/scenes/SceneEditor/editor/plugins/RepeatHighlighterExtension";
+
 
 export const CheckRepeatsButton = ({ editor }) => {
   const [isActive, setIsActive] = useState(false);
@@ -52,7 +57,7 @@ export const CheckRepeatsButton = ({ editor }) => {
 
   const updateHighlights = (repeats) => {
     const tr = editor.editor.state.tr;
-    tr.setMeta("repeatHighlighter", {
+    tr.setMeta(repeatHighlighterKey, { // Используем pluginKey вместо строки
       action: "UPDATE_DECORATIONS",
       repeats
     });
