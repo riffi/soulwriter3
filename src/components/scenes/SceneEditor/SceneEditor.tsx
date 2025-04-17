@@ -100,15 +100,6 @@ export const SceneEditor = (props: ISceneEditorProps) => {
       />
 
       <Space h="md" />
-      <Group justify="flex-end">
-        <Button
-            onClick={(val) => handleSave(false)}
-            loading={isSaving}
-            size="md"
-        >
-          {scene?.id ? "Сохранить изменения" : "Создать сцену"}
-        </Button>
-      </Group>
       </>
   )
 

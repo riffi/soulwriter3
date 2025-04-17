@@ -29,31 +29,42 @@ const StyledIcon = styled(IconRepeat)`
 `;
 
 export const LoadingOverlay = ({ visible, message }: LoadingOverlayProps) => (
-    <MantineLoadingOverlay
-        visible={visible}
-        zIndex={1000}
-        overlayProps={{ blur: 5 }}
-        loaderProps={{
-          children: (
-              <Stack>
-                <div style={{ textAlign: 'center' }}>
-                  <StyledIcon
-                      size={48}
-                      css={css`
+    <div style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      pointerEvents: 'none',
+      zIndex: 1000
+    }}>
+      <MantineLoadingOverlay
+          visible={visible}
+          zIndex={1000}
+          overlayProps={{ blur: 5, backgroundOpacity: 0.95 }}
+          transitionProps={{ duration: 200, timingFunction: 'ease' }}
+          loaderProps={{
+            children: (
+                <Stack>
+                  <div style={{ textAlign: 'center' }}>
+                    <StyledIcon
+                        size={48}
+                        css={css`
                         flex-shrink: 0;
                         path {
                           stroke: currentColor;
                         }
                       `}
-                  />
-                </div>
-                {message && <div style={{
-                  fontSize: "1rem",
-                  color: "#3c7ec7",
-                  whiteSpace: "nowrap"
-                }}>{message}</div>}
-              </Stack>
-          )
-        }}
-    />
+                    />
+                  </div>
+                  {message && <div style={{
+                    fontSize: "1rem",
+                    color: "#3c7ec7",
+                    whiteSpace: "nowrap"
+                  }}>{message}</div>}
+                </Stack>
+            )
+          }}
+      />
+    </div>
 );
