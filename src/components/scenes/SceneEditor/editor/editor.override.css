@@ -13,3 +13,16 @@
   }
 
 }
+
+
+/* editor.override.css */
+.highlighted-repeat {
+  background-color: #ffeb3b;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.highlighted-repeat.active {
+  background-color: #ff9800;
+  box-shadow: 0 0 0 2px #ff5722;
+}

@@ -3,6 +3,7 @@ import { Plugin } from "prosemirror-state";
 import { Decoration, DecorationSet } from "prosemirror-view";
 import * as morph from 'morphjs';
 
+
 const RepeatWordsHighlighter = Extension.create({
   name: "repeatWordsHighlighter",
 

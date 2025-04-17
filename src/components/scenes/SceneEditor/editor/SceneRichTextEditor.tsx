@@ -15,6 +15,10 @@ import '@mantine/tiptap/styles.css';
 import { debounce } from 'lodash';
 import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
 import './editor.override.css'
+import {EditorToolBar} from "@/components/scenes/SceneEditor/editor/toolbar/EditorToolBar";
+import {
+  RepeatHighlighterExtension
+} from "@/components/scenes/SceneEditor/editor/plugins/RepeatHighlighterExtension";
 
 interface SceneRichTextEditorProps {
   initialContent?: string;
@@ -24,6 +28,7 @@ interface SceneRichTextEditorProps {
 export const SceneRichTextEditor = ({ initialContent, onContentChange }: SceneRichTextEditorProps) => {
 
   const { isMobile} = useMedia();
+  const [localContent, setLocalContent] = useState(initialContent || '');
 
   // Создаем debounce-версию обработчика изменений
   const debouncedContentChange = useCallback(
@@ -44,9 +49,11 @@ export const SceneRichTextEditor = ({ initialContent, onContentChange }: SceneRi
       TextAlign.configure({ types: ['heading', 'paragraph'] }),
       Color,
       TextStyle,
-      RepeatedWordsHighlighter2,
+      //Highlight,
+      //RepeatedWordsHighlighter2,
+      RepeatHighlighterExtension,
     ],
-    content: initialContent || '',
+    content: localContent || '',
     onUpdate: ({ editor }) => {
       // Используем debounce-обработчик вместо прямого вызова
       debouncedContentChange(editor.getHTML());
@@ -55,6 +62,7 @@ export const SceneRichTextEditor = ({ initialContent, onContentChange }: SceneRi
 
   useEffect(() => {
     if (editor && initialContent !== undefined) {
+      console.log("Updating editor content");
       const currentContent = editor.getHTML();
       if (currentContent !== initialContent) {
         // Сохраняем позицию курсора
@@ -73,93 +81,17 @@ export const SceneRichTextEditor = ({ initialContent, onContentChange }: SceneRi
     };
   }, [debouncedContentChange]);
 
+
+
+
   return (
       <>
       <RichTextEditor
           editor={editor}
           variant="subtle"
-          styles={{
-            root: {
-              border: isMobile ? 'none' : undefined,
-              borderRadius: isMobile ? 0 : undefined,
-            },
-            content: {
-              padding: isMobile ? 0 : undefined,
-              minHeight: isMobile ? '30vh' : undefined,
-              '& .ProseMirror': {
-                padding: isMobile ? '0 !important' : undefined,
-              }
-            },
-            toolbar: {
-              padding: isMobile ? '0px 0px' : undefined,
-              flexWrap: isMobile ? 'wrap' : undefined,
-            }
-          }}
+
       >
-        <RichTextEditor.Toolbar sticky stickyOffset={60}>
-          <RichTextEditor.ControlsGroup>
-            <RichTextEditor.Bold />
-            <RichTextEditor.Italic />
-            <RichTextEditor.Underline />
-            <RichTextEditor.ClearFormatting />
-            {!isMobile &&
-                <>
-                  <RichTextEditor.Strikethrough />
-                  <RichTextEditor.Highlight />
-                </>
-            }
-          </RichTextEditor.ControlsGroup>
-
-          {!isMobile &&
-          <>
-            <RichTextEditor.ControlsGroup>
-              <RichTextEditor.H1 />
-              <RichTextEditor.H2 />
-              <RichTextEditor.H3 />
-              <RichTextEditor.H4 />
-            </RichTextEditor.ControlsGroup>
-
-            <RichTextEditor.ControlsGroup>
-              <RichTextEditor.Blockquote />
-              <RichTextEditor.Hr />
-              <RichTextEditor.Subscript />
-              <RichTextEditor.Superscript />
-            </RichTextEditor.ControlsGroup>
-
-            <RichTextEditor.ControlsGroup>
-              <RichTextEditor.AlignLeft />
-              <RichTextEditor.AlignCenter />
-              <RichTextEditor.AlignJustify />
-              <RichTextEditor.AlignRight />
-            </RichTextEditor.ControlsGroup>
-
-            <RichTextEditor.ControlsGroup>
-              <RichTextEditor.ColorPicker
-                  colors={[
-                    '#25262b',
-                    '#868e96',
-                    '#fa5252',
-                    '#e64980',
-                    '#be4bdb',
-                    '#7950f2',
-                    '#4c6ef5',
-                    '#228be6',
-                    '#15aabf',
-                    '#12b886',
-                    '#40c057',
-                    '#82c91e',
-                    '#fab005',
-                    '#fd7e14',
-                  ]}
-              />
-              <RichTextEditor.Color color="#F03E3E" />
-              <RichTextEditor.Color color="#7048E8" />
-              <RichTextEditor.Color color="#1098AD" />
-              <RichTextEditor.Color color="#37B24D" />
-              <RichTextEditor.Color color="#F59F00" />
-            </RichTextEditor.ControlsGroup>
-          </>}
-        </RichTextEditor.Toolbar>
+        <EditorToolBar editor={editor}/>
         <RichTextEditor.Content />
       </RichTextEditor>
 
