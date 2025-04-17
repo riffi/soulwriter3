@@ -12,6 +12,89 @@ interface RepeatDecoration {
 export const REPEAT_HIGHLIGHTER_NAME = "repeatHighlighter";
 export const repeatHighlighterKey = new PluginKey(REPEAT_HIGHLIGHTER_NAME);
 
+
+// функция фильтрации групп c одним словом
+const filterSingleGroups = (repeats: RepeatDecoration[]) => {
+  const groupMap = new Map<string, RepeatDecoration[]>();
+  for (const repeat of repeats) {
+    const group = groupMap.get(repeat.groupIndex) || [];
+    group.push(repeat);
+    groupMap.set(repeat.groupIndex, group);
+  }
+  return Array.from(groupMap.values())
+  .filter(group => group.length >= 2)
+  .flat();
+};
+
+// Создание декораций
+const createDecorations = (repeats: RepeatDecoration[], doc): DecorationSet => {
+  const decorations = repeats.map(d =>
+      Decoration.inline(
+          d.from,
+          d.to,
+          {
+            class: `highlighted-repeat${d.active ? " active" : ""}`,
+            "data-word": d.word,
+            "data-group-index": d.groupIndex,
+            "title": "Слово дублируется"
+          }
+      )
+  );
+
+  return DecorationSet.create(doc, decorations);
+};
+
+// Обновление позиций повторов
+const updateRepeatPositions = (tr, repeats, newState) => {
+  return repeats
+  .map(repeat => {
+    const newFrom = tr.mapping.map(repeat.from);
+    const newTo = tr.mapping.map(repeat.to);
+    return (newFrom <= newTo && newTo <= newState.doc.content.size && newTo > newFrom)
+        ? { ...repeat, from: newFrom, to: newTo }
+        : null;
+  })
+  .filter((repeat): repeat is RepeatDecoration => repeat !== null);
+};
+
+// Обработчик кликов
+const createClickHandler = (pluginKey) => (view, pos, event) => {
+  const target = event.target as HTMLElement;
+  const pluginState = pluginKey.getState(view.state);
+  if (!pluginState) return false;
+
+  let updatedRepeats = pluginState.repeats;
+  let shouldUpdate = false;
+
+  if (target.classList.contains("highlighted-repeat")) {
+    const groupIndex = target.dataset.groupIndex;
+    updatedRepeats = pluginState.repeats.map(repeat => ({
+      ...repeat,
+      active: repeat.groupIndex === groupIndex
+    }));
+    shouldUpdate = true;
+  } else if (pluginState.repeats.some(r => r.active)) {
+    updatedRepeats = pluginState.repeats.map(repeat => ({
+      ...repeat,
+      active: false
+    }));
+    shouldUpdate = true;
+  }
+
+  if (shouldUpdate) {
+    view.dispatch(
+        view.state.tr
+        .setMeta(pluginKey, {
+          action: "UPDATE_DECORATIONS",
+          repeats: updatedRepeats
+        })
+        .setSelection(TextSelection.create(view.state.doc, pos))
+    );
+    return true;
+  }
+
+  return false;
+};
 export const RepeatHighlighterExtension = Extension.create({
   name: REPEAT_HIGHLIGHTER_NAME,
 
@@ -29,32 +112,26 @@ export const RepeatHighlighterExtension = Extension.create({
           apply: (tr, prev, oldState, newState) => {
             const meta = tr.getMeta(pluginKey);
 
-            // Обработка внешних обновлений
             if (meta?.action === "UPDATE_DECORATIONS") {
-              const repeats = meta.repeats as RepeatDecoration[];
-              const decorations = repeats.map(d =>
-                  Decoration.inline(
-                      d.from,
-                      d.to,
-                      {
-                        class: `highlighted-repeat${d.active ? " active" : ""}`,
-                        "data-word": d.word,
-                        "data-group-index": d.groupIndex,
-                        "title": "Слово дублируется"
-                      }
-                  )
-              );
+              // Фильтруем входящие данные
+              const filteredRepeats = filterSingleGroups(meta.repeats);
+              const decorations = createDecorations(filteredRepeats, newState.doc)
 
               return {
-                repeats,
-                decorations: DecorationSet.create(newState.doc, decorations)
+                repeats: filteredRepeats,
+                decorations
               };
             }
 
-            // Обновление позиций при изменениях документа
+            // Обновление позиций и фильтрация
+            const mappedRepeats = updateRepeatPositions(tr, prev.repeats, newState);
+            const finalRepeats = filterSingleGroups(mappedRepeats);
+
+            const decorations = createDecorations(finalRepeats, newState.doc);
+
             return {
-              repeats: prev.repeats,
-              decorations: prev.decorations.map(tr.mapping, tr.doc)
+              repeats: finalRepeats,
+              decorations
             };
           }
         },
@@ -63,29 +140,7 @@ export const RepeatHighlighterExtension = Extension.create({
             return this.getState(state)?.decorations;
           },
 
-          handleClick: (view, pos, event) => {
-            const target = event.target as HTMLElement;
-            if (!target.classList.contains("highlighted-repeat")) return false;
-
-            const pluginState = pluginKey.getState(view.state);
-            if (!pluginState) return false;
-
-            const groupIndex = target.dataset.groupIndex;
-            const updatedRepeats = pluginState.repeats.map(repeat => ({
-              ...repeat,
-              active: repeat.groupIndex === groupIndex
-            }));
-
-            view.dispatch(
-                view.state.tr
-                .setMeta(pluginKey, {
-                  action: "UPDATE_DECORATIONS",
-                  repeats: updatedRepeats
-                })
-                .setSelection(TextSelection.create(view.state.doc, pos))
-            );
-            return true;
-          }
+          handleClick: createClickHandler(pluginKey)
         }
       })
     ];
