@@ -40,5 +40,6 @@
   border: 1px solid #ffd43b;
   border-radius: 3px;
   white-space: nowrap;
+  margin-left: 20px;
   z-index: 1000;
 }

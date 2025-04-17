@@ -16,7 +16,7 @@ const PUNCTUATION_CHECKS = [
   },
   {
     name: "Пропущен пробел после знака",
-    regex: /([.,:;?!])(?=[^\s.,:;?!])/g,
+    regex: /([.,:;?!])(?=[^\s.,:;?!])(?![»”"'])/g,
     message: "Добавьте пробел после знака"
   },
   {
@@ -26,9 +26,29 @@ const PUNCTUATION_CHECKS = [
     replace: (match: string) => `«${match.slice(1, -1)}»`
   },
   {
-    name: "Ошибки с тире",
-    regex: /^—(?=\S)|(?<!\s)(?!^)—|(?<!^)—(?!\s)|(?<=\s)-(?=\s)/g,
-    message: "Исправьте тире/дефис"
+    name: "Тире в начале строки без пробела",
+    regex: /^—(?=\S)/g,
+    message: "После тире в начале строки должен быть пробел"
+  },
+  {
+    name: "Тире без пробела перед",
+    regex: /(?<!\s)(?!^)—/g,
+    message: "Перед тире должен быть пробел"
+  },
+  {
+    name: "Тире без пробела после",
+    regex: /(?<!^)—(?!\s)/g,
+    message: "После тире должен быть пробел"
+  },
+  {
+    name: "Дефис с пробелами вместо тире",
+    regex: /(?<=\s)-(?=\s)/g,
+    message: "Замените дефис с пробелами на тире: —"
+  },
+  {
+    name: "Двойной дефис вместо тире",
+    regex: /(?<=\s)--(?=\s)/g,
+    message: "Замените -- на тире (—)"
   },
   {
     name: "Ошибки в скобках",
@@ -54,6 +74,20 @@ const PUNCTUATION_CHECKS = [
     name: "Лишние знаки препинания",
     regex: /([!?,;:])\1+/g,
     message: "Удалите повторяющиеся знаки"
+  },
+  // Ошибка: точка/запятая перед кавычкой
+  {
+    name: "punctuation-inside-quotes",
+    regex: /([.,])(?=[»”])(?<=«.*)/g,
+    message: "Перенесите точку/запятую после кавычки: «Текст».",
+    replace: (match: string) => `»${match}`
+  },
+
+  // Ошибка: воскл./вопр. знак после кавычки
+  {
+    name: "punctuation-outside-quotes",
+    regex: /(\s*[»”])(?=[!?])/g,
+    message: "Перенесите знак внутрь кавычек: «Текст!»",
   }
 ];
 
@@ -62,7 +96,7 @@ const SimpleTextChecker = Extension.create({
 
   addOptions() {
     return {
-      windowSize: 20,
+      windowSize: 10,
       minWordLength: 3,
       checks: PUNCTUATION_CHECKS,
       highlightStyle: "border-bottom: 2px dashed #ff0000;",
