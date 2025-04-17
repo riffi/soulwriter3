@@ -71,7 +71,6 @@ export const SceneRichTextEditor = ({ initialContent, onContentChange }: SceneRi
 
   useEffect(() => {
     if (editor && initialContent !== undefined) {
-      console.log("Updating editor content");
       const currentContent = editor.getHTML();
       if (currentContent !== initialContent) {
         // Сохраняем позицию курсора

@@ -78,12 +78,12 @@ export const SceneEditor = (props: ISceneEditorProps) => {
 
   const content = (
       <>
-      <Box mb="md">
+      <Box mb="md" p={"sm"}>
         <Button
             variant="subtle"
             leftSection={<IconArrowLeft size={16} />}
             onClick={() => navigate('/scenes')}
-            mb="sm"
+            mb="sm" p={0}
         >
           Назад к списку
         </Button>
@@ -92,11 +92,6 @@ export const SceneEditor = (props: ISceneEditorProps) => {
             onChange={(value) => { saveScene({ ...scene, title: value }) }}
             label="Название сцены"
         />
-        {scene?.id && (
-            <Text size="sm" c="dimmed" mt="xs">
-              Порядковый номер: {scene?.order}
-            </Text>
-        )}
       </Box>
 
       <SceneRichTextEditor
