@@ -38,7 +38,7 @@ export const CheckRepeatsButton = ({ editor, onLoadingChange }: CheckRepeatsButt
   };
 
   const fetchRepeats = async (text: string) => {
-    const response = await fetch('http://62.109.2.159:5123/find_repeats', {
+    const response = await fetch('http://localhost:5000/find_repeats', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json; charset=utf-8',

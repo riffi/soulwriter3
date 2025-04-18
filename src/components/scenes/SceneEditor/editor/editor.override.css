@@ -43,3 +43,9 @@
   margin-left: 20px;
   z-index: 1000;
 }
+
+
+.highlighted-cliche {
+  background-color: rgba(255, 235, 59, 0.3);
+  border-bottom: 2px dashed #ffc107;
+}

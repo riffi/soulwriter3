@@ -21,6 +21,7 @@ export const EditorToolBar = ({ editor, children }: EditorToolBarProps) => {
             <RichTextEditor.Underline />
             <RichTextEditor.ClearFormatting />
             {children}
+
             {!isMobile &&
                 <>
                   <RichTextEditor.Strikethrough />

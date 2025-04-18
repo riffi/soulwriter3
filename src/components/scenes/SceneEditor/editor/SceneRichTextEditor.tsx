@@ -25,6 +25,12 @@ import {
 } from "@/components/scenes/SceneEditor/editor/toolbar/CheckRepeatsButton";
 import SimpleTextChecker
   from "@/components/scenes/SceneEditor/editor/SimpleTextChecker";
+import {
+  ClicheHighlighterExtension
+} from "@/components/scenes/SceneEditor/editor/plugins/ClisheGightligherExtension";
+import {
+  CheckClichesButton
+} from "@/components/scenes/SceneEditor/editor/toolbar/CheckClishesButton";
 
 interface SceneRichTextEditorProps {
   initialContent?: string;
@@ -63,6 +69,7 @@ export const SceneRichTextEditor = ({ initialContent, onContentChange }: SceneRi
       //Highlight,
       SimpleTextChecker,
       RepeatHighlighterExtension,
+      ClicheHighlighterExtension,
     ],
     content: localContent || '',
     onUpdate: ({ editor }) => {
@@ -115,6 +122,15 @@ export const SceneRichTextEditor = ({ initialContent, onContentChange }: SceneRi
                   })
               }
           />
+          <CheckClichesButton editor={editor}
+                              onLoadingChange={(isLoading, message) =>
+                                  setLoadingState({
+                                    isLoading,
+                                    message: message || ""
+                                  })
+                              }
+          />
+
         </EditorToolBar>
         <RichTextEditor.Content />
       </RichTextEditor>
