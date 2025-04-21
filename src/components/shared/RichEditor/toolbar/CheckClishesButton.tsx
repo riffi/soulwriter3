@@ -5,7 +5,8 @@ import { PluginKey } from "prosemirror-state";
 import { IconClipboardCheck } from "@tabler/icons-react";
 import {
   clicheHighlighterKey
-} from "@/components/shared/RichEditor/plugins/ClisheGightligherExtension";
+} from "@/components/shared/RichEditor/plugins/ClisheHightligherExtension";
+import {IClicheWarning, IWarningKind} from "@/components/shared/RichEditor/types";
 
 interface CheckClichesButtonProps {
   editor: any;
@@ -27,7 +28,7 @@ export const CheckClichesButton = ({ editor, onLoadingChange }: CheckClichesButt
     setIsLoading(true);
     try {
       const text = editor.getText();
-      const cliches = await fetchCliches(text);
+      const cliches = await fetchWarnings(text);
       updateHighlights(cliches);
       setIsActive(true);
     } catch (error) {
@@ -38,7 +39,7 @@ export const CheckClichesButton = ({ editor, onLoadingChange }: CheckClichesButt
     }
   };
 
-  const fetchCliches = async (text: string) => {
+  const fetchWarnings = async (text: string):Promise<IClicheWarning[]> => {
     const response = await fetch('http://62.109.2.159:5123/analyze_cliches', {
       method: 'POST',
       headers: {
@@ -49,19 +50,20 @@ export const CheckClichesButton = ({ editor, onLoadingChange }: CheckClichesButt
     });
 
     const data = await response.json();
-    return data.data.map(cliche => ({
-      from: cliche.start + 1,
-      to: cliche.end + 1,
-      pattern: cliche.pattern,
-      text: cliche.text
+    return data.data.map(warning => ({
+      from: warning.start + 1,
+      to: warning.end + 1,
+      pattern: warning.pattern,
+      text: warning.text,
+      kind: IWarningKind.CLICHE
     }));
   };
 
-  const updateHighlights = (cliches) => {
+  const updateHighlights = (warnings) => {
     const tr = editor.state.tr;
     tr.setMeta(clicheHighlighterKey, {
       action: "UPDATE_DECORATIONS",
-      cliches
+      warnings
     });
     editor.view.dispatch(tr);
   };
@@ -81,6 +83,7 @@ export const CheckClichesButton = ({ editor, onLoadingChange }: CheckClichesButt
             backgroundColor: isActive ? '#e9ecef' : 'transparent',
             color: isActive ? '#228be6' : 'inherit',
             border: isActive ? '1px solid #ced4da' : '1px solid transparent',
+            padding: '6px 12px'
           }}
       >
         {isLoading ? 'Поиск...' : 'Штампы'}

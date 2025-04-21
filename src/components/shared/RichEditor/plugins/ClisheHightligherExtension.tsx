@@ -2,19 +2,14 @@
 import { Extension } from "@tiptap/core";
 import { PluginKey, Plugin } from "prosemirror-state";
 import { Decoration, DecorationSet } from "prosemirror-view";
+import {IClicheWarning} from "@/components/shared/RichEditor/types";
 
-interface ClicheDecoration {
-  from: number;
-  to: number;
-  text: string;
-  pattern: string;
-}
 
 export const CLICHE_HIGHLIGHTER_NAME = "clicheHighlighter";
 export const clicheHighlighterKey = new PluginKey(CLICHE_HIGHLIGHTER_NAME);
 
-const createClicheDecorations = (cliches: ClicheDecoration[], doc): DecorationSet => {
-  const decorations = cliches.map(d =>
+const createWarningDecorations = (warnings: IClicheWarning[], doc): DecorationSet => {
+  const decorations = warnings.map(d =>
       Decoration.inline(
           d.from,
           d.to,
@@ -30,8 +25,8 @@ const createClicheDecorations = (cliches: ClicheDecoration[], doc): DecorationSe
   return DecorationSet.create(doc, decorations);
 };
 
-const updateClichePositions = (tr, cliches, newState) => {
-  return cliches
+const updateClichePositions = (tr, warnings, newState) => {
+  return warnings
   .map(cliche => {
     const newFrom = tr.mapping.map(cliche.from);
     const newTo = tr.mapping.map(cliche.to);
@@ -39,7 +34,7 @@ const updateClichePositions = (tr, cliches, newState) => {
         ? { ...cliche, from: newFrom, to: newTo }
         : null;
   })
-  .filter((cliche): cliche is ClicheDecoration => cliche !== null);
+  .filter((cliche): cliche is IClicheWarning => cliche !== null);
 };
 
 export const ClicheHighlighterExtension = Extension.create({
@@ -51,20 +46,20 @@ export const ClicheHighlighterExtension = Extension.create({
         state: {
           init: () => ({
             decorations: DecorationSet.empty,
-            cliches: [] as ClicheDecoration[],
+            warnings: [] as IClicheWarning[],
           }),
           apply: (tr, prev, oldState, newState) => {
             const meta = tr.getMeta(clicheHighlighterKey);
             if (meta?.action === "UPDATE_DECORATIONS") {
               return {
-                cliches: meta.cliches,
-                decorations: createClicheDecorations(meta.cliches, newState.doc)
+                warnings: meta.warnings,
+                decorations: createWarningDecorations(meta.warnings, newState.doc)
               };
             }
-            const mappedCliches = updateClichePositions(tr, prev.cliches, newState);
+            const mappedCliches = updateClichePositions(tr, prev.warnings, newState);
             return {
-              cliches: mappedCliches,
-              decorations: createClicheDecorations(mappedCliches, newState.doc)
+              warnings: mappedCliches,
+              decorations: createWarningDecorations(mappedCliches, newState.doc)
             };
           }
         },

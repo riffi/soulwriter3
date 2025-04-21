@@ -10,34 +10,40 @@ import TextStyle from '@tiptap/extension-text-style';
 import Superscript from '@tiptap/extension-superscript';
 import SubScript from '@tiptap/extension-subscript';
 import {useEffect, useCallback, useState} from "react";
-import RepeatedWordsHighlighter2 from "./RepeatedWordsHighlighter2";
+import RepeatedWordsHighlighter2 from "./plugins/RepeatedWordsHighlighter2";
 import '@mantine/tiptap/styles.css';
 import { debounce } from 'lodash';
 import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
 import './editor.override.css'
 import {EditorToolBar} from "@/components/shared/RichEditor/toolbar/EditorToolBar";
 import {
-  RepeatHighlighterExtension
+  RepeatHighlighterExtension, repeatHighlighterKey
 } from "@/components/shared/RichEditor/plugins/RepeatHighlighterExtension";
 import {LoadingOverlay} from "@/components/shared/overlay/LoadingOverlay";
 import {
   CheckRepeatsButton
 } from "@/components/shared/RichEditor/toolbar/CheckRepeatsButton";
 import SimpleTextChecker
-  from "@/components/shared/RichEditor/SimpleTextChecker";
+  from "@/components/shared/RichEditor/plugins/SimpleTextChecker";
 import {
-  ClicheHighlighterExtension
-} from "@/components/shared/RichEditor/plugins/ClisheGightligherExtension";
+  ClicheHighlighterExtension, clicheHighlighterKey
+} from "@/components/shared/RichEditor/plugins/ClisheHightligherExtension";
 import {
   CheckClichesButton
 } from "@/components/shared/RichEditor/toolbar/CheckClishesButton";
+import {
+  IClicheWarning, IWarning, IWarningContainer,
+  IWarningKind,
+} from "@/components/shared/RichEditor/types";
 
 interface SceneRichTextEditorProps {
   initialContent?: string;
   onContentChange?: (contentHtml: string, contentText: string) => void;
+  onWarningsChange?: (warnings: IWarningsContainer[]) => void;
+  selectedWarning?: IWarning;
 }
 
-export const RichEditor = ({ initialContent, onContentChange }: SceneRichTextEditorProps) => {
+export const RichEditor = ({ initialContent, onContentChange, onWarningsChange, selectedWarning}: SceneRichTextEditorProps) => {
 
   const [loadingState, setLoadingState] = useState({
     isLoading: false,
@@ -78,6 +84,35 @@ export const RichEditor = ({ initialContent, onContentChange }: SceneRichTextEdi
     },
   });
 
+
+  // В компонент RichEditor добавьте:
+  useEffect(() => {
+    if (!editor || !onWarningsChange) return;
+
+    const updateWarnings = () => {
+      const warningContainers: IWarningContainer[] = [];
+      const clichePluginState = clicheHighlighterKey.getState(editor.state);
+      warningContainers.push({
+        warningKind: IWarningKind.CLICHE,
+        warnings: clichePluginState?.warnings || []
+      })
+
+      const repeatPluginState = repeatHighlighterKey.getState(editor.state);
+
+      warningContainers.push({
+        warningKind: IWarningKind.REPEAT,
+        warnings: repeatPluginState?.warnings || []
+      })
+
+      onWarningsChange(warningContainers);
+    };
+
+    editor.on('transaction', updateWarnings);
+    return () => editor.off('transaction', updateWarnings);
+  }, [editor, onWarningsChange]);
+
+
+
   useEffect(() => {
     if (editor && initialContent !== undefined) {
       const currentContent = editor.getHTML();
@@ -90,6 +125,16 @@ export const RichEditor = ({ initialContent, onContentChange }: SceneRichTextEdi
       }
     }
   }, [initialContent]);
+
+  useEffect(() => {
+    if (selectedWarning){
+      editor?.commands.focus();
+      editor.commands.setTextSelection({
+        from: selectedWarning.from,
+        to: selectedWarning.to
+      });
+    }
+  },[selectedWarning])
 
   // Очищаем debounce-таймер при размонтировании компонента
   useEffect(() => {
@@ -107,6 +152,7 @@ export const RichEditor = ({ initialContent, onContentChange }: SceneRichTextEdi
         visible={loadingState.isLoading}
         message={loadingState.message}
     />
+
       <RichTextEditor
           editor={editor}
           variant="subtle"

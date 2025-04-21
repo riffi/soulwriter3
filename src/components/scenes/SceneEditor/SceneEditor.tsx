@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import {
   Box,
   Button,
-  Container,
+  Container, Flex,
   Group,
   LoadingOverlay,
   Paper,
@@ -17,16 +17,24 @@ import { InlineEdit } from "@/components/shared/InlineEdit/InlineEdit";
 import { RichEditor } from "../../shared/RichEditor/RichEditor";
 import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
 import {usePageTitle} from "@/providers/PageTitleProvider/PageTitleProvider";
-
+import {
+  IRepeatWarning,
+  IWarning,
+  IWarningContainer, IWarningKind,
+  IWarningKindTile
+} from "@/components/shared/RichEditor/types";
+import {WarningsPanel} from "@/components/scenes/SceneEditor/WarningsPanel/WarningsPanel";
 export interface ISceneEditorProps {
   sceneId?: string;
 }
 
+
 export const SceneEditor = (props: ISceneEditorProps) => {
   const navigate = useNavigate();
   const [isSaving, setIsSaving] = useState(false);
+  const [selectedWarning, setSelectedWarning] = useState<IWarning | undefined>(undefined);
   const [sceneBody, setSceneBody] = useState<string>("");
-
+  const [warningContainers, setWarningContainers] = useState<IWarningContainer[]>([]);
   const { scene, saveScene } = useSceneEditor(props.sceneId ? Number(props.sceneId) : undefined);
   const { setPageTitle } = usePageTitle();
 
@@ -108,6 +116,8 @@ export const SceneEditor = (props: ISceneEditorProps) => {
       <RichEditor
           initialContent={sceneBody}
           onContentChange={handleContentChange}
+          onWarningsChange={setWarningContainers}
+          selectedWarning={selectedWarning}
       />
 
       <Space h="md" />
@@ -116,19 +126,28 @@ export const SceneEditor = (props: ISceneEditorProps) => {
 
   return (
       <>
-      <Container size="xl" p={"0"} style={{
-        height: '100vh',
-        display: 'flex',
-        flexDirection: 'column'}}>
-        <Box >
+      <Container size="xl" p={"0"} fluid>
+        <Flex
+            gap="md"
+            justify="space-between"
+            align="flex-start"
+            direction="row"
+            wrap="wrap"
+        >
+        <Box flex={10}>
+          <Container size="xl" p={"0"}>
           {!isMobile && (
               <Paper withBorder p="lg" radius="md" shadow="sm">
                 {content}
               </Paper>
           )}
           {isMobile && content}
+          </Container>
         </Box>
-
+          <Box flex={2} style={{ position: isMobile ? 'static' : 'sticky', top: 16 }}>
+            <WarningsPanel warningContainers={warningContainers} onSelectWarning={setSelectedWarning}/>
+          </Box>
+        </Flex>
       </Container>
       {/* Фиксированная панель статуса */}
       <Box
@@ -137,7 +156,8 @@ export const SceneEditor = (props: ISceneEditorProps) => {
             bottom: 0,
             left: 0,
             width: '100%',
-            backgroundColor: "#228be6",
+            backgroundColor: "rgb(101 159 209)",
+            boxShadow: '0px -2px 5px rgba(0, 0, 0, 0.2)',
             color: 'white',
             padding: '8px 16px',
             display: 'flex',

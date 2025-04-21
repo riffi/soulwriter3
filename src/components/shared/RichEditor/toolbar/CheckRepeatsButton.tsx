@@ -5,6 +5,7 @@ import {
   RepeatHighlighterExtension, repeatHighlighterKey
 } from "@/components/shared/RichEditor/plugins/RepeatHighlighterExtension";
 import {IconBrandCampaignmonitor} from "@tabler/icons-react";
+import {IWarningKind, IRepeatWarning} from "@/components/shared/RichEditor/types";
 
 interface CheckRepeatsButtonProps {
   editor: any;
@@ -26,8 +27,8 @@ export const CheckRepeatsButton = ({ editor, onLoadingChange }: CheckRepeatsButt
     setIsLoading(true);
     try {
       const text = editor.getText();
-      const repeats = await fetchRepeats(text);
-      updateHighlights(repeats);
+      const warnings = await fetchWarnings(text);
+      updateHighlights(warnings);
       setIsActive(true);
     } catch (error) {
       console.error('Error checking repeats:', error);
@@ -37,7 +38,7 @@ export const CheckRepeatsButton = ({ editor, onLoadingChange }: CheckRepeatsButt
     }
   };
 
-  const fetchRepeats = async (text: string) => {
+  const fetchWarnings = async (text: string): IRepeatWarning[] => {
     const response = await fetch('http://62.109.2.159:5123/find_repeats', {
       method: 'POST',
       headers: {
@@ -57,16 +58,17 @@ export const CheckRepeatsButton = ({ editor, onLoadingChange }: CheckRepeatsButt
           from: repeat.startPosition + 1,
           to: repeat.endPosition + 2,
           groupIndex: String(index),
-          word: repeat.word
+          text: repeat.word,
+          kind: IWarningKind.REPEAT
         }))
     );
   };
 
-  const updateHighlights = (repeats) => {
+  const updateHighlights = (warnings) => {
     const tr = editor.state.tr;
     tr.setMeta(repeatHighlighterKey, { // Используем pluginKey вместо строки
       action: "UPDATE_DECORATIONS",
-      repeats
+      warnings
     });
     editor.view.dispatch(tr);
   };
@@ -86,6 +88,7 @@ export const CheckRepeatsButton = ({ editor, onLoadingChange }: CheckRepeatsButt
             backgroundColor: isActive ? '#e9ecef' : 'transparent',
             color: isActive ? '#228be6' : 'inherit',
             border: isActive ? '1px solid #ced4da' : '1px solid transparent',
+            padding: '5px 10px'
           }}
       >
         {isLoading ? 'Обработка...' : 'Повторения'}

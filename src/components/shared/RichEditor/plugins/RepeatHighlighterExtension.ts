@@ -1,25 +1,20 @@
 import { Extension } from "@tiptap/core";
 import { PluginKey, Plugin, TextSelection } from "prosemirror-state";
 import { Decoration, DecorationSet } from "prosemirror-view";
+import {IRepeatWarning} from "@/components/shared/RichEditor/types";
 
-interface RepeatDecoration {
-  from: number;
-  to: number;
-  word: string;
-  groupIndex: string;
-  active: boolean;
-}
+
 export const REPEAT_HIGHLIGHTER_NAME = "repeatHighlighter";
 export const repeatHighlighterKey = new PluginKey(REPEAT_HIGHLIGHTER_NAME);
 
 
 // функция фильтрации групп c одним словом
-const filterSingleGroups = (repeats: RepeatDecoration[]) => {
-  const groupMap = new Map<string, RepeatDecoration[]>();
-  for (const repeat of repeats) {
-    const group = groupMap.get(repeat.groupIndex) || [];
-    group.push(repeat);
-    groupMap.set(repeat.groupIndex, group);
+const filterSingleGroups = (warnings: IRepeatWarning[]) => {
+  const groupMap = new Map<string, IRepeatWarning[]>();
+  for (const warning of warnings) {
+    const group = groupMap.get(warning.groupIndex) || [];
+    group.push(warning);
+    groupMap.set(warning.groupIndex, group);
   }
   return Array.from(groupMap.values())
   .filter(group => group.length >= 2)
@@ -27,14 +22,14 @@ const filterSingleGroups = (repeats: RepeatDecoration[]) => {
 };
 
 // Создание декораций
-const createDecorations = (repeats: RepeatDecoration[], doc): DecorationSet => {
-  const decorations = repeats.map(d =>
+const createDecorations = (warnings: IRepeatWarning[], doc): DecorationSet => {
+  const decorations = warnings.map(d =>
       Decoration.inline(
           d.from,
           d.to,
           {
             class: `highlighted-repeat${d.active ? " active" : ""}`,
-            "data-word": d.word,
+            "data-word": d.text,
             "data-group-index": d.groupIndex,
             "title": "Слово дублируется"
           }
@@ -45,8 +40,8 @@ const createDecorations = (repeats: RepeatDecoration[], doc): DecorationSet => {
 };
 
 // Обновление позиций повторов
-const updateRepeatPositions = (tr, repeats, newState) => {
-  return repeats
+const updateRepeatPositions = (tr, warnings, newState) => {
+  return warnings
   .map(repeat => {
     const newFrom = tr.mapping.map(repeat.from);
     const newTo = tr.mapping.map(repeat.to);
@@ -54,7 +49,7 @@ const updateRepeatPositions = (tr, repeats, newState) => {
         ? { ...repeat, from: newFrom, to: newTo }
         : null;
   })
-  .filter((repeat): repeat is RepeatDecoration => repeat !== null);
+  .filter((repeat): repeat is IRepeatWarning => repeat !== null);
 };
 
 // Обработчик кликов
@@ -63,18 +58,18 @@ const createClickHandler = (pluginKey) => (view, pos, event) => {
   const pluginState = pluginKey.getState(view.state);
   if (!pluginState) return false;
 
-  let updatedRepeats = pluginState.repeats;
+  let updatedWarnings = pluginState.warnings;
   let shouldUpdate = false;
 
   if (target.classList.contains("highlighted-repeat")) {
     const groupIndex = target.dataset.groupIndex;
-    updatedRepeats = pluginState.repeats.map(repeat => ({
+    updatedWarnings = pluginState.warnings.map(repeat => ({
       ...repeat,
       active: repeat.groupIndex === groupIndex
     }));
     shouldUpdate = true;
-  } else if (pluginState.repeats.some(r => r.active)) {
-    updatedRepeats = pluginState.repeats.map(repeat => ({
+  } else if (pluginState.warnings.some(r => r.active)) {
+    updatedWarnings = pluginState.repeats.map(repeat => ({
       ...repeat,
       active: false
     }));
@@ -86,7 +81,7 @@ const createClickHandler = (pluginKey) => (view, pos, event) => {
         view.state.tr
         .setMeta(pluginKey, {
           action: "UPDATE_DECORATIONS",
-          repeats: updatedRepeats
+          warnings: updatedWarnings
         })
         .setSelection(TextSelection.create(view.state.doc, pos))
     );
@@ -107,30 +102,30 @@ export const RepeatHighlighterExtension = Extension.create({
         state: {
           init: () => ({
             decorations: DecorationSet.empty,
-            repeats: [] as RepeatDecoration[],
+            warnings: [] as IRepeatWarning[],
           }),
           apply: (tr, prev, oldState, newState) => {
             const meta = tr.getMeta(pluginKey);
 
             if (meta?.action === "UPDATE_DECORATIONS") {
               // Фильтруем входящие данные
-              const filteredRepeats = filterSingleGroups(meta.repeats);
-              const decorations = createDecorations(filteredRepeats, newState.doc)
+              const filteredWarnings = filterSingleGroups(meta.warnings);
+              const decorations = createDecorations(filteredWarnings, newState.doc)
 
               return {
-                repeats: filteredRepeats,
+                warnings: filteredWarnings,
                 decorations
               };
             }
 
             // Обновление позиций и фильтрация
-            const mappedRepeats = updateRepeatPositions(tr, prev.repeats, newState);
+            const mappedRepeats = updateRepeatPositions(tr, prev.warnings, newState);
             const finalRepeats = filterSingleGroups(mappedRepeats);
 
             const decorations = createDecorations(finalRepeats, newState.doc);
 
             return {
-              repeats: finalRepeats,
+              warnings: finalRepeats,
               decorations
             };
           }
