@@ -15,29 +15,29 @@ import '@mantine/tiptap/styles.css';
 import { debounce } from 'lodash';
 import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
 import './editor.override.css'
-import {EditorToolBar} from "@/components/scenes/SceneEditor/editor/toolbar/EditorToolBar";
+import {EditorToolBar} from "@/components/shared/RichEditor/toolbar/EditorToolBar";
 import {
   RepeatHighlighterExtension
-} from "@/components/scenes/SceneEditor/editor/plugins/RepeatHighlighterExtension";
+} from "@/components/shared/RichEditor/plugins/RepeatHighlighterExtension";
 import {LoadingOverlay} from "@/components/shared/overlay/LoadingOverlay";
 import {
   CheckRepeatsButton
-} from "@/components/scenes/SceneEditor/editor/toolbar/CheckRepeatsButton";
+} from "@/components/shared/RichEditor/toolbar/CheckRepeatsButton";
 import SimpleTextChecker
-  from "@/components/scenes/SceneEditor/editor/SimpleTextChecker";
+  from "@/components/shared/RichEditor/SimpleTextChecker";
 import {
   ClicheHighlighterExtension
-} from "@/components/scenes/SceneEditor/editor/plugins/ClisheGightligherExtension";
+} from "@/components/shared/RichEditor/plugins/ClisheGightligherExtension";
 import {
   CheckClichesButton
-} from "@/components/scenes/SceneEditor/editor/toolbar/CheckClishesButton";
+} from "@/components/shared/RichEditor/toolbar/CheckClishesButton";
 
 interface SceneRichTextEditorProps {
   initialContent?: string;
-  onContentChange?: (content: string) => void;
+  onContentChange?: (contentHtml: string, contentText: string) => void;
 }
 
-export const SceneRichTextEditor = ({ initialContent, onContentChange }: SceneRichTextEditorProps) => {
+export const RichEditor = ({ initialContent, onContentChange }: SceneRichTextEditorProps) => {
 
   const [loadingState, setLoadingState] = useState({
     isLoading: false,
@@ -49,9 +49,9 @@ export const SceneRichTextEditor = ({ initialContent, onContentChange }: SceneRi
 
   // Создаем debounce-версию обработчика изменений
   const debouncedContentChange = useCallback(
-      debounce((content: string) => {
+      debounce((contentHTML: string, contentText: string) => {
         if (onContentChange) {
-          onContentChange(content);
+          onContentChange(contentHTML, contentText);
         }
       }, 600),
       [onContentChange]
@@ -74,7 +74,7 @@ export const SceneRichTextEditor = ({ initialContent, onContentChange }: SceneRi
     content: localContent || '',
     onUpdate: ({ editor }) => {
       // Используем debounce-обработчик вместо прямого вызова
-      debouncedContentChange(editor.getHTML());
+      debouncedContentChange(editor.getHTML(), editor.getText())
     },
   });
 

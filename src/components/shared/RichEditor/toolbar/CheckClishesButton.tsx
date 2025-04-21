@@ -5,7 +5,7 @@ import { PluginKey } from "prosemirror-state";
 import { IconClipboardCheck } from "@tabler/icons-react";
 import {
   clicheHighlighterKey
-} from "@/components/scenes/SceneEditor/editor/plugins/ClisheGightligherExtension";
+} from "@/components/shared/RichEditor/plugins/ClisheGightligherExtension";
 
 interface CheckClichesButtonProps {
   editor: any;
@@ -39,7 +39,7 @@ export const CheckClichesButton = ({ editor, onLoadingChange }: CheckClichesButt
   };
 
   const fetchCliches = async (text: string) => {
-    const response = await fetch('http://localhost:5000/analyze_cliches', {
+    const response = await fetch('http://62.109.2.159:5123/analyze_cliches', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json; charset=utf-8',

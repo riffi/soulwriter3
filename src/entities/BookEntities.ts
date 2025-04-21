@@ -29,7 +29,9 @@ export interface IScene{
   title: string;
   body: string;
   order?: number;
-  chapterId?: number
+  chapterId?: number;
+  totalSymbolCountWithSpaces?: number;
+  totalSymbolCountWoSpaces?: number;
 }
 
 

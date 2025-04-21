@@ -2,7 +2,7 @@ import {RichTextEditor} from "@mantine/tiptap";
 import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
 import {
   CheckRepeatsButton
-} from "@/components/scenes/SceneEditor/editor/toolbar/CheckRepeatsButton";
+} from "@/components/shared/RichEditor/toolbar/CheckRepeatsButton";
 
 interface EditorToolBarProps {
   editor: any;
