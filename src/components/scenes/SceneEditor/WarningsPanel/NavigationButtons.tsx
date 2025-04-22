@@ -2,11 +2,12 @@
 import { Group, Button, Text } from "@mantine/core";
 
 export const NavigationButtons = ({ currentIndex, total, onNavigate }) => (
-    <Group justify="center" mb="sm">
+    <Group justify="center" gap="xs" mb="xs">
       <Button
           variant="subtle"
           onClick={() => onNavigate('prev')}
           disabled={currentIndex <= 0}
+          size="compact-sm"
       >
         ←
       </Button>
@@ -15,6 +16,7 @@ export const NavigationButtons = ({ currentIndex, total, onNavigate }) => (
           variant="subtle"
           onClick={() => onNavigate('next')}
           disabled={currentIndex >= total - 1}
+          size="compact-sm"
       >
         →
       </Button>

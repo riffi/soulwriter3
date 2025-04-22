@@ -1,7 +1,9 @@
 // components/WarningsPanel/WarningIteration.tsx
-import {Group, Text} from "@mantine/core";
+import {Group, List, Paper, Text, ThemeIcon} from "@mantine/core";
 import {NavigationButtons} from "./NavigationButtons";
 import {IWarning, IWarningGroup, IWarningKind} from "@/components/shared/RichEditor/types";
+import {IconAlertCircle, IconCircle, IconInfoCircle, IconRepeat} from "@tabler/icons-react";
+import {WarningGroup} from "@/components/scenes/SceneEditor/WarningsPanel/WarningGroup";
 
 export interface IWarningIterationProps {
   warningGroups: IWarningGroup[];
@@ -18,7 +20,7 @@ export const WarningIteration = (props: IWarningIterationProps) => {
 
 
   return (
-      <div>
+      <div style={{padding: 2}}>
         <NavigationButtons
             currentIndex={props.currentIndex}
             total={props.warningGroups.length}
@@ -28,28 +30,12 @@ export const WarningIteration = (props: IWarningIterationProps) => {
             }}
         />
 
-        <div style={{ marginTop: 16 }}>
-          <WarningGroup warningGroup={currentGroup}/>
+        <div style={{marginTop: 8}}>
+          <WarningGroup warningGroup={currentGroup} onSelectGroup={props.onSelectGroup}/>
         </div>
       </div>
   );
 };
 
-export interface IWarningGroupProps {
-  warningGroup: IWarningGroup;
-}
-const WarningGroup = (props: IWarningGroupProps) => (
-    <div>
-      {props.warningGroup.warningKind === IWarningKind.CLICHE && <Text size="sm">Штамп:</Text>}
-      {props.warningGroup.warningKind === IWarningKind.REPEAT && <Text size="sm">Повторы:</Text>}
-      <Group>
-        {props.warningGroup?.warnings?.map((w, i) => (
-            <div key={w.id}>
-              <Text size="sm">{w?.text}</Text>
-            </div>
-        ))}
-      </Group>
-    </div>
-);
 
 

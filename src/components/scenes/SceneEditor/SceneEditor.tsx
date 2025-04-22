@@ -24,6 +24,7 @@ import {
   IWarningKindTile
 } from "@/components/shared/RichEditor/types";
 import {WarningsPanel} from "@/components/scenes/SceneEditor/WarningsPanel/WarningsPanel";
+import {useWindowScroll} from "@mantine/hooks";
 export interface ISceneEditorProps {
   sceneId?: string;
 }
@@ -36,6 +37,40 @@ export const SceneEditor = (props: ISceneEditorProps) => {
   const [warningGroups, setWarningGroups] = useState<IWarningGroup[]>([])
   const { scene, saveScene } = useSceneEditor(props.sceneId ? Number(props.sceneId) : undefined);
   const { setPageTitle } = usePageTitle();
+
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const [scroll] = useWindowScroll(); // Для отслеживания скролла
+  const { isMobile} = useMedia();
+
+  // Стили для мобильной панели
+  const mobilePanelStyle = {
+    position: 'fixed',
+    bottom: keyboardHeight > 0 ? keyboardHeight : 35,
+    left: 0,
+    right: 0,
+    zIndex: 200,
+    transition: 'bottom 0.3s ease',
+    padding: '8px',
+    backgroundColor: 'white',
+    boxShadow: '0 -2px 10px rgba(0,0,0,0.1)'
+  };
+
+  // Эффект для обработки виртуального вьюпорта
+  useEffect(() => {
+    if (!isMobile || typeof window === 'undefined') return;
+
+    const handler = () => {
+      const viewport = window.visualViewport;
+      if (!viewport) return;
+
+      // Вычисляем высоту клавиатуры
+      const newKeyboardHeight = window.innerHeight - viewport.height;
+      setKeyboardHeight(newKeyboardHeight > 50 ? newKeyboardHeight : 0);
+    };
+
+    window.visualViewport?.addEventListener('resize', handler);
+    return () => window.visualViewport?.removeEventListener('resize', handler);
+  }, [isMobile]);
 
   const handleContentChange = useCallback(
       (contentHTML: string, contentText: string) => {
@@ -74,7 +109,7 @@ export const SceneEditor = (props: ISceneEditorProps) => {
   }, [scene, setPageTitle]);
 
 
-  const { isMobile} = useMedia();
+
 
   if (!scene?.id) {
     return (<>
@@ -131,7 +166,10 @@ export const SceneEditor = (props: ISceneEditorProps) => {
           {isMobile && content}
           </Container>
         </Box>
-          <Box flex={2} style={{ position: isMobile ? 'static' : 'sticky', top: 16 }}>
+          <Box flex={2} style={isMobile ? mobilePanelStyle : {
+            position: 'sticky',
+            top: 16
+          }}>
             <WarningsPanel
                 warningGroups={warningGroups}
                 onSelectGroup={setSelectedGroup}

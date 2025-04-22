@@ -6,7 +6,6 @@
   .ProseMirror {
     padding: 10px !important;
     padding-top: 10px !important;
-    user-select: text;
   }
   .mantine-RichTextEditor-toolbar{
     --rte-sticky-offset: 50px  !important;

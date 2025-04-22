@@ -4,6 +4,8 @@ import { WarningList } from "./WarningList";
 import { WarningIteration } from "./WarningIteration";
 
 import {IWarning, IWarningGroup} from "@/components/shared/RichEditor/types";
+import {useEffect} from "react";
+import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
 
 export interface IWarningsPanelProps {
   warningGroups: IWarningGroup[];
@@ -14,30 +16,43 @@ export interface IWarningsPanelProps {
 
 export const WarningsPanel = (props: IWarningsPanelProps) => {
 
+  const { isMobile} = useMedia();
 
   const rawIndex = props.warningGroups?.findIndex(group =>
       group.groupIndex === props.selectedGroup?.groupIndex
   ) ?? 0
 
-
   const currentIndex = Math.max(rawIndex, 0)
 
-  return (
-      <Paper withBorder p="lg" radius="md" shadow="sm">
-        <Text size="lg" fw={500} mb="sm">Замечания</Text>
+  useEffect(() => {
+    if (!props.selectedGroup && props.warningGroups.length > 0) {
+      props.onSelectGroup?.(props.warningGroups[0]);
+    }
+  }, [props.selectedGroup, currentIndex])
 
-        <>
-          {props.warningGroups && props.displayType === 'iteration' ? (
-              <WarningIteration
-                  warningGroups={props.warningGroups}
-                  currentIndex={currentIndex}
-                  selectedGroup={props.selectedGroup}
-                  onSelectGroup={props.onSelectGroup}
-              />
-          ) : (
-              <WarningList {...props} />
-          )}
-        </>
-      </Paper>
+  const content = (
+      <>
+        {props.warningGroups && props.displayType === 'iteration' ? (
+            <WarningIteration
+                warningGroups={props.warningGroups}
+                currentIndex={currentIndex}
+                selectedGroup={props.selectedGroup}
+                onSelectGroup={props.onSelectGroup}
+            />
+        ) : (
+            <WarningList {...props} />
+        )}
+      </>
+  )
+  return (
+      <>
+        {!isMobile &&
+        <Paper withBorder p="md" radius="sm" shadow="sm" style={{ maxHeight: 300, overflow: 'auto' }}>
+          {content}
+        </Paper>
+        }
+        {isMobile && content}
+      </>
+
   );
 };
