@@ -133,6 +133,13 @@ export const RichEditor = ({ initialContent, onContentChange, onWarningsChange, 
   useEffect(() => {
     if (selectedWarning){
       editor?.commands.focus();
+      editor?.view.dispatch(
+          editor?.view.state.tr
+          .setMeta(repeatHighlighterKey, {
+            action: "ACTIVATE_GROUP",
+            groupIndex: selectedWarning.groupIndex
+          })
+      );
       editor.commands.setTextSelection({
         from: selectedWarning.from,
         to: selectedWarning.to

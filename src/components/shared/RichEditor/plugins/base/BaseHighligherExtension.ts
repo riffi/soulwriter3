@@ -18,7 +18,6 @@ export type HighlighterConfig<T extends IWarning> = {
 export const BaseHighlighterExtension = <T extends IWarning>(config: HighlighterConfig<T>) =>
     Extension.create({
       name: config.pluginName,
-
       addProseMirrorPlugins() {
         const pluginKey = config.pluginKey;
 
@@ -73,6 +72,23 @@ export const BaseHighlighterExtension = <T extends IWarning>(config: Highlighter
                   };
                 }
 
+                if (meta?.action === "ACTIVATE_GROUP") {
+                  const { groupIndex } = meta;
+                  const updatedGroups = prev.warningGroups.map(group => {
+                      return {
+                        ...group,
+                        warnings: group.warnings.map(warning => ({
+                          ...warning,
+                          active: group.groupIndex === groupIndex
+                        })),
+                      };
+                  });
+                  return {
+                    warningGroups: updatedGroups,
+                    decorations: createDecorations(updatedGroups, newState.doc)
+                  };
+                }
+
                 const updatedGroups = updatePositions(tr, prev.warningGroups, newState);
                 return {
                   warningGroups: updatedGroups,
@@ -90,19 +106,12 @@ export const BaseHighlighterExtension = <T extends IWarning>(config: Highlighter
                 if (!pluginState || !target.classList.contains(config.decorationClass)) return false;
 
                 const groupIndex = target.dataset.groupIndex;
-                const group = pluginState.warningGroups.find(g => g.groupIndex === groupIndex);
 
-                const updatedGroups = pluginState.warningGroups.map(g => (
-                    { ...g,
-                      warnings: g.warnings.map(w => ({ ...w, active: group?.groupIndex === g.groupIndex }))
-                    })
-                );
-                console.log(updatedGroups);
                 view.dispatch(
                     view.state.tr
                     .setMeta(repeatHighlighterKey, {
-                      action: "UPDATE_DECORATIONS",
-                      warningGroups: updatedGroups
+                      action: "ACTIVATE_GROUP",
+                      groupIndex
                     })
                     .setSelection(TextSelection.create(view.state.doc, view.state.selection.from))
                 );
