@@ -8,7 +8,7 @@ import TextAlign from '@tiptap/extension-text-align';
 import TextStyle from '@tiptap/extension-text-style';
 import Superscript from '@tiptap/extension-superscript';
 import SubScript from '@tiptap/extension-subscript';
-import {useCallback, useEffect, useState} from "react";
+import {useCallback, useEffect, useRef, useState} from "react";
 import '@mantine/tiptap/styles.css';
 import {debounce} from 'lodash';
 import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
@@ -52,17 +52,15 @@ export const RichEditor = ({ initialContent, onContentChange, onWarningsChange, 
   const [scrollTop, setScrollTop] = useState(0);
   const [warningGroups, setWarningGroups] = useState<IWarningGroup[]>([]);
 
+  const onContentChangeRef = useRef(onContentChange);
+  onContentChangeRef.current = onContentChange;
 
-  // Создаем debounce-версию обработчика изменений
   const debouncedContentChange = useCallback(
       debounce((contentHTML: string, contentText: string) => {
-        if (onContentChange) {
-          onContentChange(contentHTML, contentText);
-        }
+        onContentChangeRef.current?.(contentHTML, contentText);
       }, 600),
-      [onContentChange]
+      [] // Зависимости пусты, функция создаётся единожды
   );
-
 
   const editor = useEditor({
     extensions: [

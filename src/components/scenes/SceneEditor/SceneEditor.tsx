@@ -24,8 +24,6 @@ import {SceneStatusPanel} from "@/components/scenes/SceneEditor/SceneStatusPanel
 export interface ISceneEditorProps {
   sceneId?: string;
 }
-
-
 export const SceneEditor = (props: ISceneEditorProps) => {
   const navigate = useNavigate();
   const [selectedGroup, setSelectedGroup] = useState<IWarningGroup | undefined>(undefined);
@@ -60,11 +58,11 @@ export const SceneEditor = (props: ISceneEditorProps) => {
 
   // Эффект для обработки виртуального вьюпорта
   useEffect(() => {
-    if (!isMobile || typeof window === 'undefined') return;
+    if (!isMobile || typeof window === 'undefined') {return;}
 
     const handler = () => {
       const viewport = window.visualViewport;
-      if (!viewport) return;
+      if (!viewport) {return;}
 
       // Вычисляем высоту клавиатуры
       const newKeyboardHeight = window.innerHeight - viewport.height;
@@ -152,7 +150,7 @@ export const SceneEditor = (props: ISceneEditorProps) => {
 
   return (
       <>
-        <Container size="xl" p={"0"} fluid>
+        <Container size="xl" p="0" fluid>
           <Flex
               gap="md"
               justify="space-between"
@@ -161,7 +159,7 @@ export const SceneEditor = (props: ISceneEditorProps) => {
               wrap="wrap"
           >
             <Box flex={10}>
-              <Container size="xl" p={"0"}>
+              <Container size="xl" p="0">
                 {!isMobile && (
                     <Paper withBorder p="lg" radius="md" shadow="sm">
                       {content}
@@ -178,7 +176,7 @@ export const SceneEditor = (props: ISceneEditorProps) => {
                   warningGroups={warningGroups}
                   onSelectGroup={setSelectedGroup}
                   selectedGroup={selectedGroup}
-                  displayType={'iteration'}
+                  displayType="iteration"
               />
             </Box>
             }
