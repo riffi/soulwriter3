@@ -27,20 +27,22 @@ import {
 } from "@/components/shared/RichEditor/plugins/ClisheHightligherExtension";
 import {CheckClichesButton} from "@/components/shared/RichEditor/toolbar/CheckClishesButton";
 import {
-  IWarning,
-  IWarningContainer,
   IWarningGroup,
   IWarningKind,
 } from "@/components/shared/RichEditor/types";
+import {Button} from "@mantine/core";
+import {useWindowScroll} from "@mantine/hooks";
+
 
 interface SceneRichTextEditorProps {
   initialContent?: string;
   onContentChange?: (contentHtml: string, contentText: string) => void;
   onWarningsChange?: (warningGroups: IWarningGroup[]) => void;
   selectedGroup?: IWarningGroup;
+  onScroll?: (scrollTop: number) => void;
 }
 
-export const RichEditor = ({ initialContent, onContentChange, onWarningsChange, selectedGroup}: SceneRichTextEditorProps) => {
+export const RichEditor = ({ initialContent, onContentChange, onWarningsChange, selectedGroup, onScroll}: SceneRichTextEditorProps) => {
 
   const [loadingState, setLoadingState] = useState({
     isLoading: false,
@@ -49,6 +51,7 @@ export const RichEditor = ({ initialContent, onContentChange, onWarningsChange, 
 
   const { isMobile} = useMedia();
   const [localContent, setLocalContent] = useState(initialContent || '');
+
 
   // Создаем debounce-версию обработчика изменений
   const debouncedContentChange = useCallback(
@@ -59,6 +62,7 @@ export const RichEditor = ({ initialContent, onContentChange, onWarningsChange, 
       }, 600),
       [onContentChange]
   );
+
 
   const editor = useEditor({
     extensions: [
@@ -79,6 +83,14 @@ export const RichEditor = ({ initialContent, onContentChange, onWarningsChange, 
       // Используем debounce-обработчик вместо прямого вызова
       debouncedContentChange(editor.getHTML(), editor.getText())
     },
+    onBlur: ({ editor }) => {
+      editor.setEditable(false)
+    },
+    onTransaction: ({ editor, transaction }) => {
+      if (transaction.meta?.pointer) {
+        editor.setEditable(true)
+      }
+    }
   });
 
 
@@ -153,7 +165,9 @@ export const RichEditor = ({ initialContent, onContentChange, onWarningsChange, 
   }, [debouncedContentChange]);
 
 
-
+  const handleScroll = (event: React.UIEvent<HTMLDivElement>) => {
+    onScroll?.(event.target.scrollTop)
+  }
 
   return (
   <>
@@ -162,9 +176,14 @@ export const RichEditor = ({ initialContent, onContentChange, onWarningsChange, 
         message={loadingState.message}
     />
 
-      <RichTextEditor
+    <RichTextEditor
           editor={editor}
           variant="subtle"
+          style={{
+            overflow: "scroll",
+            maxHeight: 'calc(100vh - 300px)'
+          }}
+          onScroll={handleScroll}
 
       >
         <EditorToolBar editor={editor}>

@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import {
   Box,
   Button,
-  Container, Flex,
+  Container, Drawer, Flex,
   Group,
   LoadingOverlay,
   Paper,
@@ -39,13 +39,15 @@ export const SceneEditor = (props: ISceneEditorProps) => {
   const { setPageTitle } = usePageTitle();
 
   const [keyboardHeight, setKeyboardHeight] = useState(0);
-  const [scroll] = useWindowScroll(); // Для отслеживания скролла
   const { isMobile} = useMedia();
+  const [scroll] = useWindowScroll(); // Используем хук скролла
+  const [isHeaderVisible, setIsheaderVisible] = useState(true);
 
   // Стили для мобильной панели
   const mobilePanelStyle = {
+    // hidden: keyboardHeight > 0,
     position: 'fixed',
-    bottom: keyboardHeight > 0 ? keyboardHeight : 35,
+    bottom: keyboardHeight > 0 ? -1000 : 35,
     left: 0,
     right: 0,
     zIndex: 200,
@@ -54,6 +56,12 @@ export const SceneEditor = (props: ISceneEditorProps) => {
     backgroundColor: 'white',
     boxShadow: '0 -2px 10px rgba(0,0,0,0.1)'
   };
+
+
+  const handleEditorScroll = useCallback((scrollTop: number) => {
+    const SCROLL_THRESHOLD = 50;
+    setIsheaderVisible(scrollTop < SCROLL_THRESHOLD);
+  }, []);
 
   // Эффект для обработки виртуального вьюпорта
   useEffect(() => {
@@ -119,7 +127,7 @@ export const SceneEditor = (props: ISceneEditorProps) => {
 
   const content = (
       <>
-      <Box mb="md" p={"sm"}>
+        {isHeaderVisible &&<Group p={10} justify="space-between" align="center" direction="row" wrap="wrap">
         <Button
             variant="subtle"
             leftSection={<IconArrowLeft size={16} />}
@@ -131,15 +139,16 @@ export const SceneEditor = (props: ISceneEditorProps) => {
         <InlineEdit
             value={scene?.title}
             onChange={(value) => { saveScene({ ...scene, title: value }) }}
-            label="Название сцены"
+            label=""
         />
-      </Box>
+      </Group>}
 
-      <RichEditor
+        <RichEditor
           initialContent={sceneBody}
           onContentChange={handleContentChange}
           onWarningsChange={setWarningGroups}
           selectedGroup={selectedGroup}
+          onScroll={handleEditorScroll}
       />
 
       <Space h="md" />
