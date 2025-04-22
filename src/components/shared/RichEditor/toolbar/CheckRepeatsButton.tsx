@@ -6,6 +6,7 @@ import {
 } from "@/components/shared/RichEditor/plugins/RepeatHighlighterExtension";
 import {IconBrandCampaignmonitor} from "@tabler/icons-react";
 import {IWarningKind, IRepeatWarning} from "@/components/shared/RichEditor/types";
+import {generateUUID} from "@/utils/UUIDUtils";
 
 interface CheckRepeatsButtonProps {
   editor: any;
@@ -55,6 +56,7 @@ export const CheckRepeatsButton = ({ editor, onLoadingChange }: CheckRepeatsButt
     const data = await response.json();
     return data.repeatData.flatMap((group, index) =>
         group.repeats.map(repeat => ({
+          id: generateUUID(),
           from: repeat.startPosition + 1,
           to: repeat.endPosition + 2,
           groupIndex: String(index),

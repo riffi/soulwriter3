@@ -1,38 +1,35 @@
 // SceneRichTextEditor.tsx
-import { RichTextEditor, Link as TipTapLink } from '@mantine/tiptap';
-import { useEditor } from '@tiptap/react';
+import {RichTextEditor} from '@mantine/tiptap';
+import {useEditor} from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-import Highlight from '@tiptap/extension-highlight';
 import Underline from '@tiptap/extension-underline';
 import Color from '@tiptap/extension-color';
 import TextAlign from '@tiptap/extension-text-align';
 import TextStyle from '@tiptap/extension-text-style';
 import Superscript from '@tiptap/extension-superscript';
 import SubScript from '@tiptap/extension-subscript';
-import {useEffect, useCallback, useState} from "react";
-import RepeatedWordsHighlighter2 from "./plugins/RepeatedWordsHighlighter2";
+import {useCallback, useEffect, useState} from "react";
 import '@mantine/tiptap/styles.css';
-import { debounce } from 'lodash';
+import {debounce} from 'lodash';
 import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
 import './editor.override.css'
 import {EditorToolBar} from "@/components/shared/RichEditor/toolbar/EditorToolBar";
 import {
-  RepeatHighlighterExtension, repeatHighlighterKey
+  RepeatHighlighterExtension,
+  repeatHighlighterKey
 } from "@/components/shared/RichEditor/plugins/RepeatHighlighterExtension";
 import {LoadingOverlay} from "@/components/shared/overlay/LoadingOverlay";
+import {CheckRepeatsButton} from "@/components/shared/RichEditor/toolbar/CheckRepeatsButton";
+import SimpleTextChecker from "@/components/shared/RichEditor/plugins/SimpleTextChecker";
 import {
-  CheckRepeatsButton
-} from "@/components/shared/RichEditor/toolbar/CheckRepeatsButton";
-import SimpleTextChecker
-  from "@/components/shared/RichEditor/plugins/SimpleTextChecker";
-import {
-  ClicheHighlighterExtension, clicheHighlighterKey
+  ClicheHighlighterExtension,
+  clicheHighlighterKey
 } from "@/components/shared/RichEditor/plugins/ClisheHightligherExtension";
+import {CheckClichesButton} from "@/components/shared/RichEditor/toolbar/CheckClishesButton";
 import {
-  CheckClichesButton
-} from "@/components/shared/RichEditor/toolbar/CheckClishesButton";
-import {
-  IClicheWarning, IWarning, IWarningContainer,
+  IWarning,
+  IWarningContainer,
+  IWarningGroup,
   IWarningKind,
 } from "@/components/shared/RichEditor/types";
 
@@ -85,24 +82,46 @@ export const RichEditor = ({ initialContent, onContentChange, onWarningsChange, 
   });
 
 
-  // В компонент RichEditor добавьте:
   useEffect(() => {
     if (!editor || !onWarningsChange) return;
 
+    const groupWarnings = (warnings: IWarning[], warningKind: IWarningKind): IWarningGroup[] => {
+      const groupsMap = warnings.reduce((acc, warning) => {
+        const groupIndex = warning.groupIndex;
+        if (!acc[groupIndex]) {
+          acc[groupIndex] = { groupIndex, warnings: [], warningKind };
+        }
+        acc[groupIndex].warnings.push(warning);
+        return acc;
+      }, {} as Record<string, IWarningGroup>);
+
+      return Object.values(groupsMap);
+    };
+
     const updateWarnings = () => {
       const warningContainers: IWarningContainer[] = [];
+
+      // Обработка штампов (CLICHE)
       const clichePluginState = clicheHighlighterKey.getState(editor.state);
-      warningContainers.push({
-        warningKind: IWarningKind.CLICHE,
-        warnings: clichePluginState?.warnings || []
-      })
+      const clicheGroups = groupWarnings(clichePluginState?.warnings || [],
+          IWarningKind.CLICHE);
+      if (clicheGroups.length > 0) {
+        warningContainers.push({
+          warningKind: IWarningKind.CLICHE,
+          warningGroups: clicheGroups,
+        });
+      }
 
+      // Обработка повторов (REPEAT)
       const repeatPluginState = repeatHighlighterKey.getState(editor.state);
-
-      warningContainers.push({
-        warningKind: IWarningKind.REPEAT,
-        warnings: repeatPluginState?.warnings || []
-      })
+      const repeatGroups = groupWarnings(repeatPluginState?.warnings || [],
+        IWarningKind.REPEAT)
+      if (repeatGroups.length > 0) {
+        warningContainers.push({
+          warningKind: IWarningKind.REPEAT,
+          warningGroups: repeatGroups,
+        });
+      }
 
       onWarningsChange(warningContainers);
     };
@@ -128,6 +147,7 @@ export const RichEditor = ({ initialContent, onContentChange, onWarningsChange, 
 
   useEffect(() => {
     if (selectedWarning){
+      console.log(selectedWarning)
       editor?.commands.focus();
       editor.commands.setTextSelection({
         from: selectedWarning.from,

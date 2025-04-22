@@ -31,24 +31,11 @@ export interface ISceneEditorProps {
 
 export const SceneEditor = (props: ISceneEditorProps) => {
   const navigate = useNavigate();
-  const [isSaving, setIsSaving] = useState(false);
   const [selectedWarning, setSelectedWarning] = useState<IWarning | undefined>(undefined);
   const [sceneBody, setSceneBody] = useState<string>("");
   const [warningContainers, setWarningContainers] = useState<IWarningContainer[]>([]);
   const { scene, saveScene } = useSceneEditor(props.sceneId ? Number(props.sceneId) : undefined);
   const { setPageTitle } = usePageTitle();
-
-  const handleSave = async (silent?: boolean) => {
-    setIsSaving(true);
-    try {
-      const sceneId = await saveScene(
-          { ...scene, body: sceneBody },
-          silent ? true : false
-      );
-    } finally {
-      setIsSaving(false);
-    }
-  };
 
   const handleContentChange = useCallback(
       (contentHTML: string, contentText: string) => {
@@ -145,7 +132,12 @@ export const SceneEditor = (props: ISceneEditorProps) => {
           </Container>
         </Box>
           <Box flex={2} style={{ position: isMobile ? 'static' : 'sticky', top: 16 }}>
-            <WarningsPanel warningContainers={warningContainers} onSelectWarning={setSelectedWarning}/>
+            <WarningsPanel
+                warningContainers={warningContainers}
+                onSelectWarning={setSelectedWarning}
+                selectedWarning={selectedWarning}
+                displayType={'iteration'}
+            />
           </Box>
         </Flex>
       </Container>

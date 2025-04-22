@@ -7,6 +7,7 @@ import {
   clicheHighlighterKey
 } from "@/components/shared/RichEditor/plugins/ClisheHightligherExtension";
 import {IClicheWarning, IWarningKind} from "@/components/shared/RichEditor/types";
+import {generateUUID} from "@/utils/UUIDUtils";
 
 interface CheckClichesButtonProps {
   editor: any;
@@ -51,11 +52,13 @@ export const CheckClichesButton = ({ editor, onLoadingChange }: CheckClichesButt
 
     const data = await response.json();
     return data.data.map(warning => ({
+      id: generateUUID(),
       from: warning.start + 1,
       to: warning.end + 1,
       pattern: warning.pattern,
       text: warning.text,
-      kind: IWarningKind.CLICHE
+      kind: IWarningKind.CLICHE,
+      groupIndex: generateUUID()
     }));
   };
 

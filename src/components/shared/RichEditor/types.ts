@@ -8,21 +8,27 @@ export enum IWarningKindTile{
   REPEAT = "Повторы",
 }
 export interface IWarning {
+  id: string;
   from: number;
   to: number;
   text: string;
   kind: string;
+  groupIndex: string;
 }
 export interface IClicheWarning extends IWarning{
   pattern: string;
 }
 
 export interface IRepeatWarning extends IWarning {
-  groupIndex: string;
   active: boolean;
 }
 
-export interface IWarningContainer{
-  warningKind: string;
+export interface IWarningGroup{
+  groupIndex: string;
+  warningKind: IWarningKind;
   warnings: IWarning[];
+}
+export interface IWarningContainer{
+  warningKind: IWarningKind;
+  warningGroups: IWarningGroup[];
 }
