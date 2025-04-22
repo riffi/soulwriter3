@@ -14,13 +14,14 @@ export interface IWarning {
   text: string;
   kind: string;
   groupIndex: string;
+  active: boolean;
 }
 export interface IClicheWarning extends IWarning{
   pattern: string;
 }
 
 export interface IRepeatWarning extends IWarning {
-  active: boolean;
+
 }
 
 export interface IWarningGroup{

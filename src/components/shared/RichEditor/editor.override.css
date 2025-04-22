@@ -49,3 +49,8 @@
   background-color: rgba(255, 235, 59, 0.3);
   border-bottom: 2px dashed #ffc107;
 }
+
+.highlighted-cliche.active {
+  background-color: #ff9800;
+  box-shadow: 0 0 0 2px #ff5722;
+}

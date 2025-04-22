@@ -6,7 +6,7 @@ import { IconClipboardCheck } from "@tabler/icons-react";
 import {
   clicheHighlighterKey
 } from "@/components/shared/RichEditor/plugins/ClisheHightligherExtension";
-import {IClicheWarning, IWarningKind} from "@/components/shared/RichEditor/types";
+import {IClicheWarning, IWarningGroup, IWarningKind} from "@/components/shared/RichEditor/types";
 import {generateUUID} from "@/utils/UUIDUtils";
 
 interface CheckClichesButtonProps {
@@ -40,7 +40,7 @@ export const CheckClichesButton = ({ editor, onLoadingChange }: CheckClichesButt
     }
   };
 
-  const fetchWarnings = async (text: string):Promise<IClicheWarning[]> => {
+  const fetchWarnings = async (text: string):Promise<IWarningGroup[]> => {
     const response = await fetch('http://62.109.2.159:5123/analyze_cliches', {
       method: 'POST',
       headers: {
@@ -51,22 +51,31 @@ export const CheckClichesButton = ({ editor, onLoadingChange }: CheckClichesButt
     });
 
     const data = await response.json();
-    return data.data.map(warning => ({
-      id: generateUUID(),
-      from: warning.start + 1,
-      to: warning.end + 1,
-      pattern: warning.pattern,
-      text: warning.text,
-      kind: IWarningKind.CLICHE,
-      groupIndex: generateUUID()
-    }));
+    const groups: IWarningGroup[] = [];
+    data.data.forEach((warning: IClicheWarning, index: number) => {
+      const group: IWarningGroup = {
+        groupIndex: String(index),
+        warningKind: IWarningKind.CLICHE,
+        warnings: [{
+          id: generateUUID(),
+          from: warning.start + 1,
+          to: warning.end + 1,
+          groupIndex: String(index),
+          text: warning.text,
+          kind: IWarningKind.CLICHE,
+          active: false
+        }]
+      }
+      groups.push(group);
+    })
+    return groups
   };
 
-  const updateHighlights = (warnings) => {
+  const updateHighlights = (warningGroups: IWarningGroup[]) => {
     const tr = editor.state.tr;
     tr.setMeta(clicheHighlighterKey, {
       action: "UPDATE_DECORATIONS",
-      warnings
+      warningGroups
     });
     editor.view.dispatch(tr);
   };

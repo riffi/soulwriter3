@@ -5,7 +5,7 @@ import {
   RepeatHighlighterExtension, repeatHighlighterKey
 } from "@/components/shared/RichEditor/plugins/RepeatHighlighterExtension";
 import {IconBrandCampaignmonitor} from "@tabler/icons-react";
-import {IWarningKind, IRepeatWarning} from "@/components/shared/RichEditor/types";
+import {IWarningKind, IRepeatWarning, IWarningGroup} from "@/components/shared/RichEditor/types";
 import {generateUUID} from "@/utils/UUIDUtils";
 
 interface CheckRepeatsButtonProps {
@@ -28,8 +28,8 @@ export const CheckRepeatsButton = ({ editor, onLoadingChange }: CheckRepeatsButt
     setIsLoading(true);
     try {
       const text = editor.getText();
-      const warnings = await fetchWarnings(text);
-      updateHighlights(warnings);
+      const warningGroups = await fetchWarnings(text);
+      updateHighlights(warningGroups);
       setIsActive(true);
     } catch (error) {
       console.error('Error checking repeats:', error);
@@ -39,7 +39,7 @@ export const CheckRepeatsButton = ({ editor, onLoadingChange }: CheckRepeatsButt
     }
   };
 
-  const fetchWarnings = async (text: string): IRepeatWarning[] => {
+  const fetchWarnings = async (text: string): Promise<IWarningGroup[]> => {
     const response = await fetch('http://62.109.2.159:5123/find_repeats', {
       method: 'POST',
       headers: {
@@ -54,23 +54,31 @@ export const CheckRepeatsButton = ({ editor, onLoadingChange }: CheckRepeatsButt
     });
 
     const data = await response.json();
-    return data.repeatData.flatMap((group, index) =>
-        group.repeats.map(repeat => ({
-          id: generateUUID(),
-          from: repeat.startPosition + 1,
-          to: repeat.endPosition + 2,
-          groupIndex: String(index),
-          text: repeat.word,
-          kind: IWarningKind.REPEAT
-        }))
-    );
+    const groups: IWarningGroup[] = [];
+    data.repeatData.forEach((rawGroup, index) =>{
+          const group: IWarningGroup = {
+            groupIndex: String(index),
+            warningKind: IWarningKind.REPEAT,
+            warnings: rawGroup.repeats.map(repeat => ({
+                id: generateUUID(),
+                from: repeat.startPosition + 1,
+                to: repeat.endPosition + 2,
+                groupIndex: String(index),
+                text: repeat.word,
+                kind: IWarningKind.REPEAT
+            }))
+          }
+          groups.push(group);
+
+    });
+    return groups;
   };
 
-  const updateHighlights = (warnings) => {
+  const updateHighlights = (warningGroups: IWarningGroup[]) => {
     const tr = editor.state.tr;
     tr.setMeta(repeatHighlighterKey, { // Используем pluginKey вместо строки
       action: "UPDATE_DECORATIONS",
-      warnings
+      warningGroups
     });
     editor.view.dispatch(tr);
   };

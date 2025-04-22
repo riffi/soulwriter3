@@ -85,26 +85,12 @@ export const RichEditor = ({ initialContent, onContentChange, onWarningsChange, 
   useEffect(() => {
     if (!editor || !onWarningsChange) return;
 
-    const groupWarnings = (warnings: IWarning[], warningKind: IWarningKind): IWarningGroup[] => {
-      const groupsMap = warnings.reduce((acc, warning) => {
-        const groupIndex = warning.groupIndex;
-        if (!acc[groupIndex]) {
-          acc[groupIndex] = { groupIndex, warnings: [], warningKind };
-        }
-        acc[groupIndex].warnings.push(warning);
-        return acc;
-      }, {} as Record<string, IWarningGroup>);
-
-      return Object.values(groupsMap);
-    };
-
     const updateWarnings = () => {
       const warningContainers: IWarningContainer[] = [];
 
       // Обработка штампов (CLICHE)
       const clichePluginState = clicheHighlighterKey.getState(editor.state);
-      const clicheGroups = groupWarnings(clichePluginState?.warnings || [],
-          IWarningKind.CLICHE);
+      const clicheGroups = clichePluginState?.warningGroups || []
       if (clicheGroups.length > 0) {
         warningContainers.push({
           warningKind: IWarningKind.CLICHE,
@@ -114,8 +100,7 @@ export const RichEditor = ({ initialContent, onContentChange, onWarningsChange, 
 
       // Обработка повторов (REPEAT)
       const repeatPluginState = repeatHighlighterKey.getState(editor.state);
-      const repeatGroups = groupWarnings(repeatPluginState?.warnings || [],
-        IWarningKind.REPEAT)
+      const repeatGroups = repeatPluginState?.warningGroups || []
       if (repeatGroups.length > 0) {
         warningContainers.push({
           warningKind: IWarningKind.REPEAT,
