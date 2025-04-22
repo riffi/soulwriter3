@@ -30,8 +30,7 @@ import {
   IWarningGroup,
   IWarningKind,
 } from "@/components/shared/RichEditor/types";
-import {Button} from "@mantine/core";
-import {useWindowScroll} from "@mantine/hooks";
+
 
 
 interface SceneRichTextEditorProps {
@@ -49,8 +48,9 @@ export const RichEditor = ({ initialContent, onContentChange, onWarningsChange, 
     message: ""
   });
 
-  const { isMobile} = useMedia();
   const [localContent, setLocalContent] = useState(initialContent || '');
+  const [scrollTop, setScrollTop] = useState(0);
+  const [warningGroups, setWarningGroups] = useState<IWarningGroup[]>([]);
 
 
   // Создаем debounce-версию обработчика изменений
@@ -113,6 +113,7 @@ export const RichEditor = ({ initialContent, onContentChange, onWarningsChange, 
       if (repeatGroups.length > 0) {
         warningGroups.push(...repeatGroups)
       }
+      setWarningGroups(warningGroups)
       onWarningsChange(warningGroups);
     };
 
@@ -167,6 +168,18 @@ export const RichEditor = ({ initialContent, onContentChange, onWarningsChange, 
 
   const handleScroll = (event: React.UIEvent<HTMLDivElement>) => {
     onScroll?.(event.target.scrollTop)
+    setScrollTop(event.target.scrollTop)
+  }
+
+  function getEditorHeight(scrollTop: number, warningGroups: IWarningGroup[]) {
+    let baseOffset = 280
+    if (scrollTop > 50){
+      baseOffset -= 50
+    }
+    if (warningGroups.length === 0) {
+      baseOffset -= 80
+    }
+    return `calc(100vh - ${baseOffset}px)`
   }
 
   return (
@@ -181,7 +194,7 @@ export const RichEditor = ({ initialContent, onContentChange, onWarningsChange, 
           variant="subtle"
           style={{
             overflow: "scroll",
-            maxHeight: 'calc(100vh - 300px)'
+            maxHeight: getEditorHeight(scrollTop, warningGroups)
           }}
           onScroll={handleScroll}
 

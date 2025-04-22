@@ -175,7 +175,7 @@ export const SceneEditor = (props: ISceneEditorProps) => {
           {isMobile && content}
           </Container>
         </Box>
-          <Box flex={2} style={isMobile ? mobilePanelStyle : {
+          {warningGroups.length > 0 && <Box flex={2} style={isMobile ? mobilePanelStyle : {
             position: 'sticky',
             top: 16
           }}>
@@ -186,6 +186,7 @@ export const SceneEditor = (props: ISceneEditorProps) => {
                 displayType={'iteration'}
             />
           </Box>
+          }
         </Flex>
       </Container>
       {/* Фиксированная панель статуса */}
