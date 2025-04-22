@@ -3,7 +3,7 @@ import {Group, List, Paper, Text, ThemeIcon} from "@mantine/core";
 import {NavigationButtons} from "./NavigationButtons";
 import {IWarning, IWarningGroup, IWarningKind} from "@/components/shared/RichEditor/types";
 import {IconAlertCircle, IconCircle, IconInfoCircle, IconRepeat} from "@tabler/icons-react";
-import {WarningGroup} from "@/components/scenes/SceneEditor/WarningsPanel/WarningGroup";
+import {WarningGroup} from "@/components/scenes/SceneEditor/parts/WarningsPanel/WarningGroup";
 
 export interface IWarningIterationProps {
   warningGroups: IWarningGroup[];

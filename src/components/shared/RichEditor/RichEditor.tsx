@@ -170,12 +170,12 @@ export const RichEditor = ({ initialContent, onContentChange, onWarningsChange, 
   }
 
   function getEditorHeight(scrollTop: number, warningGroups: IWarningGroup[]) {
-    let baseOffset = 280
+    let baseOffset = 200
     if (scrollTop > 50){
       baseOffset -= 50
     }
-    if (warningGroups.length === 0) {
-      baseOffset -= 80
+    if (warningGroups.length > 0){
+      baseOffset += 50
     }
     return `calc(100vh - ${baseOffset}px)`
   }

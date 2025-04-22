@@ -1,190 +1,119 @@
 import { useCallback, useEffect, useState } from "react";
-import {
-  Box,
-  Button,
-  Container, Flex,
-  Group,
-  Paper,
-  Space,
-  Text
-} from "@mantine/core";
-import { useNavigate} from "react-router-dom";
-import { IconArrowLeft } from "@tabler/icons-react";
+import { Box, Container, Flex, Space } from "@mantine/core";
+import { useNavigate } from "react-router-dom";
+import { useMedia } from "@/providers/MediaQueryProvider/MediaQueryProvider";
+import { usePageTitle } from "@/providers/PageTitleProvider/PageTitleProvider";
 import { useSceneEditor } from "@/components/scenes/SceneEditor/useSceneEditor";
-import { InlineEdit } from "@/components/shared/InlineEdit/InlineEdit";
-import { RichEditor } from "../../shared/RichEditor/RichEditor";
-import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
-import {usePageTitle} from "@/providers/PageTitleProvider/PageTitleProvider";
-import {
-  IWarningGroup,
-} from "@/components/shared/RichEditor/types";
-import {WarningsPanel} from "@/components/scenes/SceneEditor/WarningsPanel/WarningsPanel";
-import {SceneStatusPanel} from "@/components/scenes/SceneEditor/SceneStatusPanel/SceneStatusPanel";
+import { RichEditor } from "@/components/shared/RichEditor/RichEditor";
+import { WarningsPanel } from "@/components/scenes/SceneEditor/parts/WarningsPanel/WarningsPanel";
+import { SceneStatusPanel } from "@/components/scenes/SceneEditor/parts/SceneStatusPanel";
+import { useKeyboardHeight } from "./hooks/useKeyboardHeight";
+import { useSceneTitle } from "./hooks/useSceneTitle";
+import { useHeaderVisibility } from "./hooks/useHeaderVisibility";
+import { SceneHeader } from "./parts/SceneHeader";
+import { MobilePanel } from "./parts/MobilePanel";
+import { DesktopPanel } from "./parts/DesktopPanel";
+import type { SceneEditorProps } from "./types";
+import {IWarningGroup} from "@/components/shared/RichEditor/types";
 
-export interface ISceneEditorProps {
-  sceneId?: string;
-}
-export const SceneEditor = (props: ISceneEditorProps) => {
+export const SceneEditor = ({ sceneId }: SceneEditorProps) => {
   const navigate = useNavigate();
-  const [selectedGroup, setSelectedGroup] = useState<IWarningGroup | undefined>(undefined);
-  const [sceneBody, setSceneBody] = useState<string>("");
-  const [warningGroups, setWarningGroups] = useState<IWarningGroup[]>([])
-  const { scene, saveScene } = useSceneEditor(props.sceneId ? Number(props.sceneId) : undefined);
+  const { isMobile } = useMedia();
   const { setPageTitle } = usePageTitle();
+  const { scene, saveScene } = useSceneEditor(sceneId ? Number(sceneId) : undefined);
 
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
-  const { isMobile} = useMedia();
-  const [isHeaderVisible, setIsheaderVisible] = useState(true);
+  const [selectedGroup, setSelectedGroup] = useState<IWarningGroup>();
+  const [sceneBody, setSceneBody] = useState("");
+  const [warningGroups, setWarningGroups] = useState<IWarningGroup[]>([]);
 
-  // Стили для мобильной панели
-  const mobilePanelStyle = {
-    // hidden: keyboardHeight > 0,
-    position: 'fixed',
-    bottom: keyboardHeight > 0 ? -1000 : 35,
-    left: 0,
-    right: 0,
-    zIndex: 200,
-    transition: 'bottom 0.3s ease',
-    padding: '8px',
-    backgroundColor: 'white',
-    boxShadow: '0 -2px 10px rgba(0,0,0,0.1)'
-  };
-
-
-  const handleEditorScroll = useCallback((scrollTop: number) => {
-    const SCROLL_THRESHOLD = 50;
-    setIsheaderVisible(scrollTop < SCROLL_THRESHOLD);
-  }, []);
-
-  // Эффект для обработки виртуального вьюпорта
-  useEffect(() => {
-    if (!isMobile || typeof window === 'undefined') {return;}
-
-    const handler = () => {
-      const viewport = window.visualViewport;
-      if (!viewport) {return;}
-
-      // Вычисляем высоту клавиатуры
-      const newKeyboardHeight = window.innerHeight - viewport.height;
-      setKeyboardHeight(newKeyboardHeight > 50 ? newKeyboardHeight : 0);
-    };
-
-    window.visualViewport?.addEventListener('resize', handler);
-    return () => window.visualViewport?.removeEventListener('resize', handler);
-  }, [isMobile]);
+  const keyboardHeight = useKeyboardHeight(isMobile);
+  const { isHeaderVisible, handleEditorScroll } = useHeaderVisibility();
+  useSceneTitle(scene, setPageTitle);
 
   const handleContentChange = useCallback(
       (contentHTML: string, contentText: string) => {
-        if (scene && scene.id && contentHTML !== scene.body) {
-          // Подсчет символов с пробелами
-          const totalSymbolCountWithSpaces = contentText.length;
+        if (!scene?.id || contentHTML === scene.body) return;
 
-          // Подсчет символов без пробелов
-          const totalSymbolCountWoSpaces = contentText.replace(/\s+/g, '').length;
+        saveScene({
+          ...scene,
+          body: contentHTML,
+          totalSymbolCountWithSpaces: contentText.length,
+          totalSymbolCountWoSpaces: contentText.replace(/\s+/g, '').length
+        }, true);
 
-          saveScene({
-            ...scene,
-            body: contentHTML,
-            totalSymbolCountWithSpaces,
-            totalSymbolCountWoSpaces
-          }, true);
-        }
         setSceneBody(contentHTML);
-      }, [scene, saveScene]
+      },
+      [scene, saveScene]
   );
 
   useEffect(() => {
-    if (scene && scene.body !== sceneBody) {
+    if (scene?.body && scene.body !== sceneBody) {
       setSceneBody(scene.body);
     }
-  }, [scene?.id, scene?.body]);
+  }, [scene?.body]);
 
-  useEffect(() => {
-    if (scene) {
-      setPageTitle(`${scene?.order}. ${scene?.title}`);
-    }
-
-    return () => {
-      setPageTitle(''); // Очищаем при размонтировании
-    };
-  }, [scene, setPageTitle]);
-
-
-
-
-  if (!scene?.id) {
-    return (<>
-      </>
-    );
-  }
+  if (!scene?.id) return null;
 
   const content = (
       <>
-        {isHeaderVisible &&<Group p={10} justify="space-between" align="center" direction="row" wrap="wrap">
-        <Button
-            variant="subtle"
-            leftSection={<IconArrowLeft size={16} />}
-            onClick={() => navigate('/scenes')}
-            mb="sm" p={0}
-        >
-          Назад к списку
-        </Button>
-        <InlineEdit
-            value={scene?.title}
-            onChange={(value) => { saveScene({ ...scene, title: value }) }}
-            label=""
-        />
-      </Group>}
+        {isHeaderVisible && <SceneHeader
+            scene={scene}
+            onBack={() => navigate('/scenes')}
+            onTitleChange={(title) => saveScene({ ...scene, title })}
+        />}
 
         <RichEditor
-          initialContent={sceneBody}
-          onContentChange={handleContentChange}
-          onWarningsChange={setWarningGroups}
-          selectedGroup={selectedGroup}
-          onScroll={handleEditorScroll}
-      />
-
-      <Space h="md" />
+            initialContent={sceneBody}
+            onContentChange={handleContentChange}
+            onWarningsChange={setWarningGroups}
+            selectedGroup={selectedGroup}
+            onScroll={handleEditorScroll}
+        />
+        <SceneStatusPanel scene={scene} />
       </>
-  )
+  );
 
   return (
       <>
-        <Container size="xl" p="0" fluid>
-          <Flex
-              gap="md"
-              justify="space-between"
-              align="flex-start"
-              direction="row"
-              wrap="wrap"
-          >
-            <Box flex={10}>
+        <Container size="xl" p="0" fluid style={{ height: 'calc(100vh-200px)' }}>
+          <Flex gap="md" justify="space-between" align="flex-start" wrap="wrap">
+            <Box flex={isMobile? 'auto' : 10}>
               <Container size="xl" p="0">
-                {!isMobile && (
-                    <Paper withBorder p="lg" radius="md" shadow="sm">
-                      {content}
-                    </Paper>
-                )}
-                {isMobile && content}
+                {isMobile ? content : <DesktopPanel>{content}</DesktopPanel>}
               </Container>
             </Box>
             <>
-            {warningGroups.length > 0 && <Box
-                flex={2}
-                style={isMobile ? mobilePanelStyle : {position: 'sticky', top: 16}}>
-              <WarningsPanel
-                  warningGroups={warningGroups}
-                  onSelectGroup={setSelectedGroup}
-                  selectedGroup={selectedGroup}
-                  displayType="iteration"
-              />
-            </Box>
-            }
+            {warningGroups.length > 0 && (
+                <Box
+                    flex={2}
+                    style={isMobile ? undefined : { position: 'sticky', top: 16 }}
+                >
+                  <>
+                  {isMobile ? (
+                      <MobilePanel keyboardHeight={keyboardHeight}>
+                        <WarningsPanel
+                            warningGroups={warningGroups}
+                            onSelectGroup={setSelectedGroup}
+                            selectedGroup={selectedGroup}
+                            displayType="iteration"
+                        />
+                      </MobilePanel>
+                  ) : (
+                      <WarningsPanel
+                          warningGroups={warningGroups}
+                          onSelectGroup={setSelectedGroup}
+                          selectedGroup={selectedGroup}
+                          displayType="iteration"
+                      />
+                  )}
+                  </>
+                </Box>
+            )}
             </>
           </Flex>
         </Container>
 
-        <SceneStatusPanel scene={scene}/>
+
       </>
-);
+  );
 };

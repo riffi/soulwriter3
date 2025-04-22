@@ -2,7 +2,7 @@
 import { Group, Button, Text } from "@mantine/core";
 
 export const NavigationButtons = ({ currentIndex, total, onNavigate }) => (
-    <Group justify="center" gap="xs" mb="xs">
+    <Group justify="center" gap="xs" >
       <Button
           variant="subtle"
           onClick={() => onNavigate('prev')}
@@ -11,7 +11,7 @@ export const NavigationButtons = ({ currentIndex, total, onNavigate }) => (
       >
         ←
       </Button>
-      <Text size="sm">{currentIndex + 1} из {total}</Text>
+      <Text size="xs">{currentIndex + 1} из {total}</Text>
       <Button
           variant="subtle"
           onClick={() => onNavigate('next')}
