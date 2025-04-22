@@ -147,7 +147,6 @@ export const RichEditor = ({ initialContent, onContentChange, onWarningsChange, 
 
   useEffect(() => {
     if (selectedWarning){
-      console.log(selectedWarning)
       editor?.commands.focus();
       editor.commands.setTextSelection({
         from: selectedWarning.from,
