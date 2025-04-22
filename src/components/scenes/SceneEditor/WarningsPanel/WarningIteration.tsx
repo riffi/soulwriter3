@@ -1,43 +1,54 @@
 // components/WarningsPanel/WarningIteration.tsx
-import {  Text } from "@mantine/core";
-import { NavigationButtons } from "./NavigationButtons";
+import {Group, Text} from "@mantine/core";
+import {NavigationButtons} from "./NavigationButtons";
+import {IWarning, IWarningGroup, IWarningKind} from "@/components/shared/RichEditor/types";
 
-export const WarningIteration = ({ warningGroups, currentIndex, onSelectWarning}) => {
+export interface IWarningIterationProps {
+  warningGroups: IWarningGroup[];
+  selectedGroup?: IWarningGroup;
+  currentIndex?: number;
+  onSelectGroup: (warningGroup: IWarningGroup) => void;
+}
+export const WarningIteration = (props: IWarningIterationProps) => {
+  const currentGroup = props.warningGroups?.[props.currentIndex] ?? props.warningGroups?.[0];
 
-
-
-  if (warningGroups.length === 0) {
+  if (!currentGroup) {
     return <Text size="sm" c="dimmed">Нет замечаний</Text>;
   }
 
-  const currentGroup = warningGroups[currentIndex] || { items: []};
 
   return (
       <div>
         <NavigationButtons
-            currentIndex={currentIndex}
-            total={warningGroups.length}
+            currentIndex={props.currentIndex}
+            total={props.warningGroups.length}
             onNavigate={(direction) => {
-              const newIndex = direction === 'prev' ? currentIndex - 1 : currentIndex + 1;
-              onSelectWarning?.(warningGroups[newIndex]?.items[0]);
+              const newIndex = direction === 'prev' ? props.currentIndex - 1 : props.currentIndex + 1;
+              props.onSelectGroup?.(props.warningGroups?.[newIndex]);
             }}
         />
 
         <div style={{ marginTop: 16 }}>
-          <GroupedWarning items={currentGroup.items} />
+          <WarningGroup warningGroup={currentGroup}/>
         </div>
       </div>
   );
 };
 
-const GroupedWarning = ({ items }) => (
+export interface IWarningGroupProps {
+  warningGroup: IWarningGroup;
+}
+const WarningGroup = (props: IWarningGroupProps) => (
     <div>
-      {items.map((w, i) => (
-          <div key={w.id}>
-            <Text size="sm">{w?.text}</Text>
-            {i === 0 && <Text size="xs" c="dimmed">Повторы группы {w.groupIndex}</Text>}
-          </div>
-      ))}
+      {props.warningGroup.warningKind === IWarningKind.CLICHE && <Text size="sm">Штамп:</Text>}
+      {props.warningGroup.warningKind === IWarningKind.REPEAT && <Text size="sm">Повторы:</Text>}
+      <Group>
+        {props.warningGroup?.warnings?.map((w, i) => (
+            <div key={w.id}>
+              <Text size="sm">{w?.text}</Text>
+            </div>
+        ))}
+      </Group>
     </div>
 );
 

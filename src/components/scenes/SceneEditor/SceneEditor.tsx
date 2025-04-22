@@ -20,7 +20,7 @@ import {usePageTitle} from "@/providers/PageTitleProvider/PageTitleProvider";
 import {
   IRepeatWarning,
   IWarning,
-  IWarningContainer, IWarningKind,
+  IWarningContainer, IWarningGroup, IWarningKind,
   IWarningKindTile
 } from "@/components/shared/RichEditor/types";
 import {WarningsPanel} from "@/components/scenes/SceneEditor/WarningsPanel/WarningsPanel";
@@ -31,9 +31,9 @@ export interface ISceneEditorProps {
 
 export const SceneEditor = (props: ISceneEditorProps) => {
   const navigate = useNavigate();
-  const [selectedWarning, setSelectedWarning] = useState<IWarning | undefined>(undefined);
+  const [selectedGroup, setSelectedGroup] = useState<IWarningGroup | undefined>(undefined);
   const [sceneBody, setSceneBody] = useState<string>("");
-  const [warningContainers, setWarningContainers] = useState<IWarningContainer[]>([]);
+  const [warningGroups, setWarningGroups] = useState<IWarningGroup[]>([])
   const { scene, saveScene } = useSceneEditor(props.sceneId ? Number(props.sceneId) : undefined);
   const { setPageTitle } = usePageTitle();
 
@@ -103,8 +103,8 @@ export const SceneEditor = (props: ISceneEditorProps) => {
       <RichEditor
           initialContent={sceneBody}
           onContentChange={handleContentChange}
-          onWarningsChange={setWarningContainers}
-          selectedWarning={selectedWarning}
+          onWarningsChange={setWarningGroups}
+          selectedGroup={selectedGroup}
       />
 
       <Space h="md" />
@@ -133,9 +133,9 @@ export const SceneEditor = (props: ISceneEditorProps) => {
         </Box>
           <Box flex={2} style={{ position: isMobile ? 'static' : 'sticky', top: 16 }}>
             <WarningsPanel
-                warningContainers={warningContainers}
-                onSelectWarning={setSelectedWarning}
-                selectedWarning={selectedWarning}
+                warningGroups={warningGroups}
+                onSelectGroup={setSelectedGroup}
+                selectedGroup={selectedGroup}
                 displayType={'iteration'}
             />
           </Box>

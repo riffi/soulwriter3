@@ -36,11 +36,11 @@ import {
 interface SceneRichTextEditorProps {
   initialContent?: string;
   onContentChange?: (contentHtml: string, contentText: string) => void;
-  onWarningsChange?: (warnings: IWarningsContainer[]) => void;
-  selectedWarning?: IWarning;
+  onWarningsChange?: (warningGroups: IWarningGroup[]) => void;
+  selectedGroup?: IWarningGroup;
 }
 
-export const RichEditor = ({ initialContent, onContentChange, onWarningsChange, selectedWarning}: SceneRichTextEditorProps) => {
+export const RichEditor = ({ initialContent, onContentChange, onWarningsChange, selectedGroup}: SceneRichTextEditorProps) => {
 
   const [loadingState, setLoadingState] = useState({
     isLoading: false,
@@ -86,29 +86,22 @@ export const RichEditor = ({ initialContent, onContentChange, onWarningsChange, 
     if (!editor || !onWarningsChange) return;
 
     const updateWarnings = () => {
-      const warningContainers: IWarningContainer[] = [];
+      const warningGroups: IWarningGroup[] = [];
 
       // Обработка штампов (CLICHE)
       const clichePluginState = clicheHighlighterKey.getState(editor.state);
       const clicheGroups = clichePluginState?.warningGroups || []
       if (clicheGroups.length > 0) {
-        warningContainers.push({
-          warningKind: IWarningKind.CLICHE,
-          warningGroups: clicheGroups,
-        });
+        warningGroups.push(...clicheGroups)
       }
 
       // Обработка повторов (REPEAT)
       const repeatPluginState = repeatHighlighterKey.getState(editor.state);
       const repeatGroups = repeatPluginState?.warningGroups || []
       if (repeatGroups.length > 0) {
-        warningContainers.push({
-          warningKind: IWarningKind.REPEAT,
-          warningGroups: repeatGroups,
-        });
+        warningGroups.push(...repeatGroups)
       }
-
-      onWarningsChange(warningContainers);
+      onWarningsChange(warningGroups);
     };
 
     editor.on('transaction', updateWarnings);
@@ -131,21 +124,26 @@ export const RichEditor = ({ initialContent, onContentChange, onWarningsChange, 
   }, [initialContent]);
 
   useEffect(() => {
-    if (selectedWarning){
+    if (selectedGroup){
+      let key = repeatHighlighterKey
+      if (selectedGroup.warningKind === IWarningKind.CLICHE){
+        key = clicheHighlighterKey
+      }
+
       editor?.commands.focus();
       editor?.view.dispatch(
           editor?.view.state.tr
-          .setMeta(repeatHighlighterKey, {
+          .setMeta(key, {
             action: "ACTIVATE_GROUP",
-            groupIndex: selectedWarning.groupIndex
+            groupIndex: selectedGroup.groupIndex
           })
       );
       editor.commands.setTextSelection({
-        from: selectedWarning.from,
-        to: selectedWarning.to
+        from: selectedGroup.warnings[0].from,
+        to: selectedGroup.warnings[0].to
       });
     }
-  },[selectedWarning])
+  },[selectedGroup])
 
   // Очищаем debounce-таймер при размонтировании компонента
   useEffect(() => {

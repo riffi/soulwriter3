@@ -109,7 +109,7 @@ export const BaseHighlighterExtension = <T extends IWarning>(config: Highlighter
 
                 view.dispatch(
                     view.state.tr
-                    .setMeta(repeatHighlighterKey, {
+                    .setMeta(pluginKey, {
                       action: "ACTIVATE_GROUP",
                       groupIndex
                     })
