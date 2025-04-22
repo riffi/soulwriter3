@@ -1,16 +1,14 @@
-import { IScene } from "@/entities/BookEntities";
 import { useCallback, useEffect, useState } from "react";
 import {
   Box,
   Button,
-  Container, Drawer, Flex,
+  Container, Flex,
   Group,
-  LoadingOverlay,
   Paper,
   Space,
   Text
 } from "@mantine/core";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate} from "react-router-dom";
 import { IconArrowLeft } from "@tabler/icons-react";
 import { useSceneEditor } from "@/components/scenes/SceneEditor/useSceneEditor";
 import { InlineEdit } from "@/components/shared/InlineEdit/InlineEdit";
@@ -18,13 +16,11 @@ import { RichEditor } from "../../shared/RichEditor/RichEditor";
 import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
 import {usePageTitle} from "@/providers/PageTitleProvider/PageTitleProvider";
 import {
-  IRepeatWarning,
-  IWarning,
-  IWarningContainer, IWarningGroup, IWarningKind,
-  IWarningKindTile
+  IWarningGroup,
 } from "@/components/shared/RichEditor/types";
 import {WarningsPanel} from "@/components/scenes/SceneEditor/WarningsPanel/WarningsPanel";
-import {useWindowScroll} from "@mantine/hooks";
+import {SceneStatusPanel} from "@/components/scenes/SceneEditor/SceneStatusPanel/SceneStatusPanel";
+
 export interface ISceneEditorProps {
   sceneId?: string;
 }
@@ -40,7 +36,6 @@ export const SceneEditor = (props: ISceneEditorProps) => {
 
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const { isMobile} = useMedia();
-  const [scroll] = useWindowScroll(); // Используем хук скролла
   const [isHeaderVisible, setIsheaderVisible] = useState(true);
 
   // Стили для мобильной панели
@@ -157,59 +152,41 @@ export const SceneEditor = (props: ISceneEditorProps) => {
 
   return (
       <>
-      <Container size="xl" p={"0"} fluid>
-        <Flex
-            gap="md"
-            justify="space-between"
-            align="flex-start"
-            direction="row"
-            wrap="wrap"
-        >
-        <Box flex={10}>
-          <Container size="xl" p={"0"}>
-          {!isMobile && (
-              <Paper withBorder p="lg" radius="md" shadow="sm">
-                {content}
-              </Paper>
-          )}
-          {isMobile && content}
-          </Container>
-        </Box>
-          {warningGroups.length > 0 && <Box flex={2} style={isMobile ? mobilePanelStyle : {
-            position: 'sticky',
-            top: 16
-          }}>
-            <WarningsPanel
-                warningGroups={warningGroups}
-                onSelectGroup={setSelectedGroup}
-                selectedGroup={selectedGroup}
-                displayType={'iteration'}
-            />
-          </Box>
-          }
-        </Flex>
-      </Container>
-      {/* Фиксированная панель статуса */}
-      <Box
-          style={{
-            position: 'fixed',
-            bottom: 0,
-            left: 0,
-            width: '100%',
-            backgroundColor: "rgb(101 159 209)",
-            boxShadow: '0px -2px 5px rgba(0, 0, 0, 0.2)',
-            color: 'white',
-            padding: '8px 16px',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            zIndex: 1000,
-            gap: "10px"
-          }}
-      >
-        <Text size="sm">Символов с пробелами: {scene?.totalSymbolCountWithSpaces}</Text>
-        <Text size="sm">Символов без пробелов: {scene?.totalSymbolCountWoSpaces}</Text>
-      </Box>
+        <Container size="xl" p={"0"} fluid>
+          <Flex
+              gap="md"
+              justify="space-between"
+              align="flex-start"
+              direction="row"
+              wrap="wrap"
+          >
+            <Box flex={10}>
+              <Container size="xl" p={"0"}>
+                {!isMobile && (
+                    <Paper withBorder p="lg" radius="md" shadow="sm">
+                      {content}
+                    </Paper>
+                )}
+                {isMobile && content}
+              </Container>
+            </Box>
+            <>
+            {warningGroups.length > 0 && <Box
+                flex={2}
+                style={isMobile ? mobilePanelStyle : {position: 'sticky', top: 16}}>
+              <WarningsPanel
+                  warningGroups={warningGroups}
+                  onSelectGroup={setSelectedGroup}
+                  selectedGroup={selectedGroup}
+                  displayType={'iteration'}
+              />
+            </Box>
+            }
+            </>
+          </Flex>
+        </Container>
+
+        <SceneStatusPanel scene={scene}/>
       </>
 );
 };
