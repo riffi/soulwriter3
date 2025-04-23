@@ -51,7 +51,7 @@ export const RichEditor = ({ initialContent, onContentChange, onWarningsChange, 
   const [localContent, setLocalContent] = useState(initialContent || '');
   const [scrollTop, setScrollTop] = useState(0);
   const [warningGroups, setWarningGroups] = useState<IWarningGroup[]>([]);
-
+  const { isMobile } = useMedia();
   const onContentChangeRef = useRef(onContentChange);
   onContentChangeRef.current = onContentChange;
 
@@ -153,6 +153,8 @@ export const RichEditor = ({ initialContent, onContentChange, onWarningsChange, 
         from: selectedGroup.warnings[0].from,
         to: selectedGroup.warnings[0].to
       });
+      editor.commands.focus();
+      editor?.commands.scrollIntoView()
     }
   },[selectedGroup])
 
@@ -169,15 +171,18 @@ export const RichEditor = ({ initialContent, onContentChange, onWarningsChange, 
     setScrollTop(event.target.scrollTop)
   }
 
-  function getEditorHeight(scrollTop: number, warningGroups: IWarningGroup[]) {
-    let baseOffset = 200
-    if (scrollTop > 50){
-      baseOffset -= 50
-    }
+  function getEditorBottom(){
     if (warningGroups.length > 0){
-      baseOffset += 50
+      return 100
     }
-    return `calc(100vh - ${baseOffset}px)`
+    return 50
+  }
+
+  function getEditorTop(scrollTop: number){
+    // if (scrollTop > 50){
+    //   return 50
+    // }
+    return 90
   }
 
   return (
@@ -186,14 +191,15 @@ export const RichEditor = ({ initialContent, onContentChange, onWarningsChange, 
         visible={loadingState.isLoading}
         message={loadingState.message}
     />
-
     <RichTextEditor
           editor={editor}
           variant="subtle"
-          style={{
+          style={isMobile ? {
+            position: "fixed",
+            top: getEditorTop(scrollTop),
+            bottom: getEditorBottom(),
             overflow: "scroll",
-            maxHeight: getEditorHeight(scrollTop, warningGroups)
-          }}
+          } : {}}
           onScroll={handleScroll}
 
       >

@@ -14,7 +14,16 @@ export const EditorToolBar = ({ editor, children }: EditorToolBarProps) => {
 
   return (
       <>
-        <RichTextEditor.Toolbar sticky stickyOffset={60}>
+        <RichTextEditor.Toolbar style={isMobile?{
+          position: "fixed",
+          top:"50px",
+          width:"100%",
+          zIndex:1000,
+
+        }:{
+          position: "sticky",
+          stickyOffset:"50px",
+        }}>
           <RichTextEditor.ControlsGroup>
             <RichTextEditor.Bold />
             <RichTextEditor.Italic />

@@ -72,48 +72,110 @@ export const SceneEditor = ({ sceneId }: SceneEditorProps) => {
         <SceneStatusPanel scene={scene} />
       </>
   );
+  const mobileContent = (
+        <>
+          <Container size="xl" p="0" fluid  >
+            <Flex
+                justify="stretch"
+                align="stretch"
+                direction="column"
+                wrap="wrap"
+                style={{ height: 'calc(100dvh - 50px)' }}
+            >
 
-  return (
+              <>
+                {isHeaderVisible && <Box style={{height: '50px'}}>
+                  <SceneHeader
+                      scene={scene}
+                      onBack={() => navigate('/scenes')}
+                      onTitleChange={(title) => saveScene({ ...scene, title })}
+                  />
+                </Box>
+                }
+              </>
+              <Box flex={1}>
+                  <RichEditor
+                      initialContent={sceneBody}
+                      onContentChange={handleContentChange}
+                      onWarningsChange={setWarningGroups}
+                      selectedGroup={selectedGroup}
+                      onScroll={handleEditorScroll}
+                  />
+              </Box>
+              <>
+                {warningGroups.length > 0 && (
+                    <Box
+                        flex={'auto'}
+                    >
+                        <MobilePanel keyboardHeight={keyboardHeight}>
+                          <WarningsPanel
+                              warningGroups={warningGroups}
+                              onSelectGroup={setSelectedGroup}
+                              selectedGroup={selectedGroup}
+                              displayType="iteration"
+                          />
+                        </MobilePanel>
+
+                    </Box>
+                )}
+              </>
+              <Box flex={2}>
+                <SceneStatusPanel scene={scene} />
+              </Box>
+            </Flex>
+          </Container>
+      </>
+  )
+
+  const desktopContent = (
       <>
         <Container size="xl" p="0" fluid style={{ height: 'calc(100vh-200px)' }}>
           <Flex gap="md" justify="space-between" align="flex-start" wrap="wrap">
-            <Box flex={isMobile? 'auto' : 10}>
+            <Box flex={10}>
               <Container size="xl" p="0">
-                {isMobile ? content : <DesktopPanel>{content}</DesktopPanel>}
+                <DesktopPanel>
+                  <>
+                    {isHeaderVisible && <SceneHeader
+                        scene={scene}
+                        onBack={() => navigate('/scenes')}
+                        onTitleChange={(title) => saveScene({ ...scene, title })}
+                    />}
+
+                    <RichEditor
+                        initialContent={sceneBody}
+                        onContentChange={handleContentChange}
+                        onWarningsChange={setWarningGroups}
+                        selectedGroup={selectedGroup}
+                        onScroll={handleEditorScroll}
+                    />
+                    <SceneStatusPanel scene={scene} />
+                  </>
+                </DesktopPanel>
               </Container>
             </Box>
             <>
-            {warningGroups.length > 0 && (
-                <Box
-                    flex={2}
-                    style={isMobile ? undefined : { position: 'sticky', top: 16 }}
-                >
-                  <>
-                  {isMobile ? (
-                      <MobilePanel keyboardHeight={keyboardHeight}>
-                        <WarningsPanel
-                            warningGroups={warningGroups}
-                            onSelectGroup={setSelectedGroup}
-                            selectedGroup={selectedGroup}
-                            displayType="iteration"
-                        />
-                      </MobilePanel>
-                  ) : (
+              {warningGroups.length > 0 && (
+                  <Box
+                      flex={2}
+                      style={{ position: 'sticky', top: 16 }}
+                  >
                       <WarningsPanel
                           warningGroups={warningGroups}
                           onSelectGroup={setSelectedGroup}
                           selectedGroup={selectedGroup}
                           displayType="iteration"
                       />
-                  )}
-                  </>
-                </Box>
-            )}
+                  </Box>
+              )}
             </>
           </Flex>
         </Container>
+      </>
+  )
 
-
+  return (
+      <>
+        {isMobile ? mobileContent : desktopContent}
       </>
   );
 };
