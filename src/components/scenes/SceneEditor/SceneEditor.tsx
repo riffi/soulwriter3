@@ -8,7 +8,6 @@ import { RichEditor } from "@/components/shared/RichEditor/RichEditor";
 import { WarningsPanel } from "@/components/scenes/SceneEditor/parts/WarningsPanel/WarningsPanel";
 import { SceneStatusPanel } from "@/components/scenes/SceneEditor/parts/SceneStatusPanel";
 import { useKeyboardHeight } from "./hooks/useKeyboardHeight";
-import { useSceneTitle } from "./hooks/useSceneTitle";
 import { useHeaderVisibility } from "./hooks/useHeaderVisibility";
 import { SceneHeader } from "./parts/SceneHeader";
 import { MobilePanel } from "./parts/MobilePanel";
