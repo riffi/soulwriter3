@@ -88,6 +88,10 @@ export const SceneEditor = ({ sceneId }: SceneEditorProps) => {
                       onWarningsChange={setWarningGroups}
                       selectedGroup={selectedGroup}
                       onScroll={handleEditorScroll}
+                      mobileConstraints={{
+                        top: 50,
+                        bottom: warningGroups?.length > 0 ? 100 : 50
+                      }}
                   />
               </Box>
               <>

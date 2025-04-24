@@ -1,14 +1,14 @@
 import {RichTextEditor} from "@mantine/tiptap";
 import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
-import {
-  CheckRepeatsButton
-} from "@/components/shared/RichEditor/toolbar/CheckRepeatsButton";
+import React from "react";
 
-interface EditorToolBarProps {
+
+interface IEditorToolBarProps {
   editor: any;
   children?: React.ReactNode;
+  top: number;
 }
-export const EditorToolBar = ({ editor, children }: EditorToolBarProps) => {
+export const EditorToolBar = (props: IEditorToolBarProps) => {
 
   const { isMobile} = useMedia();
 
@@ -16,7 +16,7 @@ export const EditorToolBar = ({ editor, children }: EditorToolBarProps) => {
       <>
         <RichTextEditor.Toolbar style={isMobile?{
           position: "fixed",
-          top:"50px",
+          top: props.top,
           width:"100%",
           zIndex:1000,
 
@@ -29,7 +29,7 @@ export const EditorToolBar = ({ editor, children }: EditorToolBarProps) => {
             <RichTextEditor.Italic />
             <RichTextEditor.Underline />
             <RichTextEditor.ClearFormatting />
-            {children}
+            {props.children}
 
             {!isMobile &&
                 <>

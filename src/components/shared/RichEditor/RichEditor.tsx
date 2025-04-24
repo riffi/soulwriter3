@@ -17,45 +17,39 @@ import {useEditorState} from "@/components/shared/RichEditor/hooks/useEditorStat
 
 
 
-interface ISceneRichTextEditorProps {
+export interface IRichEditorMobileConstraints{
+  top: number;
+  bottom: number;
+}
+export interface ISceneRichTextEditorProps {
   initialContent?: string;
   onContentChange?: (contentHtml: string, contentText: string) => void;
   onWarningsChange?: (warningGroups: IWarningGroup[]) => void;
   selectedGroup?: IWarningGroup;
   onScroll?: (scrollTop: number) => void;
+  mobileConstraints?: IRichEditorMobileConstraints
 }
 
-export const RichEditor = ({ initialContent, onContentChange, onWarningsChange, selectedGroup, onScroll}: ISceneRichTextEditorProps) => {
+const TOOLBAR_HEIGHT = 40;
+export const RichEditor = (props: ISceneRichTextEditorProps) => {
 
   const [loadingState, setLoadingState] = useState({
     isLoading: false,
     message: ""
   });
 
+  const mobileConstraints = props.mobileConstraints || {top: 50, bottom: 100};
+
   const [scrollTop, setScrollTop] = useState(0);
   const { isMobile } = useMedia();
 
-  const { editor } = useEditorState(initialContent || '', onContentChange);
-  const warningGroups = useWarningGroups(editor, selectedGroup, onWarningsChange);
+  const { editor } = useEditorState(props.initialContent || '', props.onContentChange);
+  const warningGroups = useWarningGroups(editor, props.selectedGroup, props.onWarningsChange);
 
   // Обработчик прокрутки
   const handleScroll = (event: React.UIEvent<HTMLDivElement>) => {
-    onScroll?.(event.target.scrollTop)
+    props.onScroll?.(event.target.scrollTop)
     setScrollTop(event.target.scrollTop)
-  }
-
-  function getEditorBottom(){
-    if (warningGroups.length > 0){
-      return 100
-    }
-    return 50
-  }
-
-  function getEditorTop(scrollTop: number){
-    // if (scrollTop > 50){
-    //   return 50
-    // }
-    return 90
   }
 
   return (
@@ -69,14 +63,14 @@ export const RichEditor = ({ initialContent, onContentChange, onWarningsChange, 
           variant="subtle"
           style={isMobile ? {
             position: "fixed",
-            top: getEditorTop(scrollTop),
-            bottom: getEditorBottom(),
+            top: mobileConstraints.top + TOOLBAR_HEIGHT,
+            bottom: mobileConstraints.bottom,
             overflow: "scroll",
           } : {}}
           onScroll={handleScroll}
 
       >
-        <EditorToolBar editor={editor}>
+        <EditorToolBar editor={editor} top={mobileConstraints?.top}>
           <CheckRepeatsButton
               editor={editor}
               onLoadingChange={(isLoading, message) =>
