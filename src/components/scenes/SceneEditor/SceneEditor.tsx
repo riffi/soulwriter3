@@ -32,7 +32,7 @@ export const SceneEditor = ({ sceneId }: SceneEditorProps) => {
 
 // Управление заголовком через эффект
   useEffect(() => {
-    if (scene) {
+    if (scene && isMobile) {
       const headerElement = (
           <Box style={{ width: '80%' }}>
             <InlineEdit
@@ -50,7 +50,7 @@ export const SceneEditor = ({ sceneId }: SceneEditorProps) => {
     return () => {
       setTitleElement(null); // Очистка при размонтировании
     };
-  }, [scene]); // Зависимости эффекта
+  }, [scene, isMobile]); // Зависимости эффекта
 
   // Обработчик изменения контента в редакторе
   const handleContentChange = useCallback(
@@ -101,7 +101,7 @@ export const SceneEditor = ({ sceneId }: SceneEditorProps) => {
                       onScroll={handleEditorScroll}
                       mobileConstraints={{
                         top: 50,
-                        bottom: warningGroups?.length > 0 ? 100 : 50
+                        bottom: warningGroups?.length > 0 ? 100 : 30
                       }}
                   />
               </Box>
@@ -135,7 +135,7 @@ export const SceneEditor = ({ sceneId }: SceneEditorProps) => {
         <Container size="xl" p="0" fluid style={{ height: 'calc(100vh-200px)' }}>
           <Flex gap="md" justify="space-between" align="flex-start" wrap="wrap">
             <Box flex={10}>
-              <Container size="xl" p="0">
+              <Container size="xl" p="0"  style={{ height: 'calc(100vh-200px)' }}>
                 <DesktopPanel>
                   <>
                     {isHeaderVisible && <SceneHeader

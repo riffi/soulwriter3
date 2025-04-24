@@ -5,7 +5,7 @@ import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
 const mobileStyle={
   position: "fixed",
   bottom: "0px",
-  height: "50px",
+  height: "30px",
   width: "100%",
   backgroundColor: "rgb(236,236,236)",
   color: "black",
@@ -18,7 +18,7 @@ const mobileStyle={
 
 const desktopStyle={
   position: "fixed",
-  height: "50px",
+  height: "30px",
   bottom: "0px",
   width: "100%",
   left: "0",
