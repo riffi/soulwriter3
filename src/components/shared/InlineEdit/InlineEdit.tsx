@@ -111,6 +111,12 @@ export const InlineEdit: React.FC<InlineEditProps> = ({
                     padding: theme.spacing.xs,
                     height: 'auto',
                     minHeight: '1.5rem',
+                    border: 'none',
+                    borderBottom: `1px solid ${theme.colors.gray[4]}`,
+                    borderRadius: 0,
+                    '&:focus': {
+                      borderBottom: `1px solid ${theme.colors.blue[6]}`,
+                    },
                   },
                 }}
                 {...inputProps}

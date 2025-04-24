@@ -35,7 +35,7 @@ export const SceneEditor = ({ sceneId }: SceneEditorProps) => {
   useEffect(() => {
     if (scene) {
       const headerElement = (
-          <Box>
+          <Box style={{ width: '80%' }}>
             <InlineEdit
                 value={scene.title}
                 onChange={(title) => saveScene({ ...scene, title })}
