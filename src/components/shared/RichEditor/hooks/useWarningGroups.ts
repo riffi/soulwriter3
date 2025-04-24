@@ -7,6 +7,7 @@ import {
   repeatHighlighterKey
 } from "@/components/shared/RichEditor/plugins/RepeatHighlighterExtension";
 
+// Хук обновления данных о замечаниях при изменении состояния редактора
 export const useWarningGroups = (
     editor: Editor | null,
     selectedGroup?: IWarningGroup,
@@ -14,57 +15,45 @@ export const useWarningGroups = (
 ) => {
   const [warningGroups, setWarningGroups] = useState<IWarningGroup[]>([]);
 
-  useEffect(() => {
-    if (!editor || !onWarningsChange) return;
+useEffect(() => {
+  if (!editor || !onWarningsChange) return;
 
-    const updateWarnings = () => {
-      const newWarningGroups: IWarningGroup[] = [];
+  const updateWarnings = () => {
+    const clicheGroups = clicheHighlighterKey.getState(editor.state)?.warningGroups || [];
+    const repeatGroups = repeatHighlighterKey.getState(editor.state)?.warningGroups || [];
 
-      // Обработка штампов (CLICHE)
-      const clichePluginState = clicheHighlighterKey.getState(editor.state);
-      const clicheGroups = clichePluginState?.warningGroups || [];
-      if (clicheGroups.length > 0) {
-        newWarningGroups.push(...clicheGroups);
-      }
+    const newWarningGroups = [...clicheGroups, ...repeatGroups];
+    setWarningGroups(newWarningGroups);
+    onWarningsChange(newWarningGroups);
+  };
 
-      // Обработка повторов (REPEAT)
-      const repeatPluginState = repeatHighlighterKey.getState(editor.state);
-      const repeatGroups = repeatPluginState?.warningGroups || [];
-      if (repeatGroups.length > 0) {
-        newWarningGroups.push(...repeatGroups);
-      }
+  editor.on("transaction", updateWarnings);
+  return () => editor.off("transaction", updateWarnings);
+}, [editor, onWarningsChange]);
 
-      setWarningGroups(newWarningGroups);
-      onWarningsChange(newWarningGroups);
-    };
 
-    editor.on("transaction", updateWarnings);
-    return () => editor.off("transaction", updateWarnings);
-  }, [editor, onWarningsChange]);
 
-  useEffect(() => {
-    if (selectedGroup){
-      let key = repeatHighlighterKey
-      if (selectedGroup.warningKind === IWarningKind.CLICHE){
-        key = clicheHighlighterKey
-      }
 
-      editor?.commands.focus();
-      editor?.view.dispatch(
-          editor?.view.state.tr
-          .setMeta(key, {
-            action: "ACTIVATE_GROUP",
-            groupIndex: selectedGroup.groupIndex
-          })
-      );
-      editor.commands.setTextSelection({
-        from: selectedGroup.warnings[0].from,
-        to: selectedGroup.warnings[0].to
-      });
-      editor.commands.focus();
-      editor?.commands.scrollIntoView()
-    }
-  },[selectedGroup])
+useEffect(() => {
+  if (selectedGroup) {
+    const key = selectedGroup.warningKind ===
+      IWarningKind.CLICHE ? clicheHighlighterKey : repeatHighlighterKey;
+
+    editor?.view.dispatch(
+      editor?.view.state.tr
+        .setMeta(key, {
+          action: "ACTIVATE_GROUP",
+          groupIndex: selectedGroup.groupIndex
+        })
+    );
+    editor.commands.setTextSelection({
+      from: selectedGroup.warnings[0].from,
+      to: selectedGroup.warnings[0].to
+    });
+    editor.commands.focus();
+    editor?.commands.scrollIntoView();
+  }
+}, [selectedGroup]);
 
   return warningGroups;
 };

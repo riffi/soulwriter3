@@ -32,13 +32,13 @@ export const RichEditor = ({ initialContent, onContentChange, onWarningsChange, 
     message: ""
   });
 
-
   const [scrollTop, setScrollTop] = useState(0);
   const { isMobile } = useMedia();
 
   const { editor } = useEditorState(initialContent || '', onContentChange);
   const warningGroups = useWarningGroups(editor, selectedGroup, onWarningsChange);
 
+  // Обработчик прокрутки
   const handleScroll = (event: React.UIEvent<HTMLDivElement>) => {
     onScroll?.(event.target.scrollTop)
     setScrollTop(event.target.scrollTop)

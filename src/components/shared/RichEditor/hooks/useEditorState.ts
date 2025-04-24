@@ -16,6 +16,7 @@ import {
   ClicheHighlighterExtension
 } from "@/components/shared/RichEditor/plugins/ClisheHightligherExtension";
 
+// Функция получения расширений для редактора
 const getEditorExtensions = () => [
   StarterKit,
   Underline,
@@ -29,6 +30,7 @@ const getEditorExtensions = () => [
   ClicheHighlighterExtension,
 ];
 
+// Функция создания конфигурации редактора
 const createEditorConfig = (content: string, onUpdate: (editor: Editor) => void) => ({
   extensions: getEditorExtensions(),
   content,
@@ -39,6 +41,7 @@ const createEditorConfig = (content: string, onUpdate: (editor: Editor) => void)
   }
 });
 
+// Хук для управления состоянием редактора
 export const useEditorState = (initialContent: string, onContentChange?: (contentHtml: string, contentText: string) => void) => {
   const [localContent, setLocalContent] = useState(initialContent || '');
   const onContentChangeRef = useRef(onContentChange);
@@ -54,6 +57,7 @@ export const useEditorState = (initialContent: string, onContentChange?: (conten
 
   useEffect(() => () => debouncedContentChange.cancel(), []);
 
+  // Когда изменяется контент, обновляем его в состоянии и обновляем выделение
   useEffect(() => {
     if (editor && initialContent !== undefined) {
       const currentContent = editor.getHTML();

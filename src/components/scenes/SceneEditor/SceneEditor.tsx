@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Box, Container, Flex, Space } from "@mantine/core";
+import { Box, Container, Flex } from "@mantine/core";
 import { useNavigate } from "react-router-dom";
 import { useMedia } from "@/providers/MediaQueryProvider/MediaQueryProvider";
 import { usePageTitle } from "@/providers/PageTitleProvider/PageTitleProvider";
@@ -30,22 +30,28 @@ export const SceneEditor = ({ sceneId }: SceneEditorProps) => {
   const { isHeaderVisible, handleEditorScroll } = useHeaderVisibility();
   useSceneTitle(scene, setPageTitle);
 
+
+
+  // Обработчик изменения контента в редакторе
   const handleContentChange = useCallback(
-      (contentHTML: string, contentText: string) => {
-        if (!scene?.id || contentHTML === scene.body) return;
+  (contentHTML, contentText) => {
+    if (!scene?.id || contentHTML === scene.body) return;
 
-        saveScene({
-          ...scene,
-          body: contentHTML,
-          totalSymbolCountWithSpaces: contentText.length,
-          totalSymbolCountWoSpaces: contentText.replace(/\s+/g, '').length
-        }, true);
+    const updatedScene = {
+      ...scene,
+      body: contentHTML,
+      totalSymbolCountWithSpaces: contentText.length,
+      totalSymbolCountWoSpaces: contentText.replace(/\s+/g, '').length
+    };
 
-        setSceneBody(contentHTML);
-      },
-      [scene, saveScene]
-  );
+    saveScene(updatedScene, true);
+    setSceneBody(contentHTML);
+  },
+  [scene, saveScene]
+);
 
+
+  // Обновление состояния редактора при изменении текста сцены
   useEffect(() => {
     if (scene?.body && scene.body !== sceneBody) {
       setSceneBody(scene.body);
@@ -54,24 +60,6 @@ export const SceneEditor = ({ sceneId }: SceneEditorProps) => {
 
   if (!scene?.id) return null;
 
-  const content = (
-      <>
-        {isHeaderVisible && <SceneHeader
-            scene={scene}
-            onBack={() => navigate('/scenes')}
-            onTitleChange={(title) => saveScene({ ...scene, title })}
-        />}
-
-        <RichEditor
-            initialContent={sceneBody}
-            onContentChange={handleContentChange}
-            onWarningsChange={setWarningGroups}
-            selectedGroup={selectedGroup}
-            onScroll={handleEditorScroll}
-        />
-        <SceneStatusPanel scene={scene} />
-      </>
-  );
   const mobileContent = (
         <>
           <Container size="xl" p="0" fluid  >
