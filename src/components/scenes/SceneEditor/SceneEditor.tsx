@@ -97,6 +97,7 @@ export const SceneEditor = ({ sceneId }: SceneEditorProps) => {
                       onContentChange={handleContentChange}
                       onWarningsChange={setWarningGroups}
                       selectedGroup={selectedGroup}
+                      setSelectedGroup={setSelectedGroup}
                       onScroll={handleEditorScroll}
                       mobileConstraints={{
                         top: 50,
@@ -148,6 +149,7 @@ export const SceneEditor = ({ sceneId }: SceneEditorProps) => {
                         onContentChange={handleContentChange}
                         onWarningsChange={setWarningGroups}
                         selectedGroup={selectedGroup}
+                        setSelectedGroup={setSelectedGroup}
                         onScroll={handleEditorScroll}
                     />
                     <SceneStatusPanel scene={scene} />

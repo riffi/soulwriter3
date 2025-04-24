@@ -28,6 +28,7 @@ export interface ISceneRichTextEditorProps {
   selectedGroup?: IWarningGroup;
   onScroll?: (scrollTop: number) => void;
   mobileConstraints?: IRichEditorMobileConstraints
+  setSelectedGroup?: (group: IWarningGroup | undefined) => void
 }
 
 const TOOLBAR_HEIGHT = 40;
@@ -44,7 +45,7 @@ export const RichEditor = (props: ISceneRichTextEditorProps) => {
   const { isMobile } = useMedia();
 
   const { editor } = useEditorState(props.initialContent || '', props.onContentChange);
-  const warningGroups = useWarningGroups(editor, props.selectedGroup, props.onWarningsChange);
+  const warningGroups = useWarningGroups(editor, props.selectedGroup, props.onWarningsChange, props.setSelectedGroup);
 
   // Обработчик прокрутки
   const handleScroll = (event: React.UIEvent<HTMLDivElement>) => {
