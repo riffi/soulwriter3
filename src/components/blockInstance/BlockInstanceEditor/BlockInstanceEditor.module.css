@@ -67,4 +67,39 @@
   }
 }
 
+/* BlockInstanceEditor.module.css */
+.contentWrapper {
+  width: 100%;
+  overflow: hidden;
+}
+
+.htmlContent {
+  max-width: 80%;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+/* Для мобильной адаптации контейнера */
+@media (max-width: 768px) {
+  .container {
+    padding: 0px 0px;
+  }
+
+  .parametersStack {
+    margin-left: -10px;
+    margin-right: -10px;
+  }
+
+  .parameterItem {
+    padding: 0px !important;
+    border: none;
+  }
+}
+
+/* Для RichEditor добавим базовые стили */
+.ql-container {
+  max-width: 100% !important;
+}
+
 

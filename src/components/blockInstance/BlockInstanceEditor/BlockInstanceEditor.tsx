@@ -13,7 +13,7 @@ import {
   Stack,
   Textarea,
   Container,
-  List
+  TypographyStylesProvider
 } from "@mantine/core";
 import { IconArrowLeft, IconEdit, IconPlus, IconTrash, IconCircleCheck, IconCheck } from "@tabler/icons-react";
 import classes from "./BlockInstanceEditor.module.css";
@@ -22,6 +22,7 @@ import { IBlockParameterGroup } from "@/entities/ConstructorEntities";
 import { IBlockParameterInstance } from "@/entities/BookEntities";
 import { bookDb } from "@/entities/bookDb";
 import {InlineEdit} from "@/components/shared/InlineEdit/InlineEdit";
+import { RichEditor } from "@/components/shared/RichEditor/RichEditor";
 
 export interface IBlockInstanceEditorProps {
   blockInstanceUuid: string;
@@ -165,17 +166,29 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
                                       p="md"
                                   >
                                     <Group justify="space-between" align="flex-start" w="100%">
-                                      <Box style={{ flex: 1 }}>
+                                      <Box style={{ flex: 1, maxWidth: "100%" }}>
                                         <Text fw={500} mb="xs">{fullParam.parameter?.title}</Text>
                                         {editingParam === fullParam.instance.blockParameterUuid ? (
-                                            <TextInput
-                                                value={editValue}
-                                                onChange={(e) => setEditValue(e.currentTarget.value)}
-                                                autoFocus
-                                            />
+                                            fullParam.parameter?.dataType === 'text' ? (
+                                                <RichEditor
+                                                    initialContent={editValue}
+                                                    onContentChange={(contentHtml, contentText) => setEditValue(contentHtml)}
+                                                />
+                                            ) : (
+                                                <TextInput
+                                                    value={editValue}
+                                                    onChange={(e) => setEditValue(e.currentTarget.value)}
+                                                    autoFocus
+                                                />
+                                            )
                                         ) : (
-                                            <Text c="dimmed" size="sm">
-                                              {fullParam.instance.value || "Не указано"}
+                                            <Text component="div" className={classes.contentWrapper}>
+                                              <TypographyStylesProvider>
+                                                <div
+                                                    dangerouslySetInnerHTML={{ __html: fullParam.instance.value || "Не указано" }}
+                                                    className={classes.htmlContent}
+                                                />
+                                              </TypographyStylesProvider>
                                             </Text>
                                         )}
                                       </Box>
