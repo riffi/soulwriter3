@@ -15,11 +15,12 @@ import { MobilePanel } from "./parts/MobilePanel";
 import { DesktopPanel } from "./parts/DesktopPanel";
 import type { SceneEditorProps } from "./types";
 import {IWarningGroup} from "@/components/shared/RichEditor/types";
+import {InlineEdit} from "@/components/shared/InlineEdit/InlineEdit";
 
 export const SceneEditor = ({ sceneId }: SceneEditorProps) => {
   const navigate = useNavigate();
   const { isMobile } = useMedia();
-  const { setPageTitle } = usePageTitle();
+  const { setPageTitle, setTitleElement } = usePageTitle();
   const { scene, saveScene } = useSceneEditor(sceneId ? Number(sceneId) : undefined);
 
   const [selectedGroup, setSelectedGroup] = useState<IWarningGroup>();
@@ -28,9 +29,29 @@ export const SceneEditor = ({ sceneId }: SceneEditorProps) => {
 
   const keyboardHeight = useKeyboardHeight(isMobile);
   const { isHeaderVisible, handleEditorScroll } = useHeaderVisibility();
-  useSceneTitle(scene, setPageTitle);
+  //useSceneTitle(scene, setPageTitle);
 
+// Управление заголовком через эффект
+  useEffect(() => {
+    if (scene) {
+      const headerElement = (
+          <Box>
+            <InlineEdit
+                value={scene.title}
+                onChange={(title) => saveScene({ ...scene, title })}
+                label=""
+            />
+          </Box>
+      );
+      setTitleElement(headerElement);
+    } else {
+      setTitleElement(null);
+    }
 
+    return () => {
+      setTitleElement(null); // Очистка при размонтировании
+    };
+  }, [scene]); // Зависимости эффекта
 
   // Обработчик изменения контента в редакторе
   const handleContentChange = useCallback(
@@ -71,16 +92,6 @@ export const SceneEditor = ({ sceneId }: SceneEditorProps) => {
                 style={{ height: 'calc(100dvh - 50px)' }}
             >
 
-              <>
-                {isHeaderVisible && <Box style={{height: '50px'}}>
-                  <SceneHeader
-                      scene={scene}
-                      onBack={() => navigate('/scenes')}
-                      onTitleChange={(title) => saveScene({ ...scene, title })}
-                  />
-                </Box>
-                }
-              </>
               <Box flex={1}>
                   <RichEditor
                       initialContent={sceneBody}

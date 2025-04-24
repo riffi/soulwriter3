@@ -8,7 +8,7 @@ import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
 
 export const BaseLayout = () =>  {
   const [opened, { toggle }] = useDisclosure();
-  const { pageTitle } = usePageTitle();
+  const { pageTitle, titleElement } = usePageTitle();
   // Подключаемся к базе данных выбранной книги
   useBookDbConnection();
   const { isMobile} = useMedia();
@@ -41,9 +41,11 @@ export const BaseLayout = () =>  {
                   lineSize={1}
                   size="lg"
               />
-              <Text fw={500} hiddenFrom="sm">
-                {pageTitle}
-              </Text>
+              {titleElement || (
+                  <Text fw={500} hiddenFrom="sm">
+                    {pageTitle}
+                  </Text>
+              )}
               <div style={{width: 24}} /> {/* Пустой div для выравнивания */}
             </Group>
           </AppShell.Header>

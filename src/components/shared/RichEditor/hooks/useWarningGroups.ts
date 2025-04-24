@@ -38,7 +38,6 @@ useEffect(() => {
   if (selectedGroup) {
     const key = selectedGroup.warningKind ===
       IWarningKind.CLICHE ? clicheHighlighterKey : repeatHighlighterKey;
-
     editor?.view.dispatch(
       editor?.view.state.tr
         .setMeta(key, {
@@ -46,12 +45,13 @@ useEffect(() => {
           groupIndex: selectedGroup.groupIndex
         })
     );
-    editor.commands.setTextSelection({
-      from: selectedGroup.warnings[0].from,
-      to: selectedGroup.warnings[0].to
-    });
-    editor.commands.focus();
+    editor?.setEditable(true);
+    editor?.commands.focus();
+    editor?.commands.setTextSelection(
+      selectedGroup.warnings[0].from,
+    );
     editor?.commands.scrollIntoView();
+    editor?.setEditable(false);
   }
 }, [selectedGroup]);
 

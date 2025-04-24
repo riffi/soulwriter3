@@ -37,7 +37,10 @@ const createEditorConfig = (content: string, onUpdate: (editor: Editor) => void)
   onUpdate: ({ editor }) => onUpdate(editor),
   onBlur: ({ editor }) => editor.setEditable(false),
   onTransaction: ({ editor, transaction }) => {
-    if (transaction.meta?.pointer) editor.setEditable(true);
+    if (transaction.meta?.pointer) {
+      editor.setEditable(true);
+      editor.commands.focus();
+    }
   }
 });
 
