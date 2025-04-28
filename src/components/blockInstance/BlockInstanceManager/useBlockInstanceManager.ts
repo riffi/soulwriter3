@@ -24,7 +24,7 @@ export const useBlockInstanceManager = (blockUuid: string) => {
       .toArray();
   }, [blockUuid]);
 
-  const blockParameters = useLiveQuery<IBlockParameter[]>(() => {
+  const displayedParameters = useLiveQuery<IBlockParameter[]>(() => {
     return bookDb.blockParameters
     .where('blockUuid')
     .equals(blockUuid)
@@ -33,10 +33,10 @@ export const useBlockInstanceManager = (blockUuid: string) => {
   }, [blockUuid]);
 
   const instancesWithParams = useLiveQuery<IBlockInstanceWithParams[]>(async () => {
-    if (!instances || !blockParameters) return [];
+    if (!instances || !displayedParameters) return [];
 
     // Получаем UUID параметров, которые нужно отображать
-    const displayParameterUuids = blockParameters.map(p => p.uuid!);
+    const displayParameterUuids = displayedParameters.map(p => p.uuid!);
 
     return Promise.all(instances.map(async (instance) => {
       // Фильтруем параметры инстанса по нужным UUID
@@ -48,7 +48,7 @@ export const useBlockInstanceManager = (blockUuid: string) => {
 
       return { ...instance, params };
     }));
-  }, [instances, blockParameters]); // Добавляем зависимость от blockParameters
+  }, [instances, displayedParameters]); // Добавляем зависимость от blockParameters
 
 
 
@@ -101,6 +101,6 @@ export const useBlockInstanceManager = (blockUuid: string) => {
     updateBlockInstance,
     deleteBlockInstance,
     instancesWithParams,
-    blockParameters
+    displayedParameters
   }
 }

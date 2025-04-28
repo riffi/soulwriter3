@@ -8,14 +8,14 @@ import {
 
 interface BlockInstanceTableRowProps {
   instance: IBlockInstanceWithParams;
-  blockParameters?: IBlockParameter[];
+  displayedParameters?: IBlockParameter[];
   onEdit: (uuid: string) => void;
   onDelete: (instance: IBlockInstance) => void;
 }
 
 export const BlockInstanceTableRow = ({
                                         instance,
-                                        blockParameters,
+                                        displayedParameters,
                                         onEdit,
                                         onDelete,
                                       }: BlockInstanceTableRowProps) => {
@@ -25,7 +25,7 @@ export const BlockInstanceTableRow = ({
           <div>
             <Text fw={500}>{instance.title}</Text>
             <Group gap="xs" mt={4}>
-              {blockParameters?.map((param) => {
+              {displayedParameters?.map((param) => {
                 const paramInstance = instance.params?.find(
                     (p) => p.blockParameterUuid === param.uuid
                 );
@@ -35,6 +35,7 @@ export const BlockInstanceTableRow = ({
                         variant="light"
                         color="blue"
                         radius="sm"
+                        style={{fontSize: '0.8rem', textTransform: 'lowercase', fontWeight: 400}}
                     >
                       {param.title}:{' '}
                       {param.dataType === 'text'

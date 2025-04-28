@@ -38,7 +38,7 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
     block,
     addBlockInstance,
     instancesWithParams,
-    blockParameters,
+    displayedParameters,
     deleteBlockInstance
   } = useBlockInstanceManager(props.blockUuid);
 
@@ -149,7 +149,7 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
             Добавить
           </Button>
 
-          <Group>
+          {displayedParameters?.length > 0 && <Group>
             <Button
                 variant="subtle"
                 leftSection={<IconFilter size="1rem" />}
@@ -168,12 +168,13 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
               Очистить фильтры
             </Button>
           </Group>
+        }
         </Group>
 
-        {filtersVisible && blockParameters && (
+        {filtersVisible && displayedParameters && (
             <div className={classes.filtersContainer}>
               <Group gap="xs" mb="md">
-                {blockParameters.map(param => (
+                {displayedParameters.map(param => (
                     <MultiSelect
                         key={param.uuid}
                         label={param.title}
@@ -203,7 +204,7 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
                     <BlockInstanceTableRow
                         key={instance.uuid}
                         instance={instance}
-                        blockParameters={blockParameters}
+                        displayedParameters={displayedParameters}
                         onEdit={handleEditInstance}
                         onDelete={handleDeleteInstance}
                     />
