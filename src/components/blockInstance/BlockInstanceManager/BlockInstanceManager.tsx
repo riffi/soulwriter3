@@ -20,51 +20,26 @@ import { IconEdit, IconPlus, IconTrash } from '@tabler/icons-react';
 import { generateUUID } from "@/utils/UUIDUtils";
 import { useDialog } from "@/providers/DialogProvider/DialogProvider";
 import classes from "./BlockInstanceManager.module.css";
+import {
+  useBlockInstanceManager
+} from "@/components/blockInstance/BlockInstanceManager/useBlockInstanceManager";
 
 export interface IBlockInstanceManagerProps {
   blockUuid: string;
 }
 
 export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
-  const [instances, setInstances] = useState<IBlockInstance[]>([]);
-  const [block, setBlock] = useState<IBlock | null>(null);
-  const [loading, setLoading] = useState(true);
+  const {
+    instances,
+    block
+  } = useBlockInstanceManager(props.blockUuid);
+
   const [addingInstance, setAddingInstance] = useState(false);
   const [opened, { open, close }] = useDisclosure(false);
   const [newInstanceName, setNewInstanceName] = useState('');
   const navigate = useNavigate();
   const { showDialog } = useDialog();
 
-  useEffect(() => {
-    loadData();
-  }, [props.blockUuid]);
-
-  const loadData = async () => {
-    setLoading(true);
-    try {
-      await Promise.all([loadInstances(), loadBlock()]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadInstances = async () => {
-    if (!bookDb) return;
-    const instances = await bookDb.blockInstances
-    .where('blockUuid')
-    .equals(props.blockUuid)
-    .toArray();
-    setInstances(instances);
-  };
-
-  const loadBlock = async () => {
-    const block = await configDatabase.blocks
-    .where('uuid')
-    .equals(props.blockUuid)
-    .first();
-    setBlock(block);
-    setNewInstanceName(`${block?.title}`);
-  };
 
   const handleAddClick = () => {
     setNewInstanceName(`${block?.title}`);
@@ -98,13 +73,11 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
     const result = await showDialog("Вы уверены?", "Удалить блок?");
     if (result && bookDb) {
       await bookDb.blockInstances.where('uuid').equals(uuid).delete();
-      loadData();
     }
   };
 
   return (
       <Box className={classes.container} pos="relative">
-        <LoadingOverlay visible={loading} overlayBlur={2} />
 
         <Button
             onClick={handleAddClick}
@@ -124,9 +97,9 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
               <Table.Th width={150}>Действия</Table.Th>
             </Table.Tr>
           </Table.Thead>
-          {instances.length > 0 ? (
+          {instances?.length > 0 ? (
               <Table.Tbody>
-                {instances.map((instance) => (
+                {instances?.map((instance) => (
                     <Table.Tr key={instance.uuid}>
                       <Table.Td>
                         <Text fw={500}>{instance.title}</Text>

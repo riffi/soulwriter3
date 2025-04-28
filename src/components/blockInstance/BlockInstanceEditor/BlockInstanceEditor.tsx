@@ -38,6 +38,7 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
 
   const {
     blockInstance,
+    block,
     parameterGroups,
     parameterInstances,
     availableParametersWithoutInstances,
@@ -104,6 +105,36 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
     setEditingParam(null);
   };
 
+  const groupContent = (
+    <>
+    <Box className={classes.panelContent}>
+      <>
+      {availableParametersWithoutInstances?.length > 0 &&
+        <Button
+            onClick={handleAddParameter}
+            leftSection={<IconPlus size="1rem" />}
+            size="sm"
+            variant="light"
+            mb="md"
+            className={classes.addButton}
+            hidden={availableParametersWithoutInstances?.length === 0}
+        >
+          Добавить параметр
+        </Button>
+      }
+      </>
+
+      <ParameterList
+          fullParams={fullParams}
+          editingParam={editingParam}
+          editValue={editValue}
+          onStartEdit={handleStartEdit}
+          onSaveEdit={handleSaveEdit}
+      />
+    </Box>
+    </>
+  )
+
   return (
       <>
         <Container>
@@ -124,51 +155,35 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
                   className={classes.titleInput}
               />
             </Group>
+            <>
+            {block?.useTabs &&
+              <Tabs
+                  className={classes.tabs}
+                  value={currentParamGroup?.uuid}
+                  onChange={(value) => {
+                    const group = parameterGroups?.find((g) => g.uuid === value);
+                    if (group) setCurrentParamGroup(group);
+                  }}
+              >
+                <Tabs.List className={classes.tabList}>
+                  {parameterGroups?.map((group) => (
+                      <Tabs.Tab key={group.uuid || `group-${group.title}`} value={group.uuid} className={classes.tab}>
+                        {group.title}
+                      </Tabs.Tab>
+                  ))}
+                </Tabs.List>
 
-            <Tabs
-                className={classes.tabs}
-                value={currentParamGroup?.uuid}
-                onChange={(value) => {
-                  const group = parameterGroups?.find((g) => g.uuid === value);
-                  if (group) setCurrentParamGroup(group);
-                }}
-            >
-              <Tabs.List className={classes.tabList}>
-                {parameterGroups?.map((group) => (
-                    <Tabs.Tab key={group.uuid || `group-${group.title}`} value={group.uuid} className={classes.tab}>
-                      {group.title}
-                    </Tabs.Tab>
-                ))}
-              </Tabs.List>
-
-              <>
-                {parameterGroups?.map((group) =>
-                    <Tabs.Panel key={group.uuid || `panel-${group.title}`} value={group.uuid} pt="md">
-                      <Box className={classes.panelContent}>
-                        <Button
-                            onClick={handleAddParameter}
-                            leftSection={<IconPlus size="1rem" />}
-                            size="sm"
-                            variant="light"
-                            mb="md"
-                            className={classes.addButton}
-                            disabled={!availableParametersWithoutInstances?.length}
-                        >
-                          Добавить параметр
-                        </Button>
-
-                        <ParameterList
-                            fullParams={fullParams}
-                            editingParam={editingParam}
-                            editValue={editValue}
-                            onStartEdit={handleStartEdit}
-                            onSaveEdit={handleSaveEdit}
-                        />
-                      </Box>
-                    </Tabs.Panel>
-                )}
-              </>
-            </Tabs>
+                <>
+                  {parameterGroups?.map((group) =>
+                      <Tabs.Panel key={group.uuid || `panel-${group.title}`} value={group.uuid} pt="md">
+                        {groupContent}
+                      </Tabs.Panel>
+                    )}
+                  </>
+              </Tabs>
+            }
+            {!block?.useTabs && groupContent}
+            </>
           </Box>
         </Container>
         <Modal

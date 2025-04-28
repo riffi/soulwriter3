@@ -11,6 +11,12 @@ export const useBlockInstanceEditor = (blockInstanceUuid: string, currentParamGr
     return bookDb.blockInstances.where('uuid').equals(blockInstanceUuid).first();
   }, [blockInstanceUuid]);
 
+
+  const block = useLiveQuery(() => {
+    if (!blockInstance) return null;
+    return bookDb.blocks.where('uuid').equals(blockInstance?.blockUuid).first();
+  }, [blockInstance]);
+
   //группы групп параметров блока
   const parameterGroups = useLiveQuery<IBlockParameterGroup[]>(() => {
     if (!blockInstance) return [];
@@ -45,6 +51,7 @@ export const useBlockInstanceEditor = (blockInstanceUuid: string, currentParamGr
 
   return {
     blockInstance,
+    block,
     parameterGroups,
     parameterInstances,
     availableParametersWithoutInstances,
