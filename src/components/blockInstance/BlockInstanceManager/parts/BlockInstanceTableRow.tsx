@@ -33,7 +33,7 @@ export const BlockInstanceTableRow = ({
                     <Badge
                         key={param.uuid}
                         variant="light"
-                        color="blue"
+                        color="grey"
                         radius="sm"
                         style={{fontSize: '0.8rem', textTransform: 'lowercase', fontWeight: 400}}
                     >
