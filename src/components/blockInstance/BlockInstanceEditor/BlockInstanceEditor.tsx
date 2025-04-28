@@ -1,28 +1,28 @@
 import { useNavigate } from "react-router-dom";
-import { useBlockInstanceEditor } from "@/components/blockInstance/BlockInstanceEditor/useBlockInstanceEditor";
+import { useBlockInstanceEditor } from "@/components/blockInstance/BlockInstanceEditor/hooks/useBlockInstanceEditor";
 import {
   Button,
   Box,
   Group,
   Tabs,
   TextInput,
-  Text,
   ActionIcon,
   Modal,
   Select,
   Stack,
   Textarea,
   Container,
-  TypographyStylesProvider
 } from "@mantine/core";
-import { IconArrowLeft, IconEdit, IconPlus, IconTrash, IconCircleCheck, IconCheck } from "@tabler/icons-react";
+import { IconArrowLeft, IconPlus} from "@tabler/icons-react";
 import classes from "./BlockInstanceEditor.module.css";
 import { useState, useEffect } from "react";
 import { IBlockParameterGroup } from "@/entities/ConstructorEntities";
 import { IBlockParameterInstance } from "@/entities/BookEntities";
 import { bookDb } from "@/entities/bookDb";
-import {InlineEdit} from "@/components/shared/InlineEdit/InlineEdit";
-import { RichEditor } from "@/components/shared/RichEditor/RichEditor";
+import {
+  ParameterList
+} from "@/components/blockInstance/BlockInstanceEditor/components/ParameterList";
+import {FullParam} from "@/components/blockInstance/BlockInstanceEditor/types";
 
 export interface IBlockInstanceEditorProps {
   blockInstanceUuid: string;
@@ -76,7 +76,7 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
     }
   };
 
-  const fullParams = parameterInstances?.map((instance) => {
+  const fullParams: FullParam[] = parameterInstances?.map((instance) => {
     return {
       parameter: availableParameters?.find((p) => p.uuid === instance.blockParameterUuid),
       instance
@@ -157,69 +157,13 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
                           Добавить параметр
                         </Button>
 
-                        <Stack gap="sm" className={classes.parametersStack}>
-                          {parameterInstances && parameterInstances.length > 0 &&
-                              fullParams?.map((fullParam, index) => (
-                                  <Box
-                                      key={`instance-${fullParam.instance.blockParameterUuid}-${index}`}
-                                      className={classes.parameterItem}
-                                      p="md"
-                                  >
-                                    <Group justify="space-between" align="flex-start" w="100%">
-                                      <Box style={{ flex: 1, maxWidth: "100%" }}>
-                                        <Text fw={500} mb="xs">{fullParam.parameter?.title}</Text>
-                                        {editingParam === fullParam.instance.blockParameterUuid ? (
-                                            fullParam.parameter?.dataType === 'text' ? (
-                                                <RichEditor
-                                                    initialContent={editValue}
-                                                    onContentChange={(contentHtml, contentText) => setEditValue(contentHtml)}
-                                                />
-                                            ) : (
-                                                <TextInput
-                                                    value={editValue}
-                                                    onChange={(e) => setEditValue(e.currentTarget.value)}
-                                                    autoFocus
-                                                />
-                                            )
-                                        ) : (
-                                            <Text component="div" className={classes.contentWrapper}>
-                                              <TypographyStylesProvider>
-                                                <div
-                                                    dangerouslySetInnerHTML={{ __html: fullParam.instance.value || "Не указано" }}
-                                                    className={classes.htmlContent}
-                                                />
-                                              </TypographyStylesProvider>
-                                            </Text>
-                                        )}
-                                      </Box>
-                                      {editingParam === fullParam.instance.blockParameterUuid ? (
-                                          <ActionIcon
-                                              variant="subtle"
-                                              mt={4}
-                                              onClick={() => handleSaveEdit(fullParam.instance)}
-                                          >
-                                            <IconCheck size={24} />
-                                          </ActionIcon>
-                                      ) : (
-                                          <ActionIcon
-                                              variant="subtle"
-                                              mt={4}
-                                              onClick={() => handleStartEdit(
-                                                  fullParam.instance.blockParameterUuid,
-                                                  fullParam.instance.value || ""
-                                              )}
-                                          >
-                                            <IconEdit size={24} />
-                                          </ActionIcon>
-                                      )}
-                                      <ActionIcon variant="subtle" color="red" mt={4}>
-                                        <IconTrash size={16} />
-                                      </ActionIcon>
-                                    </Group>
-                                  </Box>
-                              ))
-                          }
-                        </Stack>
+                        <ParameterList
+                            fullParams={fullParams}
+                            editingParam={editingParam}
+                            editValue={editValue}
+                            onStartEdit={handleStartEdit}
+                            onSaveEdit={handleSaveEdit}
+                        />
                       </Box>
                     </Tabs.Panel>
                 )}

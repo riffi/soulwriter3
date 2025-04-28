@@ -5,10 +5,13 @@ import {configDatabase} from "@/entities/configuratorDb";
 import {IBlockParameterGroup, IBlockParameter} from "@/entities/ConstructorEntities";
 
 export const useBlockInstanceEditor = (blockInstanceUuid: string, currentParamGroup: IBlockParameterGroup | null) => {
+
+  //реализация блока
   const blockInstance = useLiveQuery<IBlockInstance>(() => {
     return bookDb.blockInstances.where('uuid').equals(blockInstanceUuid).first();
   }, [blockInstanceUuid]);
 
+  //группы групп параметров блока
   const parameterGroups = useLiveQuery<IBlockParameterGroup[]>(() => {
     if (!blockInstance) return [];
     return configDatabase.blockParameterGroups
@@ -17,11 +20,13 @@ export const useBlockInstanceEditor = (blockInstanceUuid: string, currentParamGr
     .sortBy('orderNumber');
   }, [blockInstance]);
 
+  //значения параметров группы
   const parameterInstances = useLiveQuery<IBlockParameterInstance[]>(() => {
     if (!blockInstance || !currentParamGroup) return [];
     return bookDb.blockParameterInstances.where('blockParameterGroupUuid').equals(currentParamGroup?.uuid).toArray();
   }, [currentParamGroup]);
 
+  //все доступные параметры в группе параметров блока
   const availableParameters = useLiveQuery<IBlockParameter[]>(() => {
     if (!blockInstance || !currentParamGroup) return [];
     return bookDb.blockParameters
@@ -30,7 +35,7 @@ export const useBlockInstanceEditor = (blockInstanceUuid: string, currentParamGr
     .toArray();
   }, [currentParamGroup]);
 
-  // Get parameters that don't have instances yet
+  //параметры, которые еще не используются в данном блоке
   const availableParametersWithoutInstances = useLiveQuery<IBlockParameter[]>(() => {
     if (!availableParameters || !parameterInstances) return availableParameters || [];
 
