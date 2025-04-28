@@ -29,7 +29,10 @@ export const useBlockInstanceEditor = (blockInstanceUuid: string, currentParamGr
   //значения параметров группы
   const parameterInstances = useLiveQuery<IBlockParameterInstance[]>(() => {
     if (!blockInstance || !currentParamGroup) return [];
-    return bookDb.blockParameterInstances.where('blockParameterGroupUuid').equals(currentParamGroup?.uuid).toArray();
+    return bookDb.blockParameterInstances.where({
+      'blockParameterGroupUuid': currentParamGroup?.uuid,
+      'blockInstanceUuid': blockInstance?.uuid
+    }).toArray();
   }, [currentParamGroup]);
 
   //все доступные параметры в группе параметров блока

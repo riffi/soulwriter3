@@ -1,7 +1,6 @@
 import {bookDb} from "@/entities/bookDb";
 import {useLiveQuery} from "dexie-react-hooks";
 import {IBlockInstance} from "@/entities/BookEntities";
-import {configDatabase} from "@/entities/configuratorDb";
 import {IBlock} from "@/entities/ConstructorEntities";
 
 export const useBlockInstanceManager = (blockUuid: string) => {
