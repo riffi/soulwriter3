@@ -8,19 +8,20 @@ import {
   Text,
   Group,
   Box,
-  ActionIcon,
-  Badge,
   Modal,
   TextInput, Container,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-import { IconEdit, IconPlus, IconTrash } from '@tabler/icons-react';
+import {  IconPlus } from '@tabler/icons-react';
 import { generateUUID } from "@/utils/UUIDUtils";
 import { useDialog } from "@/providers/DialogProvider/DialogProvider";
 import classes from "./BlockInstanceManager.module.css";
 import {
   useBlockInstanceManager
 } from "@/components/blockInstance/BlockInstanceManager/useBlockInstanceManager";
+import {
+  BlockInstanceTableRow
+} from "@/components/blockInstance/BlockInstanceManager/parts/BlockInstanceTableRow";
 
 export interface IBlockInstanceManagerProps {
   blockUuid: string;
@@ -100,51 +101,17 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
               <Table.Th width={150}>Действия</Table.Th>
             </Table.Tr>
           </Table.Thead>
+          <>
           {instances?.length > 0 ? (
               <Table.Tbody>
                 {instancesWithParams?.map((instance) => (
-                    <Table.Tr key={instance.uuid}>
-                      <Table.Td>
-                        <div>
-                          <Text fw={500}>{instance.title}</Text>
-                          <Group gap="xs" mt={4}>
-                            {blockParameters?.map((param) => {
-                              const paramInstance = instance.params?.find(
-                                  (p) => p.blockParameterUuid === param.uuid
-                              );
-                              return (
-                                  <Badge
-                                      key={param.uuid}
-                                      variant="light"
-                                      color="blue"
-                                      radius="sm"
-                                  >
-                                    {param.title}: {paramInstance?.value || '—'}
-                                  </Badge>
-                              );
-                            })}
-                          </Group>
-                        </div>
-                      </Table.Td>
-                      <Table.Td>
-                        <Group gap={4} justify="center">
-                          <ActionIcon
-                              variant="subtle"
-                              color="blue"
-                              onClick={() => handleEditInstance(instance.uuid!)}
-                          >
-                            <IconEdit size="1rem" />
-                          </ActionIcon>
-                          <ActionIcon
-                              variant="subtle"
-                              color="red"
-                              onClick={() => handleDeleteInstance(instance)}
-                          >
-                            <IconTrash size="1rem" />
-                          </ActionIcon>
-                        </Group>
-                      </Table.Td>
-                    </Table.Tr>
+                    <BlockInstanceTableRow
+                        key={instance.uuid}
+                        instance={instance}
+                        blockParameters={blockParameters}
+                        onEdit={handleEditInstance}
+                        onDelete={handleDeleteInstance}
+                    />
                 ))}
               </Table.Tbody>
           ) : (
@@ -158,6 +125,7 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
                 </Table.Tr>
               </Table.Tbody>
           )}
+          </>
         </Table>
 
         <Modal

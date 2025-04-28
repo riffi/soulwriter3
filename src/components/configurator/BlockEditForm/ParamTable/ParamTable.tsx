@@ -1,4 +1,4 @@
-import { Button, Group, Space, Table, Text, ActionIcon, Box } from "@mantine/core";
+import {Button, Group, Space, Table, Text, ActionIcon, Box, Badge} from "@mantine/core";
 import {IBlockParameter, IBlockParameterDataTypeTitle} from "@/entities/ConstructorEntities";
 import { IconEdit, IconPlus, IconTrash } from "@tabler/icons-react";
 import React from "react";
@@ -48,8 +48,14 @@ export const ParamTable = ({
                 {params?.map((param) => (
                     <Table.Tr key={param.uuid}>
                       <Table.Td>
-                        {param.isDefault? '✓ ' : ''}
-                        {param.title}
+                        <div>
+                          {param.title}
+                        </div>
+                        <Space h={5} />
+                        <Group gap={4}>
+                          {param.displayInCard? <Badge size="xs" color="green" variant="filled">В карточке</Badge> : ''}
+                          {param.isDefault? <Badge size="xs" color="blue" variant="filled">По-умолчанию</Badge> : ''}
+                        </Group>
                       </Table.Td>
                       <Table.Td>
                         <Text size="sm" c="dimmed">
