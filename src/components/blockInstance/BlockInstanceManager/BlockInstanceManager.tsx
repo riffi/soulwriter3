@@ -13,7 +13,7 @@ import {
   ActionIcon,
   LoadingOverlay,
   Modal,
-  TextInput,
+  TextInput, Container,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { IconEdit, IconPlus, IconTrash } from '@tabler/icons-react';
@@ -79,6 +79,7 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
   };
 
   return (
+      <Container>
       <Box className={classes.container} pos="relative">
 
         <Button
@@ -167,5 +168,6 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
           </Group>
         </Modal>
       </Box>
+      </Container>
   );
 };

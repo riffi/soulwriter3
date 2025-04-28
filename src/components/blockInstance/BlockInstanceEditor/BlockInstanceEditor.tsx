@@ -51,7 +51,7 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
     if (parameterGroups && parameterGroups.length > 0 && !currentParamGroup) {
       setCurrentParamGroup(parameterGroups[0]);
     }
-  }, [parameterGroups, currentParamGroup]);
+  }, [props.blockInstanceUuid, parameterGroups, currentParamGroup]);
 
   const handleAddParameter = () => {
     setIsAddModalOpen(true);

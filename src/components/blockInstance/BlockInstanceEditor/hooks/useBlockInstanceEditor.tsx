@@ -1,7 +1,6 @@
 import {bookDb} from "@/entities/bookDb";
 import {useLiveQuery} from "dexie-react-hooks";
 import {IBlockInstance, IBlockParameterInstance} from "@/entities/BookEntities";
-import {configDatabase} from "@/entities/configuratorDb";
 import {IBlockParameterGroup, IBlockParameter} from "@/entities/ConstructorEntities";
 
 export const useBlockInstanceEditor = (blockInstanceUuid: string, currentParamGroup: IBlockParameterGroup | null) => {
@@ -20,7 +19,7 @@ export const useBlockInstanceEditor = (blockInstanceUuid: string, currentParamGr
   //группы групп параметров блока
   const parameterGroups = useLiveQuery<IBlockParameterGroup[]>(() => {
     if (!blockInstance) return [];
-    return configDatabase.blockParameterGroups
+    return bookDb.blockParameterGroups
     .where('blockUuid')
     .equals(blockInstance?.blockUuid)
     .sortBy('orderNumber');
