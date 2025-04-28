@@ -1,4 +1,5 @@
-import { Table } from "@mantine/core";
+import { Table, Text, Paper, Center, Group } from "@mantine/core";
+import { IconPlus } from "@tabler/icons-react";
 import { useScenes } from "../useScenes";
 import { useChapters } from "../useChapters";
 import { ChapterRow } from "./ChapterRow";
@@ -17,6 +18,19 @@ export const SceneTable = ({ openCreateModal }: SceneTableProps) => {
         chapterId ? scene.chapterId === chapterId : scene.chapterId === undefined
     ) || [];
   };
+
+  if (!scenes?.length && !chapters?.length) {
+    return (
+        <Paper withBorder p="lg" radius="md" shadow="sm">
+          <Center mih={120}>
+            <Group gap="xs" c="dimmed">
+              <IconPlus size={18} />
+              <Text size="sm">Добавьте первую сцену или главу</Text>
+            </Group>
+          </Center>
+        </Paper>
+    );
+  }
 
   return (
       <Table horizontalSpacing="sm" verticalSpacing="sm">
