@@ -10,9 +10,14 @@ import {
   Box,
   Modal,
   TextInput, Container, Title, Space,
+  MultiSelect
 } from '@mantine/core';
+import {
+  IconPlus,
+  IconFilter,
+  IconX
+} from '@tabler/icons-react';
 import { useDisclosure } from '@mantine/hooks';
-import {  IconPlus } from '@tabler/icons-react';
 import { generateUUID } from "@/utils/UUIDUtils";
 import { useDialog } from "@/providers/DialogProvider/DialogProvider";
 import classes from "./BlockInstanceManager.module.css";
@@ -40,6 +45,11 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
   const [addingInstance, setAddingInstance] = useState(false);
   const [opened, { open, close }] = useDisclosure(false);
   const [newInstanceName, setNewInstanceName] = useState('');
+
+  const [filtersVisible, { toggle: toggleFilters }] = useDisclosure(false);
+  const [filters, setFilters] = useState<Record<string, string[]>>({});
+
+
   const navigate = useNavigate();
   const { showDialog } = useDialog();
 
@@ -79,21 +89,105 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
     }
   };
 
+
+// Функция для сбора уникальных значений параметров
+  const getUniqueParamValues = (paramUuid: string) => {
+    if (!instancesWithParams) return [];
+    const values = new Set<string>();
+
+    instancesWithParams.forEach(instance => {
+      instance.params.forEach(param => {
+        if (param.blockParameterUuid === paramUuid) {
+          const displayValue = param.value?.replace(/<[^>]*>/g, '') || '—';
+          values.add(displayValue);
+        }
+      });
+    });
+
+    return Array.from(values).map(value => ({
+      value,
+      label: value
+    }));
+  };
+
+// Функция фильтрации данных
+  const filteredInstances = instancesWithParams?.filter(instance => {
+    return Object.entries(filters).every(([paramUuid, values]) => {
+      if (values.length === 0) return true;
+      const param = instance.params.find(p => p.blockParameterUuid === paramUuid);
+      const displayValue = param?.value?.replace(/<[^>]*>/g, '') || '—';
+      return values.includes(displayValue);
+    });
+  }) || [];
+
+// Обработчики фильтров
+  const handleFilterChange = (paramUuid: string, values: string[]) => {
+    setFilters(prev => ({
+      ...prev,
+      [paramUuid]: values
+    }));
+  };
+
+  const clearFilters = () => {
+    setFilters({});
+  };
+
   return (
       <Container>
       <Box className={classes.container} pos="relative">
         <Title order={2}>{block?.titleForms?.plural}</Title>
         <Space h="md"/>
-        <Button
-            onClick={handleAddClick}
-            leftSection={<IconPlus size="1rem" />}
-            size="sm"
-            variant="light"
-            mb="md"
-            className={classes.addButton}
-        >
-          Добавить
-        </Button>
+
+        <Group justify="space-between" mb="md">
+          <Button
+              onClick={handleAddClick}
+              leftSection={<IconPlus size="1rem" />}
+              size="sm"
+              variant="light"
+              className={classes.addButton}
+          >
+            Добавить
+          </Button>
+
+          <Group>
+            <Button
+                variant="subtle"
+                leftSection={<IconFilter size="1rem" />}
+                onClick={toggleFilters}
+                size="sm"
+            >
+              {filtersVisible ? 'Скрыть фильтры' : 'Показать фильтры'}
+            </Button>
+            <Button
+                variant="subtle"
+                leftSection={<IconX size="1rem" />}
+                onClick={clearFilters}
+                disabled={Object.keys(filters).length === 0}
+                size="sm"
+            >
+              Очистить фильтры
+            </Button>
+          </Group>
+        </Group>
+
+        {filtersVisible && blockParameters && (
+            <div className={classes.filtersContainer}>
+              <Group gap="xs" mb="md">
+                {blockParameters.map(param => (
+                    <MultiSelect
+                        key={param.uuid}
+                        label={param.title}
+                        placeholder={filters[param.uuid!]?.length > 0 ? '' : param.title}
+                        data={getUniqueParamValues(param.uuid!)}
+                        value={filters[param.uuid!] || []}
+                        onChange={(values) => handleFilterChange(param.uuid!, values)}
+                        clearable
+                        className={classes.filterInput}
+                    />
+                ))}
+              </Group>
+            </div>
+        )}
 
         <Table striped highlightOnHover className={classes.table}>
           <Table.Thead>
@@ -103,9 +197,9 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
             </Table.Tr>
           </Table.Thead>
           <>
-          {instances?.length > 0 ? (
+          {filteredInstances?.length > 0 ? (
               <Table.Tbody>
-                {instancesWithParams?.map((instance) => (
+                {filteredInstances?.map((instance) => (
                     <BlockInstanceTableRow
                         key={instance.uuid}
                         instance={instance}

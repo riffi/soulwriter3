@@ -85,3 +85,16 @@
 .modalBody {
   padding: 20px;
 }
+
+
+.filtersContainer {
+  background: var(--mantine-color-body);
+  padding: var(--mantine-spacing-md);
+  border-radius: var(--mantine-radius-md);
+  border: 1px solid var(--mantine-color-gray-3);
+}
+
+.filterInput {
+  flex: 1;
+  min-width: 200px;
+}
