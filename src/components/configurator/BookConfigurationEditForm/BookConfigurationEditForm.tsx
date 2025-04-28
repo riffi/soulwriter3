@@ -62,6 +62,9 @@ export const BookConfigurationEditForm = (props: IBookConfigurationEditFormProps
   const [currentBlock, setCurrentBlock] = useState<IBookConfiguration>(getBlackBlock())
   const { isMobile} = useMedia();
   const { showDialog } = useDialog();
+
+  const isBookConfiguration = !!props.bookUuid
+
   const {
     configuration,
     versionList,
@@ -111,12 +114,15 @@ export const BookConfigurationEditForm = (props: IBookConfigurationEditFormProps
   return (
       <>
         <Container fluid style={{backgroundColor: 'white', padding: '20px'}}>
-          <h1>Конфигурация: {configuration?.title}</h1>
-          <Breadcrumbs separator="→" separatorMargin="md" mt="xs">
-            {breadCrumbs}
-          </Breadcrumbs>
-          <Space h={20}/>
-          {versionList && versionList.length > 0 && (
+          <h2>Конфигурация{isBookConfiguration ? ' книги': `: ${  configuration?.title}`}</h2>
+          {!isBookConfiguration && <>
+            <Breadcrumbs separator="→" separatorMargin="md" mt="xs">
+              {breadCrumbs}
+            </Breadcrumbs>
+            <Space h={20}/>
+          </>
+          }
+          {!isBookConfiguration && versionList && versionList.length > 0 && (
               <>
                 <SegmentedControl
                     value={currentVersion?.uuid || versionList[0].uuid}
@@ -145,11 +151,11 @@ export const BookConfigurationEditForm = (props: IBookConfigurationEditFormProps
                     data={versionList.map(version => ({
                       value: version.uuid,
                       label: (
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <div style={{display: 'flex', alignItems: 'center', gap: 8}}>
                             {version.isDraft ? (
-                                <IconFilePencil size={24} />
+                                <IconFilePencil size={24}/>
                             ) : (
-                                <IconCheck size={24} color="green" />
+                                <IconCheck size={24} color="green"/>
                             )}
                             <span>
                               Версия {version.versionNumber}
@@ -159,22 +165,22 @@ export const BookConfigurationEditForm = (props: IBookConfigurationEditFormProps
                       ),
                     }))}
                 />
-                <Space h="sm" />
+                <Space h="sm"/>
               </>
           )}
 
-          {currentVersion?.isDraft && (
+          {!isBookConfiguration && currentVersion?.isDraft && (
               <>
                 <Button
-                  variant={"subtle"}
-                  onClick={handleVersionPublication}
-                  leftSection={<IconWorldUpload  size={16} />}
+                    variant={"subtle"}
+                    onClick={handleVersionPublication}
+                    leftSection={<IconWorldUpload size={16}/>}
                 >
                   Опубликовать версию
                 </Button>
               </>)}
           <Title order={4}>Блоки</Title>
-          <SimpleGrid cols={{ base: 1, sm: 2, lg: 3, xl: 4 }} spacing="md">
+          <SimpleGrid cols={{base: 1, sm: 2, lg: 3, xl: 4}} spacing="md">
             {/* Новая карточка для добавления */}
             {currentVersion?.isDraft && (
                 <Card
@@ -182,14 +188,19 @@ export const BookConfigurationEditForm = (props: IBookConfigurationEditFormProps
                     padding="lg"
                     radius="md"
                     withBorder
-                    style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    style={{
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
                     onClick={() => {
                       setCurrentBlock(getBlackBlock());
                       setIsModalOpened(true);
                     }}
                 >
                   <Stack align="center" gap="xs">
-                    <IconPlus size={32} stroke={1.5} />
+                    <IconPlus size={32} stroke={1.5}/>
                     <Text fw={500}>Добавить блок</Text>
                   </Stack>
                 </Card>
@@ -214,7 +225,7 @@ export const BookConfigurationEditForm = (props: IBookConfigurationEditFormProps
                       </Badge>
                       {c.useTabs && (
                           <Badge variant="light" color="orange">
-                            С вкладками
+                            Со вкладками
                           </Badge>
                       )}
                     </Group>
@@ -227,7 +238,7 @@ export const BookConfigurationEditForm = (props: IBookConfigurationEditFormProps
 
                     <Group mt="auto" justify="space-between">
                       <Button
-                          variant="light"
+                          variant="filled"
                           color="blue"
                           size="sm"
                           onClick={handleOpenBlockPage(c)}
