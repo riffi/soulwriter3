@@ -23,6 +23,8 @@ import {
   ParameterList
 } from "@/components/blockInstance/BlockInstanceEditor/components/ParameterList";
 import {FullParam} from "@/components/blockInstance/BlockInstanceEditor/types";
+import {InlineInput} from "@mantine/core/lib/components/InlineInput";
+import {InlineEdit} from "@/components/shared/InlineEdit/InlineEdit";
 
 export interface IBlockInstanceEditorProps {
   blockInstanceUuid: string;
@@ -42,7 +44,8 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
     parameterGroups,
     parameterInstances,
     availableParametersWithoutInstances,
-    availableParameters
+    availableParameters,
+    updateBlockInstanceTitle
   } = useBlockInstanceEditor(props.blockInstanceUuid, currentParamGroup);
 
   const navigate = useNavigate();
@@ -148,11 +151,12 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
               >
                 <IconArrowLeft size={20} />
               </ActionIcon>
-              <TextInput
+              <InlineEdit
                   value={blockInstance?.title || ''}
                   placeholder="Instance title"
                   size="md"
                   className={classes.titleInput}
+                  onChange={(val) => updateBlockInstanceTitle(val)}
               />
             </Group>
             <>

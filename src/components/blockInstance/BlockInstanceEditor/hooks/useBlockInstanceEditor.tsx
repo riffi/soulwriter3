@@ -51,12 +51,18 @@ export const useBlockInstanceEditor = (blockInstanceUuid: string, currentParamGr
     return availableParameters.filter(param => !usedParameterUuids.has(param.uuid));
   }, [availableParameters, parameterInstances]);
 
+  const updateBlockInstanceTitle = async (newTitle: string) =>{
+    if (!blockInstance) return;
+    await bookDb.blockInstances.update(blockInstance.id, {title: newTitle})
+  }
+
   return {
     blockInstance,
     block,
     parameterGroups,
     parameterInstances,
     availableParametersWithoutInstances,
-    availableParameters
+    availableParameters,
+    updateBlockInstanceTitle
   }
 };
