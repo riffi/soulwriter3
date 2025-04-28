@@ -161,6 +161,13 @@ export const NavbarNested = ({ toggleNavbar }: { toggleNavbar?: () => void }) =>
         link: '/scenes',
       });
 
+      items.push({
+        label: 'Конфигурация книги',
+        icon: IconGauge,
+        initiallyOpened: true,
+        link: `/configuration/edit/?uuid=${selectedBook.configurationUuid}&bookUuid=${selectedBook.uuid}`,
+      });
+
       const knowledgeLinks = blocks?.map((block) => ({
         label: getBlockPageTitle(block),
         link: `/block-instance/manager?uuid=${block.uuid}`,

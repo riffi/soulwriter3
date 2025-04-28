@@ -3,44 +3,47 @@ import {IBlock, IBlockParameter, IBlockParameterGroup} from "@/entities/Construc
 import {configDatabase} from "@/entities/configuratorDb";
 import {generateUUID} from "@/utils/UUIDUtils";
 import {notifications} from "@mantine/notifications";
-import {fetchAndPrepareTitleForms} from "@/api/TextApi";
+import {bookDb} from "@/entities/bookDb";
 
-export const useBlockEditForm = (blockUuid: string, currentGroupUuid?: string) => {
+export const useBlockEditForm = (blockUuid: string, bookUuid?: string, currentGroupUuid?: string) => {
+
+  const db = bookUuid? bookDb : configDatabase;
+
   const block = useLiveQuery<IBlock>( () => {
-    return configDatabase.blocks.where("uuid").equals(blockUuid).first()
+    return db.blocks.where("uuid").equals(blockUuid).first()
   }, [blockUuid])
 
   const paramGroupList = useLiveQuery<IBlockParameterGroup[]>(() => {
-    return configDatabase.blockParameterGroups.where("blockUuid").equals(blockUuid).sortBy("orderNumber");
+    return db.blockParameterGroups.where("blockUuid").equals(blockUuid).sortBy("orderNumber");
   }, [block])
 
   const paramList = useLiveQuery<IBlockParameter[]>(() => {
     if (!currentGroupUuid) {
       return []
     }
-    return configDatabase.blockParameters.where({groupUuid : currentGroupUuid }).toArray();
+    return db.blockParameters.where({groupUuid : currentGroupUuid }).toArray();
   }, [currentGroupUuid]);
 
   const configurationVersion = useLiveQuery(() => {
     if (!block) return undefined
-    return configDatabase.configurationVersions.where("uuid").equals(block?.configurationVersionUuid).first()
+    return db.configurationVersions.where("uuid").equals(block?.configurationVersionUuid).first()
   }, [block?.uuid])
 
   const configuration = useLiveQuery(() => {
     if (!block) return undefined
-    return configDatabase.bookConfigurations.where("uuid").equals(configurationVersion?.configurationUuid).first()
+    return db.bookConfigurations.where("uuid").equals(configurationVersion?.configurationUuid).first()
   }, [configurationVersion?.uuid])
 
   const saveBlock = async (blockData: IBlock) => {
 
     if (!blockData.uuid) {
       blockData.uuid = generateUUID()
-      const blockId = await configDatabase.blocks.add(blockData)
-      const persistedBlockData = await configDatabase.blocks.get(blockId)
+      const blockId = await db.blocks.add(blockData)
+      const persistedBlockData = await db.blocks.get(blockId)
       await appendDefaultParamGroup(persistedBlockData)
       return
     }
-    configDatabase.blocks.update(blockData.id, blockData)
+    db.blocks.update(blockData.id, blockData)
   }
 
   const saveParam = (param: IBlockParameter) => {
@@ -48,17 +51,17 @@ export const useBlockEditForm = (blockUuid: string, currentGroupUuid?: string) =
       param.uuid = generateUUID()
       param.groupUuid = currentGroupUuid;
       param.orderNumber = paramList?.length
-      configDatabase.blockParameters.add(param);
+      db.blockParameters.add(param);
     }
     else{
-      configDatabase.blockParameters.update(param.id, param);
+      db.blockParameters.update(param.id, param);
     }
   }
 
 
   const deleteParam = async (paramId: number) => {
     try {
-      await configDatabase.blockParameters.delete(paramId);
+      await db.blockParameters.delete(paramId);
       notifications.show({
         title: "Успешно",
         message: "Параметр удалён",
@@ -66,14 +69,14 @@ export const useBlockEditForm = (blockUuid: string, currentGroupUuid?: string) =
 
       // Update order numbers for remaining parameters in the same group
       if (currentGroupUuid) {
-        const remainingParams = await configDatabase.blockParameters
+        const remainingParams = await db.blockParameters
         .where('groupUuid')
         .equals(currentGroupUuid)
         .sortBy('orderNumber');
 
         await Promise.all(
             remainingParams.map((param, index) =>
-                configDatabase.blockParameters.update(param.id!, {
+                db.blockParameters.update(param.id!, {
                   orderNumber: index
                 })
             )
@@ -92,14 +95,14 @@ export const useBlockEditForm = (blockUuid: string, currentGroupUuid?: string) =
     try {
       if (!data.uuid) {
         data.uuid = generateUUID();
-        await configDatabase.blockParameterGroups.add(data);
+        await db.blockParameterGroups.add(data);
         notifications.show({
           title: "Успешно",
           message: `Вкладка "${data.title}" добавлена`,
         });
         return;
       }
-      await configDatabase.blockParameterGroups.update(data.id, data);
+      await db.blockParameterGroups.update(data.id, data);
       notifications.show({
         title: "Успешно",
         message: `Вкладка "${data.title}" обновлена`,
@@ -114,7 +117,7 @@ export const useBlockEditForm = (blockUuid: string, currentGroupUuid?: string) =
   }
 
   const moveGroupUp = async (groupUuid: string) => {
-    const groups = await configDatabase.blockParameterGroups
+    const groups = await db.blockParameterGroups
     .where("blockUuid")
     .equals(blockUuid)
     .sortBy("orderNumber");
@@ -125,16 +128,16 @@ export const useBlockEditForm = (blockUuid: string, currentGroupUuid?: string) =
     const previousGroup = groups[currentIndex - 1];
     const currentGroup = groups[currentIndex];
 
-    await configDatabase.blockParameterGroups.update(previousGroup.id!, {
+    await db.blockParameterGroups.update(previousGroup.id!, {
       orderNumber: currentGroup.orderNumber
     });
-    await configDatabase.blockParameterGroups.update(currentGroup.id!, {
+    await db.blockParameterGroups.update(currentGroup.id!, {
       orderNumber: previousGroup.orderNumber
     });
   }
 
   const moveGroupDown = async (groupUuid: string) => {
-    const groups = await configDatabase.blockParameterGroups
+    const groups = await db.blockParameterGroups
     .where("blockUuid")
     .equals(blockUuid)
     .sortBy("orderNumber");
@@ -145,23 +148,23 @@ export const useBlockEditForm = (blockUuid: string, currentGroupUuid?: string) =
     const nextGroup = groups[currentIndex + 1];
     const currentGroup = groups[currentIndex];
 
-    await configDatabase.blockParameterGroups.update(nextGroup.id!, {
+    await db.blockParameterGroups.update(nextGroup.id!, {
       orderNumber: currentGroup.orderNumber
     });
-    await configDatabase.blockParameterGroups.update(currentGroup.id!, {
+    await db.blockParameterGroups.update(currentGroup.id!, {
       orderNumber: nextGroup.orderNumber
     });
   }
 
   const updateGroupTitle = async (groupUuid: string, newTitle: string) => {
     try {
-      const group = await configDatabase.blockParameterGroups
+      const group = await db.blockParameterGroups
       .where('uuid')
       .equals(groupUuid)
       .first();
 
       if (group) {
-        await configDatabase.blockParameterGroups.update(group.id!, {
+        await db.blockParameterGroups.update(group.id!, {
           title: newTitle
         });
         notifications.show({
@@ -181,26 +184,26 @@ export const useBlockEditForm = (blockUuid: string, currentGroupUuid?: string) =
   const deleteGroup = async (groupUuid: string) => {
     try {
       // Удаляем все параметры, связанные с этой группой
-      await configDatabase.blockParameters
+      await db.blockParameters
         .where('groupUuid')
         .equals(groupUuid)
         .delete();
 
       // Удаляем группу
-      await configDatabase.blockParameterGroups
+      await db.blockParameterGroups
         .where('uuid')
         .equals(groupUuid)
         .delete();
 
       // Обновляем порядковые номера для оставшихся групп
-      const remainingGroups = await configDatabase.blockParameterGroups
+      const remainingGroups = await db.blockParameterGroups
         .where('blockUuid')
         .equals(blockUuid)
         .sortBy('orderNumber');
 
       await Promise.all(
           remainingGroups.map((group, index) =>
-              configDatabase.blockParameterGroups.update(group.id!, {
+              db.blockParameterGroups.update(group.id!, {
                 orderNumber: index
               })
           )
@@ -231,7 +234,7 @@ export const useBlockEditForm = (blockUuid: string, currentGroupUuid?: string) =
       title: 'Основное'
     };
 
-    await configDatabase.blockParameterGroups.add(defaultGroup);
+    await db.blockParameterGroups.add(defaultGroup);
   }
 
   return {

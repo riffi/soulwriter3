@@ -25,6 +25,7 @@ import classes from "./BlockEditForm.module.css";
 
 interface IBlockEditFormProps {
   blockUuid: string;
+  bookUuid?: string;
 }
 
 interface IFormState {
@@ -41,7 +42,7 @@ const INITIAL_FORM_STATE: IFormState = {
   isGroupsModalOpened: false,
 };
 
-export const BlockEditForm = ({ blockUuid }: IBlockEditFormProps) => {
+export const BlockEditForm = ({ blockUuid, bookUuid }: IBlockEditFormProps) => {
   const [state, setState] = useState<IFormState>(INITIAL_FORM_STATE);
   const {
     saveParamGroup,
@@ -56,7 +57,7 @@ export const BlockEditForm = ({ blockUuid }: IBlockEditFormProps) => {
     moveGroupDown,
     updateGroupTitle,
     deleteGroup
-  } = useBlockEditForm(blockUuid, state.currentGroupUuid);
+  } = useBlockEditForm(blockUuid, bookUuid, state.currentGroupUuid);
 
   useEffect(() => {
     if (paramGroupList?.length > 0 && !state.currentGroupUuid) {

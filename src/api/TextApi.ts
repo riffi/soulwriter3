@@ -7,7 +7,7 @@ import {IBlockTitleForms} from "@/entities/ConstructorEntities";
  */
 export const fetchAndPrepareTitleForms = async (phrase: string): Promise<IBlockTitleForms> => {
   try {
-    const response = await fetch('http://62.109.2.159:5123/parse_phrase', {
+    const response = await fetch('http://62.109.2.159:5123/get_cases', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

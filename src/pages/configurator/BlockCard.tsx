@@ -5,10 +5,11 @@ export const BlockCard = () => {
   const [searchParams] = useSearchParams();
 
   const blockUuid = searchParams.get('uuid')
+  const bookUuid = searchParams.get('bookUuid')
 
   return (
       <>
-        <BlockEditForm blockUuid={blockUuid}/>
+        <BlockEditForm blockUuid={blockUuid} bookUuid={bookUuid}/>
       </>
   )
 

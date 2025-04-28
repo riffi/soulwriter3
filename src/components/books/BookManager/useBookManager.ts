@@ -38,7 +38,7 @@ export const useBookManager = () => {
 
   // Копирование конфигурации в базу данных книги
   async function copyConfigurationToBookDb(configuration: IBookConfiguration, currentVersion?: number) {
-    await bookDb.bookConfiguration.add(configuration);
+    await bookDb.bookConfigurations.add(configuration);
     await copyConfigurationVersion(configuration.uuid, currentVersion);
   }
 

@@ -7,10 +7,11 @@ export const ConfigurationCard = () => {
   const [searchParams] = useSearchParams();
 
   const bookConfigurationUuid = searchParams.get('uuid')
+  const bookUuid = searchParams.get('bookUuid')
 
   return (
       <>
-        <BookConfigurationEditForm bookConfigurationUuid={bookConfigurationUuid}/>
+        <BookConfigurationEditForm bookConfigurationUuid={bookConfigurationUuid} bookUuid={bookUuid}/>
       </>
   )
 

@@ -31,7 +31,12 @@ import {useNavigate} from "react-router-dom";
 import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
 import {useDialog} from "@/providers/DialogProvider/DialogProvider";
 
-export const BookConfigurationEditForm = ({bookConfigurationUuid}: {bookConfigurationUuid: string}) => {
+export interface IBookConfigurationEditFormProps{
+  bookConfigurationUuid: string
+  bookUuid?: string
+}
+
+export const BookConfigurationEditForm = (props: IBookConfigurationEditFormProps) => {
   const [currentVersion, setCurrentVersion] = useState<IBookConfigurationVersion>()
   const navigate = useNavigate()
 
@@ -58,7 +63,7 @@ export const BookConfigurationEditForm = ({bookConfigurationUuid}: {bookConfigur
     saveBlock,
     paramGroupList,
     removeBlock
-  } = useBookConfigurationEditForm(bookConfigurationUuid, currentVersion, currentBlock)
+  } = useBookConfigurationEditForm(props.bookConfigurationUuid, props.bookUuid, currentVersion, currentBlock)
 
   const breadCrumbs = [
     { title: 'Конфигуратор', href: '/configurator' },
@@ -87,6 +92,14 @@ export const BookConfigurationEditForm = ({bookConfigurationUuid}: {bookConfigur
     setCurrentVersion(versionList?.[versionList?.length - 1])
   }, [versionList])
 
+
+  function handleOpenBlockPage(c: IBlock) {
+    let path = `/block/edit?uuid=${c.uuid}`;
+    if (props.bookUuid) {
+      path += `&bookUuid=${props.bookUuid}`;
+    }
+    return () => navigate(path);
+  }
 
   return (
       <>
@@ -179,7 +192,7 @@ export const BookConfigurationEditForm = ({bookConfigurationUuid}: {bookConfigur
                           variant="light"
                           color="blue"
                           size="sm"
-                          onClick={() => navigate(`/block/edit?uuid=${c.uuid}`)}
+                          onClick={handleOpenBlockPage(c)}
                       >
                         Открыть
                       </Button>
@@ -204,7 +217,7 @@ export const BookConfigurationEditForm = ({bookConfigurationUuid}: {bookConfigur
 
         {isModalOpened && <BlockEditModal
             isOpen={isModalOpened}
-            configurationUuid={bookConfigurationUuid}
+            configurationUuid={props.bookConfigurationUuid}
             onClose={() => setIsModalOpened(false)}
             onSave={(c) => {
               notifications.show({
