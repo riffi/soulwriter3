@@ -70,3 +70,17 @@
   transition: transform 200ms ease;
 }
 
+.baseControl {
+  --button-hover: var(--mantine-color-blue-0);
+
+  display: block;
+  width: 100%;
+  padding: var(--mantine-spacing-xs) var(--mantine-spacing-md);
+  color: var(--mantine-color-blue-7);
+  font-size: var(--mantine-font-size-sm);
+  border-left: 2px solid var(--mantine-color-blue-5);
+
+  &:hover {
+    background-color: var(--button-hover);
+  }
+}

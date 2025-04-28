@@ -20,6 +20,7 @@ import {
   Code,
   ScrollArea,
   Space,
+  Divider,
 } from '@mantine/core';
 import { useNavigate } from 'react-router-dom';
 import { useState, useMemo } from 'react';
@@ -46,6 +47,7 @@ interface NavLinkGroup {
 
 interface NavLinkProps extends NavLinkGroup {
   toggleNavbar?: () => void;
+  isBaseItem?: boolean; // Новый пропс для стилизации
 }
 
 const NavLink = ({
@@ -54,7 +56,8 @@ const NavLink = ({
                    initiallyOpened = false,
                    links,
                    link,
-                   toggleNavbar
+                   toggleNavbar,
+                   isBaseItem = false // Значение по умолчанию
                  }: NavLinkProps) => {
   const navigate = useNavigate();
   const [opened, setOpened] = useState(initiallyOpened);
@@ -91,15 +94,21 @@ const NavLink = ({
       <>
         <UnstyledButton
             onClick={handleClick}
-            className={classes.control}
+            className={isBaseItem ? classes.baseControl : classes.control} // Разные стили
             aria-expanded={hasLinks ? opened : undefined}
         >
           <Group justify="space-between" gap={0}>
             <Box style={{ display: 'flex', alignItems: 'center' }}>
-              <ThemeIcon variant="light" size={30}>
+              <ThemeIcon
+                  variant={isBaseItem ? 'filled' : 'light'} // Разные варианты иконок
+                  size={30}
+                  color={isBaseItem ? 'blue' : undefined}
+              >
                 <Icon size={18} />
               </ThemeIcon>
-              <Box ml="md">{label}</Box>
+              <Box ml="md" fw={isBaseItem ? 700 : 500}> {/* Разная толщина текста */}
+                {label}
+              </Box>
             </Box>
             {hasLinks && (
                 <IconChevronRight
@@ -135,6 +144,7 @@ const BASE_MENU_ITEMS: NavLinkGroup[] = [
     link: '/books',
   },
 ];
+
 const getBlockPageTitle = (block: IBlock) => {
   if (block.structureKind === IBlockStructureKind.single){
     return block.title;
@@ -146,22 +156,24 @@ const getBlockPageTitle = (block: IBlock) => {
     return block.title
   }
 }
+
 export const NavbarNested = ({ toggleNavbar }: { toggleNavbar?: () => void }) => {
   const { selectedBook } = useBookStore();
   const blocks = useLiveQuery<IBlock[]>(() => bookDb.blocks.toArray(), []);
 
-  const menuItems = useMemo(() => {
-    const items = [...BASE_MENU_ITEMS];
+  const { baseItems, dynamicItems } = useMemo(() => {
+    const baseItems = [...BASE_MENU_ITEMS];
+    const dynamicItems: NavLinkGroup[] = [];
 
     if (selectedBook) {
-      items.push({
+      dynamicItems.push({
         label: 'Сцены',
         icon: IconNotes,
         initiallyOpened: true,
         link: '/scenes',
       });
 
-      items.push({
+      dynamicItems.push({
         label: 'Конфигурация книги',
         icon: IconGauge,
         initiallyOpened: true,
@@ -174,7 +186,7 @@ export const NavbarNested = ({ toggleNavbar }: { toggleNavbar?: () => void }) =>
       })) || [];
 
       if (knowledgeLinks.length > 0) {
-        items.push({
+        dynamicItems.push({
           label: 'База знаний',
           icon: IconBrandDatabricks,
           initiallyOpened: true,
@@ -183,7 +195,7 @@ export const NavbarNested = ({ toggleNavbar }: { toggleNavbar?: () => void }) =>
       }
     }
 
-    return items;
+    return { baseItems, dynamicItems };
   }, [selectedBook, blocks]);
 
   return (
@@ -215,7 +227,16 @@ export const NavbarNested = ({ toggleNavbar }: { toggleNavbar?: () => void }) =>
 
         <ScrollArea className={classes.links}>
           <div className={classes.linksInner}>
-            {menuItems.map((item) => (
+            {baseItems.map((item) => (
+                <NavLink
+                    {...item}
+                    key={item.label}
+                    toggleNavbar={toggleNavbar}
+                    isBaseItem // Активируем особый стиль
+                />
+            ))}
+            <Divider my="sm" />
+            {dynamicItems.map((item) => (
                 <NavLink
                     {...item}
                     key={item.label}

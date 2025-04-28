@@ -11,13 +11,20 @@ import {
   SimpleGrid,
   Space,
   Text,
-  Stack
+  Stack, Title
 } from "@mantine/core";
 import React, {useEffect, useState} from "react";
 import {
   useBookConfigurationEditForm
 } from "@/components/configurator/BookConfigurationEditForm/useBookConfigurationEditForm";
-import {IconCheck, IconEdit, IconFilePencil, IconTrash} from "@tabler/icons-react";
+import {
+  IconCheck,
+  IconEdit,
+  IconFilePencil,
+  IconPlus,
+  IconRocket,
+  IconTrash, IconWorldUpload
+} from "@tabler/icons-react";
 import {notifications} from "@mantine/notifications";
 import {
   IBlock, IBlockStructureKind, IBlockStructureKindTitle,
@@ -103,7 +110,7 @@ export const BookConfigurationEditForm = (props: IBookConfigurationEditFormProps
 
   return (
       <>
-        <Container fluid>
+        <Container fluid style={{backgroundColor: 'white', padding: '20px'}}>
           <h1>Конфигурация: {configuration?.title}</h1>
           <Breadcrumbs separator="→" separatorMargin="md" mt="xs">
             {breadCrumbs}
@@ -114,8 +121,26 @@ export const BookConfigurationEditForm = (props: IBookConfigurationEditFormProps
                 <SegmentedControl
                     value={currentVersion?.uuid || versionList[0].uuid}
                     orientation={isMobile ? "vertical" : "horizontal"}
-                    onChange={(value)=>{
-                      setCurrentVersion(versionList?.find((v)=>v.uuid === value))
+                    onChange={(value) => {
+                      setCurrentVersion(versionList?.find((v) => v.uuid === value));
+                    }}
+                    styles={{
+                      root: {
+                        "--sc-font-size": "12px",
+                        "--sc-padding": "0px",
+                        backgroundColor: "transparent",
+                        gap: "4px",
+                      },
+                      indicator: {
+                        border: "1px solid #dee2e6",
+                        backgroundColor: "white",
+                        "&:hover": {
+                          backgroundColor: "#f8f9fa",
+                        },
+                      },
+                      label: {
+                        padding: "6px 10px",
+                      },
                     }}
                     data={versionList.map(version => ({
                       value: version.uuid,
@@ -127,35 +152,48 @@ export const BookConfigurationEditForm = (props: IBookConfigurationEditFormProps
                                 <IconCheck size={24} color="green" />
                             )}
                             <span>
-                               Версия {version.versionNumber}
+                              Версия {version.versionNumber}
                               {version.isDraft && ' (черновик)'}
                             </span>
                           </div>
                       ),
                     }))}
                 />
-                <Space h="md" />
+                <Space h="sm" />
               </>
           )}
 
           {currentVersion?.isDraft && (
               <>
-                <Button onClick={handleVersionPublication}>
+                <Button
+                  variant={"subtle"}
+                  onClick={handleVersionPublication}
+                  leftSection={<IconWorldUpload  size={16} />}
+                >
                   Опубликовать версию
                 </Button>
-                <Space h={20}/>
-                <Text size="xl">Строительные блоки</Text>
-                <Button
+              </>)}
+          <Title order={4}>Блоки</Title>
+          <SimpleGrid cols={{ base: 1, sm: 2, lg: 3, xl: 4 }} spacing="md">
+            {/* Новая карточка для добавления */}
+            {currentVersion?.isDraft && (
+                <Card
+                    shadow="sm"
+                    padding="lg"
+                    radius="md"
+                    withBorder
+                    style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                     onClick={() => {
-                      setCurrentBlock(getBlackBlock())
-                      setIsModalOpened(true)
+                      setCurrentBlock(getBlackBlock());
+                      setIsModalOpened(true);
                     }}
                 >
-                  Добавить
-                </Button>
-              </>)}
-          <Space h={20}/>
-          <SimpleGrid cols={{ base: 1, sm: 2, lg: 3, xl: 4 }} spacing="md">
+                  <Stack align="center" gap="xs">
+                    <IconPlus size={32} stroke={1.5} />
+                    <Text fw={500}>Добавить блок</Text>
+                  </Stack>
+                </Card>
+            )}
             {blockList?.map((c) =>
                 <Card key={c.uuid} shadow="sm" padding="lg" radius="md" withBorder>
                   <Stack gap="sm">
