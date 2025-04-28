@@ -9,7 +9,7 @@ import {
   Group,
   Box,
   Modal,
-  TextInput, Container,
+  TextInput, Container, Title, Space,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import {  IconPlus } from '@tabler/icons-react';
@@ -82,7 +82,8 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
   return (
       <Container>
       <Box className={classes.container} pos="relative">
-
+        <Title order={2}>{block?.titleForms?.plural}</Title>
+        <Space h="md"/>
         <Button
             onClick={handleAddClick}
             leftSection={<IconPlus size="1rem" />}
