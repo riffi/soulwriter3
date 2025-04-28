@@ -1,4 +1,4 @@
-import {Button, Group, Modal, Select, TextInput} from "@mantine/core";
+import {Button, Checkbox, Group, Modal, Select, TextInput} from "@mantine/core";
 import { useForm } from '@mantine/form';
 import {
   IBlockParameter, IBlockParameterDataType, IBlockParameterDataTypeTitle,
@@ -25,6 +25,7 @@ export const ParamEditModal  = (props: IBlockEditModalProps) => {
       groupUuid: "",
       dataType: "string",
       orderNumber: 0,
+      isDefault: 0,
     }
   });
 
@@ -42,12 +43,11 @@ export const ParamEditModal  = (props: IBlockEditModalProps) => {
       >
         <form onSubmit={
           form.onSubmit((values) => {
-            console.log("Начало сохранения")
             props.onSave(values)
             props.onClose()
-            console.log("Завершение сохранения")
           })
         }>
+
           <TextInput
             withAsterisk
             label="Название"
@@ -67,6 +67,12 @@ export const ParamEditModal  = (props: IBlockEditModalProps) => {
             {...form.getInputProps('dataType')}
             >
           </Select>
+          <Checkbox
+              mt="md"
+              label="По умолчанию"
+              checked={form.values.isDefault === 1}
+              onChange={(e) => form.setFieldValue('isDefault', e.currentTarget.checked ? 1 : 0)}
+          />
           <Group justify="flex-end" mt="md">
             <Button type="submit">Сохранить</Button>
           </Group>

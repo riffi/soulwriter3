@@ -36,20 +36,21 @@ export const ParamTable = ({
         </Button>
 
         <Table striped highlightOnHover className={classes.table}>
-          <Table.Thead>
+          <Table.Thead style={{ fontSize: '0.7rem' }}>
             <Table.Tr>
-              <Table.Th width={50}>#</Table.Th>
               <Table.Th>Название</Table.Th>
-              <Table.Th width={150}>Тип данных</Table.Th>
-              <Table.Th width={100}>Действия</Table.Th>
+              <Table.Th width={80}>Тип</Table.Th>
+              <Table.Th width={100}></Table.Th>
             </Table.Tr>
           </Table.Thead>
           {params?.length > 0 ? (
               <Table.Tbody>
                 {params?.map((param) => (
                     <Table.Tr key={param.uuid}>
-                      <Table.Td>{param.orderNumber}</Table.Td>
-                      <Table.Td>{param.title}</Table.Td>
+                      <Table.Td>
+                        {param.isDefault? '✓ ' : ''}
+                        {param.title}
+                      </Table.Td>
                       <Table.Td>
                         <Text size="sm" c="dimmed">
                           {IBlockParameterDataTypeTitle[param.dataType]}

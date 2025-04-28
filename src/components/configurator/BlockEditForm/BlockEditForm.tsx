@@ -195,7 +195,6 @@ export const BlockEditForm = ({ blockUuid, bookUuid }: IBlockEditFormProps) => {
             isOpen={state.isParamModalOpened}
             onClose={() => setState(prev => ({ ...prev, isParamModalOpened: false }))}
             onSave={(param) => {
-              console.log(param)
               notifications.show({
                 title: "Параметр",
                 message: `Параметр "${param.title}" сохранён`,

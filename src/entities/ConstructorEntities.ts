@@ -84,11 +84,13 @@ export interface IBlockParameter {
   id?: number
   uuid?: string; // Автогенерация UUID
   title: string;
-  groupUuid: string
+  groupUuid: string;
+  blockUuid: string;
   description: string;
   dataType: string// Вид данных
   linkedBlockUuid?: string; // Ссылка на другой строительный блок через UUID
   linkedParameterUuid?: string; // Ссылка на параметр строительного блока через UUID
+  isDefault?: number; // Добавлять параметр по умолчанию
   orderNumber: number; // Порядковый номер
 }
 

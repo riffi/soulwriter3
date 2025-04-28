@@ -16,7 +16,7 @@ const bookSchema={
   configurationVersions: '++id, &uuid, configurationUuid, versionNumber, isDraft',
   blocks: '++id, &uuid, configurationVersionUuid, title',
   blockParameterGroups: '++id, &uuid, blockUuid, title',
-  blockParameters: '++id, &uuid, groupUuid, dataType, linkedBlockUuid, linkedParameterUuid',
+  blockParameters: '++id, &uuid, groupUuid, blockUuid, dataType, linkedBlockUuid, linkedParameterUuid, isDefault',
   blockParameterPossibleValues: '++id, &uuid, parameterUuid, value',
 
   blockInstances: '++id, &uuid, blockUuid, title',

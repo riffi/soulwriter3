@@ -50,7 +50,10 @@ export const useBlockEditForm = (blockUuid: string, bookUuid?: string, currentGr
     if (!param.id) {
       param.uuid = generateUUID()
       param.groupUuid = currentGroupUuid;
-      param.orderNumber = paramList?.length
+      param.orderNumber = paramList?.length;
+      param.blockUuid = blockUuid;
+      param.isDefault = param.isDefault ? 1 : 0;
+      console.log(param)
       db.blockParameters.add(param);
     }
     else{

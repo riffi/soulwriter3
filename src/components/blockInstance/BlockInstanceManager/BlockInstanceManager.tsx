@@ -31,7 +31,9 @@ export interface IBlockInstanceManagerProps {
 export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
   const {
     instances,
-    block
+    block,
+    addBlockInstance,
+    deleteBlockInstance
   } = useBlockInstanceManager(props.blockUuid);
 
   const [addingInstance, setAddingInstance] = useState(false);
@@ -57,7 +59,7 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
         uuid,
         title: newInstanceName.trim(),
       };
-      await bookDb.blockInstances.add(newInstance);
+      await addBlockInstance(newInstance);
       close();
       navigate(`/block-instance/card?uuid=${uuid}`);
     } finally {
@@ -69,10 +71,10 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
     navigate(`/block-instance/card?uuid=${uuid}`);
   };
 
-  const handleDeleteInstance = async (uuid: string) => {
-    const result = await showDialog("Вы уверены?", "Удалить блок?");
+  const handleDeleteInstance = async (data: IBlockInstance) => {
+    const result = await showDialog("Вы уверены?", `Удалить ${data.title}?`);
     if (result && bookDb) {
-      await bookDb.blockInstances.where('uuid').equals(uuid).delete();
+      await deleteBlockInstance(data);
     }
   };
 
@@ -116,7 +118,7 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
                           <ActionIcon
                               variant="subtle"
                               color="red"
-                              onClick={() => handleDeleteInstance(instance.uuid!)}
+                              onClick={() => handleDeleteInstance(instance)}
                           >
                             <IconTrash size="1rem" />
                           </ActionIcon>
