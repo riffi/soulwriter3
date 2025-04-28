@@ -2,8 +2,6 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { bookDb } from "@/entities/bookDb";
 import { IBlockInstance } from "@/entities/BookEntities";
-import { IBlock } from "@/entities/ConstructorEntities";
-import { configDatabase } from "@/entities/configuratorDb";
 import {
   Button,
   Table,
@@ -11,7 +9,7 @@ import {
   Group,
   Box,
   ActionIcon,
-  LoadingOverlay,
+  Badge,
   Modal,
   TextInput, Container,
 } from '@mantine/core';
@@ -33,6 +31,8 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
     instances,
     block,
     addBlockInstance,
+    instancesWithParams,
+    blockParameters,
     deleteBlockInstance
   } = useBlockInstanceManager(props.blockUuid);
 
@@ -102,10 +102,29 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
           </Table.Thead>
           {instances?.length > 0 ? (
               <Table.Tbody>
-                {instances?.map((instance) => (
+                {instancesWithParams?.map((instance) => (
                     <Table.Tr key={instance.uuid}>
                       <Table.Td>
-                        <Text fw={500}>{instance.title}</Text>
+                        <div>
+                          <Text fw={500}>{instance.title}</Text>
+                          <Group gap="xs" mt={4}>
+                            {blockParameters?.map((param) => {
+                              const paramInstance = instance.params?.find(
+                                  (p) => p.blockParameterUuid === param.uuid
+                              );
+                              return (
+                                  <Badge
+                                      key={param.uuid}
+                                      variant="light"
+                                      color="blue"
+                                      radius="sm"
+                                  >
+                                    {param.title}: {paramInstance?.value || '—'}
+                                  </Badge>
+                              );
+                            })}
+                          </Group>
+                        </div>
                       </Table.Td>
                       <Table.Td>
                         <Group gap={4} justify="center">

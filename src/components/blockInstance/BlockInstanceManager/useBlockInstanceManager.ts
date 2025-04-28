@@ -4,6 +4,10 @@ import {IBlockInstance, IBlockParameterInstance} from "@/entities/BookEntities";
 import {IBlock, IBlockParameter} from "@/entities/ConstructorEntities";
 import {generateUUID} from "@/utils/UUIDUtils";
 
+export interface IBlockInstanceWithParams extends IBlockInstance {
+  params: IBlockParameterInstance[];
+}
+
 export const useBlockInstanceManager = (blockUuid: string) => {
 
   const block = useLiveQuery<IBlock>(() => {
@@ -19,6 +23,34 @@ export const useBlockInstanceManager = (blockUuid: string) => {
       .equals(blockUuid)
       .toArray();
   }, [blockUuid]);
+
+  const blockParameters = useLiveQuery<IBlockParameter[]>(() => {
+    return bookDb.blockParameters
+    .where('blockUuid')
+    .equals(blockUuid)
+    .and(param => param.displayInCard === 1)
+    .toArray();
+  }, [blockUuid]);
+
+  const instancesWithParams = useLiveQuery<IBlockInstanceWithParams[]>(async () => {
+    if (!instances || !blockParameters) return [];
+
+    // Получаем UUID параметров, которые нужно отображать
+    const displayParameterUuids = blockParameters.map(p => p.uuid!);
+
+    return Promise.all(instances.map(async (instance) => {
+      // Фильтруем параметры инстанса по нужным UUID
+      const params = await bookDb.blockParameterInstances
+      .where('blockInstanceUuid')
+      .equals(instance.uuid)
+      .filter(p => displayParameterUuids.includes(p.blockParameterUuid))
+      .toArray();
+
+      return { ...instance, params };
+    }));
+  }, [instances, blockParameters]); // Добавляем зависимость от blockParameters
+
+
 
   async function appendDefaultParams(data: IBlockInstance) {
     const defaultParameters = await bookDb
@@ -67,6 +99,8 @@ export const useBlockInstanceManager = (blockUuid: string) => {
     instances,
     addBlockInstance,
     updateBlockInstance,
-    deleteBlockInstance
+    deleteBlockInstance,
+    instancesWithParams,
+    blockParameters
   }
 }

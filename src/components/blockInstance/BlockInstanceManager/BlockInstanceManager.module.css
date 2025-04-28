@@ -3,6 +3,7 @@
   padding: 16px;
   background-color: var(--mantine-color-body);
   border-radius: var(--mantine-radius-md);
+  overflow-x: auto;
 }
 
 .addButton {

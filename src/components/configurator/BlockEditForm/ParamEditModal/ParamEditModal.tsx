@@ -26,6 +26,7 @@ export const ParamEditModal  = (props: IBlockEditModalProps) => {
       dataType: "string",
       orderNumber: 0,
       isDefault: 0,
+      displayInCard: 0,
     }
   });
 
@@ -72,6 +73,12 @@ export const ParamEditModal  = (props: IBlockEditModalProps) => {
               label="По умолчанию"
               checked={form.values.isDefault === 1}
               onChange={(e) => form.setFieldValue('isDefault', e.currentTarget.checked ? 1 : 0)}
+          />
+          <Checkbox
+              mt="md"
+              label="Отображать в карточке"
+              checked={form.values.displayInCard === 1}
+              onChange={(e) => form.setFieldValue('displayInCard', e.currentTarget.checked ? 1 : 0)}
           />
           <Group justify="flex-end" mt="md">
             <Button type="submit">Сохранить</Button>

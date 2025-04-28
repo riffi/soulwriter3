@@ -91,6 +91,7 @@ export interface IBlockParameter {
   linkedBlockUuid?: string; // Ссылка на другой строительный блок через UUID
   linkedParameterUuid?: string; // Ссылка на параметр строительного блока через UUID
   isDefault?: number; // Добавлять параметр по умолчанию
+  displayInCard: number; // Отображать ли параметр в карточке
   orderNumber: number; // Порядковый номер
 }
 
