@@ -45,7 +45,8 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
     parameterInstances,
     availableParametersWithoutInstances,
     availableParameters,
-    updateBlockInstanceTitle
+    updateBlockInstanceTitle,
+    possibleValuesMap
   } = useBlockInstanceEditor(props.blockInstanceUuid, currentParamGroup);
 
   const navigate = useNavigate();
@@ -133,6 +134,7 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
           editValue={editValue}
           onStartEdit={handleStartEdit}
           onSaveEdit={handleSaveEdit}
+          possibleValuesMap={possibleValuesMap}
       />
     </Box>
     </>

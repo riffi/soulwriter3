@@ -202,6 +202,8 @@ export const BlockEditForm = ({ blockUuid, bookUuid }: IBlockEditFormProps) => {
               saveParam(param);
             }}
             initialData={state.currentParam}
+            blockUuid={blockUuid}
+            bookUuid={bookUuid}
         />}
 
         <GroupsModal

@@ -240,6 +240,48 @@ export const useBlockEditForm = (blockUuid: string, bookUuid?: string, currentGr
     await db.blockParameterGroups.add(defaultGroup);
   }
 
+
+  const loadPossibleValues = async (parameterUuid: string) => {
+    return db.blockParameterPossibleValues
+    .where('parameterUuid')
+    .equals(parameterUuid)
+    .sortBy('orderNumber');
+  };
+
+  const savePossibleValues = async (parameterUuid: string, values: string[]) => {
+    try {
+      // Удаляем старые значения
+      await db.blockParameterPossibleValues
+      .where('parameterUuid')
+      .equals(parameterUuid)
+      .delete();
+
+      // Сохраняем новые значения
+      await Promise.all(
+          values.map((value, index) =>
+              db.blockParameterPossibleValues.add({
+                uuid: generateUUID(),
+                parameterUuid,
+                value,
+                orderNumber: index
+              })
+          )
+      );
+
+      notifications.show({
+        title: "Успешно",
+        message: "Значения списка сохранены",
+      });
+    } catch (error) {
+      notifications.show({
+        title: "Ошибка",
+        message: "Не удалось сохранить значения списка",
+        color: "red",
+      });
+    }
+  };
+
+
   return {
     block,
     saveBlock,
@@ -253,6 +295,8 @@ export const useBlockEditForm = (blockUuid: string, bookUuid?: string, currentGr
     moveGroupUp,
     moveGroupDown,
     updateGroupTitle,
-    deleteGroup
+    deleteGroup,
+    loadPossibleValues,
+    savePossibleValues
   }
 }

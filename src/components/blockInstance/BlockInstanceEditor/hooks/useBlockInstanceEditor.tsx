@@ -1,7 +1,11 @@
 import {bookDb} from "@/entities/bookDb";
 import {useLiveQuery} from "dexie-react-hooks";
 import {IBlockInstance, IBlockParameterInstance} from "@/entities/BookEntities";
-import {IBlockParameterGroup, IBlockParameter} from "@/entities/ConstructorEntities";
+import {
+  IBlockParameterGroup,
+  IBlockParameter,
+  IBlockParameterPossibleValue
+} from "@/entities/ConstructorEntities";
 
 export const useBlockInstanceEditor = (blockInstanceUuid: string, currentParamGroup: IBlockParameterGroup | null) => {
 
@@ -43,6 +47,23 @@ export const useBlockInstanceEditor = (blockInstanceUuid: string, currentParamGr
     .toArray();
   }, [currentParamGroup]);
 
+  const possibleValuesMap = useLiveQuery<Record<string, IBlockParameterPossibleValue[]>>(() => {
+    if (!availableParameters) return {};
+    const paramUuids = availableParameters.map(p => p.uuid || '');
+    return bookDb.blockParameterPossibleValues
+    .where('parameterUuid')
+    .anyOf(paramUuids)
+    .toArray()
+    .then(values => {
+      return values.reduce((acc, value) => {
+        const key = value.parameterUuid;
+        if (!acc[key]) acc[key] = [];
+        acc[key].push(value);
+        return acc;
+      }, {} as Record<string, IBlockParameterPossibleValue[]>);
+    });
+  }, [availableParameters]);
+
   //параметры, которые еще не используются в данном блоке
   const availableParametersWithoutInstances = useLiveQuery<IBlockParameter[]>(() => {
     if (!availableParameters || !parameterInstances) return availableParameters || [];
@@ -63,6 +84,7 @@ export const useBlockInstanceEditor = (blockInstanceUuid: string, currentParamGr
     parameterInstances,
     availableParametersWithoutInstances,
     availableParameters,
-    updateBlockInstanceTitle
+    updateBlockInstanceTitle,
+    possibleValuesMap
   }
 };
