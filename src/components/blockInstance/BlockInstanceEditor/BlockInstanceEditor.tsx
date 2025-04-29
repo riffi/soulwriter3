@@ -149,7 +149,7 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
 
   return (
       <>
-      <Container>
+      <Container size="xl" p="0" >
         <Box className={classes.container} pos="relative">
           <Group mb="md" className={classes.header}>
             <ActionIcon

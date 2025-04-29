@@ -133,7 +133,7 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
   };
 
   return (
-      <Container>
+      <Container size="xl" p="0" >
       <Box className={classes.container} pos="relative">
         <Title order={2}>{block?.titleForms?.plural}</Title>
         <Space h="md"/>

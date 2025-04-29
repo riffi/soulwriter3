@@ -30,12 +30,7 @@ export const useBlockInstanceEditor = (blockInstanceUuid: string, currentParamGr
 
   const otherBlocks = useLiveQuery<IBlock[]>(() => {
     if (!block || !blockRelations) return []
-    return bookDb.blocks.where({
-      configurationVersionUuid: block?.configurationVersionUuid
-    })
-    .filter(b => b.uuid !== block.uuid)
-    .filter(b => blockRelations.some(r => r.sourceBlockUuid === b.uuid || r.targetBlockUuid === b.uuid))
-    .toArray();
+    return BlockRepository.getRelatedBlocks(bookDb, block, blockRelations)
   },[block, blockRelations])
 
 

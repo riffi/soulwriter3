@@ -2,11 +2,12 @@ import {BlockAbstractDb} from "@/entities/BlockAbstractDb";
 import {
   IBlock,
   IBlockParameter,
-  IBlockParameterPossibleValue
+  IBlockParameterPossibleValue, IBlockRelation
 } from "@/entities/ConstructorEntities";
 import {generateUUID} from "@/utils/UUIDUtils";
 import {useLiveQuery} from "dexie-react-hooks";
 import {bookDb} from "@/entities/bookDb";
+import {BlockRelationRepository} from "@/repository/BlockRelationRepository";
 
 const getByUuid = async (db: BlockAbstractDb, blockUuid: string) => {
   return db.blocks.where("uuid").equals(blockUuid).first()
@@ -62,6 +63,23 @@ const getParamsByGroup = async (db: BlockAbstractDb, groupUuid: string) => {
     .equals(groupUuid)
     .toArray();
 }
+
+const getRelatedBlocks = async (db: BlockAbstractDb, block: IBlock, blockRelations?: IBlockRelation[]) => {
+  const relations: IBlockRelation[] = []
+  if (!blockRelations){
+    relations.push(...await BlockRelationRepository.getBlockRelations(db, block.uuid));
+  }
+  else{
+    relations.push(...blockRelations)
+  }
+  return db.blocks.where({
+    configurationVersionUuid: block?.configurationVersionUuid
+  })
+  .filter(b => b.uuid !== block.uuid)
+  .filter(b => relations.some(r => r.sourceBlockUuid === b.uuid || r.targetBlockUuid === b.uuid))
+  .toArray();
+}
+
 
 const deleteParameterGroup = async (db: BlockAbstractDb, blockUuid: string, groupUuid: string) => {
 
@@ -123,6 +141,7 @@ export const BlockRepository = {
   getParamPossibleValues,
   getDisplayedParameters,
   getDefaultParameters,
+  getRelatedBlocks,
   deleteParameterGroup,
   updateParamPossibleValues
 }
