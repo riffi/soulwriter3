@@ -176,7 +176,7 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
                 data={[
                   {label: 'Параметры', value: 'params'},
                   ...(otherBlocks?.map(b => ({
-                    label: b.title,
+                    label: b.titleForms?.plural,
                     value: b.uuid!
                   })) || [])
                 ]}

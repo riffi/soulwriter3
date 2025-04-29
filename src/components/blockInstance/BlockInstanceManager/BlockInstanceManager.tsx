@@ -190,7 +190,7 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
             </div>
         )}
 
-        <Table striped highlightOnHover className={classes.table}>
+        <Table highlightOnHover className={classes.table}>
           <Table.Thead>
             <Table.Tr>
               <Table.Th>Название</Table.Th>

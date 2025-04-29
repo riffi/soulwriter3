@@ -23,7 +23,13 @@ export const BlockInstanceTableRow = ({
       <Table.Tr key={instance.uuid}>
         <Table.Td>
           <div>
-            <Text fw={500}>{instance.title}</Text>
+            <Text
+                fw={400}
+                onClick={() => onEdit(instance.uuid!)}
+                style={{cursor: 'pointer'}}
+            >
+              {instance.title}
+            </Text>
             <Group gap="xs" mt={4}>
               {displayedParameters?.map((param) => {
                 const paramInstance = instance.params?.find(
@@ -32,8 +38,8 @@ export const BlockInstanceTableRow = ({
                 return (
                     <Badge
                         key={param.uuid}
-                        variant="light"
-                        color="grey"
+                        variant="outline"
+                        color="#999999"
                         radius="sm"
                         style={{fontSize: '0.8rem', textTransform: 'lowercase', fontWeight: 400}}
                     >

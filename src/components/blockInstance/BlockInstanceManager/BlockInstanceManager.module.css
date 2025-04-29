@@ -14,25 +14,14 @@
 
 .table {
   margin-top: 8px;
-  background-color: var(--mantine-color-body);
-  border-radius: var(--mantine-radius-md);
+  background-color: white;
   overflow: hidden;
 
   thead {
     tr {
       th {
-        background-color: var(--mantine-color-gray-0);
         font-weight: 600;
-        color: var(--mantine-color-gray-7);
         padding: 12px 16px;
-
-        &:first-of-type {
-          border-top-left-radius: var(--mantine-radius-md);
-        }
-
-        &:last-of-type {
-          border-top-right-radius: var(--mantine-radius-md);
-        }
       }
     }
   }
@@ -41,28 +30,11 @@
     tr {
       td {
         padding: 12px 16px;
-        border-bottom: 1px solid var(--mantine-color-gray-2);
-
-        &:first-of-type {
-          border-left: 1px solid var(--mantine-color-gray-2);
-        }
-
-        &:last-of-type {
-          border-right: 1px solid var(--mantine-color-gray-2);
-        }
       }
 
       &:last-of-type {
         td {
           border-bottom: none;
-
-          &:first-of-type {
-            border-bottom-left-radius: var(--mantine-radius-md);
-          }
-
-          &:last-of-type {
-            border-bottom-right-radius: var(--mantine-radius-md);
-          }
         }
       }
     }
