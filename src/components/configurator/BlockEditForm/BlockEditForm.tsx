@@ -12,17 +12,20 @@ import {
 import { useBlockEditForm } from "@/components/configurator/BlockEditForm/useBlockEditForm";
 import React, { useEffect, useState } from "react";
 import {
-  IBlockParameter,
+  BlockRelationType,
+  IBlockParameter, IBlockRelation,
   IBlockStructureKind,
   IBlockStructureKindTitle
 } from "@/entities/ConstructorEntities";
 import { notifications } from "@mantine/notifications";
-import { ParamEditModal } from "@/components/configurator/BlockEditForm/ParamEditModal/ParamEditModal";
-import { ParamTable } from "./ParamTable/ParamTable";
+import { ParamEditModal } from "@/components/configurator/BlockEditForm/modal/ParamEditModal/ParamEditModal";
+import { ParamTable } from "@/components/configurator/BlockEditForm/parts/ParamTable/ParamTable";
 import {IconEdit, IconSettings} from "@tabler/icons-react";
-import {GroupsModal} from "@/components/configurator/BlockEditForm/GroupsModal/GroupsModal";
+import {GroupsModal} from "@/components/configurator/BlockEditForm/modal/GroupsModal/GroupsModal";
 import classes from "./BlockEditForm.module.css";
 import {Heading} from "tabler-icons-react";
+import {RelationTable} from "@/components/configurator/BlockEditForm/parts/RelationTable";
+import {RelationEditModal} from "@/components/configurator/BlockEditForm/modal/RelationEditModal";
 
 interface IBlockEditFormProps {
   blockUuid: string;
@@ -32,8 +35,11 @@ interface IBlockEditFormProps {
 interface IFormState {
   currentGroupUuid?: string;
   currentParam?: IBlockParameter;
+  currentRelation?: IBlockRelation;
   isParamModalOpened: boolean;
   isGroupsModalOpened: boolean;
+  isRelationModalOpened: boolean;
+  activeTab: 'parameters' | 'relations';
 }
 
 const INITIAL_FORM_STATE: IFormState = {
@@ -41,6 +47,8 @@ const INITIAL_FORM_STATE: IFormState = {
   currentParam: undefined,
   isParamModalOpened: false,
   isGroupsModalOpened: false,
+  isRelationModalOpened: false,
+  activeTab: 'parameters',
 };
 
 export const BlockEditForm = ({ blockUuid, bookUuid }: IBlockEditFormProps) => {
@@ -49,6 +57,7 @@ export const BlockEditForm = ({ blockUuid, bookUuid }: IBlockEditFormProps) => {
     saveParamGroup,
     paramGroupList,
     block,
+    otherBlocks,
     saveBlock,
     configuration,
     paramList,
@@ -57,7 +66,10 @@ export const BlockEditForm = ({ blockUuid, bookUuid }: IBlockEditFormProps) => {
     moveGroupUp,
     moveGroupDown,
     updateGroupTitle,
-    deleteGroup
+    deleteGroup,
+    blockRelations,
+    saveRelation,
+    deleteRelation
   } = useBlockEditForm(blockUuid, bookUuid, state.currentGroupUuid);
 
   useEffect(() => {
@@ -87,6 +99,19 @@ export const BlockEditForm = ({ blockUuid, bookUuid }: IBlockEditFormProps) => {
         {item.title}
       </Anchor>
   ));
+
+  const handleRelationModalOpen = (relation?: IBlockRelation) => {
+    setState(prev => ({
+      ...prev,
+      currentRelation: relation || {
+        sourceBlockUuid: blockUuid,
+        targetBlockUuid: '',
+        relationType: BlockRelationType.ONE_TO_ONE,
+        configurationVersionUuid: block?.configurationVersionUuid || ''
+      },
+      isRelationModalOpened: true,
+    }));
+  };
 
   const handleParamModalOpen = (param?: IBlockParameter) => {
     setState(prev => ({
@@ -172,8 +197,6 @@ export const BlockEditForm = ({ blockUuid, bookUuid }: IBlockEditFormProps) => {
                 placeholder="Выберите тип структуры"
             />
           </Group>
-
-
         </Group>
         <Checkbox
             checked={block?.useTabs}
@@ -183,14 +206,38 @@ export const BlockEditForm = ({ blockUuid, bookUuid }: IBlockEditFormProps) => {
             mb="xl"
         />
         <Space h="md" />
-        <Title order={4}>Параметры</Title>
-        {block?.useTabs ? renderTabsContent() : (
-            <ParamTable
-                params={paramList || []}
-                onAddParam={() => handleParamModalOpen(getInitialParamData())}
-                onEditParam={handleParamModalOpen}
-                onDeleteParam={deleteParam}
-            />
+
+        <Group mb="md">
+          <SegmentedControl
+              value={state.activeTab}
+              onChange={(value) => setState(prev => ({ ...prev, activeTab: value as 'parameters' | 'relations' }))}
+              data={[
+                { value: 'parameters', label: 'Параметры' },
+                { value: 'relations', label: 'Связи' },
+              ]}
+          />
+        </Group>
+        {state.activeTab === 'parameters' ? (
+            <>
+              {block?.useTabs ? renderTabsContent() : (
+                  <ParamTable
+                      params={paramList || []}
+                      onAddParam={() => handleParamModalOpen(getInitialParamData())}
+                      onEditParam={handleParamModalOpen}
+                      onDeleteParam={deleteParam}
+                  />
+              )}
+            </>
+        ) : (
+            <>
+              <RelationTable
+                  relations={blockRelations || []}
+                  onAddRelation={() => handleRelationModalOpen()}
+                  onEditRelation={handleRelationModalOpen}
+                  onDeleteRelation={deleteRelation}
+                  otherBlocks={otherBlocks || []}
+              />
+            </>
         )}
 
         {state.isParamModalOpened && <ParamEditModal
@@ -206,6 +253,18 @@ export const BlockEditForm = ({ blockUuid, bookUuid }: IBlockEditFormProps) => {
             initialData={state.currentParam}
             blockUuid={blockUuid}
             bookUuid={bookUuid}
+        />}
+
+        {state.isRelationModalOpened && <RelationEditModal
+            isOpen={state.isRelationModalOpened}
+            onClose={() => setState(prev => ({ ...prev, isRelationModalOpened: false }))}
+            onSave={(relation) => {
+              saveRelation(relation);
+              setState(prev => ({ ...prev, isRelationModalOpened: false }))
+            }}
+            initialData={state.currentRelation}
+            blockUuid={blockUuid}
+            otherBlocks={otherBlocks || []}
         />}
 
         <GroupsModal

@@ -104,3 +104,20 @@ export interface IBlockParameterPossibleValue {
   value: string; // Значение
   orderNumber: number; // Порядковый номер
 }
+
+
+export enum BlockRelationType {
+  ONE_TO_ONE = 'one-to-one',
+  ONE_TO_MANY = 'one-to-many',
+  MANY_TO_ONE = 'many-to-one',
+  MANY_TO_MANY = 'many-to-many',
+}
+
+export interface IBlockRelation {
+  id?: number;
+  uuid?: string;
+  sourceBlockUuid: string;       // UUID исходного блока
+  targetBlockUuid: string;       // UUID целевого блока
+  relationType: BlockRelationType; // Тип связи
+  configurationVersionUuid: string; // Версия конфигурации
+}

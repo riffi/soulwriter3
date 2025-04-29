@@ -5,7 +5,7 @@ import {
   IBookConfiguration,
   IBlockParameter,
   IBlockParameterGroup,
-  IBlockParameterPossibleValue, IBookConfigurationVersion,
+  IBlockParameterPossibleValue, IBookConfigurationVersion, IBlockRelation,
 } from './ConstructorEntities';
 import {IBook} from "@/entities/BookEntities";
 
@@ -21,6 +21,8 @@ class ConfigDatabase extends Dexie {
 
   blockParameterPossibleValues!: Dexie.Table<IBlockParameterPossibleValue, number>;
 
+  blocksRelations!: Dexie.Table<IBlockRelation, number>;
+
   books!: Dexie.Table<IBook, number>;
 
   constructor() {
@@ -32,6 +34,7 @@ class ConfigDatabase extends Dexie {
       blockParameterGroups: '++id, &uuid, blockUuid, title',
       blockParameters: '++id, &uuid, groupUuid, blockUuid, dataType, linkedBlockUuid, linkedParameterUuid, isDefault, displayInCard',
       blockParameterPossibleValues: '++id, &uuid, parameterUuid, value',
+      blocksRelations: '++id, &uuid, sourceBlockUuid, targetBlockUuid',
       books: '++id, &uuid, title, author, kind, configurationUuid',
     });
   }

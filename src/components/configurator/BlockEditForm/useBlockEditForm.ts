@@ -1,5 +1,10 @@
 import { useLiveQuery } from 'dexie-react-hooks';
-import {IBlock, IBlockParameter, IBlockParameterGroup} from "@/entities/ConstructorEntities";
+import {
+  IBlock,
+  IBlockParameter,
+  IBlockParameterGroup,
+  IBlockRelation
+} from "@/entities/ConstructorEntities";
 import {configDatabase} from "@/entities/configuratorDb";
 import {generateUUID} from "@/utils/UUIDUtils";
 import {notifications} from "@mantine/notifications";
@@ -12,6 +17,14 @@ export const useBlockEditForm = (blockUuid: string, bookUuid?: string, currentGr
   const block = useLiveQuery<IBlock>( () => {
     return db.blocks.where("uuid").equals(blockUuid).first()
   }, [blockUuid])
+
+  const otherBlocks = useLiveQuery<IBlock[]>(() => {
+    if (!block) return []
+    return db.blocks.where({
+      configurationVersionUuid: block?.configurationVersionUuid
+    })
+    .filter(block => block.uuid !== blockUuid).toArray();
+  },[block])
 
   const paramGroupList = useLiveQuery<IBlockParameterGroup[]>(() => {
     return db.blockParameterGroups.where("blockUuid").equals(blockUuid).sortBy("orderNumber");
@@ -33,6 +46,53 @@ export const useBlockEditForm = (blockUuid: string, bookUuid?: string, currentGr
     if (!block) return undefined
     return db.bookConfigurations.where("uuid").equals(configurationVersion?.configurationUuid).first()
   }, [configurationVersion?.uuid])
+
+  const blockRelations = useLiveQuery<IBlockRelation[]>(() => {
+    return db.blocksRelations
+    .where("sourceBlockUuid")
+    .equals(blockUuid)
+    .toArray();
+  }, [blockUuid]);
+
+  const saveRelation = async (relation: IBlockRelation) => {
+    try {
+      if (!relation.uuid) {
+        relation.uuid = generateUUID();
+        await db.blocksRelations.add(relation);
+      } else {
+        const existing = await db.blocksRelations.where('uuid').equals(relation.uuid).first();
+        if (existing) {
+          await db.blocksRelations.update(existing.id!, relation);
+        }
+      }
+      notifications.show({
+        title: "Успешно",
+        message: "Связь сохранена",
+      });
+    } catch (error) {
+      notifications.show({
+        title: "Ошибка",
+        message: "Не удалось сохранить связь",
+        color: "red",
+      });
+    }
+  };
+
+  const deleteRelation = async (relationUuid: string) => {
+    try {
+      await db.blocksRelations.where('uuid').equals(relationUuid).delete();
+      notifications.show({
+        title: "Успешно",
+        message: "Связь удалена",
+      });
+    } catch (error) {
+      notifications.show({
+        title: "Ошибка",
+        message: "Не удалось удалить связь",
+        color: "red",
+      });
+    }
+  };
 
   const saveBlock = async (blockData: IBlock) => {
 
@@ -284,6 +344,7 @@ export const useBlockEditForm = (blockUuid: string, bookUuid?: string, currentGr
 
   return {
     block,
+    otherBlocks,
     saveBlock,
     paramGroupList,
     saveParamGroup,
@@ -297,6 +358,9 @@ export const useBlockEditForm = (blockUuid: string, bookUuid?: string, currentGr
     updateGroupTitle,
     deleteGroup,
     loadPossibleValues,
-    savePossibleValues
+    savePossibleValues,
+    blockRelations,
+    saveRelation,
+    deleteRelation,
   }
 }
