@@ -7,7 +7,7 @@ import {
   Space,
   Tabs,
   Button,
-  Group, SegmentedControl, ActionIcon
+  Group, SegmentedControl, ActionIcon, Select, Title
 } from "@mantine/core";
 import { useBlockEditForm } from "@/components/configurator/BlockEditForm/useBlockEditForm";
 import React, { useEffect, useState } from "react";
@@ -22,6 +22,7 @@ import { ParamTable } from "./ParamTable/ParamTable";
 import {IconEdit, IconSettings} from "@tabler/icons-react";
 import {GroupsModal} from "@/components/configurator/BlockEditForm/GroupsModal/GroupsModal";
 import classes from "./BlockEditForm.module.css";
+import {Heading} from "tabler-icons-react";
 
 interface IBlockEditFormProps {
   blockUuid: string;
@@ -163,12 +164,12 @@ export const BlockEditForm = ({ blockUuid, bookUuid }: IBlockEditFormProps) => {
 
         <Group align="flex-end" spacing="xl" mb="md">
           <Group>
-            <SegmentedControl
+            <Select
                 value={block?.structureKind || IBlockStructureKind.single}
                 onChange={(value) => saveBlock({ ...block, structureKind: value })}
                 data={structureKindOptions}
                 size="sm"
-                radius="xl"
+                placeholder="Выберите тип структуры"
             />
           </Group>
 
@@ -182,6 +183,7 @@ export const BlockEditForm = ({ blockUuid, bookUuid }: IBlockEditFormProps) => {
             mb="xl"
         />
         <Space h="md" />
+        <Title order={4}>Параметры</Title>
         {block?.useTabs ? renderTabsContent() : (
             <ParamTable
                 params={paramList || []}
