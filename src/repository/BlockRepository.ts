@@ -56,6 +56,13 @@ const getDefaultParameters = async (db: BlockAbstractDb, blockUuid: string) => {
   .toArray()
 }
 
+const getParamsByGroup = async (db: BlockAbstractDb, groupUuid: string) => {
+  return db.blockParameters
+    .where('groupUuid')
+    .equals(groupUuid)
+    .toArray();
+}
+
 const deleteParameterGroup = async (db: BlockAbstractDb, blockUuid: string, groupUuid: string) => {
 
   // Удаляем все параметры, связанные с этой группой
@@ -111,6 +118,7 @@ export const BlockRepository = {
   getByUuid,
   getSiblings,
   getParameterGroups,
+  getParamsByGroup,
   getGroupByUuid,
   getParamPossibleValues,
   getDisplayedParameters,

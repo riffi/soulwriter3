@@ -8,12 +8,13 @@ import {
 } from "@/entities/ConstructorEntities";
 import {BlockRepository} from "@/repository/BlockRepository";
 import {BlockRelationRepository} from "@/repository/BlockRelationRepository";
+import {BlockInstanceRepository} from "@/repository/BlockInstanceRepository";
 
 export const useBlockInstanceEditor = (blockInstanceUuid: string, currentParamGroup: IBlockParameterGroup | null) => {
 
   //реализация блока
   const blockInstance = useLiveQuery<IBlockInstance>(() => {
-    return bookDb.blockInstances.where('uuid').equals(blockInstanceUuid).first();
+    return BlockInstanceRepository.getByUuid(bookDb, blockInstanceUuid);
   }, [blockInstanceUuid]);
 
 
@@ -57,10 +58,7 @@ export const useBlockInstanceEditor = (blockInstanceUuid: string, currentParamGr
   //все доступные параметры в группе параметров блока
   const availableParameters = useLiveQuery<IBlockParameter[]>(() => {
     if (!blockInstance || !currentParamGroup) return [];
-    return bookDb.blockParameters
-    .where('groupUuid')
-    .equals(currentParamGroup?.uuid)
-    .toArray();
+    return BlockRepository.getParamsByGroup(bookDb, currentParamGroup?.uuid);
   }, [currentParamGroup]);
 
   const possibleValuesMap = useLiveQuery<Record<string, IBlockParameterPossibleValue[]>>(() => {

@@ -3,6 +3,10 @@ import {IBlockInstance, IBlockParameterInstance} from "@/entities/BookEntities";
 import {generateUUID} from "@/utils/UUIDUtils";
 import {BlockRepository} from "@/repository/BlockRepository";
 
+const getByUuid = async (db: BookDB, blockInstanceUuid: string) => {
+  return db.blockInstances.where('uuid').equals(blockInstanceUuid).first();
+}
+
 const getBlockInstances = async (db: BookDB, blockUuid: string) => {
   return  db.blockInstances
     .where('blockUuid')
@@ -32,6 +36,7 @@ const appendDefaultParams = async (db: BookDB, instance: IBlockInstance)=> {
 }
 
 export const BlockInstanceRepository = {
+  getByUuid,
   getBlockInstances,
   appendDefaultParams,
 }
