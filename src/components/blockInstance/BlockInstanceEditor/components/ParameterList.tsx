@@ -1,6 +1,7 @@
 import {
   Box,
   Group,
+  Button,
   Text,
   Stack
 } from "@mantine/core";
@@ -14,6 +15,7 @@ import {
 } from "@/components/blockInstance/BlockInstanceEditor/components/ParameterActionsProps";
 
 import {ParameterRenderer} from "@/components/blockInstance/BlockInstanceEditor/components/ParameterRenderer";
+import {useState} from "react";
 
 interface ParameterListProps {
   fullParams: FullParam[];
@@ -32,13 +34,25 @@ export const ParameterList = ({
                                 onSaveEdit,
                                 possibleValuesMap
                               }: ParameterListProps) => {
+  // Состояние для отслеживания раскрытых параметров
+  const [expandedParams, setExpandedParams] = useState<Record<string, boolean>>({});
+
+  // Переключение состояния раскрытия
+  const handleToggleExpand = (paramUuid: string) => {
+    setExpandedParams(prev => ({
+      ...prev,
+      [paramUuid]: !prev[paramUuid]
+    }));
+  };
+
   return (
       <Stack gap="sm" className={classes.parametersStack}>
         {fullParams?.map((fullParam, index) => {
           const isEditing = editingParam === fullParam.instance.blockParameterUuid;
           const paramUuid = fullParam.instance.blockParameterUuid;
           const parameter = fullParam.parameter;
-
+          const isExpanded = expandedParams[paramUuid] || false; // Проверка состояния
+          const needsTruncation = fullParam.instance.value?.length > 500;
           return (
               <Box
                   key={`instance-${paramUuid}-${index}`}
@@ -74,11 +88,21 @@ export const ParameterList = ({
                   ) : (
                       <Text component="div" className={classes.contentWrapper}>
                         <div
-                            dangerouslySetInnerHTML={{
-                              __html: fullParam.instance.value || "Не указано"
-                            }}
-                            className={classes.htmlContent}
+                            dangerouslySetInnerHTML={{__html: fullParam.instance.value || "Не указано"}}
+                            className={`${classes.htmlContent} ${
+                                !isExpanded && needsTruncation ? classes.clampedContent : ""
+                            }`}
                         />
+                        {needsTruncation && (
+                            <Button
+                                variant="subtle"
+                                size="xs"
+                                onClick={() => handleToggleExpand(paramUuid)}
+                                className={classes.toggleButton}
+                            >
+                              {isExpanded ? "Свернуть" : "Показать полностью"}
+                            </Button>
+                        )}
                       </Text>
                   )}
                 </Box>

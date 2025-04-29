@@ -55,21 +55,23 @@
 .parameterItem {
   background-color: white;
   transition: background-color 0.2s ease;
-  border-bottom: 1px solid var(--mantine-color-gray-2);
 }
 
 .paramHeader {
   position: sticky;
   top: 0;
-  background: white;
+  background: #f3f3f3;
   z-index: 10001;
-  padding: 0px 0;
+  padding-left: 10px;
+  padding-top: 5px;
+  border-bottom: 1px solid var(--mantine-color-gray-3);
 }
 
 
 /* Контент */
 .contentWrapper {
   width: 100%;
+  padding: 0px 8px;
   overflow: hidden;
 }
 
@@ -80,7 +82,6 @@
 
 .htmlContent {
   width: 100%;
-  max-width: 80%;
   padding: 2px 0;
   word-wrap: break-word;
   overflow-wrap: break-word;
@@ -123,3 +124,40 @@
     max-width: 100%;
   }
 }
+
+.clampedContent {
+  display: -webkit-box;
+  -webkit-line-clamp: 10;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Добавляем градиент для визуального обозначения обрезки */
+.clampedContent::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2em;
+  background: linear-gradient(
+      to bottom,
+      rgba(255, 255, 255, 0) 0%,
+      var(--mantine-color-body) 100%
+  );
+}
+
+/* Стиль кнопки */
+.toggleButton {
+  margin-top: 4px;
+  color: var(--mantine-primary-color-filled);
+  font-size: 0.75rem;
+  padding: 2px 8px;
+}
+
+.toggleButton:hover {
+  background-color: transparent;
+  text-decoration: underline;
+}
+
