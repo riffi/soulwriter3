@@ -60,14 +60,18 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (parameterGroups && parameterGroups.length > 0 && !currentParamGroup) {
+    if (parameterGroups && parameterGroups.length > 0) {
       setCurrentParamGroup(parameterGroups[0]);
     }
-  }, [props.blockInstanceUuid, parameterGroups, currentParamGroup]);
+  }, [props.blockInstanceUuid, parameterGroups]);
 
   const handleAddParameter = () => {
     setIsAddModalOpen(true);
   };
+
+  useEffect(() => {
+    setActiveTab("params")
+  }, [props.blockInstanceUuid])
 
   const handleSaveParameter = async () => {
     if (!selectedParameter || !props.blockInstanceUuid) return;
