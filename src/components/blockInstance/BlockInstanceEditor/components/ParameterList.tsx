@@ -43,11 +43,17 @@ export const ParameterList = ({
               <Box
                   key={`instance-${paramUuid}-${index}`}
                   className={classes.parameterItem}
-                  p="md"
+                  p="sm"
               >
                 <Group justify="space-between" align="flex-start" w="100%">
                   <Box style={{ flex: 1, maxWidth: "100%" }}>
-                    <Text fw={500} mb="xs">{parameter?.title}</Text>
+                    <Text
+                        fw={500}
+                        color={"dimmed"}
+                        style={{ fontSize: "0.8rem"}}
+                    >
+                      {parameter?.title}
+                    </Text>
 
                     <>
                     {isEditing ? (

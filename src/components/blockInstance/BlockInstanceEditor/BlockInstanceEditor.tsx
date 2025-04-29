@@ -28,6 +28,7 @@ import {InlineEdit} from "@/components/shared/InlineEdit/InlineEdit";
 import {
   BlockRelationsEditor
 } from "@/components/blockInstance/BlockInstanceEditor/components/BlockRelationsEditor";
+import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
 
 export interface IBlockInstanceEditorProps {
   blockInstanceUuid: string;
@@ -41,7 +42,7 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
   const [editingParam, setEditingParam] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
   const [activeTab, setActiveTab] = useState<string>('params');
-
+  const { isMobile } = useMedia();
 
   const {
     blockInstance,
@@ -149,7 +150,7 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
 
   return (
       <>
-      <Container size="xl" p="0" >
+      <Container size="xl" p={'xs'} style={{backgroundColor: '#FFF', minHeight: 'calc(100vh - 100px)'}} >
         <Box className={classes.container} pos="relative">
           <Group mb="md" className={classes.header}>
             <ActionIcon

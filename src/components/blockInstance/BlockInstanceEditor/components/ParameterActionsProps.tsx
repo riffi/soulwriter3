@@ -17,15 +17,15 @@ export const ParameterActions = ({
     <Group gap={4}>
       {isEditing ? (
           <ActionIcon variant="subtle" onClick={onSave}>
-            <IconCheck size={24} />
+            <IconCheck size="1rem" />
           </ActionIcon>
       ) : (
           <ActionIcon variant="subtle" onClick={onEdit}>
-            <IconEdit size={24} />
+            <IconEdit size="1rem" />
           </ActionIcon>
       )}
       <ActionIcon variant="subtle" color="red" onClick={onDelete}>
-        <IconTrash size={16} />
+        <IconTrash size="1rem" />
       </ActionIcon>
     </Group>
 );
