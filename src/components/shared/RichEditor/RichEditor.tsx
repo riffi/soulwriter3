@@ -17,7 +17,7 @@ import {useEditorState} from "@/components/shared/RichEditor/hooks/useEditorStat
 
 
 
-export interface IRichEditorMobileConstraints{
+export interface IRichEditorConstraints {
   top: number;
   bottom: number;
 }
@@ -27,7 +27,8 @@ export interface ISceneRichTextEditorProps {
   onWarningsChange?: (warningGroups: IWarningGroup[]) => void;
   selectedGroup?: IWarningGroup;
   onScroll?: (scrollTop: number) => void;
-  mobileConstraints?: IRichEditorMobileConstraints
+  mobileConstraints?: IRichEditorConstraints
+  desktopConstraints?: IRichEditorConstraints
   setSelectedGroup?: (group: IWarningGroup | undefined) => void
 }
 
@@ -40,6 +41,7 @@ export const RichEditor = (props: ISceneRichTextEditorProps) => {
   });
 
   const mobileConstraints = props.mobileConstraints || {top: 50, bottom: 100};
+  const desktopConstraints = props.desktopConstraints || {top: 0, bottom: 0};
 
   const [scrollTop, setScrollTop] = useState(0);
   const { isMobile } = useMedia();
@@ -64,6 +66,7 @@ export const RichEditor = (props: ISceneRichTextEditorProps) => {
           variant="subtle"
           style={isMobile ? {
             position: "fixed",
+            zIndex:1000,
             top: mobileConstraints.top + TOOLBAR_HEIGHT,
             bottom: mobileConstraints.bottom,
             overflow: "scroll",
@@ -71,7 +74,7 @@ export const RichEditor = (props: ISceneRichTextEditorProps) => {
           onScroll={handleScroll}
 
       >
-        <EditorToolBar editor={editor} top={mobileConstraints?.top}>
+        <EditorToolBar editor={editor} mobileTop={mobileConstraints?.top} desktopTop={desktopConstraints?.top}>
           <CheckRepeatsButton
               editor={editor}
               onLoadingChange={(isLoading, message) =>

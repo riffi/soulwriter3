@@ -1,6 +1,7 @@
 import {IBlockParameterPossibleValue} from "@/entities/ConstructorEntities";
 import {RichEditor} from "@/components/shared/RichEditor/RichEditor";
 import {Select, TextInput, useMantineTheme} from "@mantine/core";
+import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
 
 export interface ParameterRendererProps {
   dataType: string;
@@ -18,11 +19,19 @@ export const ParameterRenderer = ({
 
   const theme = useMantineTheme();
 
+
+
   if (dataType === 'text') {
     return (
         <RichEditor
             initialContent={value}
             onContentChange={onValueChange}
+            desktopConstraints={
+              {top: 25, bottom: 0}
+            }
+            mobileConstraints={
+              {top: 100, bottom: 0}
+            }
         />
     );
   }

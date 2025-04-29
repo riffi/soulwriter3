@@ -6,7 +6,8 @@ import React from "react";
 interface IEditorToolBarProps {
   editor: any;
   children?: React.ReactNode;
-  top: number;
+  mobileTop: number;
+  desktopTop: number;
 }
 export const EditorToolBar = (props: IEditorToolBarProps) => {
 
@@ -16,13 +17,14 @@ export const EditorToolBar = (props: IEditorToolBarProps) => {
       <>
         <RichTextEditor.Toolbar style={isMobile?{
           position: "fixed",
-          top: props.top,
+          top: props.mobileTop,
           width:"100%",
           zIndex:1000,
 
         }:{
           position: "sticky",
           stickyOffset:"50px",
+          top: props.desktopTop,
         }}>
           <RichTextEditor.ControlsGroup>
             <RichTextEditor.Bold />
