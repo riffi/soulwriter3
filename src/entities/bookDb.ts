@@ -6,49 +6,31 @@ import {
   IBook,
   IScene
 } from "@/entities/BookEntities";
-import {
-  IBlock,
-  IBlockParameter,
-  IBlockParameterGroup, IBlockParameterPossibleValue, IBlockRelation,
-  IBookConfiguration, IBookConfigurationVersion
-} from "@/entities/ConstructorEntities";
+import {baseSchema, BlockAbstractDb} from "@/entities/BlockAbstractDb";
 
 const bookSchema={
+  ...baseSchema,
   books: '++id, &uuid, title, author, kind, configurationUuid',
   scenes: '++id, title, order, chapterId',
   chapters: '++id, title, order',
 
-  bookConfigurations: '++id, &uuid, title',
-  configurationVersions: '++id, &uuid, configurationUuid, versionNumber, isDraft',
-  blocks: '++id, &uuid, configurationVersionUuid, title',
-  blockParameterGroups: '++id, &uuid, blockUuid, title',
-  blockParameters: '++id, &uuid, groupUuid, blockUuid, dataType, linkedBlockUuid, linkedParameterUuid, isDefault, displayInCard',
-  blockParameterPossibleValues: '++id, &uuid, parameterUuid, value',
   blockInstances: '++id, &uuid, blockUuid, title',
   blockParameterInstances: '++id, &uuid, blockParameterUuid, blockInstanceUuid, blockParameterGroupUuid',
-  blocksRelations: '++id, &uuid, sourceBlockUuid, targetBlockUuid',
   blockInstanceRelations: '++id, &uuid, sourceInstanceUuid, targetInstanceUuid, blockRelationUuid',
 }
 
-class BookDB extends Dexie{
+export class BookDB extends BlockAbstractDb{
   scenes!: Dexie.Table<IScene, number>;
   books!: Dexie.Table<IBook, number>;
   chapters!: Dexie.Table<IScene, number>;
 
-  configurationVersions!: Dexie.Table<IBookConfigurationVersion, number>;
-  bookConfigurations!: Dexie.Table<IBookConfiguration, number>;
-  blocks!: Dexie.Table<IBlock, number>;
-  blockParameterGroups!: Dexie.Table<IBlockParameterGroup, number>;
-  blockParameters!: Dexie.Table<IBlockParameter, number>;
-  blockParameterPossibleValues!: Dexie.Table<IBlockParameterPossibleValue, number>;
-  blocksRelations!: Dexie.Table<IBlockRelation, number>;
   blockInstanceRelations!: Dexie.Table<IBlockInstanceRelation, number>;
   blockInstances!: Dexie.Table<IBlockInstance, number>;
   blockParameterInstances!: Dexie.Table<IBlockParameterInstance, number>;
 
   constructor(dbName:string) {
     super(dbName);
-    this.version(1).stores(bookSchema);
+    this.version(2).stores(bookSchema);
   }
 }
 

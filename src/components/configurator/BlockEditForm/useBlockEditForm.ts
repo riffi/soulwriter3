@@ -9,21 +9,24 @@ import {configDatabase} from "@/entities/configuratorDb";
 import {generateUUID} from "@/utils/UUIDUtils";
 import {notifications} from "@mantine/notifications";
 import {bookDb} from "@/entities/bookDb";
+import {BlockRelationRepository} from "@/repository/BlockRelationRepository";
+import {ConfigurationRepository} from "@/repository/ConfigurationRepository";
+import {BlockRepository} from "@/repository/BlockRepository";
 
 export const useBlockEditForm = (blockUuid: string, bookUuid?: string, currentGroupUuid?: string) => {
 
   const db = bookUuid? bookDb : configDatabase;
 
   const block = useLiveQuery<IBlock>( () => {
-    return db.blocks.where("uuid").equals(blockUuid).first()
+    if (!blockUuid){
+      return
+    }
+    return BlockRepository.getByUuid(db, blockUuid);
   }, [blockUuid])
 
   const otherBlocks = useLiveQuery<IBlock[]>(() => {
     if (!block) return []
-    return db.blocks.where({
-      configurationVersionUuid: block?.configurationVersionUuid
-    })
-    .filter(block => block.uuid !== blockUuid).toArray();
+    return BlockRepository.getSiblings(db,block)
   },[block])
 
   const paramGroupList = useLiveQuery<IBlockParameterGroup[]>(() => {
@@ -39,19 +42,16 @@ export const useBlockEditForm = (blockUuid: string, bookUuid?: string, currentGr
 
   const configurationVersion = useLiveQuery(() => {
     if (!block) return undefined
-    return db.configurationVersions.where("uuid").equals(block?.configurationVersionUuid).first()
+    return ConfigurationRepository.getVersion(db,block?.configurationVersionUuid)
   }, [block?.uuid])
 
   const configuration = useLiveQuery(() => {
     if (!block) return undefined
-    return db.bookConfigurations.where("uuid").equals(configurationVersion?.configurationUuid).first()
+    return ConfigurationRepository.getByUuid(db, configurationVersion?.configurationUuid)
   }, [configurationVersion?.uuid])
 
   const blockRelations = useLiveQuery<IBlockRelation[]>(() => {
-    return db.blocksRelations
-    .where("sourceBlockUuid")
-    .equals(blockUuid)
-    .toArray();
+    return BlockRelationRepository.getBlockRelations(db, blockUuid);
   }, [blockUuid]);
 
   const saveRelation = async (relation: IBlockRelation) => {
@@ -180,10 +180,8 @@ export const useBlockEditForm = (blockUuid: string, bookUuid?: string, currentGr
   }
 
   const moveGroupUp = async (groupUuid: string) => {
-    const groups = await db.blockParameterGroups
-    .where("blockUuid")
-    .equals(blockUuid)
-    .sortBy("orderNumber");
+    const groups = await BlockRepository
+      .getParameterGroups(db, blockUuid);
 
     const currentIndex = groups.findIndex(g => g.uuid === groupUuid);
     if (currentIndex <= 0) return;
@@ -221,10 +219,7 @@ export const useBlockEditForm = (blockUuid: string, bookUuid?: string, currentGr
 
   const updateGroupTitle = async (groupUuid: string, newTitle: string) => {
     try {
-      const group = await db.blockParameterGroups
-      .where('uuid')
-      .equals(groupUuid)
-      .first();
+      const group = await BlockRepository.getGroupByUuid(db, groupUuid)
 
       if (group) {
         await db.blockParameterGroups.update(group.id!, {
@@ -246,31 +241,7 @@ export const useBlockEditForm = (blockUuid: string, bookUuid?: string, currentGr
 
   const deleteGroup = async (groupUuid: string) => {
     try {
-      // Удаляем все параметры, связанные с этой группой
-      await db.blockParameters
-        .where('groupUuid')
-        .equals(groupUuid)
-        .delete();
-
-      // Удаляем группу
-      await db.blockParameterGroups
-        .where('uuid')
-        .equals(groupUuid)
-        .delete();
-
-      // Обновляем порядковые номера для оставшихся групп
-      const remainingGroups = await db.blockParameterGroups
-        .where('blockUuid')
-        .equals(blockUuid)
-        .sortBy('orderNumber');
-
-      await Promise.all(
-          remainingGroups.map((group, index) =>
-              db.blockParameterGroups.update(group.id!, {
-                orderNumber: index
-              })
-          )
-      );
+      await BlockRepository.deleteParameterGroup(db, blockUuid, groupUuid);
 
       notifications.show({
         title: "Успешно",
@@ -302,31 +273,12 @@ export const useBlockEditForm = (blockUuid: string, bookUuid?: string, currentGr
 
 
   const loadPossibleValues = async (parameterUuid: string) => {
-    return db.blockParameterPossibleValues
-    .where('parameterUuid')
-    .equals(parameterUuid)
-    .sortBy('orderNumber');
+    return BlockRepository.getParamPossibleValues(db, parameterUuid)
   };
 
   const savePossibleValues = async (parameterUuid: string, values: string[]) => {
     try {
-      // Удаляем старые значения
-      await db.blockParameterPossibleValues
-      .where('parameterUuid')
-      .equals(parameterUuid)
-      .delete();
-
-      // Сохраняем новые значения
-      await Promise.all(
-          values.map((value, index) =>
-              db.blockParameterPossibleValues.add({
-                uuid: generateUUID(),
-                parameterUuid,
-                value,
-                orderNumber: index
-              })
-          )
-      );
+      await BlockRepository.updateParamPossibleValues(db, parameterUuid, values);
 
       notifications.show({
         title: "Успешно",

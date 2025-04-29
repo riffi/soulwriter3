@@ -6,6 +6,8 @@ import {
   IBlockParameter,
   IBlockParameterPossibleValue, IBlock, IBlockRelation
 } from "@/entities/ConstructorEntities";
+import {BlockRepository} from "@/repository/BlockRepository";
+import {BlockRelationRepository} from "@/repository/BlockRelationRepository";
 
 export const useBlockInstanceEditor = (blockInstanceUuid: string, currentParamGroup: IBlockParameterGroup | null) => {
 
@@ -17,18 +19,12 @@ export const useBlockInstanceEditor = (blockInstanceUuid: string, currentParamGr
 
   const block = useLiveQuery(() => {
     if (!blockInstance) return null;
-    return bookDb.blocks.where('uuid').equals(blockInstance?.blockUuid).first();
+    return BlockRepository.getByUuid(bookDb, blockInstance?.blockUuid);
   }, [blockInstance]);
 
   const blockRelations = useLiveQuery<IBlockRelation[]>(async () => {
     if (!block) return [];
-
-    const [targetRelations, sourceRelations] = await Promise.all([
-      bookDb.blocksRelations.where({ sourceBlockUuid: block.uuid }).toArray(),
-      bookDb.blocksRelations.where({ targetBlockUuid: block.uuid }).toArray()
-    ]);
-
-    return [...targetRelations, ...sourceRelations];
+    return BlockRelationRepository.getBlockRelations(bookDb, block.uuid);
   }, [block]);
 
   const otherBlocks = useLiveQuery<IBlock[]>(() => {
@@ -43,13 +39,10 @@ export const useBlockInstanceEditor = (blockInstanceUuid: string, currentParamGr
 
 
 
-  //группы групп параметров блока
+  //группы параметров блока
   const parameterGroups = useLiveQuery<IBlockParameterGroup[]>(() => {
     if (!blockInstance) return [];
-    return bookDb.blockParameterGroups
-    .where('blockUuid')
-    .equals(blockInstance?.blockUuid)
-    .sortBy('orderNumber');
+    return BlockRepository.getParameterGroups(bookDb, blockInstance?.blockUuid);
   }, [blockInstance]);
 
   //значения параметров группы

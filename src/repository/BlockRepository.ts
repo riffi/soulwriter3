@@ -1,0 +1,120 @@
+import {BlockAbstractDb} from "@/entities/BlockAbstractDb";
+import {
+  IBlock,
+  IBlockParameter,
+  IBlockParameterPossibleValue
+} from "@/entities/ConstructorEntities";
+import {generateUUID} from "@/utils/UUIDUtils";
+import {useLiveQuery} from "dexie-react-hooks";
+import {bookDb} from "@/entities/bookDb";
+
+const getByUuid = async (db: BlockAbstractDb, blockUuid: string) => {
+  return db.blocks.where("uuid").equals(blockUuid).first()
+}
+
+const getSiblings = async (db: BlockAbstractDb, block: IBlock) => {
+  return db.blocks.where(
+      {
+        configurationVersionUuid: block.configurationVersionUuid
+      })
+    .filter(b => b.uuid !== block.uuid)
+    .toArray()
+}
+
+const getParameterGroups = async (db: BlockAbstractDb, blockUuid: string) => {
+  return db.blockParameterGroups
+    .where('blockUuid')
+    .equals(blockUuid)
+    .sortBy('orderNumber');
+}
+
+const getGroupByUuid = async (db: BlockAbstractDb, groupUuid: string) => {
+  return db.blockParameterGroups.where('uuid').equals(groupUuid).first();
+}
+
+const getParamPossibleValues = async (db: BlockAbstractDb, parameterUuid: string) => {
+  return db.blockParameterPossibleValues
+  .where('parameterUuid')
+  .equals(parameterUuid)
+  .sortBy('orderNumber');
+};
+const getDisplayedParameters = async (db: BlockAbstractDb, blockUuid: string) => {
+  return db.blockParameters
+    .where('blockUuid')
+    .equals(blockUuid)
+    .and(param => param.displayInCard === 1)
+    .toArray();
+}
+
+const getDefaultParameters = async (db: BlockAbstractDb, blockUuid: string) => {
+  return db
+  .blockParameters
+  .where({
+    blockUuid,
+    isDefault: 1
+  })
+  .toArray()
+}
+
+const deleteParameterGroup = async (db: BlockAbstractDb, blockUuid: string, groupUuid: string) => {
+
+  // Удаляем все параметры, связанные с этой группой
+  await db.blockParameters
+    .where('groupUuid')
+    .equals(groupUuid)
+    .delete();
+
+  // Удаляем группу
+  await db.blockParameterGroups
+    .where('uuid')
+    .equals(groupUuid)
+    .delete();
+
+  // Обновляем порядковые номера для оставшихся групп
+  const remainingGroups = await db.blockParameterGroups
+    .where('blockUuid')
+    .equals(blockUuid)
+    .sortBy('orderNumber');
+
+  await Promise.all(
+      remainingGroups.map((group, index) =>
+          db.blockParameterGroups.update(group.id!, {
+            orderNumber: index
+          })
+      )
+  );
+}
+
+
+const updateParamPossibleValues = async (db: BlockAbstractDb, parameterUuid: string, possibleValues: IBlockParameterPossibleValue[]) => {
+  // Удаляем старые значения
+  await db.blockParameterPossibleValues
+  .where('parameterUuid')
+  .equals(parameterUuid)
+  .delete();
+
+  // Сохраняем новые значения
+  await Promise.all(
+      possibleValues.map((value, index) =>
+          db.blockParameterPossibleValues.add({
+            uuid: generateUUID(),
+            parameterUuid,
+            value,
+            orderNumber: index,
+          })
+      )
+  );
+}
+
+
+export const BlockRepository = {
+  getByUuid,
+  getSiblings,
+  getParameterGroups,
+  getGroupByUuid,
+  getParamPossibleValues,
+  getDisplayedParameters,
+  getDefaultParameters,
+  deleteParameterGroup,
+  updateParamPossibleValues
+}
