@@ -61,7 +61,7 @@
   position: sticky;
   top: 0;
   background: #f3f3f3;
-  z-index: 10001;
+  z-index: 190;
   padding-left: 10px;
   padding-top: 5px;
   border-bottom: 1px solid var(--mantine-color-gray-3);
