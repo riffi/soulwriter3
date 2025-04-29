@@ -43,48 +43,45 @@ export const ParameterList = ({
               <Box
                   key={`instance-${paramUuid}-${index}`}
                   className={classes.parameterItem}
-                  p="sm"
               >
-                <Group justify="space-between" align="flex-start" w="100%">
-                  <Box style={{ flex: 1, maxWidth: "100%" }}>
-                    <Text
-                        fw={500}
-                        color={"dimmed"}
-                        style={{ fontSize: "0.8rem"}}
-                    >
-                      {parameter?.title}
-                    </Text>
-
-                    <>
-                    {isEditing ? (
-                        <ParameterRenderer
-                            dataType={parameter?.dataType || 'text'}
-                            value={editValue}
-                            possibleValues={possibleValuesMap?.[parameter?.uuid || '']}
-                            onValueChange={(value) => onStartEdit(paramUuid, value)}
-                        />
-                    ) : (
-                        <Text component="div" className={classes.contentWrapper}>
-                          <div
-                              dangerouslySetInnerHTML={{
-                                __html: fullParam.instance.value || "Не указано"
-                              }}
-                              className={classes.htmlContent}
-                          />
-                        </Text>
-                    )}
-                    </>
-                  </Box>
-
+                <Group justify="space-between" align="flex-start" w="100%" className={classes.paramHeader}>
+                  <Text
+                      fw={500}
+                      color={"dimmed"}
+                      style={{ fontSize: "0.8rem" }}
+                      className={classes.paramTitle}
+                  >
+                    {parameter?.title}
+                  </Text>
                   <ParameterActions
-                      isEditing={isEditing}
-                      onEdit={() =>
-                          onStartEdit(paramUuid, fullParam.instance.value || "")
-                      }
-                      onSave={() => onSaveEdit(fullParam.instance)}
-                      onDelete={() => {/* Добавьте обработчик удаления */}}
+                           isEditing={isEditing}
+                           onEdit={() =>
+                               onStartEdit(paramUuid, fullParam.instance.value || "")
+                           }
+                           onSave={() => onSaveEdit(fullParam.instance)}
+                           onDelete={() => {/* Добавьте обработчик удаления */}}
                   />
                 </Group>
+
+                <Box className={classes.textContent}>
+                  {isEditing ? (
+                      <ParameterRenderer
+                          dataType={parameter?.dataType || 'text'}
+                          value={editValue}
+                          possibleValues={possibleValuesMap?.[parameter?.uuid || '']}
+                          onValueChange={(value) => onStartEdit(paramUuid, value)}
+                      />
+                  ) : (
+                      <Text component="div" className={classes.contentWrapper}>
+                        <div
+                            dangerouslySetInnerHTML={{
+                              __html: fullParam.instance.value || "Не указано"
+                            }}
+                            className={classes.htmlContent}
+                        />
+                      </Text>
+                  )}
+                </Box>
               </Box>
           );
         })}

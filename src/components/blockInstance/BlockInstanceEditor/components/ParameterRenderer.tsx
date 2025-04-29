@@ -1,6 +1,6 @@
 import {IBlockParameterPossibleValue} from "@/entities/ConstructorEntities";
 import {RichEditor} from "@/components/shared/RichEditor/RichEditor";
-import {Select, TextInput} from "@mantine/core";
+import {Select, TextInput, useMantineTheme} from "@mantine/core";
 
 export interface ParameterRendererProps {
   dataType: string;
@@ -15,6 +15,9 @@ export const ParameterRenderer = ({
                              possibleValues,
                              onValueChange
                            }: ParameterRendererProps) => {
+
+  const theme = useMantineTheme();
+
   if (dataType === 'text') {
     return (
         <RichEditor
@@ -43,6 +46,19 @@ export const ParameterRenderer = ({
           value={value}
           onChange={e => onValueChange(e.currentTarget.value)}
           autoFocus
+          styles={{
+            input: {
+              padding: theme.spacing.xs,
+              height: 'auto',
+              minHeight: '1rem',
+              border: 'none',
+              borderBottom: `1px solid ${theme.colors.gray[4]}`,
+              borderRadius: 0,
+              '&:focus': {
+                borderBottom: `1px solid ${theme.colors.blue[6]}`,
+              },
+            },
+          }}
       />
   );
 };
