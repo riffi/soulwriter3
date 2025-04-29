@@ -48,6 +48,5 @@ export interface IBlockInstanceRelation {
   uuid?: string;
   sourceInstanceUuid: string;    // UUID исходного экземпляра блока
   targetInstanceUuid: string;    // UUID целевого экземпляра блока
-  relationType: BlockRelationType; // Тип связи (наследуется из IBlockRelation)
   blockRelationUuid: string;     // Ссылка на исходную связь между блоками
 }

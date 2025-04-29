@@ -4,7 +4,7 @@ import {IBlockInstance, IBlockParameterInstance} from "@/entities/BookEntities";
 import {
   IBlockParameterGroup,
   IBlockParameter,
-  IBlockParameterPossibleValue
+  IBlockParameterPossibleValue, IBlock, IBlockRelation
 } from "@/entities/ConstructorEntities";
 
 export const useBlockInstanceEditor = (blockInstanceUuid: string, currentParamGroup: IBlockParameterGroup | null) => {
@@ -19,6 +19,29 @@ export const useBlockInstanceEditor = (blockInstanceUuid: string, currentParamGr
     if (!blockInstance) return null;
     return bookDb.blocks.where('uuid').equals(blockInstance?.blockUuid).first();
   }, [blockInstance]);
+
+  const blockRelations = useLiveQuery<IBlockRelation[]>(async () => {
+    if (!block) return [];
+
+    const [targetRelations, sourceRelations] = await Promise.all([
+      bookDb.blocksRelations.where({ sourceBlockUuid: block.uuid }).toArray(),
+      bookDb.blocksRelations.where({ targetBlockUuid: block.uuid }).toArray()
+    ]);
+
+    return [...targetRelations, ...sourceRelations];
+  }, [block]);
+
+  const otherBlocks = useLiveQuery<IBlock[]>(() => {
+    if (!block || !blockRelations) return []
+    return bookDb.blocks.where({
+      configurationVersionUuid: block?.configurationVersionUuid
+    })
+    .filter(b => b.uuid !== block.uuid)
+    .filter(b => blockRelations.some(r => r.sourceBlockUuid === b.uuid || r.targetBlockUuid === b.uuid))
+    .toArray();
+  },[block, blockRelations])
+
+
 
   //группы групп параметров блока
   const parameterGroups = useLiveQuery<IBlockParameterGroup[]>(() => {
@@ -85,6 +108,8 @@ export const useBlockInstanceEditor = (blockInstanceUuid: string, currentParamGr
     availableParametersWithoutInstances,
     availableParameters,
     updateBlockInstanceTitle,
-    possibleValuesMap
+    possibleValuesMap,
+    otherBlocks,
+    blockRelations
   }
 };

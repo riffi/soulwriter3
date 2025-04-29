@@ -11,7 +11,7 @@ import {
   Select,
   Stack,
   Textarea,
-  Container,
+  Container, SegmentedControl,
 } from "@mantine/core";
 import { IconArrowLeft, IconPlus} from "@tabler/icons-react";
 import classes from "./BlockInstanceEditor.module.css";
@@ -25,6 +25,9 @@ import {
 import {FullParam} from "@/components/blockInstance/BlockInstanceEditor/types";
 import {InlineInput} from "@mantine/core/lib/components/InlineInput";
 import {InlineEdit} from "@/components/shared/InlineEdit/InlineEdit";
+import {
+  BlockRelationsEditor
+} from "@/components/blockInstance/BlockInstanceEditor/components/BlockRelationsEditor";
 
 export interface IBlockInstanceEditorProps {
   blockInstanceUuid: string;
@@ -37,6 +40,8 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
   const [parameterValue, setParameterValue] = useState("");
   const [editingParam, setEditingParam] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
+  const [activeTab, setActiveTab] = useState<string>('params');
+
 
   const {
     blockInstance,
@@ -46,7 +51,9 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
     availableParametersWithoutInstances,
     availableParameters,
     updateBlockInstanceTitle,
-    possibleValuesMap
+    possibleValuesMap,
+    otherBlocks,
+    blockRelations,
   } = useBlockInstanceEditor(props.blockInstanceUuid, currentParamGroup);
 
   const navigate = useNavigate();
@@ -142,72 +149,102 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
 
   return (
       <>
-        <Container>
-          <Box className={classes.container} pos="relative">
-            <Group mb="md" className={classes.header}>
-              <ActionIcon
-                  onClick={() => navigate(-1)}
-                  variant="light"
-                  size="lg"
-                  aria-label="Back to list"
-              >
-                <IconArrowLeft size={20} />
-              </ActionIcon>
-              <InlineEdit
-                  value={blockInstance?.title || ''}
-                  placeholder="Instance title"
-                  size="md"
-                  className={classes.titleInput}
-                  onChange={(val) => updateBlockInstanceTitle(val)}
-              />
-            </Group>
-            <>
-            {block?.useTabs &&
-              <Tabs
-                  className={classes.tabs}
-                  value={currentParamGroup?.uuid}
-                  onChange={(value) => {
-                    const group = parameterGroups?.find((g) => g.uuid === value);
-                    if (group) setCurrentParamGroup(group);
-                  }}
-              >
-                <Tabs.List className={classes.tabList}>
-                  {parameterGroups?.map((group) => (
-                      <Tabs.Tab key={group.uuid || `group-${group.title}`} value={group.uuid} className={classes.tab}>
-                        {group.title}
-                      </Tabs.Tab>
-                  ))}
-                </Tabs.List>
+      <Container>
+        <Box className={classes.container} pos="relative">
+          <Group mb="md" className={classes.header}>
+            <ActionIcon
+                onClick={() => navigate(-1)}
+                variant="light"
+                size="lg"
+                aria-label="Back to list"
+            >
+              <IconArrowLeft size={20}/>
+            </ActionIcon>
+            <InlineEdit
+                value={blockInstance?.title || ''}
+                placeholder="Instance title"
+                size="md"
+                className={classes.titleInput}
+                onChange={(val) => updateBlockInstanceTitle(val)}
+            />
+          </Group>
+          <section>
+            <SegmentedControl
+                value={activeTab}
+                onChange={setActiveTab}
+                data={[
+                  {label: 'Параметры', value: 'params'},
+                  ...(otherBlocks?.map(b => ({
+                    label: b.title,
+                    value: b.uuid!
+                  })) || [])
+                ]}
+                mb="md"
+            />
 
+            {activeTab === 'params' ? (
                 <>
-                  {parameterGroups?.map((group) =>
-                      <Tabs.Panel key={group.uuid || `panel-${group.title}`} value={group.uuid} pt="md">
-                        {groupContent}
-                      </Tabs.Panel>
-                    )}
-                  </>
-              </Tabs>
+                {block?.useTabs && <Tabs
+                      className={classes.tabs}
+                      value={currentParamGroup?.uuid}
+                      onChange={(value) => {
+                        const group = parameterGroups?.find((g) => g.uuid === value);
+                        if (group) setCurrentParamGroup(group);
+                      }}
+                  >
+                    <Tabs.List className={classes.tabList}>
+                      {parameterGroups?.map((group) => (
+                          <Tabs.Tab key={group.uuid || `group-${group.title}`} value={group.uuid}
+                                    className={classes.tab}>
+                            {group.title}
+                          </Tabs.Tab>
+                      ))}
+                    </Tabs.List>
+
+                    <>
+                      {parameterGroups?.map((group) =>
+                          <Tabs.Panel key={group.uuid || `panel-${group.title}`} value={group.uuid}
+                                      pt="md">
+                            {groupContent}
+                          </Tabs.Panel>
+                      )}
+                    </>
+                  </Tabs>
+                }
+                {!block?.useTabs && groupContent}
+                </>
+              ): otherBlocks?.map(block => (
+                activeTab === block.uuid && (
+                  <BlockRelationsEditor
+                    key={block.uuid}
+                    blockInstanceUuid={props.blockInstanceUuid}
+                    relatedBlock={block}
+                    blockRelation={
+                      blockRelations?.find(r => ((r.targetBlockUuid === block.uuid) || (r.sourceBlockUuid === block.uuid)))
+                    }
+                  />
+                )
+              ))
             }
-            {!block?.useTabs && groupContent}
-            </>
-          </Box>
-        </Container>
-        <Modal
-            opened={isAddModalOpen}
-            onClose={() => setIsAddModalOpen(false)}
-            title="Добавить параметр"
-            centered
-        >
-          <Stack>
-            <Select
-                label="Выберите параметр"
-                placeholder="Выберите параметр"
-                data={availableParametersWithoutInstances?.map(param => ({
-                  value: param.uuid || '',
-                  label: param.title
-                })) || []}
-                value={selectedParameter}
-                onChange={setSelectedParameter}
+        </section>
+      </Box>
+      </Container>
+  <Modal
+      opened={isAddModalOpen}
+      onClose={() => setIsAddModalOpen(false)}
+      title="Добавить параметр"
+      centered
+  >
+    <Stack>
+      <Select
+          label="Выберите параметр"
+          placeholder="Выберите параметр"
+          data={availableParametersWithoutInstances?.map(param => ({
+            value: param.uuid || '',
+            label: param.title
+          })) || []}
+          value={selectedParameter}
+          onChange={setSelectedParameter}
             />
 
             <Textarea

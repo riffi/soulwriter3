@@ -1,5 +1,11 @@
 import Dexie from "dexie";
-import {IBlockInstance, IBlockParameterInstance, IBook, IScene} from "@/entities/BookEntities";
+import {
+  IBlockInstance,
+  IBlockInstanceRelation,
+  IBlockParameterInstance,
+  IBook,
+  IScene
+} from "@/entities/BookEntities";
 import {
   IBlock,
   IBlockParameter,
@@ -21,6 +27,7 @@ const bookSchema={
   blockInstances: '++id, &uuid, blockUuid, title',
   blockParameterInstances: '++id, &uuid, blockParameterUuid, blockInstanceUuid, blockParameterGroupUuid',
   blocksRelations: '++id, &uuid, sourceBlockUuid, targetBlockUuid',
+  blockInstanceRelations: '++id, &uuid, sourceInstanceUuid, targetInstanceUuid, blockRelationUuid',
 }
 
 class BookDB extends Dexie{
@@ -35,7 +42,7 @@ class BookDB extends Dexie{
   blockParameters!: Dexie.Table<IBlockParameter, number>;
   blockParameterPossibleValues!: Dexie.Table<IBlockParameterPossibleValue, number>;
   blocksRelations!: Dexie.Table<IBlockRelation, number>;
-
+  blockInstanceRelations!: Dexie.Table<IBlockInstanceRelation, number>;
   blockInstances!: Dexie.Table<IBlockInstance, number>;
   blockParameterInstances!: Dexie.Table<IBlockParameterInstance, number>;
 
