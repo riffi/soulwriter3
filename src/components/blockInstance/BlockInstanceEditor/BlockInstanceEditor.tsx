@@ -214,12 +214,13 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
                 }
                 {!block?.useTabs && groupContent}
                 </>
-              ): otherBlocks?.map(block => (
-                activeTab === block.uuid && (
+              ): otherBlocks?.map(relatedBlock => (
+                activeTab === relatedBlock.uuid && (
                   <BlockRelationsEditor
-                    key={block.uuid}
+                    key={relatedBlock.uuid}
                     blockInstanceUuid={props.blockInstanceUuid}
-                    relatedBlock={block}
+                    blockUuid={block?.uuid}
+                    relatedBlock={relatedBlock}
                     blockRelation={
                       blockRelations?.find(r => ((r.targetBlockUuid === block.uuid) || (r.sourceBlockUuid === block.uuid)))
                     }

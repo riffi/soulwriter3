@@ -16,7 +16,7 @@ const bookSchema={
 
   blockInstances: '++id, &uuid, blockUuid, title',
   blockParameterInstances: '++id, &uuid, blockParameterUuid, blockInstanceUuid, blockParameterGroupUuid',
-  blockInstanceRelations: '++id, &uuid, sourceInstanceUuid, targetInstanceUuid, blockRelationUuid',
+  blockInstanceRelations: '++id, &uuid, sourceInstanceUuid, targetInstanceUuid, blockRelationUuid, sourceBlockUuid, targetBlockUuid ',
 }
 
 export class BookDB extends BlockAbstractDb{

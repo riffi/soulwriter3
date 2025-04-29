@@ -135,7 +135,7 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
   return (
       <Container size="xl" p="0" >
       <Box className={classes.container} pos="relative">
-        <Title order={2}>{block?.titleForms?.plural}</Title>
+        <Title order={2} style={{textTransform: "capitalize"}}>{block?.titleForms?.plural}</Title>
         <Space h="md"/>
 
         <Group justify="space-between" mb="md">

@@ -1,4 +1,4 @@
-import {BookDB} from "@/entities/bookDb";
+import {bookDb, BookDB} from "@/entities/bookDb";
 import {IBlockInstance, IBlockParameterInstance} from "@/entities/BookEntities";
 import {generateUUID} from "@/utils/UUIDUtils";
 import {BlockRepository} from "@/repository/BlockRepository";
@@ -12,6 +12,25 @@ const getBlockInstances = async (db: BookDB, blockUuid: string) => {
     .where('blockUuid')
     .equals(blockUuid)
     .toArray();
+}
+
+// Получение связанных экземпляров блоков для данного экземпляра блока
+// Если для связанных экземпляров блоков задан параметр relatedBlockUuid, то
+// он будет использоваться в качестве параметра для фильтрации полученных экземпляров
+const getRelatedInstances = async (db: BookDB, blockInstanceUuid: string, relatedBlockUuid?: string) => {
+  const [source, target] = await Promise.all([
+    db.blockInstanceRelations
+      .where('sourceInstanceUuid')
+      .equals(blockInstanceUuid)
+      .filter(r => !relatedBlockUuid || r.targetBlockUuid === relatedBlockUuid)
+      .toArray(),
+    db.blockInstanceRelations
+      .where('targetInstanceUuid')
+      .equals(blockInstanceUuid)
+      .filter(r => !relatedBlockUuid || r.sourceBlockUuid === relatedBlockUuid)
+      .toArray()
+  ]);
+  return [...source, ...target]
 }
 
 const appendDefaultParams = async (db: BookDB, instance: IBlockInstance)=> {
@@ -39,4 +58,5 @@ export const BlockInstanceRepository = {
   getByUuid,
   getBlockInstances,
   appendDefaultParams,
+  getRelatedInstances,
 }

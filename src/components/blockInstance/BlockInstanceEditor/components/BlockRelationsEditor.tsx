@@ -4,52 +4,46 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { bookDb } from '@/entities/bookDb';
 import {IBlock, IBlockRelation} from '@/entities/ConstructorEntities';
 import {generateUUID} from "@/utils/UUIDUtils";
+import {BlockInstanceRepository} from "@/repository/BlockInstanceRepository";
 
 interface BlockRelationsEditorProps {
+  blockUuid: string;
   blockInstanceUuid: string;
   relatedBlock: IBlock;
   blockRelation: IBlockRelation
 }
 
-export const BlockRelationsEditor = ({ blockInstanceUuid, relatedBlock, blockRelation }: BlockRelationsEditorProps) => {
+export const BlockRelationsEditor = ({ blockInstanceUuid, relatedBlock, blockRelation, blockUuid }: BlockRelationsEditorProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [targetInstance, setTargetInstance] = useState<string>('');
 
   const instanceRelations = useLiveQuery(async () => {
-    const [source, target] = await Promise.all([
-      bookDb.blockInstanceRelations
-      .where('sourceInstanceUuid')
-      .equals(blockInstanceUuid)
-      .toArray(),
-      bookDb.blockInstanceRelations
-      .where('targetInstanceUuid')
-      .equals(blockInstanceUuid)
-      .toArray()
-    ]);
-    return [...source, ...target];
+    return BlockInstanceRepository.getRelatedInstances(bookDb, blockInstanceUuid, relatedBlock.uuid);
   }, [blockInstanceUuid]);
 
   const relatedBlockInstances = useLiveQuery(async () => {
     if (!relatedBlock) return [];
-    return bookDb.blockInstances.where('blockUuid').equals(relatedBlock?.uuid).toArray();
+    return BlockInstanceRepository.getBlockInstances(bookDb, relatedBlock?.uuid);
   }, [relatedBlock]);
 
 
   const handleCreateRelation = async () => {
-    if (blockRelation.targetBlockUuid === relatedBlock?.uuid) {
-      await bookDb.blockInstanceRelations.add({
-        sourceInstanceUuid: blockInstanceUuid,
-        targetInstanceUuid: targetInstance,
-        blockRelationUuid: generateUUID()
-      });
-    }
-    else{
-      await bookDb.blockInstanceRelations.add({
-        sourceInstanceUuid: targetInstance,
-        targetInstanceUuid: blockInstanceUuid,
-        blockRelationUuid: generateUUID()
-      });
-    }
+    const isTarget = blockRelation.targetBlockUuid === relatedBlock?.uuid;
+    const [sourceInstance, targetInstanceUuid] = isTarget
+        ? [blockInstanceUuid, targetInstance]
+        : [targetInstance, blockInstanceUuid];
+    const [sourceBlock, targetBlock] = isTarget
+        ? [blockUuid, relatedBlock.uuid]
+        : [relatedBlock.uuid, blockUuid];
+
+    await bookDb.blockInstanceRelations.add({
+      sourceInstanceUuid: sourceInstance,
+      targetInstanceUuid: targetInstanceUuid,
+      sourceBlockUuid: sourceBlock,
+      targetBlockUuid: targetBlock,
+      blockRelationUuid: generateUUID()
+    });
+
     setIsModalOpen(false);
   };
 
@@ -73,7 +67,7 @@ export const BlockRelationsEditor = ({ blockInstanceUuid, relatedBlock, blockRel
                       instance =>
                           (instance.uuid === relation?.targetInstanceUuid)
                       ||  (instance.uuid === relation?.sourceInstanceUuid)
-                  ).title}
+                  )?.title}
                 </Table.Td>
               </Table.Tr>
           ))}
