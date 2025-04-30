@@ -31,10 +31,11 @@ export const ParameterList = ({
                                 onSaveEdit,
                                 possibleValuesMap
                               }: ParameterListProps) => {
+  // Состояние для редактирования параметра
   const [editingParam, setEditingParam] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
 
-  // Состояние для отслеживания раскрытых параметров
+  // Состояние для сворачивания длинного текста
   const [expandedParams, setExpandedParams] = useState<Record<string, boolean>>({});
 
   // Переключение состояния раскрытия
@@ -60,7 +61,7 @@ export const ParameterList = ({
           const needsTruncation = fullParam.instance.value?.length > 500;
           const showHeader = parameter && parameter.dataType !== IBlockParameterDataType.checkbox;
 
-          function getParamNotEditVariant() {
+          function renderViewMode() {
             if (fullParam.parameter?.dataType === IBlockParameterDataType.checkbox){
               return <Checkbox
                   label={fullParam.parameter.title}
@@ -95,7 +96,7 @@ export const ParameterList = ({
             </Text>;
           }
 
-          function getParamEditVariant() {
+          function renderEditMode() {
             return (
               <ParameterEditVariantRenderer
                   dataType={parameter?.dataType || 'text'}
@@ -106,7 +107,7 @@ export const ParameterList = ({
             )
           }
 
-          function getParamHeader(){
+          function renderHeader(){
             return (
             <Group justify="space-between" align="flex-start" w="100%" className={classes.paramHeader}>
               <Text
@@ -139,14 +140,12 @@ export const ParameterList = ({
                   className={classes.parameterItem}
               >
                 <>
-                  {showHeader && getParamHeader()}
+                  {showHeader && renderHeader()}
                 </>
 
                 <Box className={classes.textContent}>
                   <>
-                  {isEditing ? (
-                      getParamEditVariant()
-                  ) : getParamNotEditVariant()}
+                    {isEditing ? renderEditMode()  : renderViewMode()}
                   </>
                 </Box>
               </Box>
