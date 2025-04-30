@@ -7,7 +7,7 @@ import {generateUUID} from "@/utils/UUIDUtils";
 import {BlockInstanceRepository} from "@/repository/BlockInstanceRepository";
 import {IconLink, IconTrash} from "@tabler/icons-react";
 import { Link } from 'react-router-dom';
-import {IBlockInstanceRelation} from "@/entities/BookEntities"; // Импортируем компонент для навигации
+import {IBlockInstance, IBlockInstanceRelation} from "@/entities/BookEntities"; // Импортируем компонент для навигации
 
 interface BlockRelationsEditorProps {
   blockUuid: string;
@@ -20,26 +20,36 @@ export const BlockRelationsEditor = ({ blockInstanceUuid, relatedBlock, blockRel
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [targetInstance, setTargetInstance] = useState<string>('');
 
+  const isTarget = blockRelation.targetBlockUuid === relatedBlock?.uuid;
+
+
+  // Получаем связи для текущего инстанса и связанного блока
   const instanceRelations = useLiveQuery(async () => {
     return BlockInstanceRepository.getRelatedInstances(bookDb, blockInstanceUuid, relatedBlock.uuid);
   }, [blockInstanceUuid]);
 
+  // Получаем все инстансы связанного блока
   const relatedBlockInstances = useLiveQuery(async () => {
     if (!relatedBlock) return [];
     return BlockInstanceRepository.getBlockInstances(bookDb, relatedBlock?.uuid);
   }, [relatedBlock]);
 
+  const instanceCorrespondsToRelation = (instance: IBlockInstance, relation: IBlockInstanceRelation): boolean => {
+    return (isTarget ?
+        relation.targetInstanceUuid === instance.uuid :
+        relation.sourceInstanceUuid === instance.uuid);
+  }
+
   // Фильтрация: оставляем только инстансы, не участвующие в существующих связях
   const availableInstances = relatedBlockInstances?.filter(instance => {
     const isUsed = instanceRelations?.some(relation =>
-        relation.sourceInstanceUuid === instance.uuid ||
-        relation.targetInstanceUuid === instance.uuid
+        instanceCorrespondsToRelation(instance, relation)
     );
     return !isUsed;
   }) || [];
 
+
   const handleCreateRelation = async () => {
-    const isTarget = blockRelation.targetBlockUuid === relatedBlock?.uuid;
     const [sourceInstance, targetInstanceUuid] = isTarget
         ? [blockInstanceUuid, targetInstance]
         : [targetInstance, blockInstanceUuid];
@@ -62,7 +72,7 @@ export const BlockRelationsEditor = ({ blockInstanceUuid, relatedBlock, blockRel
   const getRelatedInstanceUuidFromRelation = (relation: IBlockInstanceRelation) => {
     // Если текущий экземпляр - источник, возвращает целевой экземпляр
     // иначе возвращает исходный экземпляр
-    if (relation.sourceInstanceUuid === blockInstanceUuid) {
+    if (isTarget) {
       return relation.targetInstanceUuid;
     }
     return relation.sourceInstanceUuid;
@@ -81,7 +91,7 @@ export const BlockRelationsEditor = ({ blockInstanceUuid, relatedBlock, blockRel
               variant="light"
               disabled={availableInstances.length === 0}
           >
-            Добавить связь
+            {`Добавить ${relatedBlock?.titleForms?.accusative}`}
           </Button>
         </Group>
 
@@ -97,9 +107,7 @@ export const BlockRelationsEditor = ({ blockInstanceUuid, relatedBlock, blockRel
               <Table.Tr key={relation.uuid}>
                 <Table.Td>
                   {relatedBlockInstances?.find(
-                      instance =>
-                          (instance.uuid === relation?.targetInstanceUuid)
-                      ||  (instance.uuid === relation?.sourceInstanceUuid)
+                      instance => instanceCorrespondsToRelation(instance, relation)
                   )?.title}
                 </Table.Td>
                 <Table.Td>
@@ -114,6 +122,7 @@ export const BlockRelationsEditor = ({ blockInstanceUuid, relatedBlock, blockRel
 
                     <ActionIcon
                         color="red"
+                        variant="subtle"
                         onClick={() => handleDeleteRelation(relation.blockRelationUuid)}
                     >
                       <IconTrash size={16} />
@@ -125,10 +134,10 @@ export const BlockRelationsEditor = ({ blockInstanceUuid, relatedBlock, blockRel
           </Table.Tbody>
         </Table>
 
-        <Modal opened={isModalOpen} onClose={() => setIsModalOpen(false)} title="Добавить связь">
+        <Modal opened={isModalOpen} onClose={() => setIsModalOpen(false)} title={`Добавить ${relatedBlock?.titleForms?.accusative}`}>
           <Stack>
             <Select
-                label="Выберите экземпляр"
+                label={`Выберите ${relatedBlock?.titleForms?.accusative}`}
                 value={targetInstance}
                 data={availableInstances.map(blockInstance => ({
                   value: blockInstance.uuid,
