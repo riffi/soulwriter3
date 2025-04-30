@@ -212,7 +212,7 @@ export const BookConfigurationEditForm = (props: IBookConfigurationEditFormProps
                       <Text fw={500} truncate="end">{c.title}</Text>
                       <ActionIcon
                           color="red"
-                          variant="light"
+                          variant="subtle"
                           onClick={() => removeBlock(c)}
                       >
                         <IconTrash size={18}/>
@@ -220,11 +220,11 @@ export const BookConfigurationEditForm = (props: IBookConfigurationEditFormProps
                     </Group>
 
                     <Group gap="xs">
-                      <Badge variant="light" color="blue">
+                      <Badge variant="light" color="grey">
                         {IBlockStructureKindTitle[c.structureKind]}
                       </Badge>
                       {c.useTabs && (
-                          <Badge variant="light" color="orange">
+                          <Badge variant="light" color="grey">
                             Со вкладками
                           </Badge>
                       )}
