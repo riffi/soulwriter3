@@ -23,22 +23,59 @@ import {
   ParameterList
 } from "@/components/blockInstance/BlockInstanceEditor/components/ParameterList";
 import {FullParam} from "@/components/blockInstance/BlockInstanceEditor/types";
-import {InlineInput} from "@mantine/core/lib/components/InlineInput";
 import {InlineEdit} from "@/components/shared/InlineEdit/InlineEdit";
 import {
   BlockRelationsEditor
 } from "@/components/blockInstance/BlockInstanceEditor/components/BlockRelationsEditor";
 import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
+import {
+  AddParameterModal
+} from "@/components/blockInstance/BlockInstanceEditor/modal/AddParameterModal";
 
 export interface IBlockInstanceEditorProps {
   blockInstanceUuid: string;
 }
 
+const ParameterGroupsTabs = ({ groups, currentGroup, onChange, children }) => (
+    <Tabs value={currentGroup?.uuid} onChange={value => onChange(groups.find(g => g.uuid === value))}>
+      <Tabs.List className={classes.tabList}>
+        {groups.map(group => (
+            <Tabs.Tab key={group.uuid} value={group.uuid} className={classes.tab}>
+              {group.title}
+            </Tabs.Tab>
+        ))}
+      </Tabs.List>
+
+      {groups.map(group => (
+          <Tabs.Panel key={group.uuid} value={group.uuid} pt="md">
+            {children}
+          </Tabs.Panel>
+      ))}
+    </Tabs>
+);
+
+const ParameterContent = ({ availableParameters, fullParams, onAdd, ...props }) => (
+    <Box className={classes.panelContent}>
+      {availableParameters?.length > 0 && (
+          <Button
+              onClick={onAdd}
+              leftSection={<IconPlus size="1rem" />}
+              size="sm"
+              variant="light"
+              mb="md"
+              className={classes.addButton}
+          >
+            Добавить параметр
+          </Button>
+      )}
+
+      <ParameterList fullParams={fullParams} {...props} />
+    </Box>
+);
+
 export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
   const [currentParamGroup, setCurrentParamGroup] = useState<IBlockParameterGroup | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [selectedParameter, setSelectedParameter] = useState<string | null>(null);
-  const [parameterValue, setParameterValue] = useState("");
   const [activeTab, setActiveTab] = useState<string>('params');
   const { isMobile } = useMedia();
 
@@ -51,7 +88,7 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
     availableParameters,
     updateBlockInstanceTitle,
     possibleValuesMap,
-    otherBlocks,
+    relatedBlocks,
     blockRelations,
   } = useBlockInstanceEditor(props.blockInstanceUuid, currentParamGroup);
 
@@ -71,23 +108,29 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
     setActiveTab("params")
   }, [props.blockInstanceUuid])
 
-  const handleSaveParameter = async () => {
-    if (!selectedParameter || !props.blockInstanceUuid) return;
+  const handleSaveParameter = async (parameterUuid: string) => {
+    if (!parameterUuid || !props.blockInstanceUuid) return;
 
     const newInstance: IBlockParameterInstance = {
-      blockParameterUuid: selectedParameter,
+      blockParameterUuid: parameterUuid,
       blockInstanceUuid: props.blockInstanceUuid,
       blockParameterGroupUuid: currentParamGroup?.uuid || "",
-      value: parameterValue
+      value: "" // Значение можно задать по умолчанию при необходимости
     };
 
     try {
       await bookDb.blockParameterInstances.add(newInstance);
       setIsAddModalOpen(false);
-      setSelectedParameter(null);
-      setParameterValue("");
     } catch (error) {
       console.error("Error saving parameter instance:", error);
+    }
+  };
+
+  const handleDeleteParameter = async (instanceId: number) => {
+    try {
+      await bookDb.blockParameterInstances.delete(instanceId);
+    } catch (error) {
+      console.error("Error deleting parameter instance:", error);
     }
   };
 
@@ -109,34 +152,6 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
     }
   };
 
-
-  const groupContent = (
-    <>
-    <Box className={classes.panelContent}>
-      <>
-      {availableParametersWithoutInstances?.length > 0 &&
-        <Button
-            onClick={handleAddParameter}
-            leftSection={<IconPlus size="1rem" />}
-            size="sm"
-            variant="light"
-            mb="md"
-            className={classes.addButton}
-            hidden={availableParametersWithoutInstances?.length === 0}
-        >
-          Добавить параметр
-        </Button>
-      }
-      </>
-
-      <ParameterList
-          fullParams={fullParams}
-          onSaveEdit={handleUpdateParameterValue}
-          possibleValuesMap={possibleValuesMap}
-      />
-    </Box>
-    </>
-  )
 
   return (
       <>
@@ -165,7 +180,7 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
                 onChange={setActiveTab}
                 data={[
                   {label: 'Параметры', value: 'params'},
-                  ...(otherBlocks?.map(b => ({
+                  ...(relatedBlocks?.map(b => ({
                     label: b.titleForms?.plural,
                     value: b.uuid!
                   })) || [])
@@ -174,90 +189,53 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
             />
 
             {activeTab === 'params' ? (
-                <>
-                {block?.useTabs && <Tabs
-                      className={classes.tabs}
-                      value={currentParamGroup?.uuid}
-                      onChange={(value) => {
-                        const group = parameterGroups?.find((g) => g.uuid === value);
-                        if (group) setCurrentParamGroup(group);
-                      }}
-                  >
-                    <Tabs.List className={classes.tabList}>
-                      {parameterGroups?.map((group) => (
-                          <Tabs.Tab key={group.uuid || `group-${group.title}`} value={group.uuid}
-                                    className={classes.tab}>
-                            {group.title}
-                          </Tabs.Tab>
-                      ))}
-                    </Tabs.List>
-
-                    <>
-                      {parameterGroups?.map((group) =>
-                          <Tabs.Panel key={group.uuid || `panel-${group.title}`} value={group.uuid}
-                                      pt="md">
-                            {groupContent}
-                          </Tabs.Panel>
-                      )}
-                    </>
-                  </Tabs>
-                }
-                {!block?.useTabs && groupContent}
-                </>
-              ): otherBlocks?.map(relatedBlock => (
-                activeTab === relatedBlock.uuid && (
-                  <BlockRelationsEditor
-                    key={relatedBlock.uuid}
-                    blockInstanceUuid={props.blockInstanceUuid}
-                    blockUuid={block?.uuid}
-                    relatedBlock={relatedBlock}
-                    blockRelation={
-                      blockRelations?.find(r => ((r.targetBlockUuid === block.uuid) || (r.sourceBlockUuid === block.uuid)))
-                    }
-                  />
+                block?.useTabs ? (
+                    <ParameterGroupsTabs
+                        groups={parameterGroups}
+                        currentGroup={currentParamGroup}
+                        onChange={setCurrentParamGroup}
+                    >
+                      <ParameterContent
+                          availableParameters={availableParametersWithoutInstances}
+                          fullParams={fullParams}
+                          onAdd={() => setIsAddModalOpen(true)}
+                          onSaveEdit={handleUpdateParameterValue}
+                          onDelete={handleDeleteParameter}
+                          possibleValuesMap={possibleValuesMap}
+                      />
+                    </ParameterGroupsTabs>
+                ) : (
+                    <ParameterContent  availableParameters={availableParametersWithoutInstances}
+                                       fullParams={fullParams}
+                                       onAdd={() => setIsAddModalOpen(true)}
+                                       onSaveEdit={handleUpdateParameterValue}
+                                       onDelete={handleDeleteParameter}
+                                       possibleValuesMap={possibleValuesMap} />
                 )
-              ))
-            }
+            ) : (
+                relatedBlocks?.map(relatedBlock => (
+                    activeTab === relatedBlock.uuid && (
+                        <BlockRelationsEditor
+                            key={relatedBlock.uuid}
+                            blockInstanceUuid={blockInstanceUuid}
+                            blockUuid={block?.uuid}
+                            relatedBlock={relatedBlock}
+                            blockRelation={blockRelations?.find(r =>
+                                r.targetBlockUuid === block.uuid || r.sourceBlockUuid === block.uuid
+                            )}
+                        />
+                    )
+                ))
+            )}
         </section>
       </Box>
       </Container>
-  <Modal
-      opened={isAddModalOpen}
-      onClose={() => setIsAddModalOpen(false)}
-      title="Добавить параметр"
-      centered
-  >
-    <Stack>
-      <Select
-          label="Выберите параметр"
-          placeholder="Выберите параметр"
-          data={availableParametersWithoutInstances?.map(param => ({
-            value: param.uuid || '',
-            label: param.title
-          })) || []}
-          value={selectedParameter}
-          onChange={setSelectedParameter}
-            />
-
-            <Textarea
-                label="Значение параметра"
-                placeholder="Введите значение"
-                value={parameterValue}
-                onChange={(e) => setParameterValue(e.currentTarget.value)}
-                autosize
-                minRows={3}
-            />
-
-            <Group justify="flex-end" mt="md">
-              <Button variant="outline" onClick={() => setIsAddModalOpen(false)}>
-                Отмена
-              </Button>
-              <Button onClick={handleSaveParameter} disabled={!selectedParameter}>
-                Сохранить
-              </Button>
-            </Group>
-          </Stack>
-        </Modal>
+        <AddParameterModal
+            opened={isAddModalOpen}
+            onClose={() => setIsAddModalOpen(false)}
+            parameters={availableParametersWithoutInstances}
+            onSave={handleSaveParameter}
+        />
       </>
   );
 };

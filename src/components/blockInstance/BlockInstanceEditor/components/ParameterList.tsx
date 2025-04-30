@@ -19,21 +19,25 @@ import {
 
 import {ParameterEditVariantRenderer} from "@/components/blockInstance/BlockInstanceEditor/components/ParameterEditVariantRenderer";
 import {useState} from "react";
+import {useDialog} from "@/providers/DialogProvider/DialogProvider";
 
 interface ParameterListProps {
   fullParams: FullParam[];
-  onSaveEdit: (instance: IBlockParameterInstance, newValue: string) => void; // Обновлен тип
+  onSaveEdit: (instance: IBlockParameterInstance, newValue: string) => void;
+  onDelete?: (instanceId: number) => void;
   possibleValuesMap?: Record<string, IBlockParameterPossibleValue[]>;
 }
 
 export const ParameterList = ({
                                 fullParams,
                                 onSaveEdit,
+                                onDelete,
                                 possibleValuesMap
                               }: ParameterListProps) => {
   // Состояние для редактирования параметра
   const [editingParam, setEditingParam] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
+  const {showDialog} = useDialog()
 
   // Состояние для сворачивания длинного текста
   const [expandedParams, setExpandedParams] = useState<Record<string, boolean>>({});
@@ -128,7 +132,11 @@ export const ParameterList = ({
                     setEditingParam(null);
                     setEditValue("");
                   }}
-                  onDelete={() => {/* Добавьте обработчик удаления */}}
+                  onDelete={async () => {
+                    const result = await showDialog("Подтверждение", `Удалить ${parameter?.title || "Параметр"} ?`)
+                    if (!result) return
+                    onDelete?.(fullParam.instance.id)
+                  }}
               />
             </Group>
             )
