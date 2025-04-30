@@ -67,6 +67,7 @@ export interface IBlock {
   description: string;
   useTabs: boolean; // Использовать вкладки
   structureKind: string // Вид структуры
+  parentBlockUuid?: string; // Ссылка на родительский блок
   titleForms?: IBlockTitleForms
 }
 

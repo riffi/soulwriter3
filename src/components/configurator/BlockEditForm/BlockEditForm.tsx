@@ -26,6 +26,8 @@ import classes from "./BlockEditForm.module.css";
 import {Heading} from "tabler-icons-react";
 import {RelationTable} from "@/components/configurator/BlockEditForm/parts/RelationTable";
 import {RelationEditModal} from "@/components/configurator/BlockEditForm/modal/RelationEditModal";
+import {ChildBlocksTable} from "@/components/configurator/BlockEditForm/parts/ChildBlocksTable";
+import {ChildBlockAddModal} from "@/components/configurator/BlockEditForm/parts/ChildBlockAddModal";
 
 interface IBlockEditFormProps {
   blockUuid: string;
@@ -39,7 +41,8 @@ interface IFormState {
   isParamModalOpened: boolean;
   isGroupsModalOpened: boolean;
   isRelationModalOpened: boolean;
-  activeTab: 'parameters' | 'relations';
+  activeTab:'parameters' | 'relations' | 'children';
+  isChildModalOpened: boolean;
 }
 
 const INITIAL_FORM_STATE: IFormState = {
@@ -49,6 +52,7 @@ const INITIAL_FORM_STATE: IFormState = {
   isGroupsModalOpened: false,
   isRelationModalOpened: false,
   activeTab: 'parameters',
+  isChildModalOpened: false,
 };
 
 export const BlockEditForm = ({ blockUuid, bookUuid }: IBlockEditFormProps) => {
@@ -69,7 +73,9 @@ export const BlockEditForm = ({ blockUuid, bookUuid }: IBlockEditFormProps) => {
     deleteGroup,
     blockRelations,
     saveRelation,
-    deleteRelation
+    deleteRelation,
+    childBlocks,
+    updateBlockParent
   } = useBlockEditForm(blockUuid, bookUuid, state.currentGroupUuid);
 
   useEffect(() => {
@@ -214,10 +220,11 @@ export const BlockEditForm = ({ blockUuid, bookUuid }: IBlockEditFormProps) => {
               data={[
                 { value: 'parameters', label: 'Параметры' },
                 { value: 'relations', label: 'Связи' },
+                { value: 'children', label: 'Дочерние блоки' },
               ]}
           />
         </Group>
-        {state.activeTab === 'parameters' ? (
+        {state.activeTab === 'parameters' &&
             <>
               {block?.useTabs ? renderTabsContent() : (
                   <ParamTable
@@ -228,7 +235,8 @@ export const BlockEditForm = ({ blockUuid, bookUuid }: IBlockEditFormProps) => {
                   />
               )}
             </>
-        ) : (
+        }
+        {state.activeTab === 'relations' &&
             <>
               <RelationTable
                   relations={blockRelations || []}
@@ -236,6 +244,25 @@ export const BlockEditForm = ({ blockUuid, bookUuid }: IBlockEditFormProps) => {
                   onEditRelation={handleRelationModalOpen}
                   onDeleteRelation={deleteRelation}
                   otherBlocks={otherBlocks || []}
+              />
+            </>
+        }
+        {state.activeTab === 'children' && (
+            <>
+              <ChildBlocksTable
+                  childrenBlocks={childBlocks || []}
+                  onAddChild={() => setState(prev => ({ ...prev, isChildModalOpened: true }))}
+                  onRemoveChild={(uuid) => updateBlockParent(uuid, null)}
+              />
+
+              <ChildBlockAddModal
+                  isOpen={state.isChildModalOpened}
+                  onClose={() => setState(prev => ({ ...prev, isChildModalOpened: false }))}
+                  onAdd={(uuid) => updateBlockParent(uuid, blockUuid)}
+                  availableBlocks={otherBlocks?.filter(b =>
+                      b.uuid !== blockUuid &&
+                      !childBlocks?.some(child => child.uuid === b.uuid)
+                  ) || []}
               />
             </>
         )}

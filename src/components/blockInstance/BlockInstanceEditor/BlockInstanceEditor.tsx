@@ -217,7 +217,7 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
                     activeTab === relatedBlock.uuid && (
                         <BlockRelationsEditor
                             key={relatedBlock.uuid}
-                            blockInstanceUuid={blockInstanceUuid}
+                            blockInstanceUuid={props.blockInstanceUuid}
                             blockUuid={block?.uuid}
                             relatedBlock={relatedBlock}
                             blockRelation={blockRelations?.find(r =>

@@ -293,6 +293,34 @@ export const useBlockEditForm = (blockUuid: string, bookUuid?: string, currentGr
     }
   };
 
+  const childBlocks = useLiveQuery<IBlock[]>(() => {
+    return db.blocks.where("parentBlockUuid").equals(blockUuid).toArray();
+  }, [blockUuid]);
+
+  const updateBlockParent = async (childBlockUuid: string, parentUuid: string | null) => {
+    try {
+      const childBlock = await BlockRepository.getByUuid(db, childBlockUuid);
+      if (childBlock) {
+        await db.blocks.update(childBlock.id!, {
+          ...childBlock,
+          parentBlockUuid: parentUuid
+        });
+        notifications.show({
+          title: "Успешно",
+          message: parentUuid
+              ? "Блок добавлен как дочерний"
+              : "Блок отвязан",
+        });
+      }
+    } catch (error) {
+      notifications.show({
+        title: "Ошибка",
+        message: "Не удалось обновить связь",
+        color: "red",
+      });
+    }
+  };
+
 
   return {
     block,
@@ -314,5 +342,7 @@ export const useBlockEditForm = (blockUuid: string, bookUuid?: string, currentGr
     blockRelations,
     saveRelation,
     deleteRelation,
+    childBlocks,
+    updateBlockParent
   }
 }
