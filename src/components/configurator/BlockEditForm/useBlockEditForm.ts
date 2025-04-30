@@ -297,13 +297,14 @@ export const useBlockEditForm = (blockUuid: string, bookUuid?: string, currentGr
     return db.blocks.where("parentBlockUuid").equals(blockUuid).toArray();
   }, [blockUuid]);
 
-  const updateBlockParent = async (childBlockUuid: string, parentUuid: string | null) => {
+  const updateBlockParent = async (childBlockUuid: string, parentUuid: string | null, structureKind: string) => {
     try {
       const childBlock = await BlockRepository.getByUuid(db, childBlockUuid);
       if (childBlock) {
         await db.blocks.update(childBlock.id!, {
           ...childBlock,
-          parentBlockUuid: parentUuid
+          parentBlockUuid: parentUuid,
+          structureKind: structureKind
         });
         notifications.show({
           title: "Успешно",

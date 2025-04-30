@@ -31,6 +31,9 @@ import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
 import {
   AddParameterModal
 } from "@/components/blockInstance/BlockInstanceEditor/modal/AddParameterModal";
+import {
+  ChildInstancesTable
+} from "@/components/blockInstance/BlockInstanceEditor/components/ChildInstancesTable";
 
 export interface IBlockInstanceEditorProps {
   blockInstanceUuid: string;
@@ -90,6 +93,8 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
     possibleValuesMap,
     relatedBlocks,
     blockRelations,
+    childBlocks,
+    childInstancesMap
   } = useBlockInstanceEditor(props.blockInstanceUuid, currentParamGroup);
 
   const navigate = useNavigate();
@@ -179,10 +184,14 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
                 value={activeTab}
                 onChange={setActiveTab}
                 data={[
-                  {label: 'Параметры', value: 'params'},
+                  { label: 'Параметры', value: 'params' },
                   ...(relatedBlocks?.map(b => ({
                     label: b.titleForms?.plural,
-                    value: b.uuid!
+                    value: `related-${b.uuid}`
+                  })) || []),
+                  ...(childBlocks?.map(b => ({
+                    label: b.title,
+                    value: `child-${b.uuid}`
                   })) || [])
                 ]}
                 mb="md"
@@ -212,7 +221,7 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
                                        onDelete={handleDeleteParameter}
                                        possibleValuesMap={possibleValuesMap} />
                 )
-            ) : (
+            ) : activeTab.startsWith('related-') ? (
                 relatedBlocks?.map(relatedBlock => (
                     activeTab === relatedBlock.uuid && (
                         <BlockRelationsEditor
@@ -226,7 +235,19 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
                         />
                     )
                 ))
-            )}
+            )  : (
+                // Добавляем секцию для дочерних блоков
+                childBlocks?.map(childBlock => (
+                    activeTab === `child-${childBlock.uuid}` && (
+                        <ChildInstancesTable
+                            key={childBlock.uuid}
+                            blockUuid={childBlock.uuid}
+                            instances={childInstancesMap?.[childBlock.uuid] || []}
+                        />
+                    )
+                ))
+            )
+            }
         </section>
       </Box>
       </Container>

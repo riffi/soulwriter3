@@ -258,7 +258,7 @@ export const BlockEditForm = ({ blockUuid, bookUuid }: IBlockEditFormProps) => {
               <ChildBlockAddModal
                   isOpen={state.isChildModalOpened}
                   onClose={() => setState(prev => ({ ...prev, isChildModalOpened: false }))}
-                  onAdd={(uuid) => updateBlockParent(uuid, blockUuid)}
+                  onAdd={(uuid, structureKind) => updateBlockParent(uuid, blockUuid, structureKind)}
                   availableBlocks={otherBlocks?.filter(b =>
                       b.uuid !== blockUuid &&
                       !childBlocks?.some(child => child.uuid === b.uuid)

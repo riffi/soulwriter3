@@ -54,9 +54,25 @@ const appendDefaultParams = async (db: BookDB, instance: IBlockInstance)=> {
   .bulkAdd(defaultParameterInstances)
 }
 
+const create = async (db: BookDB, instance: IBlockInstance)=> {
+  db.blockInstances.add(instance);
+}
+
+const update = async (db: BookDB, instance: IBlockInstance)=> {
+  db.blockInstances.update(instance.id, instance);
+}
+
+const remove = async (db: BookDB, instance: IBlockInstance)=> {
+  db.blockInstances.delete(instance.id);
+}
+
+
 export const BlockInstanceRepository = {
   getByUuid,
   getBlockInstances,
   appendDefaultParams,
   getRelatedInstances,
+  create,
+  update,
+  remove
 }

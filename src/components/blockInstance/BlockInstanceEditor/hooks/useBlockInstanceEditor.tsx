@@ -81,6 +81,25 @@ export const useBlockInstanceEditor = (blockInstanceUuid: string, currentParamGr
     return availableParameters.filter(param => !usedParameterUuids.has(param.uuid));
   }, [availableParameters, parameterInstances]);
 
+  const childBlocks = useLiveQuery<IBlock[]>(() => {
+    if (!block) return [];
+    return bookDb.blocks.where("parentBlockUuid").equals(block.uuid).toArray();
+  }, [block]);
+
+  const childInstancesMap = useLiveQuery<Record<string, IBlockInstance[]>>(async () => {
+    const result: Record<string, IBlockInstance[]> = {};
+    if (!childBlocks) return result;
+
+    await Promise.all(childBlocks.map(async (childBlock) => {
+      result[childBlock.uuid] = await BlockInstanceRepository.getBlockInstances(
+          bookDb,
+          childBlock.uuid
+      );
+    }));
+
+    return result;
+  }, [childBlocks]);
+
   const updateBlockInstanceTitle = async (newTitle: string) =>{
     if (!blockInstance) return;
     await bookDb.blockInstances.update(blockInstance.id, {title: newTitle})
@@ -96,6 +115,8 @@ export const useBlockInstanceEditor = (blockInstanceUuid: string, currentParamGr
     updateBlockInstanceTitle,
     possibleValuesMap,
     relatedBlocks,
-    blockRelations
+    blockRelations,
+    childBlocks,
+    childInstancesMap
   }
 };
