@@ -127,35 +127,41 @@ export const BlockRelationsEditor = ({
 
   const ChildBlockModal = () => (
       <Stack>
-        {step === 1 && (
+        <Select
+            label="Родительский инстанс"
+            placeholder="Выберите родителя"
+            value={parentInstanceUuid}
+            data={mapInstancesToOptions(parentInstances)}
+            onChange={(v) => {
+              setParentInstanceUuid(v || '');
+              setTargetInstanceUuid(''); // Сброс дочернего выбора
+            }}
+            searchable
+            clearable
+        />
+
+        {parentInstanceUuid && (
             <Select
-                label="Выберите родительский инстанс"
-                value={parentInstanceUuid}
-                data={mapInstancesToOptions(parentInstances)}
-                onChange={v => {
-                  setParentInstanceUuid(v || '');
-                  setStep(2);
-                }}
+                label={`Дочерний инстанс (${relatedBlock.title})`}
+                placeholder={childInstances?.length ? "Выберите вариант" : "Нет доступных"}
+                value={targetInstanceUuid}
+                data={mapInstancesToOptions(childInstances)}
+                onChange={(v) => setTargetInstanceUuid(v || '')}
+                disabled={!childInstances?.length}
+                description={!childInstances?.length && "Нет дочерних элементов"}
+                searchable
             />
         )}
-        {step === 2 && (
-            <>
-              <Select
-                  label={`Выберите дочерний инстанс ${relatedBlock.title}`}
-                  value={targetInstanceUuid}
-                  data={mapInstancesToOptions(childInstances)}
-                  onChange={v => setTargetInstanceUuid(v || '')}
-              />
-              <Group justify="space-between">
-                <Button variant="outline" onClick={() => setStep(1)}>
-                  Назад
-                </Button>
-                <Button onClick={createRelation} disabled={!targetInstanceUuid}>
-                  Создать
-                </Button>
-              </Group>
-            </>
-        )}
+
+        <Group justify="flex-end" mt="md">
+          <Button
+              onClick={createRelation}
+              disabled={!targetInstanceUuid}
+              loading={!childInstances} // Если нужен индикатор загрузки
+          >
+            Создать связь
+          </Button>
+        </Group>
       </Stack>
   );
 
