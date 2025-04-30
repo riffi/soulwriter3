@@ -3,13 +3,16 @@ import {
   Group,
   Button,
   Text,
-  Stack
+  Stack, Checkbox
 } from "@mantine/core";
 
 import classes from "../BlockInstanceEditor.module.css";
 import { IBlockParameterInstance } from "@/entities/BookEntities";
 import { FullParam } from "../types";
-import {IBlockParameterPossibleValue} from "@/entities/ConstructorEntities";
+import {
+  IBlockParameterDataType,
+  IBlockParameterPossibleValue
+} from "@/entities/ConstructorEntities";
 import {
   ParameterActions
 } from "@/components/blockInstance/BlockInstanceEditor/components/ParameterActionsProps";
@@ -53,6 +56,41 @@ export const ParameterList = ({
           const parameter = fullParam.parameter;
           const isExpanded = expandedParams[paramUuid] || false; // Проверка состояния
           const needsTruncation = fullParam.instance.value?.length > 500;
+
+          function getParamDisplayedValue() {
+            if (fullParam.parameter?.dataType === IBlockParameterDataType.checkbox){
+              return <Checkbox
+                  label={fullParam.parameter.title}
+                  checked={fullParam.instance.value === "true"}
+                  onChange={(event) =>
+                      onSaveEdit(
+                          {...fullParam.instance, value: event.target.checked.toString()}
+                      )
+                  }
+              />
+            }
+            return <Text component="div" className={classes.contentWrapper}>
+              <div
+                  dangerouslySetInnerHTML={{__html: fullParam.instance.value || "Не указано"}}
+                  className={`${classes.htmlContent} ${
+                      !isExpanded && needsTruncation ? classes.clampedContent : ""
+                  }`}
+              />
+              <>
+              {needsTruncation && (
+                  <Button
+                      variant="subtle"
+                      size="xs"
+                      onClick={() => handleToggleExpand(paramUuid)}
+                      className={classes.toggleButton}
+                  >
+                    {isExpanded ? "Свернуть" : "Показать полностью"}
+                  </Button>
+              )}
+              </>
+            </Text>;
+          }
+
           return (
               <Box
                   key={`instance-${paramUuid}-${index}`}
@@ -78,6 +116,7 @@ export const ParameterList = ({
                 </Group>
 
                 <Box className={classes.textContent}>
+                  <>
                   {isEditing ? (
                       <ParameterRenderer
                           dataType={parameter?.dataType || 'text'}
@@ -85,26 +124,8 @@ export const ParameterList = ({
                           possibleValues={possibleValuesMap?.[parameter?.uuid || '']}
                           onValueChange={(value) => onStartEdit(paramUuid, value)}
                       />
-                  ) : (
-                      <Text component="div" className={classes.contentWrapper}>
-                        <div
-                            dangerouslySetInnerHTML={{__html: fullParam.instance.value || "Не указано"}}
-                            className={`${classes.htmlContent} ${
-                                !isExpanded && needsTruncation ? classes.clampedContent : ""
-                            }`}
-                        />
-                        {needsTruncation && (
-                            <Button
-                                variant="subtle"
-                                size="xs"
-                                onClick={() => handleToggleExpand(paramUuid)}
-                                className={classes.toggleButton}
-                            >
-                              {isExpanded ? "Свернуть" : "Показать полностью"}
-                            </Button>
-                        )}
-                      </Text>
-                  )}
+                  ) : getParamDisplayedValue()}
+                  </>
                 </Box>
               </Box>
           );

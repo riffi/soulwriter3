@@ -1,7 +1,9 @@
-import {IBlockParameterPossibleValue} from "@/entities/ConstructorEntities";
+import {
+  IBlockParameterDataType,
+  IBlockParameterPossibleValue
+} from "@/entities/ConstructorEntities";
 import {RichEditor} from "@/components/shared/RichEditor/RichEditor";
-import {Select, TextInput, useMantineTheme} from "@mantine/core";
-import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
+import {Checkbox, Select, TextInput, useMantineTheme} from "@mantine/core";
 
 export interface ParameterRendererProps {
   dataType: string;
@@ -47,6 +49,15 @@ export const ParameterRenderer = ({
             onChange={value => onValueChange(value || '')}
             placeholder="Выберите значение"
         />
+    );
+  }
+
+  if (dataType === IBlockParameterDataType.checkbox) {
+    return (
+        <Checkbox
+            value={value}
+            onChange={e => onValueChange(e.currentTarget.checked)}
+            />
     );
   }
 
