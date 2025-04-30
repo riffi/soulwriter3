@@ -67,11 +67,16 @@ const remove = async (db: BookDB, instance: IBlockInstance)=> {
 }
 
 
+const getChildInstances = async (db: BookDB, parentInstanceUuid: string) => {
+  return db.blockInstances.where('parentInstanceUuid').equals(parentInstanceUuid).toArray();
+}
+
 export const BlockInstanceRepository = {
   getByUuid,
   getBlockInstances,
   appendDefaultParams,
   getRelatedInstances,
+  getChildInstances,
   create,
   update,
   remove

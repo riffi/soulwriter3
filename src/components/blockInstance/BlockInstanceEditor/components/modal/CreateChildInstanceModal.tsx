@@ -8,12 +8,14 @@ interface CreateChildInstanceModalProps {
   opened: boolean;
   onClose: () => void;
   blockUuid: string;
+  blockInstanceUuid: string;
 }
 
 export const CreateChildInstanceModal = ({
                                            opened,
                                            onClose,
                                            blockUuid,
+                                           blockInstanceUuid
                                          }: CreateChildInstanceModalProps) => {
   const form = useForm({
     initialValues: {
@@ -29,6 +31,7 @@ export const CreateChildInstanceModal = ({
       uuid: generateUUID(),
       blockUuid,
       title: form.values.title.trim(),
+      parentInstanceUuid: blockInstanceUuid
     });
     onClose();
     form.reset();

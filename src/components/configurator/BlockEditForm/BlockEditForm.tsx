@@ -27,7 +27,6 @@ import {Heading} from "tabler-icons-react";
 import {RelationTable} from "@/components/configurator/BlockEditForm/parts/RelationTable";
 import {RelationEditModal} from "@/components/configurator/BlockEditForm/modal/RelationEditModal";
 import {ChildBlocksTable} from "@/components/configurator/BlockEditForm/parts/ChildBlocksTable";
-import {ChildBlockAddModal} from "@/components/configurator/BlockEditForm/parts/ChildBlockAddModal";
 
 interface IBlockEditFormProps {
   blockUuid: string;
@@ -75,7 +74,8 @@ export const BlockEditForm = ({ blockUuid, bookUuid }: IBlockEditFormProps) => {
     saveRelation,
     deleteRelation,
     childBlocks,
-    updateBlockParent
+    updateBlockParent,
+    updateBlockStructure
   } = useBlockEditForm(blockUuid, bookUuid, state.currentGroupUuid);
 
   useEffect(() => {
@@ -251,19 +251,12 @@ export const BlockEditForm = ({ blockUuid, bookUuid }: IBlockEditFormProps) => {
             <>
               <ChildBlocksTable
                   childrenBlocks={childBlocks || []}
-                  onAddChild={() => setState(prev => ({ ...prev, isChildModalOpened: true }))}
-                  onRemoveChild={(uuid) => updateBlockParent(uuid, null)}
+                  otherBlocks={otherBlocks || []}
+                  onAddChild={(uuid, structureKind) => updateBlockParent(uuid, blockUuid, structureKind)}
+                  onUpdateChild={(uuid, structureKind) => updateBlockStructure(uuid, structureKind)}
+                  onRemoveChild={(uuid) => updateBlockParent(uuid, null, 'list')}
               />
 
-              <ChildBlockAddModal
-                  isOpen={state.isChildModalOpened}
-                  onClose={() => setState(prev => ({ ...prev, isChildModalOpened: false }))}
-                  onAdd={(uuid, structureKind) => updateBlockParent(uuid, blockUuid, structureKind)}
-                  availableBlocks={otherBlocks?.filter(b =>
-                      b.uuid !== blockUuid &&
-                      !childBlocks?.some(child => child.uuid === b.uuid)
-                  ) || []}
-              />
             </>
         )}
 

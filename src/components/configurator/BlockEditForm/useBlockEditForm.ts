@@ -322,6 +322,29 @@ export const useBlockEditForm = (blockUuid: string, bookUuid?: string, currentGr
     }
   };
 
+  // Добавим метод для обновления структуры
+  const updateBlockStructure = async (blockUuid: string, structureKind: string) => {
+    try {
+      const block = await BlockRepository.getByUuid(db, blockUuid);
+      if (block) {
+        await db.blocks.update(block.id!, {
+          ...block,
+          structureKind: structureKind
+        });
+        notifications.show({
+          title: "Успешно",
+          message: "Настройки блока обновлены",
+        });
+      }
+    } catch (error) {
+      notifications.show({
+        title: "Ошибка",
+        message: "Не удалось обновить блок",
+        color: "red",
+      });
+    }
+  };
+
 
   return {
     block,
@@ -344,6 +367,7 @@ export const useBlockEditForm = (blockUuid: string, bookUuid?: string, currentGr
     saveRelation,
     deleteRelation,
     childBlocks,
-    updateBlockParent
+    updateBlockParent,
+    updateBlockStructure
   }
 }

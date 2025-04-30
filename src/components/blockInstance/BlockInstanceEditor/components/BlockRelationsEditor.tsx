@@ -19,9 +19,23 @@ interface BlockRelationsEditorProps {
 export const BlockRelationsEditor = ({ blockInstanceUuid, relatedBlock, blockRelation, blockUuid }: BlockRelationsEditorProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [targetInstance, setTargetInstance] = useState<string>('');
+  const [parentInstance, setParentInstance] = useState<string>('');
+  const [step, setStep] = useState(1);
 
+  const isChildBlock = !!relatedBlock.parentBlockUuid;
   const isTarget = blockRelation.targetBlockUuid === relatedBlock?.uuid;
 
+  // Получаем все инстансы родительского блока
+  const parentInstances = useLiveQuery(async () => {
+    if (!relatedBlock.parentBlockUuid) return [];
+    return BlockInstanceRepository.getBlockInstances(bookDb, relatedBlock.parentBlockUuid);
+  }, [relatedBlock]);
+
+  // Получаем дочерние инстансы для выбранного родительского инстанса
+  const childInstances = useLiveQuery(async () => {
+    if (!parentInstance) return [];
+    return BlockInstanceRepository.getChildInstances(bookDb, parentInstance);
+  }, [parentInstance]);
 
   // Получаем связи для текущего инстанса и связанного блока
   const instanceRelations = useLiveQuery(async () => {
@@ -66,7 +80,67 @@ export const BlockRelationsEditor = ({ blockInstanceUuid, relatedBlock, blockRel
     });
 
     setIsModalOpen(false);
+    setParentInstance('');
     setTargetInstance('');
+    setStep(1);
+  };
+
+  const renderModalContent = () => {
+    if (isChildBlock) {
+      return (
+          <Stack>
+            {step === 1 && (
+                <Select
+                    label="Выберите родительский инстанс"
+                    value={parentInstance}
+                    data={parentInstances?.map(inst => ({
+                      value: inst.uuid,
+                      label: inst.title
+                    })) || []}
+                    onChange={(value) => {
+                      setParentInstance(value || '');
+                      setStep(2);
+                    }}
+                />
+            )}
+
+            {step === 2 && (
+                <>
+                  <Select
+                      label={`Выберите дочерний инстанс ${relatedBlock.title}`}
+                      value={targetInstance}
+                      data={childInstances?.map(inst => ({
+                        value: inst.uuid,
+                        label: inst.title
+                      })) || []}
+                      onChange={(value) => setTargetInstance(value || '')}
+                  />
+
+                  <Group justify="space-between">
+                    <Button variant="outline" onClick={() => setStep(1)}>
+                      Назад
+                    </Button>
+                    <Button onClick={handleCreateRelation} disabled={!targetInstance}>
+                      Создать
+                    </Button>
+                  </Group>
+                </>
+            )}
+          </Stack>
+      );
+    }
+
+    return (
+        <Select
+            label={`Выберите ${relatedBlock?.titleForms?.accusative}`}
+            value={targetInstance}
+            data={availableInstances?.map(inst => ({
+              value: inst.uuid,
+              label: inst.title
+            })) || []}
+            onChange={(value) => setTargetInstance(value || '')}
+        />
+    );
   };
 
   const getRelatedInstanceUuidFromRelation = (relation: IBlockInstanceRelation) => {
@@ -89,7 +163,7 @@ export const BlockRelationsEditor = ({ blockInstanceUuid, relatedBlock, blockRel
           <Button
               onClick={() => setIsModalOpen(true)}
               variant="light"
-              disabled={availableInstances.length === 0}
+              disabled={!isChildBlock && availableInstances.length === 0}
           >
             {`Добавить ${relatedBlock?.titleForms?.accusative}`}
           </Button>
@@ -134,18 +208,23 @@ export const BlockRelationsEditor = ({ blockInstanceUuid, relatedBlock, blockRel
           </Table.Tbody>
         </Table>
 
-        <Modal opened={isModalOpen} onClose={() => setIsModalOpen(false)} title={`Добавить ${relatedBlock?.titleForms?.accusative}`}>
+        <Modal
+            opened={isModalOpen}
+            onClose={() => {
+              setIsModalOpen(false);
+              setStep(1);
+              setParentInstance('');
+              setTargetInstance('');
+            }}
+            title={`Добавить ${relatedBlock?.titleForms?.accusative}`}
+        >
           <Stack>
-            <Select
-                label={`Выберите ${relatedBlock?.titleForms?.accusative}`}
-                value={targetInstance}
-                data={availableInstances.map(blockInstance => ({
-                  value: blockInstance.uuid,
-                  label: `${blockInstance.title}`
-                }))}
-                onChange={v => setTargetInstance(v || '')}
-            />
-            <Button onClick={handleCreateRelation}>Создать</Button>
+            {renderModalContent()}
+            {!isChildBlock && (
+                <Button onClick={handleCreateRelation} disabled={!targetInstance}>
+                  Добавить
+                </Button>
+            )}
           </Stack>
         </Modal>
       </div>

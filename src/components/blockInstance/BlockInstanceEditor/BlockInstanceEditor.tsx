@@ -223,7 +223,7 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
                 )
             ) : activeTab.startsWith('related-') ? (
                 relatedBlocks?.map(relatedBlock => (
-                    activeTab === relatedBlock.uuid && (
+                    activeTab === `related-${relatedBlock.uuid}` && (
                         <BlockRelationsEditor
                             key={relatedBlock.uuid}
                             blockInstanceUuid={props.blockInstanceUuid}
@@ -242,7 +242,9 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
                         <ChildInstancesTable
                             key={childBlock.uuid}
                             blockUuid={childBlock.uuid}
+                            blockInstanceUuid={props.blockInstanceUuid}
                             instances={childInstancesMap?.[childBlock.uuid] || []}
+                            structureKind={childBlock.structureKind}
                         />
                     )
                 ))
