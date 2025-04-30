@@ -80,7 +80,7 @@ export const ParameterList = ({
                             )
                         }
                     />
-                    {!fullParam.parameter.isdefault && (
+                    {!fullParam.parameter.isDefault && (
                         <ActionIcon
                             variant="subtle"
                             color="red"
