@@ -17,7 +17,7 @@ import {
   ParameterActions
 } from "@/components/blockInstance/BlockInstanceEditor/components/ParameterActionsProps";
 
-import {ParameterRenderer} from "@/components/blockInstance/BlockInstanceEditor/components/ParameterRenderer";
+import {ParameterEditVariantRenderer} from "@/components/blockInstance/BlockInstanceEditor/components/ParameterEditVariantRenderer";
 import {useState} from "react";
 
 interface ParameterListProps {
@@ -58,8 +58,9 @@ export const ParameterList = ({
           const parameter = fullParam.parameter;
           const isExpanded = expandedParams[paramUuid] || false; // Проверка состояния
           const needsTruncation = fullParam.instance.value?.length > 500;
+          const showHeader = parameter && parameter.dataType !== IBlockParameterDataType.checkbox;
 
-          function getParamDisplayedValue() {
+          function getParamNotEditVariant() {
             if (fullParam.parameter?.dataType === IBlockParameterDataType.checkbox){
               return <Checkbox
                   label={fullParam.parameter.title}
@@ -94,44 +95,58 @@ export const ParameterList = ({
             </Text>;
           }
 
+          function getParamEditVariant() {
+            return (
+              <ParameterEditVariantRenderer
+                  dataType={parameter?.dataType || 'text'}
+                  value={editValue}
+                  possibleValues={possibleValuesMap?.[parameter?.uuid || '']}
+                  onValueChange={setEditValue}
+              />
+            )
+          }
+
+          function getParamHeader(){
+            return (
+            <Group justify="space-between" align="flex-start" w="100%" className={classes.paramHeader}>
+              <Text
+                  fw={500}
+                  color={"dimmed"}
+                  style={{ fontSize: "0.8rem" }}
+                  className={classes.paramTitle}
+              >
+                {parameter?.title}
+              </Text>
+              <ParameterActions
+                  isEditing={isEditing}
+                  onEdit={() =>
+                      handleStartEdit(paramUuid, fullParam.instance.value || "")
+                  }
+                  onSave={() => {
+                    onSaveEdit(fullParam.instance, editValue);
+                    setEditingParam(null);
+                    setEditValue("");
+                  }}
+                  onDelete={() => {/* Добавьте обработчик удаления */}}
+              />
+            </Group>
+            )
+          }
+
           return (
               <Box
                   key={`instance-${paramUuid}-${index}`}
                   className={classes.parameterItem}
               >
-                <Group justify="space-between" align="flex-start" w="100%" className={classes.paramHeader}>
-                  <Text
-                      fw={500}
-                      color={"dimmed"}
-                      style={{ fontSize: "0.8rem" }}
-                      className={classes.paramTitle}
-                  >
-                    {parameter?.title}
-                  </Text>
-                  <ParameterActions
-                           isEditing={isEditing}
-                           onEdit={() =>
-                               handleStartEdit(paramUuid, fullParam.instance.value || "")
-                           }
-                           onSave={() => {
-                             onSaveEdit(fullParam.instance, editValue);
-                             setEditingParam(null);
-                             setEditValue("");
-                           }}
-                           onDelete={() => {/* Добавьте обработчик удаления */}}
-                  />
-                </Group>
+                <>
+                  {showHeader && getParamHeader()}
+                </>
 
                 <Box className={classes.textContent}>
                   <>
                   {isEditing ? (
-                      <ParameterRenderer
-                          dataType={parameter?.dataType || 'text'}
-                          value={editValue}
-                          possibleValues={possibleValuesMap?.[parameter?.uuid || '']}
-                          onValueChange={setEditValue}
-                      />
-                  ) : getParamDisplayedValue()}
+                      getParamEditVariant()
+                  ) : getParamNotEditVariant()}
                   </>
                 </Box>
               </Box>

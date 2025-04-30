@@ -12,7 +12,7 @@ export interface ParameterRendererProps {
   onValueChange: (value: string) => void;
 }
 
-export const ParameterRenderer = ({
+export const ParameterEditVariantRenderer = ({
                              dataType,
                              value,
                              possibleValues,
