@@ -22,21 +22,18 @@ import {useState} from "react";
 
 interface ParameterListProps {
   fullParams: FullParam[];
-  editingParam: string | null;
-  editValue: string;
-  onStartEdit: (paramUuid: string, currentValue: string) => void;
-  onSaveEdit: (instance: IBlockParameterInstance) => void;
-  possibleValuesMap?: Record<string, IBlockParameterPossibleValue[]>
+  onSaveEdit: (instance: IBlockParameterInstance, newValue: string) => void; // Обновлен тип
+  possibleValuesMap?: Record<string, IBlockParameterPossibleValue[]>;
 }
 
 export const ParameterList = ({
                                 fullParams,
-                                editingParam,
-                                editValue,
-                                onStartEdit,
                                 onSaveEdit,
                                 possibleValuesMap
                               }: ParameterListProps) => {
+  const [editingParam, setEditingParam] = useState<string | null>(null);
+  const [editValue, setEditValue] = useState("");
+
   // Состояние для отслеживания раскрытых параметров
   const [expandedParams, setExpandedParams] = useState<Record<string, boolean>>({});
 
@@ -46,6 +43,11 @@ export const ParameterList = ({
       ...prev,
       [paramUuid]: !prev[paramUuid]
     }));
+  };
+
+  const handleStartEdit = (paramUuid: string, currentValue: string) => {
+    setEditingParam(paramUuid);
+    setEditValue(currentValue);
   };
 
   return (
@@ -62,9 +64,10 @@ export const ParameterList = ({
               return <Checkbox
                   label={fullParam.parameter.title}
                   checked={fullParam.instance.value === "true"}
-                  onChange={(event) =>
+                  onChange={(e) =>
                       onSaveEdit(
-                          {...fullParam.instance, value: event.target.checked.toString()}
+                          fullParam.instance,
+                          e.target.checked.toString()
                       )
                   }
               />
@@ -108,9 +111,13 @@ export const ParameterList = ({
                   <ParameterActions
                            isEditing={isEditing}
                            onEdit={() =>
-                               onStartEdit(paramUuid, fullParam.instance.value || "")
+                               handleStartEdit(paramUuid, fullParam.instance.value || "")
                            }
-                           onSave={() => onSaveEdit(fullParam.instance)}
+                           onSave={() => {
+                             onSaveEdit(fullParam.instance, editValue);
+                             setEditingParam(null);
+                             setEditValue("");
+                           }}
                            onDelete={() => {/* Добавьте обработчик удаления */}}
                   />
                 </Group>
@@ -122,7 +129,7 @@ export const ParameterList = ({
                           dataType={parameter?.dataType || 'text'}
                           value={editValue}
                           possibleValues={possibleValuesMap?.[parameter?.uuid || '']}
-                          onValueChange={(value) => onStartEdit(paramUuid, value)}
+                          onValueChange={setEditValue}
                       />
                   ) : getParamDisplayedValue()}
                   </>

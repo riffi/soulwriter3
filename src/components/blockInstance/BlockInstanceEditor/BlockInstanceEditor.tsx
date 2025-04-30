@@ -39,8 +39,6 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [selectedParameter, setSelectedParameter] = useState<string | null>(null);
   const [parameterValue, setParameterValue] = useState("");
-  const [editingParam, setEditingParam] = useState<string | null>(null);
-  const [editValue, setEditValue] = useState("");
   const [activeTab, setActiveTab] = useState<string>('params');
   const { isMobile } = useMedia();
 
@@ -111,15 +109,6 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
     }
   };
 
-  const handleStartEdit = (paramUuid: string, currentValue: string) => {
-    setEditingParam(paramUuid);
-    setEditValue(currentValue);
-  };
-
-  const handleSaveEdit = async (instance: IBlockParameterInstance) => {
-    await handleUpdateParameterValue(instance, editValue);
-    setEditingParam(null);
-  };
 
   const groupContent = (
     <>
@@ -142,10 +131,7 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
 
       <ParameterList
           fullParams={fullParams}
-          editingParam={editingParam}
-          editValue={editValue}
-          onStartEdit={handleStartEdit}
-          onSaveEdit={handleSaveEdit}
+          onSaveEdit={handleUpdateParameterValue}
           possibleValuesMap={possibleValuesMap}
       />
     </Box>
