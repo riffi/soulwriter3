@@ -6,13 +6,15 @@ interface ParameterActionsProps {
   onEdit: () => void;
   onSave: () => void;
   onDelete: () => void;
+  isDefault?: boolean;
 }
 
 export const ParameterActions = ({
                             isEditing,
                             onEdit,
                             onSave,
-                            onDelete
+                            onDelete,
+                            isDefault
                           }: ParameterActionsProps) => (
     <Group gap={4}>
       {isEditing ? (
@@ -24,8 +26,10 @@ export const ParameterActions = ({
             <IconEdit size="1rem" />
           </ActionIcon>
       )}
-      <ActionIcon variant="subtle" color="red" onClick={onDelete}>
-        <IconTrash size="1rem" />
-      </ActionIcon>
+      {!isDefault && (
+          <ActionIcon variant="subtle" color="red" onClick={onDelete}>
+            <IconTrash size="1rem" />
+          </ActionIcon>
+      )}
     </Group>
 );

@@ -3,7 +3,7 @@ import {
   Group,
   Button,
   Text,
-  Stack, Checkbox
+  Stack, Checkbox, ActionIcon
 } from "@mantine/core";
 
 import classes from "../BlockInstanceEditor.module.css";
@@ -20,6 +20,7 @@ import {
 import {ParameterEditVariantRenderer} from "@/components/blockInstance/BlockInstanceEditor/components/ParameterEditVariantRenderer";
 import {useState} from "react";
 import {useDialog} from "@/providers/DialogProvider/DialogProvider";
+import {IconTrash} from "@tabler/icons-react";
 
 interface ParameterListProps {
   fullParams: FullParam[];
@@ -66,17 +67,34 @@ export const ParameterList = ({
           const showHeader = parameter && parameter.dataType !== IBlockParameterDataType.checkbox;
 
           function renderViewMode() {
-            if (fullParam.parameter?.dataType === IBlockParameterDataType.checkbox){
-              return <Checkbox
-                  label={fullParam.parameter.title}
-                  checked={fullParam.instance.value === "true"}
-                  onChange={(e) =>
-                      onSaveEdit(
-                          fullParam.instance,
-                          e.target.checked.toString()
-                      )
-                  }
-              />
+            if (fullParam.parameter?.dataType === IBlockParameterDataType.checkbox) {
+              return (
+                  <Group justify="space-between" align="center" w="100%">
+                    <Checkbox
+                        label={fullParam.parameter.title}
+                        checked={fullParam.instance.value === "true"}
+                        onChange={(e) =>
+                            onSaveEdit(
+                                fullParam.instance,
+                                e.currentTarget.checked.toString()
+                            )
+                        }
+                    />
+                    {!fullParam.parameter.isdefault && (
+                        <ActionIcon
+                            variant="subtle"
+                            color="red"
+                            onClick={async () => {
+                              const result = await showDialog("Подтверждение", `Удалить ${fullParam.parameter?.title || "Параметр"}?`);
+                              if (!result) return;
+                              onDelete?.(fullParam.instance.id);
+                            }}
+                        >
+                          <IconTrash size="1rem" />
+                        </ActionIcon>
+                    )}
+                  </Group>
+              );
             }
             return <Text component="div" className={classes.contentWrapper}>
               <div
@@ -137,6 +155,7 @@ export const ParameterList = ({
                     if (!result) return
                     onDelete?.(fullParam.instance.id)
                   }}
+                  isDefault={fullParam.parameter?.isDefault}
               />
             </Group>
             )
