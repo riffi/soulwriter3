@@ -1,6 +1,7 @@
 import { Table, ActionIcon, Group, Button } from "@mantine/core";
 import { IconEdit, IconTrash, IconPlus } from "@tabler/icons-react";
-import {IBlock} from "@/entities/ConstructorEntities";
+import {IBlock, IBlockRelation} from "@/entities/ConstructorEntities";
+import {IBlockInstance, IBlockInstanceRelation} from "@/entities/BookEntities";
 
 
 interface RelationTableProps {
@@ -18,9 +19,15 @@ export const RelationTable = ({
                                 onDeleteRelation,
                                 otherBlocks
                               }: RelationTableProps) => {
+
+  const blockCorrespondsToRelation = (block: IBlock, relation: IBlockRelation): boolean => {
+    return (relation.targetBlockUuid === block.uuid) ||
+        (relation.sourceBlockUuid === block.uuid);
+  }
+
   const rows = relations.map((relation) => (
       <Table.Tr key={relation.uuid}>
-        <Table.Td>{otherBlocks?.find((b) => b.uuid === relation.targetBlockUuid)?.title}</Table.Td>
+        <Table.Td>{otherBlocks?.find((b) => blockCorrespondsToRelation(b, relation))?.title}</Table.Td>
         <Table.Td>{relation.relationType}</Table.Td>
         <Table.Td>
           <Group gap={4}>
