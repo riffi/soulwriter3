@@ -17,7 +17,6 @@ import {InlineEdit} from "@/components/shared/InlineEdit/InlineEdit";
 import {
   BlockRelationsEditor
 } from "@/components/blockInstance/BlockInstanceEditor/components/BlockRelationsEditor/BlockRelationsEditor";
-import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
 import {
   AddParameterModal
 } from "@/components/blockInstance/BlockInstanceEditor/modal/AddParameterModal";
@@ -97,10 +96,6 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
       setCurrentParamGroup(parameterGroups[0]);
     }
   }, [props.blockInstanceUuid, parameterGroups]);
-
-  const handleAddParameter = () => {
-    setIsAddModalOpen(true);
-  };
 
   const getTabs = () => {
     if (!blockTabs) return [{ label: 'Параметры', value: 'params' }];
