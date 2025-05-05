@@ -190,7 +190,7 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
                     value: `related-${b.uuid}`
                   })) || []),
                   ...(childBlocks?.map(b => ({
-                    label: b.title,
+                    label: b.titleForms?.plural,
                     value: `child-${b.uuid}`
                   })) || [])
                 ]}
