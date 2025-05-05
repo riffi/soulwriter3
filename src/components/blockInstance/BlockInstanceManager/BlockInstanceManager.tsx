@@ -27,6 +27,9 @@ import {
 import {
   BlockInstanceTableRow
 } from "@/components/blockInstance/BlockInstanceManager/parts/BlockInstanceTableRow";
+import {
+  BlockInstanceEditor
+} from "@/components/blockInstance/BlockInstanceEditor/BlockInstanceEditor";
 
 export interface IBlockInstanceManagerProps {
   blockUuid: string;
@@ -131,7 +134,12 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
   const clearFilters = () => {
     setFilters({});
   };
-
+  if (block?.structureKind === 'single') {
+    if (!instances || instances.length === 0) {
+      return
+    }
+    return <BlockInstanceEditor blockInstanceUuid={instances?.[0].uuid}/>
+  }
   return (
       <Container size="xl" p="0" >
       <Box className={classes.container} pos="relative">

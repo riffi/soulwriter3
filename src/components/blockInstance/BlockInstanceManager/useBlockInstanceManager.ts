@@ -5,6 +5,7 @@ import {IBlock, IBlockParameter} from "@/entities/ConstructorEntities";
 import {generateUUID} from "@/utils/UUIDUtils";
 import {BlockRepository} from "@/repository/BlockRepository";
 import {BlockInstanceRepository} from "@/repository/BlockInstanceRepository";
+import {useEffect} from "react";
 
 export interface IBlockInstanceWithParams extends IBlockInstance {
   params: IBlockParameterInstance[];
@@ -19,6 +20,25 @@ export const useBlockInstanceManager = (blockUuid: string) => {
   const instances = useLiveQuery<IBlockInstance[]>(() => {
     return  BlockInstanceRepository.getBlockInstances(bookDb, blockUuid);
   }, [blockUuid]);
+
+  useEffect(() => {
+    const createSingleInstance = async () => {
+      if (
+          block?.structureKind === 'single' &&
+          instances?.length === 0
+      ) {
+        const uuid = generateUUID();
+        const newInstance: IBlockInstance = {
+          blockUuid,
+          uuid,
+          title: block?.title,
+        };
+        await addBlockInstance(newInstance);
+      }
+    };
+
+    createSingleInstance();
+  }, [block, instances]); // Зависимости от block и instances
 
   const displayedParameters = useLiveQuery<IBlockParameter[]>(() => {
     return BlockRepository.getDisplayedParameters(bookDb, blockUuid);
