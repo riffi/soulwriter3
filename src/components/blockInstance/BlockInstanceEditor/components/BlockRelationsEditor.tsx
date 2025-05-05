@@ -33,40 +33,44 @@ export const BlockRelationsEditor = ({
   const isChildBlock = !!relatedBlock.parentBlockUuid;
   const isRelatedBlockTarget = blockRelation.targetBlockUuid === relatedBlock?.uuid;
 
-  // Запросы данных
-  const parentInstances = useLiveQuery(() =>
-          isChildBlock
-              ? BlockInstanceRepository.getBlockInstances(bookDb, relatedBlock.parentBlockUuid!)
-              : Promise.resolve([])
-      , [relatedBlock]);
-
-  const parentBlock = useLiveQuery<IBlock>(() =>
-    isChildBlock
-        ? BlockRepository.getByUuid(bookDb, relatedBlock.parentBlockUuid!)
-        : Promise.resolve(null)
-  , [relatedBlock]);
-
-  const childInstances = useLiveQuery(() =>
-          parentInstanceUuid
-              ? BlockInstanceRepository.getChildInstances(bookDb, parentInstanceUuid)
-              : Promise.resolve([])
-      , [parentInstanceUuid]);
-
-  const instanceRelations = useLiveQuery(() =>
-          BlockInstanceRepository.getRelatedInstances(bookDb, blockInstanceUuid, relatedBlock.uuid)
-      , [blockInstanceUuid]);
-
-  const allRelatedInstances = useLiveQuery(() =>
-          BlockInstanceRepository.getBlockInstances(bookDb, relatedBlock.uuid)
-      , [relatedBlock]);
-
   // Логика фильтрации
   const isInstanceInRelation = (instance: IBlockInstance, relation: IBlockInstanceRelation) =>
       isRelatedBlockTarget
           ? relation.targetInstanceUuid === instance.uuid
           : relation.sourceInstanceUuid === instance.uuid;
 
-  const unusedInstances = allRelatedInstances?.filter(instance =>
+  // Родительские инстансы связанного блока
+  const relatedParentInstances = useLiveQuery(() =>
+          isChildBlock
+              ? BlockInstanceRepository.getBlockInstances(bookDb, relatedBlock.parentBlockUuid!)
+              : Promise.resolve([])
+      , [relatedBlock]);
+
+  // Родительский блок для связанного блока
+  const relatedParentBlock = useLiveQuery<IBlock>(() =>
+    isChildBlock
+        ? BlockRepository.getByUuid(bookDb, relatedBlock.parentBlockUuid!)
+        : Promise.resolve(null)
+  , [relatedBlock]);
+
+  const relatedChildInstances = useLiveQuery(() =>
+          parentInstanceUuid
+              ? BlockInstanceRepository.getChildInstances(bookDb, parentInstanceUuid)
+              : Promise.resolve([])
+      , [parentInstanceUuid]);
+
+  // Все связи инстансов
+  const instanceRelations = useLiveQuery(() =>
+          BlockInstanceRepository.getRelatedInstances(bookDb, blockInstanceUuid, relatedBlock.uuid)
+      , [blockInstanceUuid]);
+
+  // Все инстансы связанного блока
+  const allRelatedInstances = useLiveQuery(() =>
+          BlockInstanceRepository.getBlockInstances(bookDb, relatedBlock.uuid)
+      , [relatedBlock]);
+
+  // Все неиспользованные инстансы для связи
+  const unusedRelatedInstances = allRelatedInstances?.filter(instance =>
       !instanceRelations?.some(relation => isInstanceInRelation(instance, relation))
   ) || [];
 
@@ -133,10 +137,10 @@ export const BlockRelationsEditor = ({
   const ChildBlockModal = () => (
       <Stack>
         <Select
-            label={`${parentBlock?.title}`}
-            placeholder={`Выберите ${parentBlock?.titleForms?.accusative}`}
+            label={`${relatedParentBlock?.title}`}
+            placeholder={`Выберите ${relatedParentBlock?.titleForms?.accusative}`}
             value={parentInstanceUuid}
-            data={mapInstancesToOptions(parentInstances)}
+            data={mapInstancesToOptions(relatedParentInstances)}
             onChange={(v) => {
               setParentInstanceUuid(v || '');
               setTargetInstanceUuid(''); // Сброс дочернего выбора
@@ -148,12 +152,12 @@ export const BlockRelationsEditor = ({
         {parentInstanceUuid && (
             <Select
                 label={`${relatedBlock.title}`}
-                placeholder={childInstances?.length ? `Выберите ${relatedBlock.titleForms?.accusative}` : "Нет доступных"}
+                placeholder={relatedChildInstances?.length ? `Выберите ${relatedBlock.titleForms?.accusative}` : "Нет доступных"}
                 value={targetInstanceUuid}
-                data={mapInstancesToOptions(childInstances)}
+                data={mapInstancesToOptions(relatedChildInstances)}
                 onChange={(v) => setTargetInstanceUuid(v || '')}
-                disabled={!childInstances?.length}
-                description={!childInstances?.length && "Нет дочерних элементов"}
+                disabled={!relatedChildInstances?.length}
+                description={!relatedChildInstances?.length && "Нет дочерних элементов"}
                 searchable
             />
         )}
@@ -162,7 +166,7 @@ export const BlockRelationsEditor = ({
           <Button
               onClick={createRelation}
               disabled={!targetInstanceUuid}
-              loading={!childInstances} // Если нужен индикатор загрузки
+              loading={!relatedChildInstances} // Если нужен индикатор загрузки
           >
             Создать связь
           </Button>
@@ -175,7 +179,7 @@ export const BlockRelationsEditor = ({
         <Select
             label={`Выберите ${relatedBlock?.titleForms?.accusative}`}
             value={targetInstanceUuid}
-            data={mapInstancesToOptions(unusedInstances)}
+            data={mapInstancesToOptions(unusedRelatedInstances)}
             onChange={v => setTargetInstanceUuid(v || '')}
         />
         <Button onClick={createRelation} disabled={!targetInstanceUuid} mt="md">
@@ -190,7 +194,7 @@ export const BlockRelationsEditor = ({
           <Button
               onClick={() => setIsModalOpen(true)}
               variant="light"
-              disabled={!isChildBlock && unusedInstances.length === 0}
+              disabled={!isChildBlock && unusedRelatedInstances.length === 0}
           >
             {`Добавить ${relatedBlock?.titleForms?.accusative}`}
           </Button>

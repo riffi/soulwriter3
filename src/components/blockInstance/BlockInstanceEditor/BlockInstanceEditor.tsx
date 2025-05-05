@@ -158,6 +158,28 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
   };
 
 
+  const getRelatedBlocksTabs = () => {
+    return (relatedBlocks?.map(b => ({
+      label: b.titleForms?.plural,
+      value: `related-${b.uuid}`
+    })) || [])
+  }
+
+  const getChildBlocksTabs = () => {
+    return (childBlocks?.map(b => ({
+      label: b.titleForms?.plural,
+      value: `child-${b.uuid}`
+    })) || [])
+  }
+
+  const getTabs = () => {
+    return [
+      {label: 'Параметры', value: 'params'},
+      ...getChildBlocksTabs(),
+      ...getRelatedBlocksTabs(),
+    ];
+  }
+
   return (
       <>
       <Container size="xl" p={'xs'} style={{backgroundColor: '#FFF', minHeight: 'calc(100vh - 100px)'}} >
@@ -183,17 +205,8 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
             <SegmentedControl
                 value={activeTab}
                 onChange={setActiveTab}
-                data={[
-                  { label: 'Параметры', value: 'params' },
-                  ...(relatedBlocks?.map(b => ({
-                    label: b.titleForms?.plural,
-                    value: `related-${b.uuid}`
-                  })) || []),
-                  ...(childBlocks?.map(b => ({
-                    label: b.titleForms?.plural,
-                    value: `child-${b.uuid}`
-                  })) || [])
-                ]}
+                data={getTabs()}
+                style={{textTransform: 'Capitalize'}}
                 mb="md"
             />
 
