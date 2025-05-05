@@ -69,8 +69,10 @@ const ParameterContent = ({ availableParameters, fullParams, onAdd, ...props }) 
 export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
   const [currentParamGroup, setCurrentParamGroup] = useState<IBlockParameterGroup | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<string>('params');
-  const { isMobile } = useMedia();
+
+  // Состояния для вкладок и активной вкладки
+  const [tabs, setTabs] = useState<Array<{ label: string; value: string }>>([]);
+  const [activeTab, setActiveTab] = useState<string | null>(null);
 
   const {
     blockInstance,
@@ -100,9 +102,40 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
     setIsAddModalOpen(true);
   };
 
+  const getTabs = () => {
+    if (!blockTabs) return [{ label: 'Параметры', value: 'params' }];
+
+    return blockTabs.map(tab => {
+      switch (tab.tabKind) {
+        case 'relation':
+          return {
+            label: tab.title,
+            value: `related-${tab.relationUuid}`,
+          };
+        case 'childBlock':
+          return {
+            label: tab.title,
+            value: `child-${tab.childBlockUuid}`,
+          };
+        default: // parameters
+          return {
+            label: tab.title,
+            value: 'params',
+          };
+      }
+    });
+  };
+
+  // Обновляем список вкладок и активную вкладку при изменении blockTabs
   useEffect(() => {
-    setActiveTab("params")
-  }, [props.blockInstanceUuid])
+    const newTabs = getTabs();
+    setTabs(newTabs);
+
+    // Устанавливаем первую вкладку как активную
+    if (newTabs.length > 0) {
+      setActiveTab(newTabs[0].value);
+    }
+  }, [blockTabs]); // Зависимость от blockTabs
 
   const handleSaveParameter = async (parameterUuid: string) => {
     if (!parameterUuid || !props.blockInstanceUuid) return;
@@ -149,34 +182,6 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
   };
 
 
-
-
-  const getTabs = () => {
-    if (!blockTabs) return [{ label: 'Параметры', value: 'params' }];
-
-    return blockTabs.map(tab => {
-      switch (tab.tabKind) {
-        case 'relation':
-          return {
-            label: tab.title,
-            value: `related-${tab.relationUuid}`,
-          };
-        case 'childBlock':
-          return {
-            label: tab.title,
-            value: `child-${tab.childBlockUuid}`,
-          };
-        default: // parameters
-          return {
-            label: tab.title,
-            value: 'params',
-          };
-      }
-    });
-  };
-
-  const tabs = getTabs();
-
   const getRelatedBlockByRelationUuid = (relationUuid: string) => {
     const relation = blockRelations?.find(r =>
         r.uuid === relationUuid
@@ -211,7 +216,7 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
           </Group>
           <section>
             <SegmentedControl
-                value={activeTab}
+                value={activeTab || ''}
                 onChange={setActiveTab}
                 data={tabs}
                 style={{textTransform: 'Capitalize'}}
