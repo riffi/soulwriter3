@@ -161,7 +161,7 @@ const save = async (db: BlockAbstractDb, block: IBlock) => {
     const persistedBlockData = await db.blocks.get(blockId)
     await appendDefaultParamGroup(db, persistedBlockData)
     await appendDefaultTab(db, persistedBlockData)
-    return
+    return block.uuid
   }
   db.blocks.update(block.id, block)
 }

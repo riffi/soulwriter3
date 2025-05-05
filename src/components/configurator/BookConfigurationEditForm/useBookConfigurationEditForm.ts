@@ -14,6 +14,8 @@ import {
 } from "@/components/configurator/BookConfigurationEditForm/usePublishVersion";
 import {bookDb} from "@/entities/bookDb";
 import {BlockRepository} from "@/repository/BlockRepository";
+import {BlockInstanceRepository} from "@/repository/BlockInstanceRepository";
+import {IBlockInstance} from "@/entities/BookEntities";
 
 export const useBookConfigurationEditForm = (configurationUuid: string,
                                              bookUuid?: string,
@@ -23,6 +25,7 @@ export const useBookConfigurationEditForm = (configurationUuid: string,
   const {showDialog} = useDialog();
 
   const db = bookUuid ? bookDb : configDatabase;
+  const isBookDb = !!bookUuid;
 
   // Данные конфигурации
   const configuration  = useLiveQuery<IBookConfiguration>(() => {
@@ -54,7 +57,23 @@ export const useBookConfigurationEditForm = (configurationUuid: string,
 
   // Cохранение блока
   const saveBlock = async (blockData: IBlock) => {
-    await BlockRepository.save(db, blockData)
+    if (!blockData.uuid) {
+      const blockUuid = await BlockRepository.save(db, blockData)
+      if (isBookDb && blockData.structureKind === 'single'){
+        const uuid = generateUUID();
+        const newInstance: IBlockInstance = {
+          blockUuid,
+          uuid,
+          title: blockData?.title,
+        };
+        await BlockInstanceRepository.create(db, newInstance)
+      }
+    }
+    else{
+      await BlockRepository.save(db, blockData)
+    }
+
+
   }
 
   // Удаление блока и связанных с ним данных
