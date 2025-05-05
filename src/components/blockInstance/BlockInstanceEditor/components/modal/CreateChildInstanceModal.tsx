@@ -3,19 +3,21 @@ import { useForm } from "@mantine/form";
 import { BlockInstanceRepository } from "@/repository/BlockInstanceRepository";
 import { bookDb } from "@/entities/bookDb";
 import {generateUUID} from "@/utils/UUIDUtils";
+import {IBlock} from "@/entities/ConstructorEntities";
 
 interface CreateChildInstanceModalProps {
   opened: boolean;
   onClose: () => void;
   blockUuid: string;
   blockInstanceUuid: string;
+  relatedBlock: IBlock;
 }
 
 export const CreateChildInstanceModal = ({
                                            opened,
                                            onClose,
-                                           blockUuid,
-                                           blockInstanceUuid
+                                           blockInstanceUuid,
+                                           relatedBlock
                                          }: CreateChildInstanceModalProps) => {
   const form = useForm({
     initialValues: {
@@ -29,7 +31,7 @@ export const CreateChildInstanceModal = ({
   const handleCreate = async () => {
     await BlockInstanceRepository.create(bookDb, {
       uuid: generateUUID(),
-      blockUuid,
+      blockUuid: relatedBlock.uuid,
       title: form.values.title.trim(),
       parentInstanceUuid: blockInstanceUuid
     });
@@ -38,10 +40,10 @@ export const CreateChildInstanceModal = ({
   };
 
   return (
-      <Modal opened={opened} onClose={onClose} title="Создать дочерний инстанс">
+      <Modal opened={opened} onClose={onClose} title={`Добавить ${relatedBlock?.title}`}>
         <Stack>
           <TextInput
-              label="Название инстанса"
+              label="Название"
               {...form.getInputProps("title")}
               autoFocus
           />

@@ -6,15 +6,15 @@ import { BlockInstanceRepository } from "@/repository/BlockInstanceRepository";
 import { useState } from "react";
 import { CreateChildInstanceModal } from "./modal/CreateChildInstanceModal";
 import {IBlockInstance} from "@/entities/BookEntities";
+import {IBlock, IBlockDisplayKind} from "@/entities/ConstructorEntities";
 
 interface ChildInstancesTableProps {
-  blockUuid: string;
   blockInstanceUuid: string;
   instances: IBlockInstance[];
-  structureKind: string;
+  relatedBlock: IBlock
 }
 
-export const ChildInstancesTable = ({ blockUuid, blockInstanceUuid, instances, structureKind  }: ChildInstancesTableProps) => {
+export const ChildInstancesTable = ({ blockInstanceUuid, instances, relatedBlock }: ChildInstancesTableProps) => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -32,7 +32,7 @@ export const ChildInstancesTable = ({ blockUuid, blockInstanceUuid, instances, s
   };
 
   const renderContent = () => {
-    if (structureKind === 'timeLine') {
+    if (relatedBlock.displayKind === IBlockDisplayKind.timeLine) {
       return (
           <Timeline active={instances.length} bulletSize={24} lineWidth={2}>
             {instances.map((instance) => (
@@ -165,7 +165,7 @@ export const ChildInstancesTable = ({ blockUuid, blockInstanceUuid, instances, s
               onClick={() => setIsModalOpen(true)}
               variant="light"
           >
-            Создать инстанс
+            {relatedBlock.titleForms?.accusative}
           </Button>
         </Group>
 
@@ -174,7 +174,8 @@ export const ChildInstancesTable = ({ blockUuid, blockInstanceUuid, instances, s
         <CreateChildInstanceModal
             opened={isModalOpen}
             onClose={() => setIsModalOpen(false)}
-            blockUuid={blockUuid}
+            relatedBlock={relatedBlock}
+            blockUuid={relatedBlock.uuid}
             blockInstanceUuid={blockInstanceUuid}
         />
       </div>

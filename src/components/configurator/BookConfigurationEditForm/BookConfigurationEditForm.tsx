@@ -27,7 +27,7 @@ import {
 } from "@tabler/icons-react";
 import {notifications} from "@mantine/notifications";
 import {
-  IBlock, IBlockStructureKind, IBlockStructureKindTitle,
+  IBlock, IBlockDisplayKind, IBlockStructureKind, IBlockStructureKindTitle,
   IBookConfiguration,
   IBookConfigurationVersion
 } from "@/entities/ConstructorEntities";
@@ -55,6 +55,7 @@ export const BookConfigurationEditForm = (props: IBookConfigurationEditFormProps
       description: '',
       useTabs: false,
       structureKind: IBlockStructureKind.single,
+      displayKind: IBlockDisplayKind.list,
     }
   }
 
@@ -182,7 +183,7 @@ export const BookConfigurationEditForm = (props: IBookConfigurationEditFormProps
           <Title order={4}>Блоки</Title>
           <SimpleGrid cols={{base: 1, sm: 2, lg: 3, xl: 4}} spacing="md">
             {/* Новая карточка для добавления */}
-            {currentVersion?.isDraft && (
+            {(isBookConfiguration || currentVersion?.isDraft) && (
                 <Card
                     shadow="sm"
                     padding="lg"

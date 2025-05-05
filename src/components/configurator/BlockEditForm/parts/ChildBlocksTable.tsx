@@ -1,21 +1,17 @@
 import { Table, ActionIcon, Group, Button, Text } from "@mantine/core";
 import { IconEdit, IconTrash, IconPlus } from "@tabler/icons-react";
-import { IBlock } from "@/entities/ConstructorEntities";
+import {IBlock, IBlockDisplayKind, IBlockDisplayKindTitle} from "@/entities/ConstructorEntities";
 import { ChildBlockEditModal } from "./ChildBlockEditModal";
 import { useState } from "react";
 
 interface ChildBlocksTableProps {
   childrenBlocks: IBlock[];
   otherBlocks: IBlock[];
-  onAddChild: (blockUuid: string, structureKind: string) => void;
-  onUpdateChild: (blockUuid: string, structureKind: string) => void;
+  onAddChild: (blockUuid: string, displayKind: string) => void;
+  onUpdateChild: (blockUuid: string, displayKind: string) => void;
   onRemoveChild: (blockUuid: string) => void;
 }
 
-const structureKindLabels = {
-  list: 'Список',
-  timeLine: 'Временная линия'
-};
 
 export const ChildBlocksTable = ({
                                    childrenBlocks,
@@ -31,11 +27,11 @@ export const ChildBlocksTable = ({
       b => !childrenBlocks.some(child => child.uuid === b.uuid)
   );
 
-  const handleSave = (blockUuid: string, structureKind: string) => {
+  const handleSave = (blockUuid: string, displayKind: string) => {
     if (editingBlock) {
-      onUpdateChild(editingBlock.uuid!, structureKind);
+      onUpdateChild(editingBlock.uuid!, displayKind);
     } else {
-      onAddChild(blockUuid, structureKind);
+      onAddChild(blockUuid, displayKind);
     }
     setEditingBlock(null);
   };
@@ -66,7 +62,7 @@ export const ChildBlocksTable = ({
                 <Table.Tr key={block.uuid}>
                   <Table.Td>{block.title}</Table.Td>
                   <Table.Td>
-                    <Text>{structureKindLabels[block.structureKind] || 'Неизвестно'}</Text>
+                    <Text>{IBlockDisplayKindTitle[block.displayKind] || 'Неизвестно'}</Text>
                   </Table.Td>
                   <Table.Td>
                     <Group gap="xs">
@@ -103,7 +99,7 @@ export const ChildBlocksTable = ({
             availableBlocks={editingBlock ? [...availableBlocks, editingBlock] : availableBlocks}
             initialData={editingBlock ? {
               blockUuid: editingBlock.uuid,
-              structureKind: editingBlock.structureKind
+              displayKind: editingBlock.displayKind
             } : undefined}
         />
       </div>

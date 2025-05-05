@@ -8,10 +8,10 @@ interface ChildBlockEditModalProps {
   onClose: () => void;
   onSave: (blockUuid: string, structureKind: string) => void;
   availableBlocks: IBlock[];
-  initialData?: { blockUuid?: string; structureKind?: string };
+  initialData?: { blockUuid?: string; displayKind?: string };
 }
 
-const structureKindOptions = [
+const displayKindOptions = [
   { value: 'list', label: 'Список' },
   { value: 'timeLine', label: 'Временная линия' },
 ];
@@ -26,12 +26,12 @@ export const ChildBlockEditModal = ({
   const form = useForm({
     initialValues: {
       blockUuid: initialData?.blockUuid || '',
-      structureKind: initialData?.structureKind || 'list',
+      displayKind: initialData?.displayKind || 'list',
     },
   });
 
   const handleSave = () => {
-    onSave(form.values.blockUuid, form.values.structureKind);
+    onSave(form.values.blockUuid, form.values.displayKind);
     onClose();
   };
 
@@ -47,8 +47,8 @@ export const ChildBlockEditModal = ({
 
           <Select
               label="Тип отображения"
-              data={structureKindOptions}
-              {...form.getInputProps('structureKind')}
+              data={displayKindOptions}
+              {...form.getInputProps('displayKind')}
               required
           />
 

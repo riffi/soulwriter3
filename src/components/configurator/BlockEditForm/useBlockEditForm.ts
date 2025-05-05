@@ -297,14 +297,14 @@ export const useBlockEditForm = (blockUuid: string, bookUuid?: string, currentGr
     return db.blocks.where("parentBlockUuid").equals(blockUuid).toArray();
   }, [blockUuid]);
 
-  const updateBlockParent = async (childBlockUuid: string, parentUuid: string | null, structureKind: string) => {
+  const updateBlockParent = async (childBlockUuid: string, parentUuid: string | null, displayKind: string) => {
     try {
       const childBlock = await BlockRepository.getByUuid(db, childBlockUuid);
       if (childBlock) {
         await db.blocks.update(childBlock.id!, {
           ...childBlock,
           parentBlockUuid: parentUuid,
-          structureKind: structureKind
+          displayKind
         });
         notifications.show({
           title: "Успешно",
@@ -322,14 +322,14 @@ export const useBlockEditForm = (blockUuid: string, bookUuid?: string, currentGr
     }
   };
 
-  // Добавим метод для обновления структуры
-  const updateBlockStructure = async (blockUuid: string, structureKind: string) => {
+  // Обновление метода отображения
+  const updateBlockDisplayKind = async (blockUuid: string, displayKind: string) => {
     try {
       const block = await BlockRepository.getByUuid(db, blockUuid);
       if (block) {
         await db.blocks.update(block.id!, {
           ...block,
-          structureKind: structureKind
+          displayKind
         });
         notifications.show({
           title: "Успешно",
@@ -368,6 +368,6 @@ export const useBlockEditForm = (blockUuid: string, bookUuid?: string, currentGr
     deleteRelation,
     childBlocks,
     updateBlockParent,
-    updateBlockStructure
+    updateBlockDisplayKind
   }
 }

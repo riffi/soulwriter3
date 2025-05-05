@@ -13,7 +13,7 @@ import { useBlockEditForm } from "@/components/configurator/BlockEditForm/useBlo
 import React, { useEffect, useState } from "react";
 import {
   BlockRelationType,
-  IBlockParameter, IBlockRelation,
+  IBlockParameter, IBlockParameterDataType, IBlockRelation,
   IBlockStructureKind,
   IBlockStructureKindTitle
 } from "@/entities/ConstructorEntities";
@@ -75,7 +75,7 @@ export const BlockEditForm = ({ blockUuid, bookUuid }: IBlockEditFormProps) => {
     deleteRelation,
     childBlocks,
     updateBlockParent,
-    updateBlockStructure
+    updateBlockDisplayKind
   } = useBlockEditForm(blockUuid, bookUuid, state.currentGroupUuid);
 
   useEffect(() => {
@@ -89,7 +89,7 @@ export const BlockEditForm = ({ blockUuid, bookUuid }: IBlockEditFormProps) => {
     title: "",
     description: "",
     groupUuid: state.currentGroupUuid,
-    dataType: "string",
+    dataType: IBlockParameterDataType.string,
     orderNumber: paramList?.length || 0,
   });
 
@@ -252,8 +252,8 @@ export const BlockEditForm = ({ blockUuid, bookUuid }: IBlockEditFormProps) => {
               <ChildBlocksTable
                   childrenBlocks={childBlocks || []}
                   otherBlocks={otherBlocks || []}
-                  onAddChild={(uuid, structureKind) => updateBlockParent(uuid, blockUuid, structureKind)}
-                  onUpdateChild={(uuid, structureKind) => updateBlockStructure(uuid, structureKind)}
+                  onAddChild={(uuid, displayKind) => updateBlockParent(uuid, blockUuid, displayKind)}
+                  onUpdateChild={(uuid, displayKind) => updateBlockDisplayKind(uuid, displayKind)}
                   onRemoveChild={(uuid) => updateBlockParent(uuid, null, 'list')}
               />
 

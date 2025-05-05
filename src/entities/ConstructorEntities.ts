@@ -29,6 +29,16 @@ export enum IBlockStructureKindTitle{
   tree = 'Дерево',
 }
 
+export enum IBlockDisplayKind{
+  list = 'list',
+  timeLine = 'timeLine'
+}
+
+export enum IBlockDisplayKindTitle{
+  list = 'Список',
+  timeLine = 'Временная линия'
+}
+
 enum IBlockKind{
   ConstructionBlock = 'construction-block',
 }
@@ -67,6 +77,7 @@ export interface IBlock {
   description: string;
   useTabs: boolean; // Использовать вкладки
   structureKind: string // Вид структуры
+  displayKind: string // Вид отображения
   parentBlockUuid?: string; // Ссылка на родительский блок
   titleForms?: IBlockTitleForms
 }

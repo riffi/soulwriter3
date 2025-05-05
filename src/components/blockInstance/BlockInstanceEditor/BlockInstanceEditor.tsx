@@ -245,6 +245,7 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
                             blockInstanceUuid={props.blockInstanceUuid}
                             instances={childInstancesMap?.[childBlock.uuid] || []}
                             structureKind={childBlock.structureKind}
+                            relatedBlock={childBlock}
                         />
                     )
                 ))
