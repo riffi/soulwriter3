@@ -229,6 +229,11 @@ export const BookConfigurationEditForm = (props: IBookConfigurationEditFormProps
                             Со вкладками
                           </Badge>
                       )}
+                      {!!c.parentBlockUuid && (
+                          <Badge variant="light" color="grey">
+                            Дочерний
+                          </Badge>
+                      )}
                     </Group>
 
                     {c.description && (
