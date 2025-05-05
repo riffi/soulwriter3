@@ -230,7 +230,8 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
                             blockUuid={block?.uuid}
                             relatedBlock={relatedBlock}
                             blockRelation={blockRelations?.find(r =>
-                                r.targetBlockUuid === block.uuid || r.sourceBlockUuid === block.uuid
+                                (r.targetBlockUuid === block.uuid && r.sourceBlockUuid === relatedBlock.uuid)
+                                || (r.sourceBlockUuid === block.uuid && r.targetBlockUuid === relatedBlock.uuid)
                             )}
                         />
                     )

@@ -31,7 +31,7 @@ export const BlockRelationsEditor = ({
   const [parentInstanceUuid, setParentInstanceUuid] = useState('');
 
   const isChildBlock = !!relatedBlock.parentBlockUuid;
-  const isTarget = blockRelation.targetBlockUuid === relatedBlock?.uuid;
+  const isRelatedBlockTarget = blockRelation.targetBlockUuid === relatedBlock?.uuid;
 
   // Запросы данных
   const parentInstances = useLiveQuery(() =>
@@ -62,7 +62,7 @@ export const BlockRelationsEditor = ({
 
   // Логика фильтрации
   const isInstanceInRelation = (instance: IBlockInstance, relation: IBlockInstanceRelation) =>
-      isTarget
+      isRelatedBlockTarget
           ? relation.targetInstanceUuid === instance.uuid
           : relation.sourceInstanceUuid === instance.uuid;
 
@@ -72,15 +72,15 @@ export const BlockRelationsEditor = ({
 
   // Обработчики действий
   const createRelation = async () => {
-    const [source, target] = isTarget
+    const [source, target] = isRelatedBlockTarget
         ? [blockInstanceUuid, targetInstanceUuid]
         : [targetInstanceUuid, blockInstanceUuid];
 
     const relation: IBlockInstanceRelation = {
       sourceInstanceUuid: source,
       targetInstanceUuid: target,
-      sourceBlockUuid: isTarget ? blockUuid : relatedBlock.uuid,
-      targetBlockUuid: isTarget ? relatedBlock.uuid : blockUuid,
+      sourceBlockUuid: isRelatedBlockTarget ? blockUuid : relatedBlock.uuid,
+      targetBlockUuid: isRelatedBlockTarget ? relatedBlock.uuid : blockUuid,
       blockRelationUuid: generateUUID()
     };
 
@@ -99,7 +99,7 @@ export const BlockRelationsEditor = ({
 
   // Рендер компонентов
   const RelationRow = ({ relation }: { relation: IBlockInstanceRelation }) => {
-    const relatedInstanceUuid = isTarget
+    const relatedInstanceUuid = isRelatedBlockTarget
         ? relation.targetInstanceUuid
         : relation.sourceInstanceUuid;
 
