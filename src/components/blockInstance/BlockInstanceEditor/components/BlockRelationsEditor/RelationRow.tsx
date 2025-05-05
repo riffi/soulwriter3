@@ -9,7 +9,7 @@ interface RelationRowProps {
   isRelatedBlockChild: boolean;
   allRelatedInstances?: IBlockInstance[];
   isRelatedBlockTarget: boolean;
-  onDelete: (relationUuid: string) => void;
+  onDelete: (relation: IBlockInstanceRelation) => void;
 }
 
 export const RelationRow = ({
@@ -45,7 +45,7 @@ export const RelationRow = ({
             <ActionIcon
                 color="red"
                 variant="subtle"
-                onClick={() => onDelete(relation.blockRelationUuid)}
+                onClick={() => onDelete(relation)}
             >
               <IconTrash size={16} />
             </ActionIcon>

@@ -5,13 +5,15 @@ import { IBlockInstance, IBlockInstanceRelation } from '@/entities/BookEntities'
 import { BlockInstanceRepository } from "@/repository/BlockInstanceRepository";
 import { BlockRepository } from "@/repository/BlockRepository";
 import {IBlock} from "@/entities/ConstructorEntities";
+import {generateUUID} from "@/utils/UUIDUtils";
 
 export const useBlockRelationsEditor = (
     blockInstanceUuid: string,
     relatedBlock: IBlock,
     isRelatedBlockTarget: boolean,
     isRelatedBlockChild: boolean,
-    parentInstanceUuid: string
+    parentInstanceUuid: string,
+    blockUuid: string
 ) => {
   const relatedParentInstances = useLiveQuery(
       () => isRelatedBlockChild
@@ -53,6 +55,22 @@ export const useBlockRelationsEditor = (
       !instanceRelations?.some(relation => isInstanceInRelation(instance, relation))
   ) || [];
 
+  const createRelation = async (targetInstanceUuid: string) => {
+    const [source, target] = isRelatedBlockTarget
+        ? [blockInstanceUuid, targetInstanceUuid]
+        : [targetInstanceUuid, blockInstanceUuid];
+
+    const relation: IBlockInstanceRelation = {
+      sourceInstanceUuid: source,
+      targetInstanceUuid: target,
+      sourceBlockUuid: isRelatedBlockTarget ? blockUuid : relatedBlock.uuid,
+      targetBlockUuid: isRelatedBlockTarget ? relatedBlock.uuid : blockUuid,
+      blockRelationUuid: generateUUID()
+    };
+
+    await bookDb.blockInstanceRelations.add(relation);
+  };
+
   return {
     relatedParentInstances,
     relatedParentBlock,
@@ -60,6 +78,7 @@ export const useBlockRelationsEditor = (
     instanceRelations,
     allRelatedInstances,
     unusedRelatedInstances,
-    isInstanceInRelation
+    isInstanceInRelation,
+    createRelation
   };
 };

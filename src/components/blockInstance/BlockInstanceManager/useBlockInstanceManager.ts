@@ -55,8 +55,7 @@ export const useBlockInstanceManager = (blockUuid: string) => {
   }
 
   const deleteBlockInstance = async (data: IBlockInstance) => {
-    await bookDb.blockParameterInstances.where('blockInstanceUuid').equals(data.uuid).delete();
-    await bookDb.blockInstances.delete(data.id);
+    await BlockInstanceRepository.remove(bookDb, data);
   }
 
 

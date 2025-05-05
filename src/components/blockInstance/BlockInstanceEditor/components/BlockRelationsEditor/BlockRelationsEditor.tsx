@@ -1,12 +1,9 @@
 import { useState } from 'react';
 import { Table, Button, Group, Modal} from '@mantine/core';
-import { useLiveQuery } from 'dexie-react-hooks';
 import { bookDb } from '@/entities/bookDb';
 import { IBlock, IBlockRelation } from '@/entities/ConstructorEntities';
-import { generateUUID } from "@/utils/UUIDUtils";
 import { BlockInstanceRepository } from "@/repository/BlockInstanceRepository";
-import { IBlockInstance, IBlockInstanceRelation } from "@/entities/BookEntities";
-import {BlockRepository} from "@/repository/BlockRepository";
+import { IBlockInstanceRelation } from "@/entities/BookEntities";
 import {
   RelationRow
 } from "@/components/blockInstance/BlockInstanceEditor/components/BlockRelationsEditor/RelationRow";
@@ -19,6 +16,7 @@ import {
 import {
   useBlockRelationsEditor
 } from "@/components/blockInstance/BlockInstanceEditor/components/BlockRelationsEditor/hook/useBlockRelationsEditor";
+import {useDialog} from "@/providers/DialogProvider/DialogProvider";
 
 interface BlockRelationsEditorProps {
   blockUuid: string;
@@ -41,6 +39,8 @@ export const BlockRelationsEditor = ({
   const isRelatedBlockChild = !!relatedBlock.parentBlockUuid;
   const isRelatedBlockTarget = blockRelation.targetBlockUuid === relatedBlock?.uuid;
 
+  const {showDialog} = useDialog();
+
   const {
     relatedParentInstances,
     relatedParentBlock,
@@ -48,33 +48,26 @@ export const BlockRelationsEditor = ({
     instanceRelations,
     allRelatedInstances,
     unusedRelatedInstances,
+    createRelation
   } = useBlockRelationsEditor(
       blockInstanceUuid,
       relatedBlock,
       isRelatedBlockTarget,
       isRelatedBlockChild,
-      parentInstanceUuid
+      parentInstanceUuid,
+      blockUuid
   );
-  // Обработчики действий
-  const createRelation = async () => {
-    const [source, target] = isRelatedBlockTarget
-        ? [blockInstanceUuid, targetInstanceUuid]
-        : [targetInstanceUuid, blockInstanceUuid];
-
-    const relation: IBlockInstanceRelation = {
-      sourceInstanceUuid: source,
-      targetInstanceUuid: target,
-      sourceBlockUuid: isRelatedBlockTarget ? blockUuid : relatedBlock.uuid,
-      targetBlockUuid: isRelatedBlockTarget ? relatedBlock.uuid : blockUuid,
-      blockRelationUuid: generateUUID()
-    };
-
-    await bookDb.blockInstanceRelations.add(relation);
+  const handleCreateRelation = async () => {
+    await createRelation(targetInstanceUuid);
     resetModalState();
   };
 
-  const deleteRelation = async (relationUuid: string) =>
-      await bookDb.blockInstanceRelations.where('blockRelationUuid').equals(relationUuid).delete();
+  const deleteRelation = async (relation: IBlockInstanceRelation) =>{
+    const result = await showDialog('Внимание', 'Вы действительно хотите удалить связь?')
+    if (!result) return
+    await BlockInstanceRepository.removeRelation(bookDb, relation);
+  }
+
 
   const resetModalState = () => {
     setIsModalOpen(false);
@@ -134,7 +127,7 @@ export const BlockRelationsEditor = ({
                   relatedBlock={relatedBlock}
                   onParentChange={setParentInstanceUuid}
                   onTargetChange={setTargetInstanceUuid}
-                  onCreate={createRelation}
+                  onCreate={handleCreateRelation}
                   isLoading={!relatedChildInstances}
               />
           ) : (
@@ -143,7 +136,7 @@ export const BlockRelationsEditor = ({
                   unusedRelatedInstances={unusedRelatedInstances}
                   targetInstanceUuid={targetInstanceUuid}
                   onTargetChange={setTargetInstanceUuid}
-                  onCreate={createRelation}
+                  onCreate={handleCreateRelation}
               />
           )}
           </>

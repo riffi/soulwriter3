@@ -1,5 +1,9 @@
 import {bookDb, BookDB} from "@/entities/bookDb";
-import {IBlockInstance, IBlockParameterInstance} from "@/entities/BookEntities";
+import {
+  IBlockInstance,
+  IBlockInstanceRelation,
+  IBlockParameterInstance
+} from "@/entities/BookEntities";
 import {generateUUID} from "@/utils/UUIDUtils";
 import {BlockRepository} from "@/repository/BlockRepository";
 
@@ -63,12 +67,29 @@ const update = async (db: BookDB, instance: IBlockInstance)=> {
 }
 
 const remove = async (db: BookDB, instance: IBlockInstance)=> {
+  db.blockInstanceRelations.where('sourceInstanceUuid').equals(instance.uuid).delete();
+  db.blockInstanceRelations.where('targetInstanceUuid').equals(instance.uuid).delete();
+  db.blockParameterInstances.where('blockInstanceUuid').equals(instance.uuid).delete();
   db.blockInstances.delete(instance.id);
 }
 
 
-const getChildInstances = async (db: BookDB, parentInstanceUuid: string) => {
-  return db.blockInstances.where('parentInstanceUuid').equals(parentInstanceUuid).toArray();
+const getChildInstances = async (db: BookDB, parentInstanceUuid: string, childBlockUuid?: string) => {
+  if (!childBlockUuid) {
+    return db.blockInstances
+      .where('parentInstanceUuid')
+      .equals(parentInstanceUuid)
+      .toArray();
+  }
+  return db.blockInstances
+    .where('parentInstanceUuid')
+    .equals(parentInstanceUuid)
+    .filter(i => i.blockUuid === childBlockUuid)
+    .toArray()
+}
+
+const removeRelation = async (db: BookDB, relation: IBlockInstanceRelation)=> {
+  return db.blockInstanceRelations.delete(relation.id)
 }
 
 export const BlockInstanceRepository = {
@@ -79,5 +100,6 @@ export const BlockInstanceRepository = {
   getChildInstances,
   create,
   update,
-  remove
+  remove,
+  removeRelation,
 }

@@ -7,6 +7,7 @@ import { useState } from "react";
 import { CreateChildInstanceModal } from "./modal/CreateChildInstanceModal";
 import {IBlockInstance} from "@/entities/BookEntities";
 import {IBlock, IBlockDisplayKind} from "@/entities/ConstructorEntities";
+import {useDialog} from "@/providers/DialogProvider/DialogProvider";
 
 interface ChildInstancesTableProps {
   blockInstanceUuid: string;
@@ -18,6 +19,7 @@ export const ChildInstancesTable = ({ blockInstanceUuid, instances, relatedBlock
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const {showDialog} = useDialog()
 
   const handleUpdateTitle = async (instance: IBlockInstance) => {
     await BlockInstanceRepository.update(bookDb, instance.uuid, {
@@ -27,8 +29,10 @@ export const ChildInstancesTable = ({ blockInstanceUuid, instances, relatedBlock
     setEditingId(null);
   };
 
-  const handleDeleteInstance = async (instanceUuid: string) => {
-    await BlockInstanceRepository.remove(bookDb, instanceUuid);
+  const handleDeleteInstance = async (instance: IBlockInstance) => {
+    const result = showDialog("Внимание", `Вы действительно хотите удалить ${instance.title}?`);
+    if (!result) return
+    await BlockInstanceRepository.remove(bookDb, instance.uuid);
   };
 
   const renderContent = () => {
@@ -83,7 +87,7 @@ export const ChildInstancesTable = ({ blockInstanceUuid, instances, relatedBlock
                           <ActionIcon
                               variant="subtle"
                               color="red"
-                              onClick={() => handleDeleteInstance(instance.uuid)}
+                              onClick={() => handleDeleteInstance(instance)}
                           >
                             <IconTrash size="1rem" />
                           </ActionIcon>
@@ -142,7 +146,7 @@ export const ChildInstancesTable = ({ blockInstanceUuid, instances, relatedBlock
                             <ActionIcon
                                 variant="subtle"
                                 color="red"
-                                onClick={() => handleDeleteInstance(instance.uuid)}
+                                onClick={() => handleDeleteInstance(instance)}
                             >
                               <IconTrash size="1rem" />
                             </ActionIcon>
