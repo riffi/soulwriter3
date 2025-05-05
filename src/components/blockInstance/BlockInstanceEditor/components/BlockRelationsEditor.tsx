@@ -30,7 +30,7 @@ export const BlockRelationsEditor = ({
   const [targetInstanceUuid, setTargetInstanceUuid] = useState('');
   const [parentInstanceUuid, setParentInstanceUuid] = useState('');
 
-  const isChildBlock = !!relatedBlock.parentBlockUuid;
+  const isRelatedBlockChild = !!relatedBlock.parentBlockUuid;
   const isRelatedBlockTarget = blockRelation.targetBlockUuid === relatedBlock?.uuid;
 
   // Логика фильтрации
@@ -41,14 +41,14 @@ export const BlockRelationsEditor = ({
 
   // Родительские инстансы связанного блока
   const relatedParentInstances = useLiveQuery(() =>
-          isChildBlock
+          isRelatedBlockChild
               ? BlockInstanceRepository.getBlockInstances(bookDb, relatedBlock.parentBlockUuid!)
               : Promise.resolve([])
       , [relatedBlock]);
 
   // Родительский блок для связанного блока
   const relatedParentBlock = useLiveQuery<IBlock>(() =>
-    isChildBlock
+    isRelatedBlockChild
         ? BlockRepository.getByUuid(bookDb, relatedBlock.parentBlockUuid!)
         : Promise.resolve(null)
   , [relatedBlock]);
@@ -101,17 +101,26 @@ export const BlockRelationsEditor = ({
     setTargetInstanceUuid('');
   };
 
-  // Рендер компонентов
-  const RelationRow = ({ relation }: { relation: IBlockInstanceRelation }) => {
+  interface RelationRowProps {
+    relation: IBlockInstanceRelation;
+    relatedParentInstances?: IBlockInstance[];
+    isRelatedBlockChild: boolean;
+  }
+
+  const RelationRow = ({ relation, relatedParentInstances, isRelatedBlockChild }: RelationRowProps) => {
     const relatedInstanceUuid = isRelatedBlockTarget
         ? relation.targetInstanceUuid
         : relation.sourceInstanceUuid;
 
     const instance = allRelatedInstances?.find(i => i.uuid === relatedInstanceUuid);
+    const parentInstance = relatedParentInstances?.find(
+        parent => parent.uuid === instance?.parentInstanceUuid
+    );
 
     return (
         <Table.Tr>
           <Table.Td>{instance?.title}</Table.Td>
+          {isRelatedBlockChild && <Table.Td>{parentInstance?.title}</Table.Td>}
           <Table.Td>
             <Group gap="xs">
               <ActionIcon
@@ -194,7 +203,7 @@ export const BlockRelationsEditor = ({
           <Button
               onClick={() => setIsModalOpen(true)}
               variant="light"
-              disabled={!isChildBlock && unusedRelatedInstances.length === 0}
+              disabled={!isRelatedBlockChild && unusedRelatedInstances.length === 0}
           >
             {`Добавить ${relatedBlock?.titleForms?.accusative}`}
           </Button>
@@ -204,12 +213,18 @@ export const BlockRelationsEditor = ({
           <Table.Thead>
             <Table.Tr>
               <Table.Th>{relatedBlock.title}</Table.Th>
+              {isRelatedBlockChild && <Table.Th>{relatedParentBlock?.title}</Table.Th>}
               <Table.Th>Действия</Table.Th>
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
             {instanceRelations?.map(relation =>
-                <RelationRow key={relation.blockRelationUuid} relation={relation} />
+                <RelationRow
+                    key={relation.blockRelationUuid}
+                    relation={relation}
+                    relatedParentInstances={relatedParentInstances}
+                    isRelatedBlockChild={isRelatedBlockChild}
+                />
             )}
           </Table.Tbody>
         </Table>
@@ -219,7 +234,7 @@ export const BlockRelationsEditor = ({
             onClose={resetModalState}
             title={`Добавить ${relatedBlock?.titleForms?.accusative}`}
         >
-          {isChildBlock ? <ChildBlockModal /> : <DefaultModal />}
+          {isRelatedBlockChild ? <ChildBlockModal /> : <DefaultModal />}
         </Modal>
       </div>
   );
