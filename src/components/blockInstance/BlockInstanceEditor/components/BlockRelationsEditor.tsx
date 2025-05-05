@@ -8,6 +8,7 @@ import { BlockInstanceRepository } from "@/repository/BlockInstanceRepository";
 import { IconLink, IconTrash } from "@tabler/icons-react";
 import { Link } from 'react-router-dom';
 import { IBlockInstance, IBlockInstanceRelation } from "@/entities/BookEntities";
+import {BlockRepository} from "@/repository/BlockRepository";
 
 interface BlockRelationsEditorProps {
   blockUuid: string;
@@ -28,7 +29,6 @@ export const BlockRelationsEditor = ({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [targetInstanceUuid, setTargetInstanceUuid] = useState('');
   const [parentInstanceUuid, setParentInstanceUuid] = useState('');
-  const [step, setStep] = useState(1);
 
   const isChildBlock = !!relatedBlock.parentBlockUuid;
   const isTarget = blockRelation.targetBlockUuid === relatedBlock?.uuid;
@@ -39,6 +39,12 @@ export const BlockRelationsEditor = ({
               ? BlockInstanceRepository.getBlockInstances(bookDb, relatedBlock.parentBlockUuid!)
               : Promise.resolve([])
       , [relatedBlock]);
+
+  const parentBlock = useLiveQuery<IBlock>(() =>
+    isChildBlock
+        ? BlockRepository.getByUuid(bookDb, relatedBlock.parentBlockUuid!)
+        : Promise.resolve(null)
+  , [relatedBlock]);
 
   const childInstances = useLiveQuery(() =>
           parentInstanceUuid
@@ -89,7 +95,6 @@ export const BlockRelationsEditor = ({
     setIsModalOpen(false);
     setParentInstanceUuid('');
     setTargetInstanceUuid('');
-    setStep(1);
   };
 
   // Рендер компонентов
@@ -128,8 +133,8 @@ export const BlockRelationsEditor = ({
   const ChildBlockModal = () => (
       <Stack>
         <Select
-            label="Родительский инстанс"
-            placeholder="Выберите родителя"
+            label={`${parentBlock?.title}`}
+            placeholder={`Выберите ${parentBlock?.titleForms?.accusative}`}
             value={parentInstanceUuid}
             data={mapInstancesToOptions(parentInstances)}
             onChange={(v) => {
@@ -142,8 +147,8 @@ export const BlockRelationsEditor = ({
 
         {parentInstanceUuid && (
             <Select
-                label={`Дочерний инстанс (${relatedBlock.title})`}
-                placeholder={childInstances?.length ? "Выберите вариант" : "Нет доступных"}
+                label={`${relatedBlock.title}`}
+                placeholder={childInstances?.length ? `Выберите ${relatedBlock.titleForms?.accusative}` : "Нет доступных"}
                 value={targetInstanceUuid}
                 data={mapInstancesToOptions(childInstances)}
                 onChange={(v) => setTargetInstanceUuid(v || '')}
