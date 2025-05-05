@@ -4,7 +4,7 @@ import {IBlockInstance, IBlockParameterInstance} from "@/entities/BookEntities";
 import {
   IBlockParameterGroup,
   IBlockParameter,
-  IBlockParameterPossibleValue, IBlock, IBlockRelation
+  IBlockParameterPossibleValue, IBlock, IBlockRelation, IBlockTab
 } from "@/entities/ConstructorEntities";
 import {BlockRepository} from "@/repository/BlockRepository";
 import {BlockRelationRepository} from "@/repository/BlockRelationRepository";
@@ -40,6 +40,14 @@ export const useBlockInstanceEditor = (blockInstanceUuid: string, currentParamGr
     if (!blockInstance) return [];
     return BlockRepository.getParameterGroups(bookDb, blockInstance?.blockUuid);
   }, [blockInstance]);
+
+  const blockTabs = useLiveQuery<IBlockTab[]>(() => {
+    if (!block) return [];
+    return bookDb.blockTabs
+    .where("blockUuid")
+    .equals(block.uuid)
+    .sortBy("orderNumber");
+  }, [block]);
 
   //значения параметров группы
   const parameterInstances = useLiveQuery<IBlockParameterInstance[]>(() => {
@@ -122,6 +130,7 @@ export const useBlockInstanceEditor = (blockInstanceUuid: string, currentParamGr
     relatedBlocks,
     blockRelations,
     childBlocks,
-    childInstancesMap
+    childInstancesMap,
+    blockTabs
   }
 };

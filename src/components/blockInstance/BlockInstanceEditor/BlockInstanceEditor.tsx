@@ -1,24 +1,14 @@
-import { useNavigate } from "react-router-dom";
-import { useBlockInstanceEditor } from "@/components/blockInstance/BlockInstanceEditor/hooks/useBlockInstanceEditor";
+import {useNavigate} from "react-router-dom";
 import {
-  Button,
-  Box,
-  Group,
-  Tabs,
-  TextInput,
-  ActionIcon,
-  Modal,
-  Select,
-  Stack,
-  Textarea,
-  Container, SegmentedControl,
-} from "@mantine/core";
-import { IconArrowLeft, IconPlus} from "@tabler/icons-react";
+  useBlockInstanceEditor
+} from "@/components/blockInstance/BlockInstanceEditor/hooks/useBlockInstanceEditor";
+import {ActionIcon, Box, Button, Container, Group, SegmentedControl, Tabs,} from "@mantine/core";
+import {IconArrowLeft, IconPlus} from "@tabler/icons-react";
 import classes from "./BlockInstanceEditor.module.css";
-import { useState, useEffect } from "react";
-import { IBlockParameterGroup } from "@/entities/ConstructorEntities";
-import { IBlockParameterInstance } from "@/entities/BookEntities";
-import { bookDb } from "@/entities/bookDb";
+import {useEffect, useState} from "react";
+import {IBlockParameterGroup} from "@/entities/ConstructorEntities";
+import {IBlockParameterInstance} from "@/entities/BookEntities";
+import {bookDb} from "@/entities/bookDb";
 import {
   ParameterList
 } from "@/components/blockInstance/BlockInstanceEditor/components/ParameterList";
@@ -94,7 +84,8 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
     relatedBlocks,
     blockRelations,
     childBlocks,
-    childInstancesMap
+    childInstancesMap,
+    blockTabs
   } = useBlockInstanceEditor(props.blockInstanceUuid, currentParamGroup);
 
   const navigate = useNavigate();
@@ -158,27 +149,44 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
   };
 
 
-  const getRelatedBlocksTabs = () => {
-    return (relatedBlocks?.map(b => ({
-      label: b.titleForms?.plural,
-      value: `related-${b.uuid}`
-    })) || [])
-  }
 
-  const getChildBlocksTabs = () => {
-    return (childBlocks?.map(b => ({
-      label: b.titleForms?.plural,
-      value: `child-${b.uuid}`
-    })) || [])
-  }
 
   const getTabs = () => {
-    return [
-      {label: 'Параметры', value: 'params'},
-      ...getChildBlocksTabs(),
-      ...getRelatedBlocksTabs(),
-    ];
+    if (!blockTabs) return [{ label: 'Параметры', value: 'params' }];
+
+    return blockTabs.map(tab => {
+      switch (tab.tabKind) {
+        case 'relation':
+          return {
+            label: tab.title,
+            value: `related-${tab.relationUuid}`,
+          };
+        case 'childBlock':
+          return {
+            label: tab.title,
+            value: `child-${tab.childBlockUuid}`,
+          };
+        default: // parameters
+          return {
+            label: tab.title,
+            value: 'params',
+          };
+      }
+    });
+  };
+
+  const tabs = getTabs();
+
+  const getRelatedBlockByRelationUuid = (relationUuid: string) => {
+    const relation = blockRelations?.find(r =>
+        r.uuid === relationUuid
+    )
+    return relatedBlocks?.find(block =>
+        (block.uuid === relation.sourceBlockUuid)
+        || (block.uuid === relation.targetBlockUuid)
+    );
   }
+
 
   return (
       <>
@@ -205,66 +213,81 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
             <SegmentedControl
                 value={activeTab}
                 onChange={setActiveTab}
-                data={getTabs()}
+                data={tabs}
                 style={{textTransform: 'Capitalize'}}
                 mb="md"
             />
+            {blockTabs?.map(tab => {
+              const tabValue = tab.tabKind === 'relation'
+                  ? `related-${tab.relationUuid}`
+                  : tab.tabKind === 'childBlock'
+                      ? `child-${tab.childBlockUuid}`
+                      : 'params';
 
-            {activeTab === 'params' ? (
-                block?.useTabs ? (
-                    <ParameterGroupsTabs
-                        groups={parameterGroups}
-                        currentGroup={currentParamGroup}
-                        onChange={setCurrentParamGroup}
-                    >
-                      <ParameterContent
-                          availableParameters={availableParametersWithoutInstances}
-                          fullParams={fullParams}
-                          onAdd={() => setIsAddModalOpen(true)}
-                          onSaveEdit={handleUpdateParameterValue}
-                          onDelete={handleDeleteParameter}
-                          possibleValuesMap={possibleValuesMap}
-                      />
-                    </ParameterGroupsTabs>
-                ) : (
-                    <ParameterContent  availableParameters={availableParametersWithoutInstances}
-                                       fullParams={fullParams}
-                                       onAdd={() => setIsAddModalOpen(true)}
-                                       onSaveEdit={handleUpdateParameterValue}
-                                       onDelete={handleDeleteParameter}
-                                       possibleValuesMap={possibleValuesMap} />
-                )
-            ) : activeTab.startsWith('related-') ? (
-                relatedBlocks?.map(relatedBlock => (
-                    activeTab === `related-${relatedBlock.uuid}` && (
-                        <BlockRelationsEditor
-                            key={relatedBlock.uuid}
-                            blockInstanceUuid={props.blockInstanceUuid}
-                            blockUuid={block?.uuid}
-                            relatedBlock={relatedBlock}
-                            blockRelation={blockRelations?.find(r =>
-                                (r.targetBlockUuid === block.uuid && r.sourceBlockUuid === relatedBlock.uuid)
-                                || (r.sourceBlockUuid === block.uuid && r.targetBlockUuid === relatedBlock.uuid)
+              return (
+                  activeTab === tabValue && (
+                      <Box key={tab.uuid}>
+                      <>
+                        {tab.tabKind === 'parameters' &&
+                            <>
+                              {block?.useTabs ? (
+                                <ParameterGroupsTabs
+                                    groups={parameterGroups}
+                                    currentGroup={currentParamGroup}
+                                    onChange={setCurrentParamGroup}
+                                >
+                                  <ParameterContent
+                                      availableParameters={availableParametersWithoutInstances}
+                                      fullParams={fullParams}
+                                      onAdd={() => setIsAddModalOpen(true)}
+                                      onSaveEdit={handleUpdateParameterValue}
+                                      onDelete={handleDeleteParameter}
+                                      possibleValuesMap={possibleValuesMap}
+                                  />
+                                </ParameterGroupsTabs>
+                            ) : (
+                                <ParameterContent  availableParameters={availableParametersWithoutInstances}
+                                                   fullParams={fullParams}
+                                                   onAdd={() => setIsAddModalOpen(true)}
+                                                   onSaveEdit={handleUpdateParameterValue}
+                                                   onDelete={handleDeleteParameter}
+                                                   possibleValuesMap={possibleValuesMap} />
                             )}
-                        />
-                    )
-                ))
-            )  : (
-                // Добавляем секцию для дочерних блоков
-                childBlocks?.map(childBlock => (
-                    activeTab === `child-${childBlock.uuid}` && (
-                        <ChildInstancesTable
-                            key={childBlock.uuid}
-                            blockUuid={childBlock.uuid}
-                            blockInstanceUuid={props.blockInstanceUuid}
-                            instances={childInstancesMap?.[childBlock.uuid] || []}
-                            structureKind={childBlock.structureKind}
-                            relatedBlock={childBlock}
-                        />
-                    )
-                ))
-            )
-            }
+                          </>
+                        }
+                      </>
+                      <>
+                        {tab.tabKind === 'relation' && (
+                              <BlockRelationsEditor
+                                  key={tab.uuid}
+                                  blockInstanceUuid={props.blockInstanceUuid}
+                                  blockUuid={block?.uuid}
+                                  relatedBlock={getRelatedBlockByRelationUuid(tab.relationUuid)}
+                                  blockRelation={blockRelations?.find(r =>
+                                      r => r.uuid === tab.relationUuid
+                                  )}
+                              />
+                        )}
+                      </>
+                      <>
+                        {tab.tabKind === 'childBlock' && (
+                            childBlocks?.map(childBlock => (
+                                activeTab === `child-${childBlock.uuid}` && (
+                                    <ChildInstancesTable
+                                        key={childBlock.uuid}
+                                        blockUuid={childBlock.uuid}
+                                        blockInstanceUuid={props.blockInstanceUuid}
+                                        instances={childInstancesMap?.[childBlock.uuid] || []}
+                                        structureKind={childBlock.structureKind}
+                                        relatedBlock={childBlock}
+                                    />
+                                )
+                            ))
+                        )}
+                      </>
+                  </Box>
+                  ))
+            })}
         </section>
       </Box>
       </Container>
