@@ -26,7 +26,7 @@ import {FullParam} from "@/components/blockInstance/BlockInstanceEditor/types";
 import {InlineEdit} from "@/components/shared/InlineEdit/InlineEdit";
 import {
   BlockRelationsEditor
-} from "@/components/blockInstance/BlockInstanceEditor/components/BlockRelationsEditor";
+} from "@/components/blockInstance/BlockInstanceEditor/components/BlockRelationsEditor/BlockRelationsEditor";
 import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
 import {
   AddParameterModal
