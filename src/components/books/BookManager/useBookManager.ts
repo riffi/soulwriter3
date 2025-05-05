@@ -54,6 +54,14 @@ export const useBookManager = () => {
     await bookDb.configurationVersions.add(version);
 
     await copyVersionBlocks(version.uuid)
+    await copyBlockRelations(version.uuid)
+  }
+
+  // Копирование связей блоков в базу данных книги
+  async function copyBlockRelations(configurationVersionUuid: string) {
+    const relations = await configDatabase.blocksRelations
+      .where({ configurationVersionUuid }).toArray();
+    await bookDb.blocksRelations.bulkAdd(relations);
   }
 
   // Копирование блоков версии конфигурации в базу данных книги
@@ -64,9 +72,20 @@ export const useBookManager = () => {
 
     await bookDb.blocks.bulkAdd(blocks);
 
-    await Promise.all(blocks.map(block =>
-        copyBlockParameterGroups(block.uuid)
+    await Promise.all(blocks.map(block =>{
+          copyBlockParameterGroups(block.uuid)
+          copyBlockTabs(block.uuid)
+      }
     ));
+  }
+
+  // Копирование вкладок блока в базу данных книги
+  async function copyBlockTabs(blockUuid: string) {
+    const tabs = await configDatabase.blockTabs
+      .where({ blockUuid })
+      .toArray();
+
+    await bookDb.blockTabs.bulkAdd(tabs);
   }
 
   // Копирование групп параметров блока в базу данных книги

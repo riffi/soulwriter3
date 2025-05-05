@@ -3,7 +3,7 @@ import {
   IBlock,
   IBlockParameter,
   IBlockParameterGroup,
-  IBlockRelation
+  IBlockRelation, IBlockTab
 } from "@/entities/ConstructorEntities";
 import {configDatabase} from "@/entities/configuratorDb";
 import {generateUUID} from "@/utils/UUIDUtils";
@@ -345,6 +345,49 @@ export const useBlockEditForm = (blockUuid: string, bookUuid?: string, currentGr
     }
   };
 
+  const blockTabs = useLiveQuery<IBlockTab[]>(() => {
+    return db.blockTabs.where("blockUuid").equals(blockUuid).sortBy("orderNumber");
+  }, [blockUuid]);
+
+  const saveTab = async (tab: IBlockTab) => {
+    try {
+      if (!tab.uuid) {
+        tab.uuid = generateUUID();
+        await db.blockTabs.add(tab);
+      } else {
+        await db.blockTabs.update(tab.id!, tab);
+      }
+    } catch (error) {
+      notifications.show({ title: "Ошибка", message: "Не удалось сохранить вкладку", color: "red" });
+    }
+  };
+
+  const deleteTab = async (uuid: string) => {
+    await db.blockTabs.where('uuid').equals(uuid).delete();
+  };
+
+  const moveTabUp = async (uuid: string) => {
+    const tabs = await db.blockTabs.where("blockUuid").equals(blockUuid).sortBy("orderNumber");
+    const index = tabs.findIndex(t => t.uuid === uuid);
+    if (index > 0) {
+      const prev = tabs[index - 1];
+      const current = tabs[index];
+      await db.blockTabs.update(prev.id!, { orderNumber: current.orderNumber });
+      await db.blockTabs.update(current.id!, { orderNumber: prev.orderNumber });
+    }
+  };
+
+  const moveTabDown = async (uuid: string) => {
+    const tabs = await db.blockTabs.where("blockUuid").equals(blockUuid).sortBy("orderNumber");
+    const index = tabs.findIndex(t => t.uuid === uuid);
+    if (index < tabs.length - 1) {
+      const next = tabs[index + 1];
+      const current = tabs[index];
+      await db.blockTabs.update(next.id!, { orderNumber: current.orderNumber });
+      await db.blockTabs.update(current.id!, { orderNumber: next.orderNumber });
+    }
+  };
+
 
   return {
     block,
@@ -368,6 +411,11 @@ export const useBlockEditForm = (blockUuid: string, bookUuid?: string, currentGr
     deleteRelation,
     childBlocks,
     updateBlockParent,
-    updateBlockDisplayKind
+    updateBlockDisplayKind,
+    blockTabs,
+    saveTab,
+    deleteTab,
+    moveTabUp,
+    moveTabDown
   }
 }

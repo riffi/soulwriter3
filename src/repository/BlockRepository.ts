@@ -2,12 +2,13 @@ import {BlockAbstractDb} from "@/entities/BlockAbstractDb";
 import {
   IBlock,
   IBlockParameter,
-  IBlockParameterPossibleValue, IBlockRelation
+  IBlockParameterPossibleValue, IBlockRelation, IBlockTabKind
 } from "@/entities/ConstructorEntities";
 import {generateUUID} from "@/utils/UUIDUtils";
 import {useLiveQuery} from "dexie-react-hooks";
 import {bookDb} from "@/entities/bookDb";
 import {BlockRelationRepository} from "@/repository/BlockRelationRepository";
+import {fetchAndPrepareTitleForms} from "@/api/TextApi";
 
 const getByUuid = async (db: BlockAbstractDb, blockUuid: string) => {
   return db.blocks.where("uuid").equals(blockUuid).first()
@@ -131,6 +132,105 @@ const updateParamPossibleValues = async (db: BlockAbstractDb, parameterUuid: str
   );
 }
 
+const appendDefaultParamGroup = async (db: BlockAbstractDb, blockData: IBlock) => {
+  await db.blockParameterGroups.add({
+    blockUuid: blockData.uuid,
+    uuid: generateUUID(),
+    orderNumber: 0,
+    description: '',
+    title: 'Основное',
+  })
+}
+
+const appendDefaultTab = async (db: BlockAbstractDb, blockData: IBlock) => {
+  await db.blockTabs.add({
+    uuid: generateUUID(),
+    blockUuid: blockData.uuid,
+    title: 'Параметры',
+    orderNumber: 0,
+    tabKind: IBlockTabKind.parameters,
+    isDefault: 1
+  })
+}
+
+const save = async (db: BlockAbstractDb, block: IBlock) => {
+  block.titleForms = await fetchAndPrepareTitleForms(block.title)
+  if (!block.uuid) {
+    block.uuid = generateUUID()
+    const blockId = await db.blocks.add(block)
+    const persistedBlockData = await db.blocks.get(blockId)
+    await appendDefaultParamGroup(db, persistedBlockData)
+    await appendDefaultTab(db, persistedBlockData)
+    return
+  }
+  db.blocks.update(block.id, block)
+}
+
+const remove = async (db: BlockAbstractDb, block: IBlock) => {
+  await db.transaction('rw',
+      [
+        db.blocks,
+        db.blockParameterGroups,
+        db.blockParameters,
+        db.blockTabs,
+        db.blocksRelations,
+        db.blockParameterPossibleValues
+      ],
+      async () => {
+        // Получаем все группы параметров блока
+        const groups = await db.blockParameterGroups
+          .where('blockUuid')
+          .equals(block.uuid)
+          .toArray();
+
+        // Для каждой группы получаем параметры
+        for (const group of groups) {
+          if (!group.uuid) continue;
+
+          const parameters = await db.blockParameters
+          .where('groupUuid')
+          .equals(group.uuid)
+          .toArray();
+
+          // Для каждого параметра удаляем возможные значения
+          for (const parameter of parameters) {
+            if (!parameter.uuid) continue;
+
+            await db.blockParameterPossibleValues
+            .where('parameterUuid')
+            .equals(parameter.uuid)
+            .delete();
+          }
+
+          // Удаляем параметры группы
+          await db.blockParameters
+          .where('groupUuid')
+          .equals(group.uuid)
+          .delete();
+        }
+
+        // Удаляем группы параметров блока
+        await db.blockParameterGroups
+          .where('blockUuid')
+          .equals(block.uuid)
+          .delete();
+
+        // Удаляем связи блока
+        await db.blocksRelations.where('sourceBlockUuid').equals(block.uuid).delete();
+        await db.blocksRelations.where('targetBlockUuid').equals(block.uuid).delete();
+
+        //Удаляем вкладки блока
+        await db.blockTabs.where('blockUuid').equals(block.uuid).delete();
+
+        // Удаляем сам блок
+        await db.blocks
+          .where('uuid')
+          .equals(block.uuid)
+          .delete();
+      }
+  );
+}
+
 
 export const BlockRepository = {
   getByUuid,
@@ -143,5 +243,7 @@ export const BlockRepository = {
   getDefaultParameters,
   getRelatedBlocks,
   deleteParameterGroup,
-  updateParamPossibleValues
+  updateParamPossibleValues,
+  save,
+  remove
 }

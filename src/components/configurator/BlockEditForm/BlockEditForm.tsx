@@ -27,6 +27,9 @@ import {Heading} from "tabler-icons-react";
 import {RelationTable} from "@/components/configurator/BlockEditForm/parts/RelationTable";
 import {RelationEditModal} from "@/components/configurator/BlockEditForm/modal/RelationEditModal";
 import {ChildBlocksTable} from "@/components/configurator/BlockEditForm/parts/ChildBlocksTable";
+import {
+  BlockTabsManager
+} from "@/components/configurator/BlockEditForm/parts/BlockTabsManager/BlockTabsManager";
 
 interface IBlockEditFormProps {
   blockUuid: string;
@@ -40,7 +43,7 @@ interface IFormState {
   isParamModalOpened: boolean;
   isGroupsModalOpened: boolean;
   isRelationModalOpened: boolean;
-  activeTab:'parameters' | 'relations' | 'children';
+  activeTab: 'parameters' | 'relations' | 'children'  | 'tabs';
   isChildModalOpened: boolean;
 }
 
@@ -75,7 +78,12 @@ export const BlockEditForm = ({ blockUuid, bookUuid }: IBlockEditFormProps) => {
     deleteRelation,
     childBlocks,
     updateBlockParent,
-    updateBlockDisplayKind
+    updateBlockDisplayKind,
+    blockTabs,
+    saveTab,
+    deleteTab,
+    moveTabUp,
+    moveTabDown
   } = useBlockEditForm(blockUuid, bookUuid, state.currentGroupUuid);
 
   useEffect(() => {
@@ -221,6 +229,7 @@ export const BlockEditForm = ({ blockUuid, bookUuid }: IBlockEditFormProps) => {
                 { value: 'parameters', label: 'Параметры' },
                 { value: 'relations', label: 'Связи' },
                 { value: 'children', label: 'Дочерние блоки' },
+                { value: 'tabs', label: 'Вкладки' },
               ]}
           />
         </Group>
@@ -258,6 +267,21 @@ export const BlockEditForm = ({ blockUuid, bookUuid }: IBlockEditFormProps) => {
               />
 
             </>
+        )}
+
+        {state.activeTab === 'tabs' && (
+            <BlockTabsManager
+                tabs={blockTabs || []}
+                otherRelations={blockRelations || []}
+                childBlocks={childBlocks || []}
+                onAddTab={saveTab}
+                onUpdateTab={saveTab}
+                onDeleteTab={deleteTab}
+                onMoveUp={moveTabUp}
+                onMoveDown={moveTabDown}
+                currentBlockUuid={blockUuid}
+                otherBlocks={otherBlocks}
+            />
         )}
 
         {state.isParamModalOpened && <ParamEditModal

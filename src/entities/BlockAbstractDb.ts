@@ -2,7 +2,7 @@ import Dexie from "dexie";
 import {
   IBlock,
   IBlockParameter,
-  IBlockParameterGroup, IBlockParameterPossibleValue, IBlockRelation,
+  IBlockParameterGroup, IBlockParameterPossibleValue, IBlockRelation, IBlockTab,
   IBookConfiguration, IBookConfigurationVersion
 } from "@/entities/ConstructorEntities";
 
@@ -14,6 +14,7 @@ export const baseSchema={
   blockParameters: '++id, &uuid, groupUuid, blockUuid, dataType, linkedBlockUuid, linkedParameterUuid, isDefault, displayInCard',
   blockParameterPossibleValues: '++id, &uuid, parameterUuid, value',
   blocksRelations: '++id, &uuid, sourceBlockUuid, targetBlockUuid',
+  blockTabs: '++id, &uuid, blockUuid, title',
 }
 
 export class BlockAbstractDb extends Dexie{
@@ -24,6 +25,7 @@ export class BlockAbstractDb extends Dexie{
   blockParameters!: Dexie.Table<IBlockParameter, number>;
   blockParameterPossibleValues!: Dexie.Table<IBlockParameterPossibleValue, number>;
   blocksRelations!: Dexie.Table<IBlockRelation, number>;
+  blockTabs!: Dexie.Table<IBlockTab, number>;
 
   constructor(dbName:string) {
     super(dbName);

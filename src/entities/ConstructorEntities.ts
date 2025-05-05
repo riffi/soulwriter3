@@ -133,3 +133,20 @@ export interface IBlockRelation {
   relationType: BlockRelationType; // Тип связи
   configurationVersionUuid: string; // Версия конфигурации
 }
+
+export enum IBlockTabKind{
+  parameters = 'parameters',
+  relation = 'relation',
+  childBlock = 'childBlock',
+}
+export interface IBlockTab{
+  id?: number;
+  uuid?: string; // Автоматически генерируется
+  title: string; // Заголовок вкладки
+  orderNumber: number; // Порядковый номер
+  blockUuid: string; // Ссылка на строительный блок
+  tabKind: string; // Вид вкладки
+  relationUuid?: string; // Ссылка на связь
+  childBlockUuid?: string; // Ссылка на дочерний блок
+  isDefault: number; // Является ли вкладка по умолчанию
+}
