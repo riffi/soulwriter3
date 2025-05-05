@@ -269,6 +269,7 @@ export const BlockEditForm = ({ blockUuid, bookUuid }: IBlockEditFormProps) => {
                 message: `Параметр "${param.title}" сохранён`,
               });
               saveParam(param);
+              setState(prev => ({ ...prev, isParamModalOpened: false }))
             }}
             initialData={state.currentParam}
             blockUuid={blockUuid}

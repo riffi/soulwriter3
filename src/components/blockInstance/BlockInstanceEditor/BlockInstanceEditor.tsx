@@ -258,7 +258,9 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
             opened={isAddModalOpen}
             onClose={() => setIsAddModalOpen(false)}
             parameters={availableParametersWithoutInstances}
-            onSave={handleSaveParameter}
+            onSave={async (param) => {
+              await handleSaveParameter(param)
+            }}
         />
       </>
   );
