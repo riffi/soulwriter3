@@ -214,7 +214,7 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
                 value={activeTab || ''}
                 onChange={setActiveTab}
                 data={tabs}
-                style={{textTransform: 'Capitalize'}}
+                style={{textTransform: 'Capitalize', display: tabs.length <= 1 ? 'none' : ''}}
                 mb="md"
             />
             {blockTabs?.map(tab => {
