@@ -13,7 +13,7 @@ export const baseSchema={
   blockParameterGroups: '++id, &uuid, blockUuid, title',
   blockParameters: '++id, &uuid, groupUuid, blockUuid, dataType, linkedBlockUuid, linkedParameterUuid, isDefault, displayInCard',
   blockParameterPossibleValues: '++id, &uuid, parameterUuid, value',
-  blocksRelations: '++id, &uuid, sourceBlockUuid, targetBlockUuid',
+  blocksRelations: '++id, &uuid, sourceBlockUuid, targetBlockUuid, configurationVersionUuid',
   blockTabs: '++id, &uuid, blockUuid, title',
 }
 
