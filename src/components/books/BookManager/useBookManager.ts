@@ -3,9 +3,11 @@ import {configDatabase} from "@/entities/configuratorDb";
 import {generateUUID} from "@/utils/UUIDUtils";
 import {notifications} from "@mantine/notifications";
 import {useLiveQuery} from "dexie-react-hooks";
-import {IBookConfiguration} from "@/entities/ConstructorEntities";
+import {IBlock, IBlockStructureKind, IBookConfiguration} from "@/entities/ConstructorEntities";
 import {useDialog} from "@/providers/DialogProvider/DialogProvider";
 import {bookDb, connectToBookDatabase, deleteBookDatabase} from "@/entities/bookDb";
+import {BlockInstanceRepository} from "@/repository/BlockInstanceRepository";
+import {BlockRepository} from "@/repository/BlockRepository";
 
 export const useBookManager = () => {
 
@@ -64,6 +66,13 @@ export const useBookManager = () => {
     await bookDb.blocksRelations.bulkAdd(relations);
   }
 
+  async function createSingleInstance(block: IBlock) {
+    if (block.structureKind === IBlockStructureKind.single) {
+      const instance = await BlockInstanceRepository.createSingleInstance(bookDb, block);
+      await BlockInstanceRepository.appendDefaultParams(bookDb, instance)
+    }
+  }
+
   // Копирование блоков версии конфигурации в базу данных книги
   async function copyVersionBlocks(versionUuid: string) {
     const blocks = await configDatabase.blocks
@@ -72,11 +81,19 @@ export const useBookManager = () => {
 
     await bookDb.blocks.bulkAdd(blocks);
 
+    // Сначала копируем все параметры и группы
+    await Promise.all(blocks.map(block => {
+      return Promise.all([
+        copyBlockParameterGroups(block.uuid),
+        copyBlockTabs(block.uuid)
+      ]);
+    }));
+
     await Promise.all(blocks.map(block =>{
-          copyBlockParameterGroups(block.uuid)
-          copyBlockTabs(block.uuid)
-      }
+          createSingleInstance(block);
+        }
     ));
+
   }
 
   // Копирование вкладок блока в базу данных книги

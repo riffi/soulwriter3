@@ -2,13 +2,15 @@ import {BlockAbstractDb} from "@/entities/BlockAbstractDb";
 import {
   IBlock,
   IBlockParameter,
-  IBlockParameterPossibleValue, IBlockRelation, IBlockTabKind
+  IBlockParameterPossibleValue, IBlockRelation, IBlockStructureKind, IBlockTabKind
 } from "@/entities/ConstructorEntities";
 import {generateUUID} from "@/utils/UUIDUtils";
 import {useLiveQuery} from "dexie-react-hooks";
-import {bookDb} from "@/entities/bookDb";
+import {BookDB, bookDb} from "@/entities/bookDb";
 import {BlockRelationRepository} from "@/repository/BlockRelationRepository";
 import {fetchAndPrepareTitleForms} from "@/api/TextApi";
+import {IBlockInstance} from "@/entities/BookEntities";
+import {BlockInstanceRepository} from "@/repository/BlockInstanceRepository";
 
 const getByUuid = async (db: BlockAbstractDb, blockUuid: string) => {
   return db.blocks.where("uuid").equals(blockUuid).first()
@@ -153,17 +155,51 @@ const appendDefaultTab = async (db: BlockAbstractDb, blockData: IBlock) => {
   })
 }
 
-const save = async (db: BlockAbstractDb, block: IBlock) => {
+// Создание блока
+const create = async (db: BlockAbstractDb, block: IBlock, isBookDb = false) => {
   block.titleForms = await fetchAndPrepareTitleForms(block.title)
-  if (!block.uuid) {
-    block.uuid = generateUUID()
-    const blockId = await db.blocks.add(block)
-    const persistedBlockData = await db.blocks.get(blockId)
-    await appendDefaultParamGroup(db, persistedBlockData)
-    await appendDefaultTab(db, persistedBlockData)
-    return block.uuid
+  block.uuid = generateUUID()
+  const blockId = await db.blocks.add(block)
+  const persistedBlockData = await db.blocks.get(blockId)
+  await appendDefaultParamGroup(db, persistedBlockData)
+  await appendDefaultTab(db, persistedBlockData)
+
+  // Если это книжная БД, создаем инстанс блока
+  if (isBookDb && block.structureKind === 'single'){
+    await BlockInstanceRepository.createSingleInstance(db as BookDB, block)
+  }
+  return block.uuid
+}
+
+// Обновление данных блока
+const update = async (db: BlockAbstractDb, block: IBlock, isBookDb = false) => {
+  const prevBlockData = await getByUuid(db,block.uuid);
+  // Если название блока изменилось, то обновляем формы названия
+  if (prevBlockData && prevBlockData.title !== block.title){
+    block.titleForms = await fetchAndPrepareTitleForms(block.title)
+  }
+  // Если блок стал одиночным, а был неодиночным, то создаем инстанс блока, если он не имеет инстансов
+  if (isBookDb
+      &&(prevBlockData?.structureKind !== IBlockStructureKind.single)
+      && (block.structureKind === IBlockStructureKind.single)
+  ){
+    const childInstances = await BlockInstanceRepository.getChildInstances(db as BookDB, block.uuid)
+    if (childInstances.length === 0){
+      await BlockInstanceRepository.createSingleInstance(db as BookDB, block)
+    }
   }
   db.blocks.update(block.id, block)
+}
+
+// Сохранение блока
+const save = async (db: BlockAbstractDb, block: IBlock, isBookDb = false) => {
+  // Создание блока
+  if (!block.uuid) {
+    await create(db, block, isBookDb)
+  }
+
+  // Обновление блока
+  await update(db, block, isBookDb)
 }
 
 const remove = async (db: BlockAbstractDb, block: IBlock) => {

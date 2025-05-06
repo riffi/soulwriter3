@@ -21,25 +21,6 @@ export const useBlockInstanceManager = (blockUuid: string) => {
     return  BlockInstanceRepository.getBlockInstances(bookDb, blockUuid);
   }, [blockUuid]);
 
-  useEffect(() => {
-    const createSingleInstance = async () => {
-      if (
-          block?.structureKind === 'single' &&
-          instances?.length === 0
-      ) {
-        const uuid = generateUUID();
-        const newInstance: IBlockInstance = {
-          blockUuid,
-          uuid,
-          title: block?.title,
-        };
-        await addBlockInstance(newInstance);
-      }
-    };
-
-    createSingleInstance();
-  }, [block, instances]); // Зависимости от block и instances
-
   const displayedParameters = useLiveQuery<IBlockParameter[]>(() => {
     return BlockRepository.getDisplayedParameters(bookDb, blockUuid);
   }, [blockUuid]);

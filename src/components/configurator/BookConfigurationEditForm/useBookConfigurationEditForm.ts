@@ -57,23 +57,7 @@ export const useBookConfigurationEditForm = (configurationUuid: string,
 
   // Cохранение блока
   const saveBlock = async (blockData: IBlock) => {
-    if (!blockData.uuid) {
-      const blockUuid = await BlockRepository.save(db, blockData)
-      if (isBookDb && blockData.structureKind === 'single'){
-        const uuid = generateUUID();
-        const newInstance: IBlockInstance = {
-          blockUuid,
-          uuid,
-          title: blockData?.title,
-        };
-        await BlockInstanceRepository.create(db, newInstance)
-      }
-    }
-    else{
-      await BlockRepository.save(db, blockData)
-    }
-
-
+      await BlockRepository.save(db, blockData, isBookDb)
   }
 
   // Удаление блока и связанных с ним данных

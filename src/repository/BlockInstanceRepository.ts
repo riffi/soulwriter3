@@ -6,6 +6,7 @@ import {
 } from "@/entities/BookEntities";
 import {generateUUID} from "@/utils/UUIDUtils";
 import {BlockRepository} from "@/repository/BlockRepository";
+import {IBlock} from "@/entities/ConstructorEntities";
 
 const getByUuid = async (db: BookDB, blockInstanceUuid: string) => {
   return db.blockInstances.where('uuid').equals(blockInstanceUuid).first();
@@ -62,6 +63,17 @@ const create = async (db: BookDB, instance: IBlockInstance)=> {
   db.blockInstances.add(instance);
 }
 
+const createSingleInstance = async (db: BookDB, block: IBlock)=> {
+  const uuid = generateUUID();
+  const newInstance: IBlockInstance = {
+    blockUuid: block.uuid,
+    uuid,
+    title: block?.title,
+  };
+  await BlockInstanceRepository.create(db, newInstance)
+  return newInstance;
+}
+
 const update = async (db: BookDB, instance: IBlockInstance)=> {
   db.blockInstances.update(instance.id, instance);
 }
@@ -99,6 +111,7 @@ export const BlockInstanceRepository = {
   getRelatedInstances,
   getChildInstances,
   create,
+  createSingleInstance,
   update,
   remove,
   removeRelation,
