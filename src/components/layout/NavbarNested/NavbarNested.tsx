@@ -8,7 +8,7 @@ import {
   IconLock,
   IconNotes,
   IconPresentationAnalytics,
-  IconChevronRight,
+  IconChevronRight, IconSettings,
 } from '@tabler/icons-react';
 import {
   Box,
@@ -142,6 +142,11 @@ const BASE_MENU_ITEMS: NavLinkGroup[] = [
     label: 'Книги',
     icon: IconBooks,
     link: '/books',
+  },
+  {
+    label: 'Настройки',
+    icon: IconSettings,
+    link: '/settings',
   },
 ];
 

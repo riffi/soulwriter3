@@ -9,6 +9,7 @@ import {ScenesPage} from "@/pages/scenes/ScenesPage";
 import {SceneCard} from "@/pages/scenes/SceneCard";
 import {BlockInstanceManagerPage} from "@/pages/books/BlockInstanceManagerPage";
 import {BlockInstancePage} from "@/pages/books/BlockInstancePage";
+import SettingsPage from "@/pages/settings/SettingsPage";
 
 const router = createBrowserRouter([
   {
@@ -18,6 +19,10 @@ const router = createBrowserRouter([
       {
         path: '/configurator',
         element: <Configurator/> as ReactNode
+      },
+      {
+        path: '/settings',
+        element: <SettingsPage/> as ReactNode
       },
       {
         path: '/configuration/edit',
