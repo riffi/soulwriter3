@@ -6,13 +6,11 @@ import {
   Container,
   Space,
   Tabs,
-  Button,
-  Group, SegmentedControl, ActionIcon, Select, Title
+  Group, SegmentedControl, ActionIcon, Select
 } from "@mantine/core";
 import { useBlockEditForm } from "@/components/configurator/BlockEditForm/useBlockEditForm";
 import React, { useEffect, useState } from "react";
 import {
-  BlockRelationType,
   IBlockParameter, IBlockParameterDataType, IBlockRelation,
   IBlockStructureKind,
   IBlockStructureKindTitle
