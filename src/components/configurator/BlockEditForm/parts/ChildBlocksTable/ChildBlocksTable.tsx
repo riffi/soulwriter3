@@ -1,37 +1,41 @@
 import { Table, ActionIcon, Group, Button, Text } from "@mantine/core";
 import { IconEdit, IconTrash, IconPlus } from "@tabler/icons-react";
-import {IBlock, IBlockDisplayKind, IBlockDisplayKindTitle} from "@/entities/ConstructorEntities";
+import {IBlock, IBlockDisplayKindTitle} from "@/entities/ConstructorEntities";
 import { ChildBlockEditModal } from "./modal/ChildBlockEditModal";
 import { useState } from "react";
+import {
+  useChildBlocksTable
+} from "@/components/configurator/BlockEditForm/parts/ChildBlocksTable/hook/useChildBlockTable";
 
 interface ChildBlocksTableProps {
-  childrenBlocks: IBlock[];
+  blockUuid: string;
+  bookUuid?: string;
   otherBlocks: IBlock[];
-  onAddChild: (blockUuid: string, displayKind: string) => void;
-  onUpdateChild: (blockUuid: string, displayKind: string) => void;
-  onRemoveChild: (blockUuid: string) => void;
 }
 
 
 export const ChildBlocksTable = ({
-                                   childrenBlocks,
+                                   blockUuid,
+                                   bookUuid,
                                    otherBlocks,
-                                   onAddChild,
-                                   onUpdateChild,
-                                   onRemoveChild,
                                  }: ChildBlocksTableProps) => {
   const [editingBlock, setEditingBlock] = useState<IBlock | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const availableBlocks = otherBlocks.filter(
-      b => !childrenBlocks.some(child => child.uuid === b.uuid)
-  );
+  const {
+    childrenBlocks,
+    availableBlocks,
+    addChild,
+    updateChildDisplayKind,
+    removeChild
+  } = useChildBlocksTable(blockUuid, bookUuid, otherBlocks);
 
-  const handleSave = (blockUuid: string, displayKind: string) => {
+
+  const handleSave = async (blockUuid: string, displayKind: string) => {
     if (editingBlock) {
-      onUpdateChild(editingBlock.uuid!, displayKind);
+      await updateChildDisplayKind(editingBlock.uuid!, displayKind);
     } else {
-      onAddChild(blockUuid, displayKind);
+      await addChild(blockUuid, displayKind);
     }
     setEditingBlock(null);
   };
@@ -78,7 +82,7 @@ export const ChildBlocksTable = ({
                       <ActionIcon
                           variant="subtle"
                           color="red"
-                          onClick={() => onRemoveChild(block.uuid!)}
+                          onClick={() => removeChild(block.uuid!)}
                       >
                         <IconTrash size="1rem" />
                       </ActionIcon>

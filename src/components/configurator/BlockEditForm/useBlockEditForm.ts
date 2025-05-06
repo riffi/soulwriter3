@@ -3,7 +3,7 @@ import {
   IBlock,
   IBlockParameter,
   IBlockParameterGroup,
-  IBlockRelation, IBlockStructureKind, IBlockTab
+  IBlockRelation, IBlockStructureKind
 } from "@/entities/ConstructorEntities";
 import {configDatabase} from "@/entities/configuratorDb";
 import {generateUUID} from "@/utils/UUIDUtils";
@@ -13,7 +13,6 @@ import {BlockRelationRepository} from "@/repository/BlockRelationRepository";
 import {ConfigurationRepository} from "@/repository/ConfigurationRepository";
 import {BlockRepository} from "@/repository/BlockRepository";
 import {BlockInstanceRepository} from "@/repository/BlockInstanceRepository";
-import {BlockTabRepository} from "@/repository/BlockTabRepository";
 
 export const useBlockEditForm = (blockUuid: string, bookUuid?: string, currentGroupUuid?: string) => {
 
@@ -274,57 +273,6 @@ export const useBlockEditForm = (blockUuid: string, bookUuid?: string, currentGr
     return db.blocks.where("parentBlockUuid").equals(blockUuid).toArray();
   }, [blockUuid]);
 
-  const updateBlockParent = async (childBlockUuid: string, parentUuid: string | null, displayKind: string) => {
-    try {
-      const childBlock = await BlockRepository.getByUuid(db, childBlockUuid);
-      if (childBlock) {
-        await db.blocks.update(childBlock.id!, {
-          ...childBlock,
-          parentBlockUuid: parentUuid,
-          displayKind
-        });
-        notifications.show({
-          title: "Успешно",
-          message: parentUuid
-              ? "Блок добавлен как дочерний"
-              : "Блок отвязан",
-        });
-      }
-    } catch (error) {
-      notifications.show({
-        title: "Ошибка",
-        message: "Не удалось обновить связь",
-        color: "red",
-      });
-    }
-  };
-
-  // Обновление метода отображения
-  const updateBlockDisplayKind = async (blockUuid: string, displayKind: string) => {
-    try {
-      const block = await BlockRepository.getByUuid(db, blockUuid);
-      if (block) {
-        await db.blocks.update(block.id!, {
-          ...block,
-          displayKind
-        });
-        notifications.show({
-          title: "Успешно",
-          message: "Настройки блока обновлены",
-        });
-      }
-    } catch (error) {
-      notifications.show({
-        title: "Ошибка",
-        message: "Не удалось обновить блок",
-        color: "red",
-      });
-    }
-  };
-
-
-
-
 
   return {
     block,
@@ -345,7 +293,5 @@ export const useBlockEditForm = (blockUuid: string, bookUuid?: string, currentGr
     savePossibleValues,
     blockRelations,
     childBlocks,
-    updateBlockParent,
-    updateBlockDisplayKind,
   }
 }

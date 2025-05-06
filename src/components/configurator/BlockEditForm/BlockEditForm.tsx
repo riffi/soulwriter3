@@ -69,8 +69,6 @@ export const BlockEditForm = ({ blockUuid, bookUuid }: IBlockEditFormProps) => {
     deleteGroup,
     blockRelations,
     childBlocks,
-    updateBlockParent,
-    updateBlockDisplayKind,
   } = useBlockEditForm(blockUuid, bookUuid, state.currentGroupUuid);
 
   useEffect(() => {
@@ -232,11 +230,9 @@ export const BlockEditForm = ({ blockUuid, bookUuid }: IBlockEditFormProps) => {
         {state.activeTab === 'children' && (
             <>
               <ChildBlocksTable
-                  childrenBlocks={childBlocks || []}
                   otherBlocks={otherBlocks || []}
-                  onAddChild={(uuid, displayKind) => updateBlockParent(uuid, blockUuid, displayKind)}
-                  onUpdateChild={(uuid, displayKind) => updateBlockDisplayKind(uuid, displayKind)}
-                  onRemoveChild={(uuid) => updateBlockParent(uuid, null, 'list')}
+                  blockUuid={blockUuid}
+                  bookUuid={bookUuid}
               />
 
             </>
