@@ -53,7 +53,7 @@ export const BookConfigurationEditForm = (props: IBookConfigurationEditFormProps
       uuid: undefined,
       title: '',
       description: '',
-      useTabs: false,
+      useTabs: 0,
       structureKind: IBlockStructureKind.multiple,
       displayKind: IBlockDisplayKind.list,
     }
@@ -153,14 +153,14 @@ export const BookConfigurationEditForm = (props: IBookConfigurationEditFormProps
                       value: version.uuid,
                       label: (
                           <div style={{display: 'flex', alignItems: 'center', gap: 8}}>
-                            {version.isDraft ? (
+                            {version.isDraft === 1 ? (
                                 <IconFilePencil size={24}/>
                             ) : (
                                 <IconCheck size={24} color="green"/>
                             )}
                             <span>
                               Версия {version.versionNumber}
-                              {version.isDraft && ' (черновик)'}
+                              {version.isDraft === 1 && ' (черновик)'}
                             </span>
                           </div>
                       ),
@@ -170,7 +170,7 @@ export const BookConfigurationEditForm = (props: IBookConfigurationEditFormProps
               </>
           )}
 
-          {!isBookConfiguration && currentVersion?.isDraft && (
+          {!isBookConfiguration && (currentVersion?.isDraft === 1) && (
               <>
                 <Button
                     variant={"subtle"}
@@ -183,7 +183,7 @@ export const BookConfigurationEditForm = (props: IBookConfigurationEditFormProps
           <Title order={4}>Блоки</Title>
           <SimpleGrid cols={{base: 1, sm: 2, lg: 3, xl: 4}} spacing="md">
             {/* Новая карточка для добавления */}
-            {(isBookConfiguration || currentVersion?.isDraft) && (
+            {(isBookConfiguration || (currentVersion?.isDraft === 1)) && (
                 <Card
                     shadow="sm"
                     padding="lg"
@@ -224,7 +224,7 @@ export const BookConfigurationEditForm = (props: IBookConfigurationEditFormProps
                       <Badge variant="light" color="grey">
                         {IBlockStructureKindTitle[c.structureKind]}
                       </Badge>
-                      {c.useTabs && (
+                      {c.useTabs === 1 && (
                           <Badge variant="light" color="grey">
                             Со вкладками
                           </Badge>

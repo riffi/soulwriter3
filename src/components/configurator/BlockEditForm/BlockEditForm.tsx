@@ -185,9 +185,9 @@ export const BlockEditForm = ({ blockUuid, bookUuid }: IBlockEditFormProps) => {
           </Group>
         </Group>
         <Checkbox
-            checked={block?.useTabs}
+            checked={block?.useTabs === 1}
             label="Использовать вкладки для группировки параметров"
-            onChange={(e) => saveBlock({ ...block, useTabs: e.currentTarget.checked })}
+            onChange={(e) => saveBlock({ ...block, useTabs: e.currentTarget.checked ? 1 : 0 })}
             mt="md"
             mb="xl"
         />
@@ -207,7 +207,7 @@ export const BlockEditForm = ({ blockUuid, bookUuid }: IBlockEditFormProps) => {
         </Group>
         {state.activeTab === 'parameters' &&
             <>
-              {block?.useTabs ? renderTabsContent() : (
+              {block?.useTabs === 1 ? renderTabsContent() : (
                   <ParamTable
                       params={paramList || []}
                       onAddParam={() => handleParamModalOpen(getInitialParamData())}

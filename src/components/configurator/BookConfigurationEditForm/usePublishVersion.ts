@@ -16,7 +16,7 @@ export const usePublishVersion = (
 ) => {
   // Пометить текущую версию как опубликованную
   const markVersionAsPublished = async (versionId: number) => {
-    await configDatabase.configurationVersions.update(versionId, { isDraft: false });
+    await configDatabase.configurationVersions.update(versionId, { isDraft: 0 });
   };
 
 // Получить следующий номер версии
@@ -32,7 +32,7 @@ export const usePublishVersion = (
       uuid: generateUUID(),
       configurationUuid: configUuid,
       versionNumber: nextVersionNumber,
-      isDraft: true
+      isDraft: 1
     };
 
     const newVersionId = await configDatabase.configurationVersions.add(newVersion);

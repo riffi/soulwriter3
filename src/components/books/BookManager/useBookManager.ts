@@ -152,7 +152,7 @@ export const useBookManager = () => {
         .configurationVersions
           .where('configurationUuid')
           .equals(book.configurationUuid)
-          .and(version => version.isDraft === false)
+          .and(version => version.isDraft === 1)
           .sortBy('versionNumber')
           .then(versions => versions[versions.length - 1]);
         book.configurationVersionNumber = version?.versionNumber || 0;

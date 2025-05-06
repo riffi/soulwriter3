@@ -10,7 +10,7 @@ import {
   Group,
   Space, SimpleGrid, Anchor, Breadcrumbs, Image
 } from "@mantine/core";
-import {IconEdit, IconSettings, IconTablePlus, IconTrash} from "@tabler/icons-react";
+import {IconDownload, IconEdit, IconSettings, IconTablePlus, IconTrash} from "@tabler/icons-react";
 import {
   ConfigurationEditModal
 } from "@/components/configurator/BookConfigurationManager/ConfigurationEditModal/ConfigurationEditModal";
@@ -31,7 +31,9 @@ export const BookConfigurationManager = () =>{
   const {
     configurationList,
     saveConfiguration,
-    removeConfiguration
+    removeConfiguration,
+    exportConfiguration,
+    importConfiguration,
   } = useConfigurationManager()
 
   const navigate = useNavigate()
@@ -47,6 +49,49 @@ export const BookConfigurationManager = () =>{
       </Anchor>
   ));
 
+  // Обработчик экспорта
+  const handleExport = async (configUuid: string) => {
+    const data = await exportConfiguration(configUuid);
+    if (!data) return;
+
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${data.configuration.title}_config.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // Обработчик импорта
+  const handleImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      try {
+        const data = JSON.parse(e.target?.result as string);
+        const success = await importConfiguration(data);
+
+        if (success) {
+          notifications.show({
+            title: 'Успех',
+            message: 'Конфигурация успешно импортирована',
+            color: 'green',
+          });
+        }
+      } catch (error) {
+        notifications.show({
+          title: 'Ошибка',
+          message: 'Неверный формат файла',
+          color: 'red',
+        });
+      }
+    };
+    reader.readAsText(file);
+  };
+
 
   return (
       <>
@@ -56,15 +101,24 @@ export const BookConfigurationManager = () =>{
             {breadCrumbs}
           </Breadcrumbs>
           <Space h={20}/>
-          <Button
-              leftSection={<IconTablePlus/>}
-              onClick={() => {
-                setCurrentBookConfiguration(getBlackConfiguration())
-                setIsModalOpened(true)
-              }}
-          >
-            Добавить
-          </Button>
+          <Group>
+            <Button
+                leftSection={<IconTablePlus/>}
+                onClick={() => {
+                  setCurrentBookConfiguration(getBlackConfiguration())
+                  setIsModalOpened(true)
+                }}
+            >
+              Добавить
+            </Button>
+            <Button
+                leftSection={<IconDownload/>}
+                component="label"
+            >
+              Импорт
+              <input type="file" hidden onChange={handleImport} />
+            </Button>
+          </Group>
           <Space h={20}/>
           <SimpleGrid cols={{ base: 1, sm: 2, lg: 2, xl: 5 }}
           >
@@ -91,6 +145,13 @@ export const BookConfigurationManager = () =>{
                   </Group>
                   <Text size="sm" c="dimmed">{c.description}</Text>
                   <Group style={{marginTop: '10px'}}>
+                    <Button
+                        variant="outline"
+                        leftSection={<IconDownload size={16}/>}
+                        onClick={() => handleExport(c.uuid!)}
+                    >
+                      Экспорт
+                    </Button>
                     <Button
                         color="blue"
                         radius="md"

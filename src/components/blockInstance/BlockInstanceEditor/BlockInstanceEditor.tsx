@@ -230,7 +230,7 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
                       <>
                         {tab.tabKind === 'parameters' &&
                             <>
-                              {block?.useTabs ? (
+                              {block?.useTabs === 1 ? (
                                 <ParameterGroupsTabs
                                     groups={parameterGroups}
                                     currentGroup={currentParamGroup}

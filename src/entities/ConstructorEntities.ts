@@ -55,7 +55,7 @@ export interface IBookConfigurationVersion {
   uuid?: string;
   configurationUuid: string; // Ссылка на основную конфигурацию
   versionNumber: number; // Номер версии
-  isDraft: boolean; // Является ли черновиком
+  isDraft: number; // Является ли черновиком
 }
 
 export interface IBlockTitleForms{
@@ -75,7 +75,7 @@ export interface IBlock {
   title: string;
   configurationVersionUuid: string;
   description: string;
-  useTabs: boolean; // Использовать вкладки
+  useTabs: number; // Использовать вкладки
   structureKind: string // Вид структуры
   displayKind: string // Вид отображения
   parentBlockUuid?: string; // Ссылка на родительский блок
