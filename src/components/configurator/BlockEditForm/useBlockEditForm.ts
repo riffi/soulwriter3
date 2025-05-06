@@ -361,29 +361,8 @@ export const useBlockEditForm = (blockUuid: string, bookUuid?: string, currentGr
     }
   };
 
-  const blockTabs = useLiveQuery<IBlockTab[]>(() => {
-    return BlockTabRepository.getBlockTabs(db, blockUuid);
-  }, [blockUuid]);
 
-  const saveTab = async (tab: IBlockTab) => {
-    try {
-      await BlockTabRepository.saveTab(db, tab)
-    } catch (error) {
-      notifications.show({ title: "Ошибка", message: "Не удалось сохранить вкладку", color: "red" });
-    }
-  };
 
-  const deleteTab = async (uuid: string) => {
-    await BlockTabRepository.deleteTab(db, uuid);
-  };
-
-  const moveTabUp = async (uuid: string) => {
-    await BlockTabRepository.moveTab(db, blockUuid, uuid, 'up')
-  };
-
-  const moveTabDown = async (uuid: string) => {
-    await BlockTabRepository.moveTab(db, blockUuid, uuid, 'down')
-  };
 
 
   return {
@@ -409,10 +388,5 @@ export const useBlockEditForm = (blockUuid: string, bookUuid?: string, currentGr
     childBlocks,
     updateBlockParent,
     updateBlockDisplayKind,
-    blockTabs,
-    saveTab,
-    deleteTab,
-    moveTabUp,
-    moveTabDown
   }
 }

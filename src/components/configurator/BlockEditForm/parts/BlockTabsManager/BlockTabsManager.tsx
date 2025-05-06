@@ -3,34 +3,31 @@ import { IconEdit, IconTrash, IconPlus, IconArrowUp, IconArrowDown } from "@tabl
 import {IBlock, IBlockRelation, IBlockTab, IBlockTabKind} from "@/entities/ConstructorEntities";
 import { BlockTabEditModal } from "./modal/BlockTabEditModal";
 import { useState } from "react";
+import {
+  useBlockTabsManager
+} from "@/components/configurator/BlockEditForm/parts/BlockTabsManager/hooks/useBlockTabsManager";
 
 interface BlockTabsManagerProps {
-  tabs: IBlockTab[];
   otherRelations: IBlockRelation[];
   childBlocks: IBlock[];
   otherBlocks: IBlock[];
-  onAddTab: (tab: Omit<IBlockTab, 'id'>) => void;
-  onUpdateTab: (tab: IBlockTab) => void;
-  onDeleteTab: (uuid: string) => void;
-  onMoveUp: (uuid: string) => void;
-  onMoveDown: (uuid: string) => void;
   currentBlockUuid: string;
+  bookUuid?: string
 }
 
-export const BlockTabsManager = ({
-                                   tabs,
+export const BlockTabsManager = ({ bookUuid,
                                    otherRelations,
                                    childBlocks,
                                    otherBlocks,
-                                   onAddTab,
-                                   onUpdateTab,
-                                   onDeleteTab,
-                                   onMoveUp,
-                                   onMoveDown,
                                    currentBlockUuid
                                  }: BlockTabsManagerProps) => {
   const [editingTab, setEditingTab] = useState<IBlockTab | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const { tabs, saveTab, deleteTab, moveTabUp, moveTabDown } = useBlockTabsManager({
+    bookUuid,
+    blockUuid: currentBlockUuid
+  });
 
   const getRelatedBlockTitle = (relation: IBlockRelation) => {
     const relatedBlockUuid =
@@ -41,11 +38,11 @@ export const BlockTabsManager = ({
     return otherBlocks.find(b => b.uuid === relatedBlockUuid)?.title || 'Неизвестный блок';
   };
 
-  const handleSave = (tabData: Omit<IBlockTab, 'id'>) => {
+  const handleSave = async (tabData: Omit<IBlockTab, 'id'>) => {
     if (editingTab) {
-      onUpdateTab({ ...editingTab, ...tabData });
+      await saveTab({...editingTab, ...tabData});
     } else {
-      onAddTab({ ...tabData, blockUuid: currentBlockUuid, uuid: '', orderNumber: tabs.length });
+      await saveTab({...tabData, blockUuid: currentBlockUuid, uuid: '', orderNumber: tabs.length});
     }
     setIsModalOpen(false);
     setEditingTab(null);
@@ -74,7 +71,7 @@ export const BlockTabsManager = ({
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
-            {tabs.map((tab, index) => (
+            {tabs?.map((tab, index) => (
                 <Table.Tr key={tab.uuid}>
                   <Table.Td>{tab.title}</Table.Td>
                   <Table.Td>{tab.tabKind}</Table.Td>
@@ -101,20 +98,20 @@ export const BlockTabsManager = ({
                       <ActionIcon
                           variant="subtle"
                           color="red"
-                          onClick={() => onDeleteTab(tab.uuid!)}
+                          onClick={() => deleteTab(tab.uuid!)}
                       >
                         <IconTrash size="1rem" />
                       </ActionIcon>
                       <ActionIcon
                           variant="subtle"
-                          onClick={() => onMoveUp(tab.uuid!)}
+                          onClick={() => moveTabUp(tab.uuid!)}
                           disabled={index === 0}
                       >
                         <IconArrowUp size="1rem" />
                       </ActionIcon>
                       <ActionIcon
                           variant="subtle"
-                          onClick={() => onMoveDown(tab.uuid!)}
+                          onClick={() => moveTabDown(tab.uuid!)}
                           disabled={index === tabs.length - 1}
                       >
                         <IconArrowDown size="1rem" />
