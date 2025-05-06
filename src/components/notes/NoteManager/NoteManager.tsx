@@ -118,7 +118,6 @@ export const NoteManager = () => {
               : noteGroups).map(group => (
               <Card
                   key={group.uuid}
-                  shadow="sm"
                   padding="lg"
                   style={{ cursor: 'pointer' }}
                   onClick={() => handleGroupClick(group.uuid!)}
@@ -171,10 +170,8 @@ export const NoteManager = () => {
                 {filteredNotes
                 .filter(n => n.noteGroupUuid === group.uuid)
                 .map(note => (
-                    <Card key={note.uuid} >
+                    <Card key={note.uuid}>
                       <Group wrap="nowrap" align="flex-start">
-                        <IconNote size={18} style={{ marginTop: 3 }} />
-
                         <div style={{ flex: 1 }}>
                           <Group justify="space-between">
                             <Text fw={500} style={{ lineHeight: 1.2 }} color={"dimmed"}>{note.title}</Text>
