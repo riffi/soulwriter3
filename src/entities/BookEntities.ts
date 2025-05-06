@@ -53,3 +53,21 @@ export interface IBlockInstanceRelation {
   targetBlockUuid: string;       // UUID целевого блока
   blockRelationUuid: string;     // Ссылка на исходную связь между блоками
 }
+
+export interface INoteGroup{
+  id?: number;
+  uuid?: string;
+  title: string;
+  order?: number;
+  parentNoteGroupUuid?: string;
+}
+
+export interface INote{
+  id?: number;
+  uuid?: string;
+  title: string;
+  tags: string;
+  body: string;
+  order?: number;
+  noteGroupUuid?: string;
+}

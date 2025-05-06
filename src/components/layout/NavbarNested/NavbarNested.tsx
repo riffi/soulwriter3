@@ -139,6 +139,11 @@ const BASE_MENU_ITEMS: NavLinkGroup[] = [
     link: '/books',
   },
   {
+    label: 'Заметки',
+    icon: IconNotes,
+    link: '/notes',
+  },
+  {
     label: 'Настройки',
     icon: IconSettings,
     link: '/settings',

@@ -10,7 +10,8 @@ import {SceneCard} from "@/pages/scenes/SceneCard";
 import {BlockInstanceManagerPage} from "@/pages/books/BlockInstanceManagerPage";
 import {BlockInstancePage} from "@/pages/books/BlockInstancePage";
 import SettingsPage from "@/pages/settings/SettingsPage";
-
+import {NoteManager} from "@/components/notes/NoteManager/NoteManager";
+import {NoteEditPage} from "@/components/notes/NoteEditPage/NoteEditPage";
 const router = createBrowserRouter([
   {
     path: '/',
@@ -52,7 +53,14 @@ const router = createBrowserRouter([
         path: '/block-instance/card',
         element: <BlockInstancePage/> as ReactNode
       },
-
+      {
+        path: '/notes',
+        element: <NoteManager /> as ReactNode,
+      },
+      {
+        path: '/notes/edit/:uuid',
+        element: <NoteEditPage /> as ReactNode,
+      }
     ]
   },
 ]);
