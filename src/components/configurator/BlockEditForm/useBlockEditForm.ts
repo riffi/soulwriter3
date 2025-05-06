@@ -3,19 +3,21 @@ import {
   IBlock,
   IBlockParameter,
   IBlockParameterGroup,
-  IBlockRelation, IBlockTab
+  IBlockRelation, IBlockStructureKind, IBlockTab
 } from "@/entities/ConstructorEntities";
 import {configDatabase} from "@/entities/configuratorDb";
 import {generateUUID} from "@/utils/UUIDUtils";
 import {notifications} from "@mantine/notifications";
-import {bookDb} from "@/entities/bookDb";
+import {BookDB, bookDb} from "@/entities/bookDb";
 import {BlockRelationRepository} from "@/repository/BlockRelationRepository";
 import {ConfigurationRepository} from "@/repository/ConfigurationRepository";
 import {BlockRepository} from "@/repository/BlockRepository";
+import {BlockInstanceRepository} from "@/repository/BlockInstanceRepository";
 
 export const useBlockEditForm = (blockUuid: string, bookUuid?: string, currentGroupUuid?: string) => {
 
   const db = bookUuid? bookDb : configDatabase;
+  const isBookDb = !!bookUuid;
 
   const block = useLiveQuery<IBlock>( () => {
     if (!blockUuid){
@@ -106,18 +108,31 @@ export const useBlockEditForm = (blockUuid: string, bookUuid?: string, currentGr
     db.blocks.update(blockData.id, blockData)
   }
 
-  const saveParam = (param: IBlockParameter) => {
+  const saveParam = async (param: IBlockParameter) => {
     if (!param.id) {
       param.uuid = generateUUID()
       param.groupUuid = currentGroupUuid;
       param.orderNumber = paramList?.length;
       param.blockUuid = blockUuid;
-      param.isDefault = param.isDefault ? 1 : 0;
-      console.log(param)
       db.blockParameters.add(param);
-    }
-    else{
+    } else {
+
+      const prevData = await db.blockParameters.get(param.id)
       db.blockParameters.update(param.id, param);
+
+      // Обновляем значения по умолчанию для одиночных блоков
+      if (isBookDb
+          && prevData
+          && prevData.isDefault === 0 && param.isDefault === 1
+      ) {
+        const block = await BlockRepository.getByUuid(db, blockUuid);
+        if (block?.structureKind === IBlockStructureKind.single) {
+          const instances = await BlockInstanceRepository.getBlockInstances(db as BookDB, blockUuid)
+          for (const instance of instances) {
+            await BlockInstanceRepository.appendDefaultParam(db as BookDB, instance, param)
+          }
+        }
+      }
     }
   }
 

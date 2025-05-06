@@ -6,7 +6,7 @@ import {
 } from "@/entities/BookEntities";
 import {generateUUID} from "@/utils/UUIDUtils";
 import {BlockRepository} from "@/repository/BlockRepository";
-import {IBlock} from "@/entities/ConstructorEntities";
+import {IBlock, IBlockParameter} from "@/entities/ConstructorEntities";
 
 const getByUuid = async (db: BookDB, blockInstanceUuid: string) => {
   return db.blockInstances.where('uuid').equals(blockInstanceUuid).first();
@@ -38,6 +38,18 @@ const getRelatedInstances = async (db: BookDB, blockInstanceUuid: string, relate
   return [...source, ...target]
 }
 
+const appendDefaultParam = async (db: BookDB, instance: IBlockInstance, param: IBlockParameter)=> {
+  const blockParameterInstance: IBlockParameterInstance = {
+    uuid: generateUUID(),
+    blockInstanceUuid: instance.uuid!!,
+    blockParameterUuid: param.uuid!!,
+    blockParameterGroupUuid: param.groupUuid,
+    value: "",
+  }
+  await db
+      .blockParameterInstances.add(blockParameterInstance)
+
+}
 const appendDefaultParams = async (db: BookDB, instance: IBlockInstance)=> {
   const defaultParameters =
       await BlockRepository.getDefaultParameters(db, instance.blockUuid);
@@ -71,6 +83,7 @@ const createSingleInstance = async (db: BookDB, block: IBlock)=> {
     title: block?.title,
   };
   await BlockInstanceRepository.create(db, newInstance)
+  await BlockInstanceRepository.appendDefaultParams(db, newInstance);
   return newInstance;
 }
 
@@ -108,6 +121,7 @@ export const BlockInstanceRepository = {
   getByUuid,
   getBlockInstances,
   appendDefaultParams,
+  appendDefaultParam,
   getRelatedInstances,
   getChildInstances,
   create,
