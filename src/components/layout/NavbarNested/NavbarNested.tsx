@@ -203,7 +203,7 @@ export const NavbarNested = ({ toggleNavbar }: { toggleNavbar?: () => void }) =>
       <nav className={classes.navbar} aria-label="Основное меню">
         <div className={classes.header}>
           <Group justify="space-between">
-            <Logo style={{ width: 120 }} />
+            <Logo style={{ width: 200 }} />
             <Code fw={700}>v3.1.2</Code>
           </Group>
 

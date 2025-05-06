@@ -1,4 +1,8 @@
+import logo from './logo.png'
 export function Logo(props: React.ComponentPropsWithoutRef<'svg'>) {
+    return (
+        <img src={logo} {...props} alt={"Logo"}/>
+    )
     return (
         <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 623 163">
           <g fill="none" fillRule="evenodd">
