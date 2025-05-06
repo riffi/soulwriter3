@@ -8,10 +8,12 @@ import {useDialog} from "@/providers/DialogProvider/DialogProvider";
 import {bookDb, connectToBookDatabase, deleteBookDatabase} from "@/entities/bookDb";
 import {BlockInstanceRepository} from "@/repository/BlockInstanceRepository";
 import {BlockRepository} from "@/repository/BlockRepository";
+import {useBookStore} from "@/stores/bookStore/bookStore";
 
 export const useBookManager = () => {
 
   const { showDialog } = useDialog();
+  const { selectedBook, selectBook, clearSelectedBook } = useBookStore();
 
   // Получаем список книг и конфигураций из базы данных
   const books = useLiveQuery<IBook[]>(() => configDatabase.books.toArray(), []);
@@ -177,6 +179,7 @@ export const useBookManager = () => {
     );
     if (result){
       try {
+        clearSelectedBook()
         await configDatabase.books.delete(book.id);
         await deleteBookDatabase(book.uuid);
         notifications.show({
