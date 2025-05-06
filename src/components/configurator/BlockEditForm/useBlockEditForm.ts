@@ -269,9 +269,7 @@ export const useBlockEditForm = (blockUuid: string, bookUuid?: string, currentGr
     }
   };
 
-  const childBlocks = useLiveQuery<IBlock[]>(() => {
-    return db.blocks.where("parentBlockUuid").equals(blockUuid).toArray();
-  }, [blockUuid]);
+
 
 
   return {
@@ -292,6 +290,5 @@ export const useBlockEditForm = (blockUuid: string, bookUuid?: string, currentGr
     loadPossibleValues,
     savePossibleValues,
     blockRelations,
-    childBlocks,
   }
 }

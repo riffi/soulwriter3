@@ -68,7 +68,6 @@ export const BlockEditForm = ({ blockUuid, bookUuid }: IBlockEditFormProps) => {
     updateGroupTitle,
     deleteGroup,
     blockRelations,
-    childBlocks,
   } = useBlockEditForm(blockUuid, bookUuid, state.currentGroupUuid);
 
   useEffect(() => {
@@ -241,7 +240,6 @@ export const BlockEditForm = ({ blockUuid, bookUuid }: IBlockEditFormProps) => {
         {state.activeTab === 'tabs' && (
             <BlockTabsManager
                 otherRelations={blockRelations || []}
-                childBlocks={childBlocks || []}
                 currentBlockUuid={blockUuid}
                 otherBlocks={otherBlocks}
                 bookUuid={bookUuid}

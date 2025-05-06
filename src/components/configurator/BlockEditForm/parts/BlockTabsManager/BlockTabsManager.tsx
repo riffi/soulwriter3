@@ -9,7 +9,6 @@ import {
 
 interface BlockTabsManagerProps {
   otherRelations: IBlockRelation[];
-  childBlocks: IBlock[];
   otherBlocks: IBlock[];
   currentBlockUuid: string;
   bookUuid?: string
@@ -17,14 +16,20 @@ interface BlockTabsManagerProps {
 
 export const BlockTabsManager = ({ bookUuid,
                                    otherRelations,
-                                   childBlocks,
                                    otherBlocks,
                                    currentBlockUuid
                                  }: BlockTabsManagerProps) => {
   const [editingTab, setEditingTab] = useState<IBlockTab | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const { tabs, saveTab, deleteTab, moveTabUp, moveTabDown } = useBlockTabsManager({
+  const {
+    tabs,
+    childBlocks,
+    saveTab,
+    deleteTab,
+    moveTabUp,
+    moveTabDown
+  } = useBlockTabsManager({
     bookUuid,
     blockUuid: currentBlockUuid
   });
@@ -77,7 +82,7 @@ export const BlockTabsManager = ({ bookUuid,
                   <Table.Td>{tab.tabKind}</Table.Td>
                   <Table.Td>
                     {tab.tabKind === IBlockTabKind.childBlock ? (
-                        childBlocks.find(b => b.uuid === tab.childBlockUuid)?.title
+                        childBlocks?.find(b => b.uuid === tab.childBlockUuid)?.title
                     ) : tab.tabKind === IBlockTabKind.relation ? (
                         getRelatedBlockTitle(
                             otherRelations.find(r => r.uuid === tab.relationUuid)!
@@ -112,7 +117,7 @@ export const BlockTabsManager = ({ bookUuid,
                       <ActionIcon
                           variant="subtle"
                           onClick={() => moveTabDown(tab.uuid!)}
-                          disabled={index === tabs.length - 1}
+                          disabled={index === tabs?.length - 1}
                       >
                         <IconArrowDown size="1rem" />
                       </ActionIcon>
@@ -132,13 +137,13 @@ export const BlockTabsManager = ({ bookUuid,
             onSave={handleSave}
             initialData={editingTab}
             relations={otherRelations.filter(r =>
-                !tabs.some(t =>
+                !tabs?.some(t =>
                     t.relationUuid === r.uuid &&
                     (!editingTab || t.uuid !== editingTab.uuid)
                 )
             )}
-            childBlocks={childBlocks.filter(b =>
-                !tabs.some(t =>
+            childBlocks={childBlocks?.filter(b =>
+                !tabs?.some(t =>
                     t.childBlockUuid === b.uuid &&
                     (!editingTab || t.uuid !== editingTab.uuid)
                 )

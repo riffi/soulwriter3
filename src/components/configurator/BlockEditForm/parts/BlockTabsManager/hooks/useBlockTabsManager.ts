@@ -1,7 +1,7 @@
 // useBlockTabsManager.ts
 import { BlockTabRepository } from "@/repository/BlockTabRepository";
 import { notifications } from "@mantine/notifications";
-import {IBlockTab} from "@/entities/ConstructorEntities";
+import {IBlock, IBlockTab} from "@/entities/ConstructorEntities";
 import {bookDb} from "@/entities/bookDb";
 import {configDatabase} from "@/entities/configuratorDb";
 import {useLiveQuery} from "dexie-react-hooks";
@@ -18,6 +18,10 @@ export const useBlockTabsManager = ({ bookUuid, blockUuid }: UseBlockTabsManager
 
   const tabs = useLiveQuery<IBlockTab[]>(() => {
     return BlockTabRepository.getBlockTabs(db, blockUuid);
+  }, [blockUuid]);
+
+  const childBlocks = useLiveQuery<IBlock[]>(() => {
+    return db.blocks.where("parentBlockUuid").equals(blockUuid).toArray();
   }, [blockUuid]);
 
   const saveTab = async (tab: IBlockTab) => {
@@ -46,6 +50,7 @@ export const useBlockTabsManager = ({ bookUuid, blockUuid }: UseBlockTabsManager
 
   return {
     tabs,
+    childBlocks,
     saveTab,
     deleteTab,
     moveTabUp,
