@@ -20,12 +20,10 @@ import {
 import { notifications } from "@mantine/notifications";
 import { ParamEditModal } from "@/components/configurator/BlockEditForm/modal/ParamEditModal/ParamEditModal";
 import { ParamTable } from "@/components/configurator/BlockEditForm/parts/ParamTable/ParamTable";
-import {IconEdit, IconSettings} from "@tabler/icons-react";
+import {IconSettings} from "@tabler/icons-react";
 import {GroupsModal} from "@/components/configurator/BlockEditForm/modal/GroupsModal/GroupsModal";
 import classes from "./BlockEditForm.module.css";
-import {Heading} from "tabler-icons-react";
 import {RelationTable} from "@/components/configurator/BlockEditForm/parts/RelationTable/RelationTable";
-import {RelationEditModal} from "@/components/configurator/BlockEditForm/modal/RelationEditModal";
 import {ChildBlocksTable} from "@/components/configurator/BlockEditForm/parts/ChildBlocksTable/ChildBlocksTable";
 import {
   BlockTabsManager
@@ -42,7 +40,6 @@ interface IFormState {
   currentRelation?: IBlockRelation;
   isParamModalOpened: boolean;
   isGroupsModalOpened: boolean;
-  isRelationModalOpened: boolean;
   activeTab: 'parameters' | 'relations' | 'children'  | 'tabs';
   isChildModalOpened: boolean;
 }
@@ -52,7 +49,6 @@ const INITIAL_FORM_STATE: IFormState = {
   currentParam: undefined,
   isParamModalOpened: false,
   isGroupsModalOpened: false,
-  isRelationModalOpened: false,
   activeTab: 'parameters',
   isChildModalOpened: false,
 };
@@ -74,8 +70,6 @@ export const BlockEditForm = ({ blockUuid, bookUuid }: IBlockEditFormProps) => {
     updateGroupTitle,
     deleteGroup,
     blockRelations,
-    saveRelation,
-    deleteRelation,
     childBlocks,
     updateBlockParent,
     updateBlockDisplayKind,
@@ -109,18 +103,6 @@ export const BlockEditForm = ({ blockUuid, bookUuid }: IBlockEditFormProps) => {
       </Anchor>
   ));
 
-  const handleRelationModalOpen = (relation?: IBlockRelation) => {
-    setState(prev => ({
-      ...prev,
-      currentRelation: relation || {
-        sourceBlockUuid: blockUuid,
-        targetBlockUuid: '',
-        relationType: BlockRelationType.ONE_TO_ONE,
-        configurationVersionUuid: block?.configurationVersionUuid || ''
-      },
-      isRelationModalOpened: true,
-    }));
-  };
 
   const handleParamModalOpen = (param?: IBlockParameter) => {
     setState(prev => ({
@@ -243,11 +225,9 @@ export const BlockEditForm = ({ blockUuid, bookUuid }: IBlockEditFormProps) => {
         {state.activeTab === 'relations' &&
             <>
               <RelationTable
-                  relations={blockRelations || []}
-                  onAddRelation={() => handleRelationModalOpen()}
-                  onEditRelation={handleRelationModalOpen}
-                  onDeleteRelation={deleteRelation}
                   otherBlocks={otherBlocks || []}
+                  block={block}
+                  bookUuid={bookUuid}
               />
             </>
         }
@@ -288,18 +268,6 @@ export const BlockEditForm = ({ blockUuid, bookUuid }: IBlockEditFormProps) => {
             initialData={state.currentParam}
             blockUuid={blockUuid}
             bookUuid={bookUuid}
-        />}
-
-        {state.isRelationModalOpened && <RelationEditModal
-            isOpen={state.isRelationModalOpened}
-            onClose={() => setState(prev => ({ ...prev, isRelationModalOpened: false }))}
-            onSave={(relation) => {
-              saveRelation(relation);
-              setState(prev => ({ ...prev, isRelationModalOpened: false }))
-            }}
-            initialData={state.currentRelation}
-            blockUuid={blockUuid}
-            otherBlocks={otherBlocks || []}
         />}
 
         <GroupsModal

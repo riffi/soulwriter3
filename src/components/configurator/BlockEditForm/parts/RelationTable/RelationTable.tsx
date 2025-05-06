@@ -1,31 +1,40 @@
 import { Table, ActionIcon, Group, Button } from "@mantine/core";
 import { IconEdit, IconTrash, IconPlus } from "@tabler/icons-react";
 import {IBlock, IBlockRelation} from "@/entities/ConstructorEntities";
-import {IBlockInstance, IBlockInstanceRelation} from "@/entities/BookEntities";
+import {
+  useRelationTable
+} from "@/components/configurator/BlockEditForm/parts/RelationTable/hook/useRelationTable";
+import {RelationEditModal} from "@/components/configurator/BlockEditForm/parts/RelationTable/modal/RelationEditModal";
 
 
 interface RelationTableProps {
-  relations: any[];
-  onAddRelation: () => void;
-  onEditRelation: (relation: any) => void;
-  onDeleteRelation: (relationUuid: string) => void;
   otherBlocks: IBlock[]
+  block: IBlock
+  bookUuid: string
 }
 
 export const RelationTable = ({
-                                relations,
-                                onAddRelation,
-                                onEditRelation,
-                                onDeleteRelation,
-                                otherBlocks
+                                otherBlocks,
+                                block,
+                                bookUuid
                               }: RelationTableProps) => {
+
+  const {
+    blockRelations,
+    isModalOpen,
+    currentRelation,
+    handleOpenModal,
+    handleCloseModal,
+    saveRelation,
+    deleteRelation,
+  } = useRelationTable(block, bookUuid);
 
   const blockCorrespondsToRelation = (block: IBlock, relation: IBlockRelation): boolean => {
     return (relation.targetBlockUuid === block.uuid) ||
         (relation.sourceBlockUuid === block.uuid);
   }
 
-  const rows = relations.map((relation) => (
+  const rows = blockRelations?.map((relation) => (
       <Table.Tr key={relation.uuid}>
         <Table.Td>{otherBlocks?.find((b) => blockCorrespondsToRelation(b, relation))?.title}</Table.Td>
         <Table.Td>{relation.relationType}</Table.Td>
@@ -33,14 +42,14 @@ export const RelationTable = ({
           <Group gap={4}>
             <ActionIcon
                 variant="subtle"
-                onClick={() => onEditRelation(relation)}
+                onClick={() => handleOpenModal(relation)}
             >
               <IconEdit size="1rem" />
             </ActionIcon>
             <ActionIcon
                 variant="subtle"
                 color="red"
-                onClick={() => onDeleteRelation(relation.uuid)}
+                onClick={() => deleteRelation(relation.uuid!)}
             >
               <IconTrash size="1rem" />
             </ActionIcon>
@@ -54,7 +63,7 @@ export const RelationTable = ({
         <Group justify="flex-start" mb="md">
           <Button
               leftSection={<IconPlus size="1rem" />}
-              onClick={onAddRelation}
+              onClick={() => handleOpenModal()}
               size="sm"
               variant="light"
           >
@@ -72,6 +81,15 @@ export const RelationTable = ({
           </Table.Thead>
           <Table.Tbody>{rows}</Table.Tbody>
         </Table>
+
+        {isModalOpen && <RelationEditModal
+            isOpen={isModalOpen}
+            onClose={handleCloseModal}
+            onSave={saveRelation}
+            initialData={currentRelation}
+            blockUuid={block.uuid}
+            otherBlocks={otherBlocks || []}
+        />}
       </div>
   );
 };

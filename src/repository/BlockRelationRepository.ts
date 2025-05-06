@@ -1,5 +1,4 @@
 import {BlockAbstractDb} from "@/entities/BlockAbstractDb";
-import {bookDb} from "@/entities/bookDb";
 
 const getBlockRelations = async (db: BlockAbstractDb, blockUuid: string) => {
   const [targetRelations, sourceRelations] = await Promise.all([

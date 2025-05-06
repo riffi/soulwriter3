@@ -1,8 +1,6 @@
 import { useForm } from "@mantine/form";
 import { Modal, Select, Button, Group } from "@mantine/core";
 import {BlockRelationType, IBlock, IBlockRelation} from "@/entities/ConstructorEntities";
-import { useLiveQuery } from "dexie-react-hooks";
-import { configDatabase } from "@/entities/configuratorDb";
 
 interface RelationEditModalProps {
   isOpen: boolean;
