@@ -1,13 +1,8 @@
 import {
-  IconAdjustments,
   IconBooks,
   IconBrandDatabricks,
-  IconCalendarStats,
-  IconFileAnalytics,
   IconGauge,
-  IconLock,
   IconNotes,
-  IconPresentationAnalytics,
   IconChevronRight, IconSettings,
 } from '@tabler/icons-react';
 import {

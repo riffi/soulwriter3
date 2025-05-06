@@ -46,7 +46,7 @@ export const useBookConfigurationEditForm = (configurationUuid: string,
 
   // Список групп параметров для строительного блока
   const paramGroupList = useLiveQuery<IBlockParameterGroup[]>(() => {
-    if (!currentVersion || !currentBlock) {
+    if (!currentVersion || !currentBlock || !currentBlock?.uuid) {
       return []
     }
     return db.blockParameterGroups.where('blockUuid').equals(currentBlock?.uuid).toArray();

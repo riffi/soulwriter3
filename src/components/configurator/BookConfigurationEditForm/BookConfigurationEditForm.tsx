@@ -50,11 +50,11 @@ export const BookConfigurationEditForm = (props: IBookConfigurationEditFormProps
   const getBlackBlock = (): IBlock => {
     return {
       configurationVersionUuid: currentVersion?.uuid,
-      uuid: '',
+      uuid: undefined,
       title: '',
       description: '',
       useTabs: false,
-      structureKind: IBlockStructureKind.single,
+      structureKind: IBlockStructureKind.multiple,
       displayKind: IBlockDisplayKind.list,
     }
   }
