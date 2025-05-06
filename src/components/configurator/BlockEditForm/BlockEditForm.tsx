@@ -24,9 +24,9 @@ import {IconEdit, IconSettings} from "@tabler/icons-react";
 import {GroupsModal} from "@/components/configurator/BlockEditForm/modal/GroupsModal/GroupsModal";
 import classes from "./BlockEditForm.module.css";
 import {Heading} from "tabler-icons-react";
-import {RelationTable} from "@/components/configurator/BlockEditForm/parts/RelationTable";
+import {RelationTable} from "@/components/configurator/BlockEditForm/parts/RelationTable/RelationTable";
 import {RelationEditModal} from "@/components/configurator/BlockEditForm/modal/RelationEditModal";
-import {ChildBlocksTable} from "@/components/configurator/BlockEditForm/parts/ChildBlocksTable";
+import {ChildBlocksTable} from "@/components/configurator/BlockEditForm/parts/ChildBlocksTable/ChildBlocksTable";
 import {
   BlockTabsManager
 } from "@/components/configurator/BlockEditForm/parts/BlockTabsManager/BlockTabsManager";

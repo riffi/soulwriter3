@@ -1,7 +1,7 @@
 import { Table, ActionIcon, Group, Button, Text } from "@mantine/core";
 import { IconEdit, IconTrash, IconPlus } from "@tabler/icons-react";
 import {IBlock, IBlockDisplayKind, IBlockDisplayKindTitle} from "@/entities/ConstructorEntities";
-import { ChildBlockEditModal } from "./ChildBlockEditModal";
+import { ChildBlockEditModal } from "./modal/ChildBlockEditModal";
 import { useState } from "react";
 
 interface ChildBlocksTableProps {
