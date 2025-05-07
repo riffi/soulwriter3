@@ -2,7 +2,7 @@
 import Dexie from 'dexie';
 import {IBook, INote, INoteGroup} from "@/entities/BookEntities";
 import {baseSchema, BlockAbstractDb} from "@/entities/BlockAbstractDb";
-import {IGlobalSettings} from "@/entities/ConstructorEntities";
+import {IGlobalSettings, IOpenRouterModel} from "@/entities/ConstructorEntities";
 
 const schema = {
     ...baseSchema,
@@ -10,6 +10,7 @@ const schema = {
     notes: '++id, &uuid, title, tags, noteGroupUuid',
     notesGroups: '++id, &uuid, title, parentNoteGroupUuid',
     globalSettings: '++id',
+    openRouterModels: '++id, modelName',
 }
 
 class ConfigDatabase extends BlockAbstractDb {
@@ -18,6 +19,7 @@ class ConfigDatabase extends BlockAbstractDb {
   notes!: Dexie.Table<INote, number>;
   notesGroups!: Dexie.Table<INoteGroup, number>;
   globalSettings!: Dexie.Table<IGlobalSettings, number>;
+  openRouterModels!: Dexie.Table<IOpenRouterModel, number>;
   constructor() {
     super('BlocksDatabase');
     this.version(2).stores(schema);

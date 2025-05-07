@@ -2,15 +2,17 @@ import {notifications} from "@mantine/notifications";
 import {configDatabase} from "@/entities/configuratorDb";
 
 const fetchCompletions = async (prompt: string) => {
-  const model = 'google/gemma-3-12b-it:free';
-
   try {
-    // Получаем текущие настройки из базы данных
     const settings = await configDatabase.globalSettings.get(1);
     const token = settings?.openRouterKey;
+    const model = settings?.currentOpenRouterModel; // Используем выбранную модель
 
     if (!token) {
       throw new Error("OpenRouter API key not configured");
+    }
+
+    if (!model) {
+      throw new Error("OpenRouter model not selected");
     }
 
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
@@ -28,7 +30,6 @@ const fetchCompletions = async (prompt: string) => {
 
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
     return await response.json();
-
   } catch (error) {
     throw error;
   }
@@ -124,9 +125,24 @@ const fetchSpellingCorrection = async (text: string) => {
   }
 };
 
+const fetchRhymes = async (word: string) => {
+  const prompt = `Сгенерируй 7-15 рифм для русского слова '${word}' в формате JSON. 
+  Структура: { "rhymes": [...] }. 
+  Пример для слова 'дом': { "rhymes": ["том", "сом", "ком", "льдом", "котом"] }. 
+  Только русские слова, включай разные типы рифм (точные, ассонансы и т.д.).;`
+
+  const data = await fetchCompletions(prompt);
+  const content = data.choices[0].message.content;
+  const jsonMatch = content.match(/```json\n([\s\S]*?)\n```/);
+
+  if (!jsonMatch) throw new Error("Invalid response format");
+  return JSON.parse(jsonMatch[1]).rhymes as string[];
+};
+
 export const OpenRouterApi = {
   fetchSynonyms,
   fetchParaphrases,
   fetchSimplifications,
-  fetchSpellingCorrection
+  fetchSpellingCorrection,
+  fetchRhymes
 }

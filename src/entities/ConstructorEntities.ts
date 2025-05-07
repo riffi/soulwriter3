@@ -155,4 +155,9 @@ export interface IBlockTab{
 export interface IGlobalSettings{
   openRouterKey: string
   incLuminApiKey: string
+  currentOpenRouterModel: string
+}
+
+export interface IOpenRouterModel{
+  modelName: string
 }

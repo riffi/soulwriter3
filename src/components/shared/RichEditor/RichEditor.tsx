@@ -21,6 +21,7 @@ import {CheckParaphraseButton} from "@/components/shared/RichEditor/toolbar/Chec
 import {IconCheck} from "@tabler/icons-react";
 import {CheckSimplifyButton} from "@/components/shared/RichEditor/toolbar/CheckSimplifyButton";
 import {CheckSpellingButton} from "@/components/shared/RichEditor/toolbar/CheckSpellingButton";
+import {CheckRhymesButton} from "@/components/shared/RichEditor/toolbar/CheckRhymesButton";
 
 
 export interface IRichEditorConstraints {
@@ -53,7 +54,7 @@ export const RichEditor = (props: ISceneRichTextEditorProps) => {
 
   const [isDrawerOpened, { open: openDrawer, close: closeDrawer }] = useDisclosure(false);
   const [suggestions, setSuggestions] = useState<string[]>([]);
-  const [suggestionType, setSuggestionType] =  useState<'synonyms' | 'paraphrase' | 'simplify' | 'spelling'>('synonyms');
+  const [suggestionType, setSuggestionType] =  useState<'synonyms' | 'paraphrase' | 'simplify' | 'spelling' | 'rhymes'>('synonyms');
   const [selectedText, setSelectedText] = useState('');
   const { isMobile } = useMedia();
 
@@ -160,6 +161,17 @@ export const RichEditor = (props: ISceneRichTextEditorProps) => {
               }}
               checkKind={'yandex-speller'}
           />
+          <CheckRhymesButton
+              editor={editor}
+              onLoadingChange={(isLoading, message) =>
+                  setLoadingState({ isLoading, message: message || "" })
+              }
+              onRhymesFound={(rhymes) => {
+                setSuggestions(rhymes);
+                setSuggestionType('rhymes');
+                openDrawer();
+              }}
+          />
         </EditorToolBar>
         <RichTextEditor.Content />
       </RichTextEditor>
@@ -172,7 +184,9 @@ export const RichEditor = (props: ISceneRichTextEditorProps) => {
                 ? "Найденные синонимы"
                 : suggestionType === 'paraphrase'
                     ? "Варианты перефразирования"
-                    : "Упрощенные варианты"}
+                    : suggestionType === 'rhymes' // Добавляем условие для рифм
+                        ? "Найденные рифмы"
+                        : "Упрощенные варианты"}
         position="right"
     >
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
