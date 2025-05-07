@@ -66,10 +66,13 @@ export const RichEditor = (props: ISceneRichTextEditorProps) => {
           variant="subtle"
           style={isMobile ? {
             position: "fixed",
-            zIndex:1000,
+            zIndex:90,
             top: mobileConstraints.top + TOOLBAR_HEIGHT,
             bottom: mobileConstraints.bottom,
             overflow: "scroll",
+            left: 0,
+            backgroundColor: "white",
+            width: "100%"
           } : {}}
           onScroll={handleScroll}
 

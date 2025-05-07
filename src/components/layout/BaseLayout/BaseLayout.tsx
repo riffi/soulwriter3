@@ -28,7 +28,7 @@ export const BaseLayout = () =>  {
             padding={isMobile ? '0' : 'md'}
             styles={{
               main: {
-                backgroundColor: 'rgb(246 251 255)', // Или любой другой темный оттенок
+                backgroundColor: 'rgb(246 251 255)',
               },
             }}
         >

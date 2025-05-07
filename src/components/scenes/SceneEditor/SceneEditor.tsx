@@ -83,6 +83,18 @@ export const SceneEditor = ({ sceneId }: SceneEditorProps) => {
   const mobileContent = (
         <>
           <Container size="xl" p="0" fluid  >
+            <RichEditor
+                initialContent={sceneBody}
+                onContentChange={handleContentChange}
+                onWarningsChange={setWarningGroups}
+                selectedGroup={selectedGroup}
+                setSelectedGroup={setSelectedGroup}
+                onScroll={handleEditorScroll}
+                mobileConstraints={{
+                  top: 50,
+                  bottom: warningGroups?.length > 0 ? 100 : 30
+                }}
+            />
             <Flex
                 justify="stretch"
                 align="stretch"
@@ -90,21 +102,6 @@ export const SceneEditor = ({ sceneId }: SceneEditorProps) => {
                 wrap="wrap"
                 style={{ height: 'calc(100dvh - 50px)' }}
             >
-
-              <Box flex={1}>
-                  <RichEditor
-                      initialContent={sceneBody}
-                      onContentChange={handleContentChange}
-                      onWarningsChange={setWarningGroups}
-                      selectedGroup={selectedGroup}
-                      setSelectedGroup={setSelectedGroup}
-                      onScroll={handleEditorScroll}
-                      mobileConstraints={{
-                        top: 50,
-                        bottom: warningGroups?.length > 0 ? 100 : 30
-                      }}
-                  />
-              </Box>
               <>
                 {warningGroups.length > 0 && (
                     <Box
