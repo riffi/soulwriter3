@@ -20,6 +20,7 @@ import {CheckSynonymsButton} from "@/components/shared/RichEditor/toolbar/CheckS
 import {CheckParaphraseButton} from "@/components/shared/RichEditor/toolbar/CheckParaphraseButton";
 import {IconCheck} from "@tabler/icons-react";
 import {CheckSimplifyButton} from "@/components/shared/RichEditor/toolbar/CheckSimplifyButton";
+import {CheckSpellingButton} from "@/components/shared/RichEditor/toolbar/CheckSpellingButton";
 
 
 export interface IRichEditorConstraints {
@@ -52,7 +53,7 @@ export const RichEditor = (props: ISceneRichTextEditorProps) => {
 
   const [isDrawerOpened, { open: openDrawer, close: closeDrawer }] = useDisclosure(false);
   const [suggestions, setSuggestions] = useState<string[]>([]);
-  const [suggestionType, setSuggestionType] =  useState<'synonyms' | 'paraphrase' | 'simplify'>('synonyms');
+  const [suggestionType, setSuggestionType] =  useState<'synonyms' | 'paraphrase' | 'simplify' | 'spelling'>('synonyms');
   const [selectedText, setSelectedText] = useState('');
   const { isMobile } = useMedia();
 
@@ -146,17 +147,31 @@ export const RichEditor = (props: ISceneRichTextEditorProps) => {
                 openDrawer();
               }}
           />
+          <CheckSpellingButton
+              editor={editor}
+              onLoadingChange={(isLoading, message) =>
+                  setLoadingState({ isLoading, message: message || "" })
+              }
+              onCorrectionFound={(correction) => {
+                if (!correction) return;
+                setSuggestions([correction]);
+                setSuggestionType('spelling');
+                openDrawer();
+              }}
+          />
         </EditorToolBar>
         <RichTextEditor.Content />
       </RichTextEditor>
     <Drawer
         opened={isDrawerOpened}
         onClose={closeDrawer}
-        title={suggestionType === 'synonyms'
-            ? "Найденные синонимы"
-            : suggestionType === 'paraphrase'
-                ? "Варианты перефразирования"
-                : "Упрощенные варианты"}
+        title={suggestionType === 'spelling'
+            ? "Исправленный текст"
+            : suggestionType === 'synonyms'
+                ? "Найденные синонимы"
+                : suggestionType === 'paraphrase'
+                    ? "Варианты перефразирования"
+                    : "Упрощенные варианты"}
         position="right"
     >
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>

@@ -1,13 +1,15 @@
 import {notifications} from "@mantine/notifications";
 
 const fetchCompletions = async (prompt: string) => {
- //const model = 'deepseek/deepseek-r1:free';
-  const model = 'google/gemma-3-12b-it:free';
+  const model = 'deepseek/deepseek-r1:free';
+  //const model = 'google/gemma-3-12b-it:free';
+  //const token = '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'
+  const token = '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'
   try {
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
-        "Authorization": "Bearer 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",
+        "Authorization": `Bearer ${token}`,
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
@@ -89,8 +91,32 @@ const fetchSimplifications = async (text: string) => {
   return [];
 };
 
+const fetchSpellingCorrection = async (text: string) => {
+  try {
+    const prompt = `Исправь орфографические и пунктуационные ошибки в следующем русском тексте: "${text}". 
+Ответ пришли в формате JSON с ключом "correction". 
+Пример: { "correction": "Исправленный текст здесь" }. 
+Не добавляй комментарии, только исправленный текст.`;
+
+    const data = await fetchCompletions(prompt);
+    const content = data.choices[0].message.content;
+    const jsonMatch = content.match(/```json\n([\s\S]*?)\n```/);
+
+    if (!jsonMatch) throw new Error("Invalid response format");
+    return JSON.parse(jsonMatch[1]).correction as string;
+  } catch (e) {
+    notifications.show({
+      title: "Ошибка",
+      message: "Ошибка при проверке орфографии",
+      color: "red",
+    });
+    return text; // Возвращаем оригинальный текст в случае ошибки
+  }
+};
+
 export const OpenRouterApi = {
   fetchSynonyms,
   fetchParaphrases,
-  fetchSimplifications
+  fetchSimplifications,
+  fetchSpellingCorrection
 }
