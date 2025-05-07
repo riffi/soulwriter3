@@ -17,6 +17,9 @@ import {useEditorState} from "@/components/shared/RichEditor/hooks/useEditorStat
 import {Button, Drawer} from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import {CheckSynonymsButton} from "@/components/shared/RichEditor/toolbar/CheckSynonymsButton";
+import {CheckParaphraseButton} from "@/components/shared/RichEditor/toolbar/CheckParaphraseButton";
+import {IconCheck} from "@tabler/icons-react";
+import {CheckSimplifyButton} from "@/components/shared/RichEditor/toolbar/CheckSimplifyButton";
 
 
 export interface IRichEditorConstraints {
@@ -48,18 +51,26 @@ export const RichEditor = (props: ISceneRichTextEditorProps) => {
   const [scrollTop, setScrollTop] = useState(0);
 
   const [isDrawerOpened, { open: openDrawer, close: closeDrawer }] = useDisclosure(false);
-  const [synonyms, setSynonyms] = useState<string[]>([]);
-
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [suggestionType, setSuggestionType] =  useState<'synonyms' | 'paraphrase' | 'simplify'>('synonyms');
+  const [selectedText, setSelectedText] = useState('');
   const { isMobile } = useMedia();
 
-  const { editor } = useEditorState(props.initialContent || '', props.onContentChange);
+  const onSelectionChange = (from: number, to: number) =>{
+    setSelectedText(editor.state.doc.textBetween(from, to, " "));
+  }
+
+  const { editor } = useEditorState(props.initialContent || '', props.onContentChange, onSelectionChange);
   const warningGroups = useWarningGroups(editor, props.selectedGroup, props.onWarningsChange, props.setSelectedGroup);
+
 
   // Обработчик прокрутки
   const handleScroll = (event: React.UIEvent<HTMLDivElement>) => {
     props.onScroll?.(event.target.scrollTop)
     setScrollTop(event.target.scrollTop)
   }
+
+
 
   return (
   <>
@@ -81,7 +92,6 @@ export const RichEditor = (props: ISceneRichTextEditorProps) => {
             width: "100%"
           } : {}}
           onScroll={handleScroll}
-
       >
         <EditorToolBar editor={editor} mobileTop={mobileConstraints?.top} desktopTop={desktopConstraints?.top}>
           <CheckRepeatsButton
@@ -107,7 +117,32 @@ export const RichEditor = (props: ISceneRichTextEditorProps) => {
                   setLoadingState({ isLoading, message: message || "" })
               }
               onSynonymsFound={(synonyms) => {
-                setSynonyms(synonyms);
+                setSuggestions(synonyms);
+                setSuggestionType('synonyms');
+                openDrawer();
+              }}
+          />
+          <CheckParaphraseButton
+              editor={editor}
+              onLoadingChange={(isLoading, message) =>
+                  setLoadingState({ isLoading, message: message || "" })
+              }
+              onParaphrasesFound={(paraphrases) => {
+                if (!paraphrases || paraphrases.length === 0) return
+                setSuggestions(paraphrases);
+                setSuggestionType('paraphrase');
+                openDrawer();
+              }}
+          />
+          <CheckSimplifyButton
+              editor={editor}
+              onLoadingChange={(isLoading, message) =>
+                  setLoadingState({ isLoading, message: message || "" })
+              }
+              onSimplificationsFound={(simplifications) => {
+                if (!simplifications || simplifications.length === 0) return;
+                setSuggestions(simplifications);
+                setSuggestionType('simplify');
                 openDrawer();
               }}
           />
@@ -117,23 +152,55 @@ export const RichEditor = (props: ISceneRichTextEditorProps) => {
     <Drawer
         opened={isDrawerOpened}
         onClose={closeDrawer}
-        title="Найденные синонимы"
-        position="bottom"
-        size="25%"
+        title={suggestionType === 'synonyms'
+            ? "Найденные синонимы"
+            : suggestionType === 'paraphrase'
+                ? "Варианты перефразирования"
+                : "Упрощенные варианты"}
+        position="right"
     >
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-        {synonyms?.map((synonym) => (
-            <Button
-                key={synonym}
-                variant="outline"
-                size="xs"
-                onClick={() => {
-                  editor?.chain().insertContent(synonym).run();
-                  closeDrawer();
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {selectedText && (
+            <div style={{ padding: '12px', backgroundColor: '#fff3e0', borderRadius: 8, marginBottom: 16 }}>
+              <div style={{ fontSize: 12, color:"gray", marginBottom: 4 }}>
+                Оригинальный текст:
+              </div>
+            <div style={{ fontSize: 14, lineHeight: 1.4, wordBreak: 'break-word' }}> {selectedText} </div> </div>
+        )}
+        {suggestions?.map((suggestion) => (
+            <div
+                key={suggestion}
+                style={{
+                  padding: '8px 12px',
+                  borderRadius: 8,
+                  backgroundColor: '#f8f9fa',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'flex-start',
+                  gap: 8
                 }}
             >
-              {synonym}
-            </Button>
+        <pre style={{
+          margin: 0,
+          whiteSpace: 'pre-wrap',
+          wordBreak: 'break-word',
+          flexGrow: 1,
+          fontFamily: 'inherit'
+        }}>
+          {suggestion}
+        </pre>
+              <Button
+                  variant="subtle"
+                  size="xs"
+                  p={4}
+                  onClick={() => {
+                    editor?.chain().insertContent(suggestion).run();
+                    closeDrawer();
+                  }}
+              >
+                <IconCheck size={18} />
+              </Button>
+            </div>
         ))}
       </div>
     </Drawer>

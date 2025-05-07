@@ -30,22 +30,34 @@ const getEditorExtensions = () => [
   ClicheHighlighterExtension,
 ];
 
-// Функция создания конфигурации редактора
-const createEditorConfig = (content: string, onUpdate: (editor: Editor) => void) => ({
-  extensions: getEditorExtensions(),
-  content,
-  onUpdate: ({ editor }) => onUpdate(editor),
-  onBlur: ({ editor }) => editor.setEditable(false),
-  onTransaction: ({ editor, transaction }) => {
-    if (transaction.meta?.pointer) {
-      editor.setEditable(true);
-      editor.commands.focus();
-    }
-  }
-});
+
 
 // Хук для управления состоянием редактора
-export const useEditorState = (initialContent: string, onContentChange?: (contentHtml: string, contentText: string) => void) => {
+export const useEditorState = (
+    initialContent: string,
+    onContentChange?: (contentHtml: string, contentText: string) => void,
+    onSelectionChange?: (from: number, to: number) => void
+) => {
+
+  // Функция создания конфигурации редактора
+  const createEditorConfig = (content: string, onUpdate: (editor: Editor) => void) => ({
+    extensions: getEditorExtensions(),
+    content,
+    onUpdate: ({ editor }) => onUpdate(editor),
+    onBlur: ({ editor }) => editor.setEditable(false),
+    onTransaction: ({ editor, transaction }) => {
+      if (transaction.meta?.pointer) {
+        editor.setEditable(true);
+        editor.commands.focus();
+      }
+    },
+    onSelectionUpdate({ editor }) {
+      if (onSelectionChange){
+        onSelectionChange(editor.state.selection.from, editor.state.selection.to)
+      }
+    },
+  });
+
   const [localContent, setLocalContent] = useState(initialContent || '');
   const onContentChangeRef = useRef(onContentChange);
 
