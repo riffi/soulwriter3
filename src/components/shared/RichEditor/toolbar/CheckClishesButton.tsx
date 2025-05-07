@@ -2,12 +2,13 @@
 import { RichTextEditor } from "@mantine/tiptap";
 import { useState } from "react";
 import { PluginKey } from "prosemirror-state";
-import { IconClipboardCheck } from "@tabler/icons-react";
+import {IconClipboardCheck, IconHandStop, IconLayersLinked} from "@tabler/icons-react";
 import {
   clicheHighlighterKey
 } from "@/components/shared/RichEditor/plugins/ClisheHightligherExtension";
 import {IClicheWarning, IWarningGroup, IWarningKind} from "@/components/shared/RichEditor/types";
 import {generateUUID} from "@/utils/UUIDUtils";
+import {ActionIcon} from "@mantine/core";
 
 interface CheckClichesButtonProps {
   editor: any;
@@ -91,14 +92,11 @@ export const CheckClichesButton = ({ editor, onLoadingChange }: CheckClichesButt
           title="Проверить штампы"
           aria-pressed={isActive}
           disabled={isLoading}
-          style={{
-            backgroundColor: isActive ? '#e9ecef' : 'transparent',
-            color: isActive ? '#228be6' : 'inherit',
-            border: isActive ? '1px solid #ced4da' : '1px solid transparent',
-            padding: '6px 12px'
-          }}
       >
-        {isLoading ? 'Поиск...' : 'Штампы'}
+          <IconHandStop
+              size={20}
+              color={"gray"}
+          />
       </RichTextEditor.Control>
   );
 };

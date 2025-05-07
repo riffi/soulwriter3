@@ -4,9 +4,10 @@ import { PluginKey } from "prosemirror-state";
 import {
   RepeatHighlighterExtension, repeatHighlighterKey
 } from "@/components/shared/RichEditor/plugins/RepeatHighlighterExtension";
-import {IconBrandCampaignmonitor} from "@tabler/icons-react";
+import {IconArrowsDoubleSwNe, IconBrandCampaignmonitor, IconHandStop} from "@tabler/icons-react";
 import {IWarningKind, IRepeatWarning, IWarningGroup} from "@/components/shared/RichEditor/types";
 import {generateUUID} from "@/utils/UUIDUtils";
+import {ActionIcon} from "@mantine/core";
 
 interface CheckRepeatsButtonProps {
   editor: any;
@@ -90,18 +91,14 @@ export const CheckRepeatsButton = ({ editor, onLoadingChange }: CheckRepeatsButt
   return (
       <RichTextEditor.Control
           onClick={handleCheckRepeats}
-          icon={<IconBrandCampaignmonitor/>}
           title="Проверить повторения"
           aria-pressed={isActive}
           disabled={isLoading}
-          style={{
-            backgroundColor: isActive ? '#e9ecef' : 'transparent',
-            color: isActive ? '#228be6' : 'inherit',
-            border: isActive ? '1px solid #ced4da' : '1px solid transparent',
-            padding: '5px 10px'
-          }}
       >
-        {isLoading ? 'Обработка...' : 'Повторения'}
+          <IconArrowsDoubleSwNe
+              size={20}
+              color={"gray"}
+          />
       </RichTextEditor.Control>
   );
 };

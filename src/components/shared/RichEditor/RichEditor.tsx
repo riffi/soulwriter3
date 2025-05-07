@@ -14,7 +14,9 @@ import {
 } from "@/components/shared/RichEditor/types";
 import {useWarningGroups} from "@/components/shared/RichEditor/hooks/useWarningGroups";
 import {useEditorState} from "@/components/shared/RichEditor/hooks/useEditorState";
-
+import {Button, Drawer} from "@mantine/core";
+import { useDisclosure } from "@mantine/hooks";
+import {CheckSynonymsButton} from "@/components/shared/RichEditor/toolbar/CheckSynonymsButton";
 
 
 export interface IRichEditorConstraints {
@@ -44,6 +46,10 @@ export const RichEditor = (props: ISceneRichTextEditorProps) => {
   const desktopConstraints = props.desktopConstraints || {top: 0, bottom: 0};
 
   const [scrollTop, setScrollTop] = useState(0);
+
+  const [isDrawerOpened, { open: openDrawer, close: closeDrawer }] = useDisclosure(false);
+  const [synonyms, setSynonyms] = useState<string[]>([]);
+
   const { isMobile } = useMedia();
 
   const { editor } = useEditorState(props.initialContent || '', props.onContentChange);
@@ -95,11 +101,42 @@ export const RichEditor = (props: ISceneRichTextEditorProps) => {
                                   })
                               }
           />
-
+          <CheckSynonymsButton
+              editor={editor}
+              onLoadingChange={(isLoading, message) =>
+                  setLoadingState({ isLoading, message: message || "" })
+              }
+              onSynonymsFound={(synonyms) => {
+                setSynonyms(synonyms);
+                openDrawer();
+              }}
+          />
         </EditorToolBar>
         <RichTextEditor.Content />
       </RichTextEditor>
-
+    <Drawer
+        opened={isDrawerOpened}
+        onClose={closeDrawer}
+        title="Найденные синонимы"
+        position="bottom"
+        size="25%"
+    >
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        {synonyms?.map((synonym) => (
+            <Button
+                key={synonym}
+                variant="outline"
+                size="xs"
+                onClick={() => {
+                  editor?.chain().insertContent(synonym).run();
+                  closeDrawer();
+                }}
+            >
+              {synonym}
+            </Button>
+        ))}
+      </div>
+    </Drawer>
   </>
   );
 };
