@@ -86,7 +86,10 @@ export const InlineEdit: React.FC<InlineEditProps> = ({
               </Box>
               {editable && (
                   <Box
-                      sx={{
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        height: '100%',
                         cursor: 'pointer',
                         '&:hover': {
                           opacity: 0.8,

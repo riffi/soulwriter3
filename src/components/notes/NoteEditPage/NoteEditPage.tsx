@@ -1,6 +1,16 @@
 import {useCallback, useEffect, useState} from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import {TextInput, Button, Container, Group, LoadingOverlay, TagsInput, Paper, Drawer} from "@mantine/core";
+import {
+  TextInput,
+  Button,
+  Container,
+  Group,
+  LoadingOverlay,
+  TagsInput,
+  Paper,
+  Drawer,
+  Space
+} from "@mantine/core";
 import { RichEditor } from "@/components/shared/RichEditor/RichEditor";
 import { configDatabase } from "@/entities/configuratorDb";
 import { notifications } from '@mantine/notifications';
@@ -8,13 +18,13 @@ import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
 import { IconMenu2 } from "@tabler/icons-react";
 import {InlineEdit} from "@/components/shared/InlineEdit/InlineEdit";
 import {INote} from "@/entities/BookEntities";
+import {InlineTagEdit} from "@/components/shared/InlineEdit/InlineTagEdit";
 
 export const NoteEditPage = () => {
   const { uuid } = useParams();
   const navigate = useNavigate();
   const [note, setNote] = useState<INote | null>(null);
   const [loading, setLoading] = useState(true);
-  const [tags, setTags] = useState<string[]>([]);
   const {isMobile} = useMedia();
   const [drawerOpened, setDrawerOpened] = useState(false);
 
@@ -23,7 +33,6 @@ export const NoteEditPage = () => {
       const data = await configDatabase.notes.where('uuid').equals(uuid!).first();
       if (data) {
         setNote(data);
-        setTags(data.tags?.split(',') || []); // Преобразуем строку в массив
       }
       setLoading(false);
     };
@@ -35,7 +44,6 @@ export const NoteEditPage = () => {
 
     await configDatabase.notes.update(data.id!, {
       ...data,
-      tags: tags.join(',') // Преобразуем массив в строку
     });
     setNote(data);
   };
@@ -62,13 +70,17 @@ export const NoteEditPage = () => {
               await handleSave({ ...note!, title: value })
             }}
         />
+        <Space mb="sm"/>
 
-        <TagsInput
+        <InlineTagEdit
             label="Теги"
-            value={tags}
-            onChange={setTags}
+            value={note?.tags?.split(',') || []}
+            onChange={async (value) => {
+              await handleSave({ ...note!, tags: value.join(',') })
+            }}
             mb="md"
         />
+        <Space mb="md"/>
       </>
   );
   return (
@@ -80,7 +92,6 @@ export const NoteEditPage = () => {
                   <Button leftSection={<IconMenu2 size={18} />} onClick={() => setDrawerOpened(true)}>
                     Меню
                   </Button>
-                  <Button onClick={handleSave}>Сохранить</Button>
                 </Group>
 
                 <Drawer
@@ -104,14 +115,6 @@ export const NoteEditPage = () => {
               }
               onContentChange={handleContentChange}
           />
-
-          {!isMobile && (
-              <Group justify="flex-end" mt="md">
-                <Button onClick={handleSave}>
-                  Сохранить
-                </Button>
-              </Group>
-          )}
         </Paper>
       </Container>
   );

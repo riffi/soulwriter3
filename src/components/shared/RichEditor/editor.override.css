@@ -1,5 +1,6 @@
 .mantine-RichTextEditor-toolbar{
   --rte-sticky-offset: 0px  !important;
+  margin-left: 5px;
 }
 /* В вашем глобальном CSS */
 @media (max-width: 48em) {
@@ -9,6 +10,7 @@
   }
   .mantine-RichTextEditor-toolbar{
     --rte-sticky-offset: 0px  !important;
+    margin-left: 5px;
   }
 
 }
