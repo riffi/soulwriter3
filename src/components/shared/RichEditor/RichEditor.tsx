@@ -158,6 +158,7 @@ export const RichEditor = (props: ISceneRichTextEditorProps) => {
                 setSuggestionType('spelling');
                 openDrawer();
               }}
+              checkKind={'yandex-speller'}
           />
         </EditorToolBar>
         <RichTextEditor.Content />
@@ -208,6 +209,16 @@ export const RichEditor = (props: ISceneRichTextEditorProps) => {
                   variant="subtle"
                   size="xs"
                   p={4}
+                  style={{
+                    width: 120, // Фиксированная ширина
+                    height: 32, // Фиксированная высота
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    overflow: 'hidden',
+                    whiteSpace: 'nowrap',
+                    textOverflow: 'ellipsis',
+                  }}
                   onClick={() => {
                     editor?.chain().insertContent(suggestion).run();
                     closeDrawer();
