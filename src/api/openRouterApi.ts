@@ -1,11 +1,18 @@
 import {notifications} from "@mantine/notifications";
+import {configDatabase} from "@/entities/configuratorDb";
 
 const fetchCompletions = async (prompt: string) => {
-  //const model = 'deepseek/deepseek-r1:free';
   const model = 'google/gemma-3-12b-it:free';
-  //const token = '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'
-  const token = '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'
+
   try {
+    // Получаем текущие настройки из базы данных
+    const settings = await configDatabase.globalSettings.get(1);
+    const token = settings?.openRouterKey;
+
+    if (!token) {
+      throw new Error("OpenRouter API key not configured");
+    }
+
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -18,7 +25,10 @@ const fetchCompletions = async (prompt: string) => {
         reasoning: { exclude: true }
       })
     });
+
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
     return await response.json();
+
   } catch (error) {
     throw error;
   }
@@ -52,10 +62,10 @@ const fetchParaphrases = async (phrase: string) => {
     if (!jsonMatch) throw new Error("Invalid response format");
     return JSON.parse(jsonMatch[1]).paraphrases as string[];
   }
-  catch (e){
+  catch (error){
     notifications.show({
       title: "Ошибка",
-      message: "Ошибка при получении данных",
+      message: error instanceof Error ? error.message : "Неизвестная ошибка",
       color: "red",
     });
   }
@@ -81,10 +91,10 @@ const fetchSimplifications = async (text: string) => {
 
     if (!jsonMatch) throw new Error("Invalid response format");
     return JSON.parse(jsonMatch[1]).simplifications as string[];
-  } catch (e) {
+  } catch (error) {
     notifications.show({
       title: "Ошибка",
-      message: "Ошибка при упрощении текста",
+      message: error instanceof Error ? error.message : "Неизвестная ошибка",
       color: "red",
     });
   }
@@ -104,10 +114,10 @@ const fetchSpellingCorrection = async (text: string) => {
 
     if (!jsonMatch) throw new Error("Invalid response format");
     return JSON.parse(jsonMatch[1]).correction as string;
-  } catch (e) {
+  } catch (error) {
     notifications.show({
       title: "Ошибка",
-      message: "Ошибка при проверке орфографии",
+      message: error instanceof Error ? error.message : "Неизвестная ошибка",
       color: "red",
     });
     return text; // Возвращаем оригинальный текст в случае ошибки

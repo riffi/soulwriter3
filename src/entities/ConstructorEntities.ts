@@ -150,3 +150,9 @@ export interface IBlockTab{
   childBlockUuid?: string; // Ссылка на дочерний блок
   isDefault: number; // Является ли вкладка по умолчанию
 }
+
+
+export interface IGlobalSettings{
+  openRouterKey: string
+  incLuminApiKey: string
+}

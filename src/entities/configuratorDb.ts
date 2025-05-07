@@ -2,12 +2,14 @@
 import Dexie from 'dexie';
 import {IBook, INote, INoteGroup} from "@/entities/BookEntities";
 import {baseSchema, BlockAbstractDb} from "@/entities/BlockAbstractDb";
+import {IGlobalSettings} from "@/entities/ConstructorEntities";
 
 const schema = {
     ...baseSchema,
     books: '++id, &uuid, title, author, kind, configurationUuid',
     notes: '++id, &uuid, title, tags, noteGroupUuid',
     notesGroups: '++id, &uuid, title, parentNoteGroupUuid',
+    globalSettings: '++id',
 }
 
 class ConfigDatabase extends BlockAbstractDb {
@@ -15,7 +17,7 @@ class ConfigDatabase extends BlockAbstractDb {
   books!: Dexie.Table<IBook, number>;
   notes!: Dexie.Table<INote, number>;
   notesGroups!: Dexie.Table<INoteGroup, number>;
-
+  globalSettings!: Dexie.Table<IGlobalSettings, number>;
   constructor() {
     super('BlocksDatabase');
     this.version(2).stores(schema);
