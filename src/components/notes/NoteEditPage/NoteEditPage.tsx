@@ -9,16 +9,17 @@ import {
   TagsInput,
   Paper,
   Drawer,
-  Space
+  Space, ActionIcon
 } from "@mantine/core";
 import { RichEditor } from "@/components/shared/RichEditor/RichEditor";
 import { configDatabase } from "@/entities/configuratorDb";
-import { notifications } from '@mantine/notifications';
 import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
-import { IconMenu2 } from "@tabler/icons-react";
+import {IconEdit, IconMenu2, IconSettings} from "@tabler/icons-react";
 import {InlineEdit} from "@/components/shared/InlineEdit/InlineEdit";
 import {INote} from "@/entities/BookEntities";
 import {InlineTagEdit} from "@/components/shared/InlineEdit/InlineTagEdit";
+import {usePageTitle} from "@/providers/PageTitleProvider/PageTitleProvider";
+
 
 export const NoteEditPage = () => {
   const { uuid } = useParams();
@@ -27,6 +28,7 @@ export const NoteEditPage = () => {
   const [loading, setLoading] = useState(true);
   const {isMobile} = useMedia();
   const [drawerOpened, setDrawerOpened] = useState(false);
+  const { setPageTitle, setTitleElement } = usePageTitle();
 
   useEffect(() => {
     const loadNote = async () => {
@@ -38,6 +40,32 @@ export const NoteEditPage = () => {
     };
     loadNote();
   }, [uuid]);
+
+  // Управление заголовком через эффект
+  useEffect(() => {
+    if (note && isMobile) {
+      const headerElement = (
+          <Group justify="space-between" align="flex-end" flex={2} flexShrink={1}>
+            <div style={{ flexGrow: 1 }} /> {/* Пустой элемент для выталкивания кнопки */}
+            <ActionIcon
+                flexShrink={0}
+                variant="subtle"
+                color={"gray"}
+                onClick={() => setDrawerOpened(true)}
+            >
+              <IconSettings size={32} />
+            </ActionIcon>
+          </Group>
+      );
+      setTitleElement(headerElement);
+    } else {
+      setTitleElement(null);
+    }
+
+    return () => {
+      setTitleElement(null); // Очистка при размонтировании
+    };
+  }, [note, isMobile]); // Зависимости эффекта
 
   const handleSave = async (data: INote) => {
     if (!data) return;
@@ -88,12 +116,6 @@ export const NoteEditPage = () => {
         <Paper p={"md"}>
           {isMobile ? (
               <>
-                <Group justify="space-between">
-                  <Button leftSection={<IconMenu2 size={18} />} onClick={() => setDrawerOpened(true)}>
-                    Меню
-                  </Button>
-                </Group>
-
                 <Drawer
                     opened={drawerOpened}
                     onClose={() => setDrawerOpened(false)}
@@ -111,7 +133,7 @@ export const NoteEditPage = () => {
           <RichEditor
               initialContent={note?.body}
               mobileConstraints={
-                {top: 120, bottom: 0}
+                {top: 50, bottom: 0}
               }
               onContentChange={handleContentChange}
           />

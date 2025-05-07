@@ -33,7 +33,7 @@ export const BaseLayout = () =>  {
             }}
         >
           <AppShell.Header>
-            <Group h="100%" px="md" justify="flex-start" align="center">
+            <Group h="100%" px="md" justify="space-between" align="center" gap="0">
               <Burger
                   opened={opened}
                   onClick={toggle}
@@ -46,7 +46,6 @@ export const BaseLayout = () =>  {
                     {pageTitle}
                   </Text>
               )}
-              <div style={{width: 24}} /> {/* Пустой div для выравнивания */}
             </Group>
           </AppShell.Header>
 
