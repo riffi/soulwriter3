@@ -66,7 +66,7 @@ export const RichEditor = (props: ISceneRichTextEditorProps) => {
           variant="subtle"
           style={isMobile ? {
             position: "fixed",
-            zIndex:90,
+            zIndex:95,
             top: mobileConstraints.top + TOOLBAR_HEIGHT,
             bottom: mobileConstraints.bottom,
             overflow: "scroll",

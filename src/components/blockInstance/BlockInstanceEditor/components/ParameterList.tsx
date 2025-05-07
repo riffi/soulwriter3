@@ -131,7 +131,17 @@ export const ParameterList = ({
 
           function renderHeader(){
             return (
-            <Group justify="space-between" align="flex-start" w="100%" className={classes.paramHeader}>
+            <Group
+                justify="space-between"
+                align="flex-start"
+                w="100%"
+                className={
+                  (isEditing
+                      && editingParam === parameter?.uuid
+                      && parameter?.dataType === IBlockParameterDataType.text
+                  ) ? classes.paramHeaderEditingMode : classes.paramHeader
+                }
+            >
               <Text
                   fw={500}
                   color={"dimmed"}

@@ -61,12 +61,35 @@
   position: sticky;
   top: 0;
   background: #f3f3f3;
-  z-index: 190;
+  z-index: 90;
   padding-left: 10px;
   padding-top: 5px;
   border-bottom: 1px solid var(--mantine-color-gray-3);
 }
 
+.paramHeaderEditingMode {
+  position: sticky;
+  top: 0;
+  background: #f3f3f3;
+  z-index: 90;
+  padding-left: 10px;
+  padding-top: 5px;
+  border-bottom: 1px solid var(--mantine-color-gray-3);
+}
+
+@media (max-width: 768px) {
+  .paramHeaderEditingMode{
+    position: fixed;
+    top: 50px;
+    background: #f3f3f3;
+    z-index: 100;
+    left:0;
+    padding-left: 10px;
+    padding-top: 5px;
+    border-bottom: 1px solid var(--mantine-color-gray-3);
+  }
+
+}
 
 /* Контент */
 .contentWrapper {

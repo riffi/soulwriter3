@@ -64,6 +64,9 @@ export const NoteEditPage = () => {
 
         <RichEditor
             initialContent={note?.body}
+            mobileConstraints={
+              {top: 50, bottom: 0}
+            }
             onContentChange={(content) => setNote({ ...note!, body: content })}
         />
 
