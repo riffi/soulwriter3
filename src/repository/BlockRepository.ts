@@ -8,8 +8,7 @@ import {generateUUID} from "@/utils/UUIDUtils";
 import {useLiveQuery} from "dexie-react-hooks";
 import {BookDB, bookDb} from "@/entities/bookDb";
 import {BlockRelationRepository} from "@/repository/BlockRelationRepository";
-import {fetchAndPrepareTitleForms} from "@/api/TextApi";
-import {IBlockInstance} from "@/entities/BookEntities";
+import {InkLuminApi} from "@/api/inkLuminApi";
 import {BlockInstanceRepository} from "@/repository/BlockInstanceRepository";
 
 const getByUuid = async (db: BlockAbstractDb, blockUuid: string) => {
@@ -157,7 +156,7 @@ const appendDefaultTab = async (db: BlockAbstractDb, blockData: IBlock) => {
 
 // Создание блока
 const create = async (db: BlockAbstractDb, block: IBlock, isBookDb = false) => {
-  block.titleForms = await fetchAndPrepareTitleForms(block.title)
+  block.titleForms = await InkLuminApi.fetchAndPrepareTitleForms(block.title)
   block.uuid = generateUUID()
   const blockId = await db.blocks.add(block)
   const persistedBlockData = await db.blocks.get(blockId)
@@ -176,7 +175,7 @@ const update = async (db: BlockAbstractDb, block: IBlock, isBookDb = false) => {
   const prevBlockData = await getByUuid(db,block.uuid);
   // Если название блока изменилось, то обновляем формы названия
   if (prevBlockData && prevBlockData.title !== block.title){
-    block.titleForms = await fetchAndPrepareTitleForms(block.title)
+    block.titleForms = await InkLuminApi.fetchAndPrepareTitleForms(block.title)
   }
   // Если блок стал одиночным, а был неодиночным, то создаем инстанс блока, если он не имеет инстансов
   if (isBookDb

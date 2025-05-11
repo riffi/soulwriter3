@@ -6,16 +6,14 @@ import {
   IBookConfigurationVersion
 } from "@/entities/ConstructorEntities";
 import {configDatabase} from "@/entities/configuratorDb";
-import {generateUUID} from "@/utils/UUIDUtils";
-import {fetchAndPrepareTitleForms} from "@/api/TextApi";
+
+
 import {useDialog} from "@/providers/DialogProvider/DialogProvider";
 import {
   usePublishVersion
 } from "@/components/configurator/BookConfigurationEditForm/usePublishVersion";
 import {bookDb} from "@/entities/bookDb";
 import {BlockRepository} from "@/repository/BlockRepository";
-import {BlockInstanceRepository} from "@/repository/BlockInstanceRepository";
-import {IBlockInstance} from "@/entities/BookEntities";
 
 export const useBookConfigurationEditForm = (configurationUuid: string,
                                              bookUuid?: string,

@@ -9,6 +9,7 @@ import {
 import {IClicheWarning, IWarningGroup, IWarningKind} from "@/components/shared/RichEditor/types";
 import {generateUUID} from "@/utils/UUIDUtils";
 import {ActionIcon} from "@mantine/core";
+import {InkLuminApi} from "@/api/inkLuminApi";
 
 interface CheckClichesButtonProps {
   editor: any;
@@ -30,7 +31,8 @@ export const CheckClichesButton = ({ editor, onLoadingChange }: CheckClichesButt
     setIsLoading(true);
     try {
       const text = editor.getText();
-      const cliches = await fetchWarnings(text);
+      const cliches = await InkLuminApi.fetchCliches(text);
+      console.log(cliches)
       updateHighlights(cliches);
       setIsActive(true);
     } catch (error) {
@@ -41,36 +43,7 @@ export const CheckClichesButton = ({ editor, onLoadingChange }: CheckClichesButt
     }
   };
 
-  const fetchWarnings = async (text: string):Promise<IWarningGroup[]> => {
-    const response = await fetch('http://62.109.2.159:5123/analyze_cliches', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json; charset=utf-8',
-        'Authorization': 'Bearer 4f5d6e7a8b9c0d1e2f3a4b5c6d7e8f9a'
-      },
-      body: JSON.stringify({ text })
-    });
 
-    const data = await response.json();
-    const groups: IWarningGroup[] = [];
-    data.data.forEach((warning: IClicheWarning, index: number) => {
-      const group: IWarningGroup = {
-        groupIndex: String(index),
-        warningKind: IWarningKind.CLICHE,
-        warnings: [{
-          id: generateUUID(),
-          from: warning.start + 1,
-          to: warning.end + 1,
-          groupIndex: String(index),
-          text: warning.text,
-          kind: IWarningKind.CLICHE,
-          active: false
-        }]
-      }
-      groups.push(group);
-    })
-    return groups
-  };
 
   const updateHighlights = (warningGroups: IWarningGroup[]) => {
     const tr = editor.state.tr;

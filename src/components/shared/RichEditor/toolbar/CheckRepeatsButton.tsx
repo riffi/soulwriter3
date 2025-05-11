@@ -8,6 +8,7 @@ import {IconArrowsDoubleSwNe, IconBrandCampaignmonitor, IconHandStop} from "@tab
 import {IWarningKind, IRepeatWarning, IWarningGroup} from "@/components/shared/RichEditor/types";
 import {generateUUID} from "@/utils/UUIDUtils";
 import {ActionIcon} from "@mantine/core";
+import {InkLuminApi} from "@/api/inkLuminApi";
 
 interface CheckRepeatsButtonProps {
   editor: any;
@@ -29,7 +30,7 @@ export const CheckRepeatsButton = ({ editor, onLoadingChange }: CheckRepeatsButt
     setIsLoading(true);
     try {
       const text = editor.getText();
-      const warningGroups = await fetchWarnings(text);
+      const warningGroups = await InkLuminApi.fetchRepeats(text);
       updateHighlights(warningGroups);
       setIsActive(true);
     } catch (error) {
@@ -40,40 +41,6 @@ export const CheckRepeatsButton = ({ editor, onLoadingChange }: CheckRepeatsButt
     }
   };
 
-  const fetchWarnings = async (text: string): Promise<IWarningGroup[]> => {
-    const response = await fetch('http://62.109.2.159:5123/find_repeats', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json; charset=utf-8',
-        'Authorization': 'Bearer 4f5d6e7a8b9c0d1e2f3a4b5c6d7e8f9a'
-      },
-      body: JSON.stringify({
-        text,
-        window_size: 10,
-        window_size_tech_words: 1
-      })
-    });
-
-    const data = await response.json();
-    const groups: IWarningGroup[] = [];
-    data.repeatData.forEach((rawGroup, index) =>{
-          const group: IWarningGroup = {
-            groupIndex: String(index),
-            warningKind: IWarningKind.REPEAT,
-            warnings: rawGroup.repeats.map(repeat => ({
-                id: generateUUID(),
-                from: repeat.startPosition + 1,
-                to: repeat.endPosition + 2,
-                groupIndex: String(index),
-                text: repeat.word,
-                kind: IWarningKind.REPEAT
-            }))
-          }
-          groups.push(group);
-
-    });
-    return groups;
-  };
 
   const updateHighlights = (warningGroups: IWarningGroup[]) => {
     const tr = editor.state.tr;
