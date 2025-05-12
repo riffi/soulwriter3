@@ -22,6 +22,7 @@ import {useNoteManager} from "@/components/notes/hook/useNoteManager";
 import {NoteFolderSelector} from "@/components/notes/parts/NoteFolderSelector";
 import {useLiveQuery} from "dexie-react-hooks";
 import {configDatabase} from "@/entities/configuratorDb";
+import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
 
 interface NoteListProps {
   notes: INote[];
@@ -37,8 +38,10 @@ export const NoteList = ({ notes, onEdit, onDelete, onAdd, selectedFolderUuid, s
   const [selectedFolder, setSelectedFolder] = useState<string>('');
   const [sortType, setSortType] = useState<'date' | 'title'>('date');
   const [searchTags, setSearchTags] = useState<string[]>([]);
-  const { updateNote} = useNoteManager();
+  const [expandedNoteUuid, setExpandedNoteUuid] = useState<string | null>(null);
 
+  const { updateNote} = useNoteManager();
+  const {isMobile} = useMedia()
   // Получаем все группы заметок
   const allGroups = useLiveQuery(() => configDatabase.notesGroups.toArray(), [notes]) || [];
 
@@ -75,6 +78,11 @@ export const NoteList = ({ notes, onEdit, onDelete, onAdd, selectedFolderUuid, s
     setSearchTags(prev => [...prev, tag.toLowerCase()]);
   };
 
+  // Обработчик разворачивания тегов
+  const handleExpandTags = (noteUuid: string) => {
+    setExpandedNoteUuid(prev => prev === noteUuid ? null : noteUuid);
+  };
+
   const rows = [
     ...sortedNotes.map((note) => (
         <Table.Tr key={note.uuid}>
@@ -89,16 +97,31 @@ export const NoteList = ({ notes, onEdit, onDelete, onAdd, selectedFolderUuid, s
 
           <Table.Td>
             <Group gap={4}>
-              {note.tags?.split(',').map((tag, i) => (
+              {(expandedNoteUuid === note.uuid
+                      ? note.tags?.split(',')
+                      : note.tags?.split(',').slice(0, 2)
+              )?.map((tag, i) => (
                   <Badge
                       key={i}
                       variant="light"
                       style={{fontSize: "0.6rem", cursor: 'pointer'}}
                       onClick={() => handleTagClick(tag.trim())}
                   >
-                    {tag}
+                    {tag.trim()}
                   </Badge>
               ))}
+              {note.tags?.split(',').length > 2 && (
+                  <Badge
+                      variant="dot"
+                      style={{ cursor: 'pointer' }}
+                      onClick={() => handleExpandTags(note.uuid)}
+                  >
+                    {expandedNoteUuid === note.uuid
+                        ? 'Свернуть'
+                        : `+${note.tags.split(',').length - 2}`
+                    }
+                  </Badge>
+              )}
             </Group>
           </Table.Td>
 
@@ -171,6 +194,8 @@ export const NoteList = ({ notes, onEdit, onDelete, onAdd, selectedFolderUuid, s
       </Table>
       <Modal
           opened={!!movingNote}
+          fullScreen = {isMobile}
+          transitionProps={{ transition: 'slide-up' }}
           onClose={() => setMovingNote(null)}
           title="Переместить заметку"
       >
