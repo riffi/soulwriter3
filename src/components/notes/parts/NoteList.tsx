@@ -6,7 +6,6 @@ import {
   Text,
   Modal,
   Button,
-  Select,
   TagsInput, SegmentedControl, Drawer, Stack
 } from '@mantine/core';
 import {
@@ -23,6 +22,7 @@ import {NoteFolderSelector} from "@/components/notes/parts/NoteFolderSelector";
 import {useLiveQuery} from "dexie-react-hooks";
 import {configDatabase} from "@/entities/configuratorDb";
 import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
+import { useUiSettingsStore } from '@/stores/uiSettingsStore/uiSettingsStore';
 
 interface NoteListProps {
   notes: INote[];
@@ -36,7 +36,7 @@ interface NoteListProps {
 export const NoteList = ({ notes, onEdit, onDelete, onAdd, selectedFolderUuid, showFolderName  }: NoteListProps) => {
   const [movingNote, setMovingNote] = useState<INote | null>(null);
   const [selectedFolder, setSelectedFolder] = useState<string>('');
-  const [sortType, setSortType] = useState<'date' | 'title'>('date');
+  const { notesSortType, setNotesSortType } = useUiSettingsStore();
   const [searchTags, setSearchTags] = useState<string[]>([]);
   const [expandedNoteUuid, setExpandedNoteUuid] = useState<string | null>(null);
   const [openedDrawerId, setOpenedDrawerId] = useState<string | null>(null);
@@ -54,7 +54,7 @@ export const NoteList = ({ notes, onEdit, onDelete, onAdd, selectedFolderUuid, s
 
   // Сортируем заметки
   const sortedNotes = [...filteredNotes].sort((a, b) => {
-    if (sortType === 'title') {
+    if (notesSortType === 'title') {
       return (a.title || '').localeCompare(b.title || '');
     }
 
@@ -103,7 +103,12 @@ export const NoteList = ({ notes, onEdit, onDelete, onAdd, selectedFolderUuid, s
     ...sortedNotes.map((note) => (
         <Table.Tr key={note.uuid}>
           <Table.Td>
-            <Text>{note.title}</Text>
+            <Text
+                style={{cursor: 'pointer'}}
+                onClick={() => handleDrawerActions(note, 'edit')}
+            >
+              {note.title}
+            </Text>
             {note.noteGroupUuid && showFolderName && (
                 <Text size="xs" c="dimmed">
                   {allGroups.find((g) => g.uuid === note.noteGroupUuid)?.title || ''}
@@ -226,8 +231,8 @@ export const NoteList = ({ notes, onEdit, onDelete, onAdd, selectedFolderUuid, s
           />
 
           <SegmentedControl
-              value={sortType}
-              onChange={(value) => setSortType(value as 'date' | 'title')}
+              value={notesSortType}
+              onChange={(value) => setNotesSortType(value as 'date' | 'title')}
               data={[
                 {
                   value: 'date',

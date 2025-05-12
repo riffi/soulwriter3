@@ -25,9 +25,10 @@ import {NoteFolderSelector} from "@/components/notes/parts/NoteFolderSelector";
 import {INote, INoteGroup} from "@/entities/BookEntities";
 import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
 import {notifications} from "@mantine/notifications";
+import { useUiSettingsStore } from '@/stores/uiSettingsStore/uiSettingsStore';
 
 export const NoteManager = () => {
-  const [mode, setMode] = useState<'folders' | 'list'>('folders');
+  const { noteManagerMode, setNoteManagerMode } = useUiSettingsStore();
   const [groupModalOpen, setGroupModalOpen] = useState(false);
   const [noteModalOpen, setNoteModalOpen] = useState(false);
   const [currentGroup, setCurrentGroup] = useState<Partial<INoteGroup>>({});
@@ -80,7 +81,7 @@ export const NoteManager = () => {
   return (
       <Container style={{ background: '#fff', paddingBottom: '2rem', paddingTop: '2rem', minHeight: '60vh'}}>
         <Group justify="space-between" mb="md">
-          <Tabs value={mode} onChange={(v) => setMode(v as 'folders' | 'list')}>
+          <Tabs value={noteManagerMode} onChange={(v) => setNoteManagerMode(v as 'folders' | 'list')}>
             <Tabs.List>
               <Tabs.Tab value="folders" leftSection={<IconFolder size={16} />}>Папки</Tabs.Tab>
               <Tabs.Tab value="list" leftSection={<IconList size={16} />}>Список</Tabs.Tab>
@@ -94,11 +95,11 @@ export const NoteManager = () => {
                   : setNoteModalOpen(true)
               }
           >
-            {mode === 'folders' ? 'папка' : 'заметка'}
+            {noteManagerMode === 'folders' ? 'папка' : 'заметка'}
           </Button>
         </Group>
 
-        {mode === 'folders' ? (
+        {noteManagerMode === 'folders' ? (
             <FolderList
                 groups={groups}
                 onDelete={deleteNoteGroup}
