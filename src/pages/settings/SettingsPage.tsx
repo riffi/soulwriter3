@@ -1,4 +1,4 @@
-import SettingsConfigurator from "@/components/settings/SettingsConfigurator";
+import {SettingsConfigurator} from "@/components/settings/SettingsConfigurator";
 
 export const SettingsPage = () => {
   return (
