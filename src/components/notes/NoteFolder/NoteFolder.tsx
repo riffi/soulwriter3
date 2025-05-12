@@ -139,6 +139,13 @@ export const NoteFolder = () => {
             }}
             onNavigate={(uuid) => navigate(`/notes/folder/${uuid}`)}
             onAdd={() => setGroupModalOpen(true)}
+            onMove={(group, newParentUuid) => {
+              updateNoteGroup({
+                ...group,
+                parentUuid: newParentUuid
+              } as INoteGroup);
+            }}
+            currentFolderUuid={folderUuid}
         />
 
         <Space h="md" />

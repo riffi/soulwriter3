@@ -7,7 +7,10 @@ import { useDialog } from "@/providers/DialogProvider/DialogProvider";
 export const useNoteManager = () => {
   const { showDialog } = useDialog();
 
-  const getTopLevelGroups = () => configDatabase.notesGroups.where('parentUuid').equals("topLevel").toArray();
+  const getTopLevelGroups = () => configDatabase.notesGroups.filter(
+      (group) => group.parentUuid === undefined || group.parentUuid === "topLevel")
+      .toArray();
+
   const getChildGroups = (parentUuid: string) => configDatabase.notesGroups.where('parentUuid').equals(parentUuid).toArray();
 
   const getNotesByGroup = (groupUuid: string) => configDatabase.notes.where('noteGroupUuid').equals(groupUuid).toArray();
@@ -29,7 +32,10 @@ export const useNoteManager = () => {
     if (!group.id) {
       await createNoteGroup(group);
     } else {
-      await configDatabase.notesGroups.update(group.id, group);
+      // Сохраняем остальные свойства группы
+      const existingGroup = await configDatabase.notesGroups.get(group.id);
+      const updatedGroup = { ...existingGroup, ...group };
+      await configDatabase.notesGroups.update(group.id, updatedGroup);
     }
   };
 

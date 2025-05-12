@@ -11,7 +11,9 @@ interface NoteFolderSelectorProps {
   parentUuid?: string;
   level?: number;
   excludeUuid?: string;
+  includeTopLevel?: boolean; // Новый параметр
 }
+
 
 export const NoteFolderSelector = ({
                                      selectedUuid,
@@ -19,6 +21,7 @@ export const NoteFolderSelector = ({
                                      parentUuid = 'topLevel',
                                      level = 0,
                                      excludeUuid,
+                                     includeTopLevel = false,
                                    }: NoteFolderSelectorProps) => {
   const { getChildGroups } = useNoteManager();
   const [openedFolders, setOpenedFolders] = useState<Record<string, boolean>>({});
@@ -31,6 +34,22 @@ export const NoteFolderSelector = ({
 
   return (
       <Group gap={0} style={{ marginLeft: level * 20 }} wrap="nowrap" align="flex-start">
+        {includeTopLevel && level === 0 && (
+            <div key="topLevel" style={{ width: '100%' }}>
+              <Group
+                  justify="space-between"
+                  style={{ cursor: 'pointer', padding: '4px 8px' }}
+                  onClick={() => onSelect('topLevel')}
+                  bg={selectedUuid === 'topLevel' ? 'var(--mantine-color-blue-light)' : undefined}
+              >
+                <Group gap="xs">
+                  <IconFolder size={18} />
+                  <Text size="sm">Корневой уровень</Text>
+                </Group>
+              </Group>
+            </div>
+        )}
+
         {groups
         .filter(group => group.uuid !== excludeUuid)
         .map((group) => (
