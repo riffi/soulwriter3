@@ -104,7 +104,7 @@ export const NoteEditPage = () => {
             label="Теги"
             value={note?.tags?.split(',') || []}
             onChange={async (value) => {
-              await handleSave({ ...note!, tags: value.join(',') })
+              await handleSave({ ...note!, tags: value.join(',').toLowerCase() })
             }}
             mb="md"
         />

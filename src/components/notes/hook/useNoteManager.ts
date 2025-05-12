@@ -13,6 +13,7 @@ export const useNoteManager = () => {
   const getNotesByGroup = (groupUuid: string) => configDatabase.notes.where('noteGroupUuid').equals(groupUuid).toArray();
   const getAllNotes = () => configDatabase.notes.toArray();
 
+
   const createNoteGroup = async (group: Omit<INoteGroup, 'id'>) => {
     const newGroup = {
       ...group,
@@ -76,6 +77,11 @@ export const useNoteManager = () => {
     return newNote;
   };
 
+  const updateNote = async (note: INote) => {
+    if (!note.id) return;
+    await configDatabase.notes.update(note.id, note);
+  };
+
   const deleteNote = async (uuid: string) => {
     await configDatabase.notes.where('uuid').equals(uuid).delete();
   };
@@ -89,6 +95,7 @@ export const useNoteManager = () => {
     updateNoteGroup,
     deleteNoteGroup,
     createNote,
-    deleteNote
+    deleteNote,
+    updateNote
   };
 };

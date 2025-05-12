@@ -21,6 +21,8 @@ import { useNoteManager } from '@/components/notes/hook/useNoteManager';
 import { useLiveQuery } from 'dexie-react-hooks';
 import {FolderList} from "@/components/notes/parts/FolderList";
 import {NoteList} from "@/components/notes/parts/NoteList";
+import {NoteFolderSelector} from "@/components/notes/parts/NoteFolderSelector";
+import {INote, INoteGroup} from "@/entities/BookEntities";
 
 export const NoteManager = () => {
   const [mode, setMode] = useState<'folders' | 'list'>('folders');
@@ -45,7 +47,7 @@ export const NoteManager = () => {
   const navigate = useNavigate();
 
   const filteredNotes = allNotes.filter(note => {
-    const noteTags = note.tags?.split(',') || [];
+    const noteTags = note.tags?.toLowerCase().split(',') || [];
     return searchTags.every(tag => noteTags.includes(tag));
   });
 
@@ -64,7 +66,7 @@ export const NoteManager = () => {
   };
 
   const handleTagClick = (tag: string) => {
-    setSearchTags(prev => [...prev, tag]);
+    setSearchTags(prev => [...prev, tag.toLowerCase()]);
   };
 
   return (
@@ -104,7 +106,7 @@ export const NoteManager = () => {
               <TagsInput
                   placeholder="Поиск по тегам"
                   value={searchTags}
-                  onChange={setSearchTags}
+                  onChange={(tags) => setSearchTags(tags.map(t => t.toLowerCase()))}
                   style={{ width: 300, marginBottom: 16 }}
                   clearable
               />
@@ -114,6 +116,7 @@ export const NoteManager = () => {
                   onEdit={(note) => navigate(`/notes/edit/${note.uuid}`)}
                   onAdd={() => setNoteModalOpen(true)}
                   onTagClick={handleTagClick}
+                  showFolderName
               />
             </>
         )}
@@ -147,18 +150,15 @@ export const NoteManager = () => {
               onChange={(e) => setCurrentNote({ ...currentNote, title: e.target.value })}
               mb="md"
           />
-          <Select
-              label="Папка"
-              data={groups.map(g => ({ value: g.uuid, label: g.title }))}
-              value={currentNote.noteGroupUuid}
-              onChange={(value) => setCurrentNote({ ...currentNote, noteGroupUuid: value || '' })}
-              mb="md"
+          <NoteFolderSelector
+              selectedUuid={currentNote?.noteGroupUuid}
+              onSelect={(value) => setCurrentNote({ ...currentNote, noteGroupUuid: value })}
           />
           <TagsInput
               label="Теги"
               placeholder="Введите теги через запятую"
               value={currentNote.tags?.split(',') || []}
-              onChange={(tags) => setCurrentNote({ ...currentNote, tags: tags.join(',') })}
+              onChange={(tags) => setCurrentNote({ ...currentNote, tags: tags.join(',').toLowerCase() })}
           />
           <Button fullWidth mt="md" onClick={handleNoteSubmit}>
             Создать

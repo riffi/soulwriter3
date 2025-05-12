@@ -1,6 +1,11 @@
-import { Table, Group, Badge, ActionIcon, Text } from '@mantine/core';
-import {IconEdit, IconTrash} from '@tabler/icons-react';
+import {Table, Group, Badge, ActionIcon, Text, Modal, Button} from '@mantine/core';
+import {IconEdit, IconTrash, IconArrowRightCircleFilled} from '@tabler/icons-react';
 import { INote } from '@/entities/BookEntities';
+import {useState} from "react";
+import {useNoteManager} from "@/components/notes/hook/useNoteManager";
+import {NoteFolderSelector} from "@/components/notes/parts/NoteFolderSelector";
+import {useLiveQuery} from "dexie-react-hooks";
+import {configDatabase} from "@/entities/configuratorDb";
 
 interface NoteListProps {
   notes: INote[];
@@ -8,14 +13,39 @@ interface NoteListProps {
   onDelete: (uuid: string) => void;
   onAdd: () => void;
   onTagClick: (tag: string) => void;
+  showFolderName?: boolean;
+  selectedFolderUuid?: string;
 }
 
-export const NoteList = ({ notes, onEdit, onDelete, onAdd, onTagClick }: NoteListProps) => {
+export const NoteList = ({ notes, onEdit, onDelete, onAdd, onTagClick, selectedFolderUuid, showFolderName  }: NoteListProps) => {
+  const [movingNote, setMovingNote] = useState<INote | null>(null);
+  const [selectedFolder, setSelectedFolder] = useState<string>('');
+  const { updateNote} = useNoteManager();
+
+  // Получаем все группы заметок
+  const allGroups = useLiveQuery(() => configDatabase.notesGroups.toArray(), [notes]) || [];
+
+  const handleMoveNote = async () => {
+    if (movingNote && selectedFolder) {
+      await updateNote({
+        ...movingNote,
+        noteGroupUuid: selectedFolder
+      });
+      setMovingNote(null);
+      setSelectedFolder('');
+    }
+  };
+
   const rows = [
     ...notes.map((note) => (
         <Table.Tr key={note.uuid}>
           <Table.Td>
             <Text>{note.title}</Text>
+            {note.noteGroupUuid && showFolderName && (
+                <Text size="xs" c="dimmed">
+                  {allGroups.find((g) => g.uuid === note.noteGroupUuid)?.title || ''}
+                </Text>
+            )}
           </Table.Td>
 
           <Table.Td>
@@ -42,6 +72,12 @@ export const NoteList = ({ notes, onEdit, onDelete, onAdd, onTagClick }: NoteLis
                 <IconEdit size={16} />
               </ActionIcon>
               <ActionIcon
+                  variant="subtle"
+                  onClick={() => setMovingNote(note)}
+              >
+                <IconArrowRightCircleFilled size={16} />
+              </ActionIcon>
+              <ActionIcon
                   color="red"
                   variant="subtle"
                   onClick={() => onDelete(note.uuid)}
@@ -56,6 +92,7 @@ export const NoteList = ({ notes, onEdit, onDelete, onAdd, onTagClick }: NoteLis
 
 
   return (
+      <>
       <Table highlightOnHover>
         <Table.Thead>
           <Table.Tr>
@@ -66,5 +103,25 @@ export const NoteList = ({ notes, onEdit, onDelete, onAdd, onTagClick }: NoteLis
         </Table.Thead>
         <Table.Tbody>{rows}</Table.Tbody>
       </Table>
+      <Modal
+          opened={!!movingNote}
+          onClose={() => setMovingNote(null)}
+          title="Переместить заметку"
+      >
+        <NoteFolderSelector
+            selectedUuid={selectedFolder}
+            onSelect={setSelectedFolder}
+            excludeUuid={selectedFolderUuid}
+        />
+        <Button
+            fullWidth
+            mt="md"
+            onClick={handleMoveNote}
+            disabled={!selectedFolder}
+        >
+          Переместить
+        </Button>
+      </Modal>
+      </>
   );
 };

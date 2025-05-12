@@ -23,7 +23,7 @@ import {FolderList} from "@/components/notes/parts/FolderList";
 import {NoteList} from "@/components/notes/parts/NoteList";
 
 export const NoteFolder = () => {
-  const { folderId } = useParams();
+  const { folderUuid } = useParams();
   const navigate = useNavigate();
   const [groupModalOpen, setGroupModalOpen] = useState(false);
   const [noteModalOpen, setNoteModalOpen] = useState(false);
@@ -41,11 +41,11 @@ export const NoteFolder = () => {
     deleteNote
   } = useNoteManager();
 
-  const groups = useLiveQuery(() => getChildGroups(folderId || ''), [folderId]) || [];
-  const notes = useLiveQuery(() => getNotesByGroup(folderId || ''), [folderId]) || [];
+  const groups = useLiveQuery(() => getChildGroups(folderUuid || ''), [folderUuid]) || [];
+  const notes = useLiveQuery(() => getNotesByGroup(folderUuid || ''), [folderUuid]) || [];
   const currentFolder = useLiveQuery(() =>
-      configDatabase.notesGroups.where('uuid').equals(folderId || '').first()
-  , [folderId]);
+      configDatabase.notesGroups.where('uuid').equals(folderUuid || '').first()
+  , [folderUuid]);
 
   // Сбор хлебных крошек при изменении текущей папки
   useEffect(() => {
@@ -78,7 +78,7 @@ export const NoteFolder = () => {
     if (currentGroup.title) {
       const groupData = {
         ...currentGroup,
-        parentUuid: folderId
+        parentUuid: folderUuid
       };
       await (currentGroup.uuid ? updateNoteGroup : createNoteGroup)(groupData as INoteGroup);
       setGroupModalOpen(false);
@@ -89,7 +89,7 @@ export const NoteFolder = () => {
     if (currentNote.title) {
       await createNote({
         ...currentNote,
-        noteGroupUuid: folderId || ''
+        noteGroupUuid: folderUuid || ''
       } as Omit<INote, 'id' | 'uuid'>);
       setNoteModalOpen(false);
     }
@@ -150,6 +150,8 @@ export const NoteFolder = () => {
               onDelete={deleteNote}
               onEdit={(note) => navigate(`/notes/edit/${note.uuid}`)}
               onAdd={() => setNoteModalOpen(true)}
+              selectedFolderUuid={folderUuid}
+              onTagClick={(tag) => {}}
           />
         </>
         }
@@ -187,7 +189,7 @@ export const NoteFolder = () => {
               label="Теги"
               placeholder="Введите теги через запятую"
               value={currentNote.tags?.split(',') || []}
-              onChange={(tags) => setCurrentNote({ ...currentNote, tags: tags.join(',') })}
+              onChange={(tags) => setCurrentNote({ ...currentNote, tags: tags.join(',').toLowerCase() })}
           />
           <Button fullWidth mt="md" onClick={handleNoteSubmit}>
             Создать
