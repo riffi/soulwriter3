@@ -16,7 +16,7 @@ export const InlineEdit: React.FC<InlineEditProps> = ({
                                                         value,
                                                         onChange,
                                                         label = '',
-                                                        placeholder = 'Click to edit',
+                                                        placeholder = 'Нажмите, чтобы редактировать',
                                                         textProps,
                                                         inputProps,
                                                         editable = true,

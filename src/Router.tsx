@@ -9,7 +9,7 @@ import {ScenesPage} from "@/pages/scenes/ScenesPage";
 import {SceneCard} from "@/pages/scenes/SceneCard";
 import {BlockInstanceManagerPage} from "@/pages/books/BlockInstanceManagerPage";
 import {BlockInstancePage} from "@/pages/books/BlockInstancePage";
-import SettingsPage from "@/pages/settings/SettingsPage";
+import {SettingsPage} from "@/pages/settings/SettingsPage";
 import {NoteManager} from "@/components/notes/NoteManager/NoteManager";
 import {NoteEditPage} from "@/components/notes/NoteEditPage/NoteEditPage";
 const router = createBrowserRouter([
