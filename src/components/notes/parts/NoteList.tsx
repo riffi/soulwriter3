@@ -1,47 +1,57 @@
 import { Table, Group, Badge, ActionIcon, Text } from '@mantine/core';
-import { IconEdit, IconTrash } from '@tabler/icons-react';
+import {IconEdit, IconTrash} from '@tabler/icons-react';
 import { INote } from '@/entities/BookEntities';
 
 interface NoteListProps {
   notes: INote[];
   onEdit: (note: INote) => void;
   onDelete: (uuid: string) => void;
+  onAdd: () => void;
 }
 
-export const NoteList = ({ notes, onEdit, onDelete }: NoteListProps) => {
-  const rows = notes.map((note) => (
-      <Table.Tr key={note.uuid}>
-        <Table.Td>
-          <Text fw={500}>{note.title}</Text>
-        </Table.Td>
+export const NoteList = ({ notes, onEdit, onDelete,onAdd  }: NoteListProps) => {
+  const rows = [
+    ...notes.map((note) => (
+        <Table.Tr key={note.uuid}>
+          <Table.Td>
+            <Text>{note.title}</Text>
+          </Table.Td>
 
-        <Table.Td>
-          <Group gap={4}>
-            {note.tags?.split(',').map((tag, i) => (
-                <Badge key={i} variant="light">{tag}</Badge>
-            ))}
-          </Group>
-        </Table.Td>
+          <Table.Td>
+            <Group gap={4}>
+              {note.tags?.split(',').map((tag, i) => (
+                  <Badge
+                      key={i}
+                      variant="light"
+                      style={{fontSize: "0.6rem"}}
+                  >
+                    {tag}
+                  </Badge>
+              ))}
+            </Group>
+          </Table.Td>
 
-        <Table.Td>
-          <Group gap={4} justify="flex-end">
-            <ActionIcon
-                variant="subtle"
-                onClick={() => onEdit(note)}
-            >
-              <IconEdit size={16} />
-            </ActionIcon>
-            <ActionIcon
-                color="red"
-                variant="subtle"
-                onClick={() => onDelete(note.uuid)}
-            >
-              <IconTrash size={16} />
-            </ActionIcon>
-          </Group>
-        </Table.Td>
-      </Table.Tr>
-  ));
+          <Table.Td>
+            <Group gap={4} justify="flex-end">
+              <ActionIcon
+                  variant="subtle"
+                  onClick={() => onEdit(note)}
+              >
+                <IconEdit size={16} />
+              </ActionIcon>
+              <ActionIcon
+                  color="red"
+                  variant="subtle"
+                  onClick={() => onDelete(note.uuid)}
+              >
+                <IconTrash size={16} />
+              </ActionIcon>
+            </Group>
+          </Table.Td>
+        </Table.Tr>
+    ))
+  ];
+
 
   return (
       <Table highlightOnHover>

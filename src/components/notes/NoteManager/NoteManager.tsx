@@ -93,6 +93,7 @@ export const NoteManager = () => {
                   setGroupModalOpen(true);
                 }}
                 onNavigate={(uuid) => navigate(`/notes/folder/${uuid}`)}
+                onAdd={() => setGroupModalOpen(true)}
             />
         ) : (
             <>
@@ -106,6 +107,7 @@ export const NoteManager = () => {
                   notes={filteredNotes}
                   onDelete={deleteNote}
                   onEdit={(note) => navigate(`/notes/edit/${note.uuid}`)}
+                  onAdd={() => setNoteModalOpen(true)}
               />
             </>
         )}

@@ -12,7 +12,7 @@ import {
   TextInput,
   Breadcrumbs,
   Divider,
-  Badge
+  Badge, Space, TagsInput
 } from '@mantine/core';
 import { IconFolder, IconPlus, IconEdit, IconTrash, IconNote } from '@tabler/icons-react';
 import { useNoteManager } from '../NoteManager/hook/useNoteManager';
@@ -114,7 +114,6 @@ export const NoteFolder = () => {
         </Breadcrumbs>
 
         <Group justify="space-between" mb="md">
-          <Text size="xl">Папка: {currentFolder?.title}</Text>
           <Group>
             <Button
                 leftSection={<IconPlus size={16} />}
@@ -139,14 +138,16 @@ export const NoteFolder = () => {
               setGroupModalOpen(true);
             }}
             onNavigate={(uuid) => navigate(`/notes/folder/${uuid}`)}
+            onAdd={() => setGroupModalOpen(true)}
         />
 
-        {groups?.length > 0 && <Divider my="xl" />}
-
+        <Space h="md" />
+        <Text size="lg" mb="md">Заметки</Text>
         <NoteList
             notes={notes}
             onDelete={deleteNote}
             onEdit={(note) => navigate(`/notes/edit/${note.uuid}`)}
+            onAdd={() => setNoteModalOpen(true)}
         />
 
         {/* Модалка папки */}
@@ -177,6 +178,12 @@ export const NoteFolder = () => {
               value={currentNote.title || ''}
               onChange={(e) => setCurrentNote({ ...currentNote, title: e.target.value })}
               mb="md"
+          />
+          <TagsInput
+              label="Теги"
+              placeholder="Введите теги через запятую"
+              value={currentNote.tags?.split(',') || []}
+              onChange={(tags) => setCurrentNote({ ...currentNote, tags: tags.join(',') })}
           />
           <Button fullWidth mt="md" onClick={handleNoteSubmit}>
             Создать
