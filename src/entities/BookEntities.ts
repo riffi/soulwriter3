@@ -59,7 +59,7 @@ export interface INoteGroup{
   uuid?: string;
   title: string;
   order?: number;
-  parentNoteGroupUuid?: string;
+  parentUuid?: string;
 }
 
 export interface INote{

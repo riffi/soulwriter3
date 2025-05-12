@@ -8,7 +8,7 @@ const schema = {
     ...baseSchema,
     books: '++id, &uuid, title, author, kind, configurationUuid',
     notes: '++id, &uuid, title, tags, noteGroupUuid',
-    notesGroups: '++id, &uuid, title, parentNoteGroupUuid',
+    notesGroups: '++id, &uuid, title, parentUuid',
     globalSettings: '++id',
     openRouterModels: '++id, modelName',
 }

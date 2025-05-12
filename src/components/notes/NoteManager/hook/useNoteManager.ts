@@ -7,43 +7,46 @@ import { useDialog } from "@/providers/DialogProvider/DialogProvider";
 export const useNoteManager = () => {
   const { showDialog } = useDialog();
 
-  const noteGroups = useLiveQuery<INoteGroup[]>(() =>
-      configDatabase.notesGroups.toArray(), []
-  );
+  const getTopLevelGroups = () => configDatabase.notesGroups.where('parentUuid').equals("topLevel").toArray();
+  const getChildGroups = (parentUuid: string) => configDatabase.notesGroups.where('parentUuid').equals(parentUuid).toArray();
 
-  const notes = useLiveQuery<INote[]>(() =>
-      configDatabase.notes.toArray(), []
-  );
+  const getNotesByGroup = (groupUuid: string) => configDatabase.notes.where('noteGroupUuid').equals(groupUuid).toArray();
+  const getAllNotes = () => configDatabase.notes.toArray();
 
   const createNoteGroup = async (group: Omit<INoteGroup, 'id'>) => {
     const newGroup = {
       ...group,
       uuid: generateUUID(),
-      order: noteGroups?.length || 0
+      parentUuid: group.parentUuid || "topLevel",
+      order: await configDatabase.notesGroups.count()
     };
     await configDatabase.notesGroups.add(newGroup as INoteGroup);
     return newGroup;
   };
 
   const updateNoteGroup = async (group: INoteGroup) => {
-    if (!group.id){
-      await createNoteGroup(group)
-    }
-    else{
-      await configDatabase.notesGroups.update(group.id!, group);
+    if (!group.id) {
+      await createNoteGroup(group);
+    } else {
+      await configDatabase.notesGroups.update(group.id, group);
     }
   };
 
   const deleteNoteGroup = async (uuid: string) => {
-    const confirm = await showDialog("Подтверждение", "Удалить группу и все заметки в ней?");
+    const confirm = await showDialog("Подтверждение", "Удалить группу и все вложенные элементы?");
     if (!confirm) return;
 
-    const groupNotes = await configDatabase.notes
-    .where('noteGroupUuid').equals(uuid)
-    .toArray();
+    await configDatabase.transaction('rw', configDatabase.notesGroups, configDatabase.notes, async () => {
+      // Удаляем вложенные папки
+      const childGroups = await configDatabase.notesGroups.where('parentUuid').equals(uuid).toArray();
+      await Promise.all(childGroups.map(g => deleteNoteGroup(g.uuid)));
 
-    await configDatabase.notes.bulkDelete(groupNotes.map(n => n.id!));
-    await configDatabase.notesGroups.where('uuid').equals(uuid).delete();
+      // Удаляем заметки
+      await configDatabase.notes.where('noteGroupUuid').equals(uuid).delete();
+
+      // Удаляем саму папку
+      await configDatabase.notesGroups.where('uuid').equals(uuid).delete();
+    });
   };
 
   const createNote = async (note: Omit<INote, 'id' | 'uuid'>) => {
@@ -51,15 +54,10 @@ export const useNoteManager = () => {
       ...note,
       uuid: generateUUID(),
       body: '',
-      tags: note.tags.join(','), // Преобразуем массив в строку
-      order: notes?.length || 0
+      order: await configDatabase.notes.count()
     };
     await configDatabase.notes.add(newNote as INote);
     return newNote;
-  };
-
-  const updateNote = async (note: INote) => {
-    await configDatabase.notes.update(note.id!, note);
   };
 
   const deleteNote = async (uuid: string) => {
@@ -67,13 +65,14 @@ export const useNoteManager = () => {
   };
 
   return {
-    noteGroups: noteGroups || [],
-    notes: notes || [],
+    getTopLevelGroups,
+    getChildGroups,
+    getNotesByGroup,
+    getAllNotes,
     createNoteGroup,
     updateNoteGroup,
     deleteNoteGroup,
     createNote,
-    updateNote,
     deleteNote
   };
 };

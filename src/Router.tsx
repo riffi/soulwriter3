@@ -12,6 +12,7 @@ import {BlockInstancePage} from "@/pages/books/BlockInstancePage";
 import {SettingsPage} from "@/pages/settings/SettingsPage";
 import {NoteManager} from "@/components/notes/NoteManager/NoteManager";
 import {NoteEditPage} from "@/components/notes/NoteEditPage/NoteEditPage";
+import {NoteFolder} from "@/components/notes/NoteFolder/NoteFolder";
 const router = createBrowserRouter([
   {
     path: '/',
@@ -56,6 +57,10 @@ const router = createBrowserRouter([
       {
         path: '/notes',
         element: <NoteManager /> as ReactNode,
+      },
+      {
+        path: '/notes/folder/:folderId',
+        element: <NoteFolder /> as ReactNode,
       },
       {
         path: '/notes/edit/:uuid',
