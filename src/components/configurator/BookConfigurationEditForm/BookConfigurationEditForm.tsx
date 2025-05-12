@@ -275,10 +275,6 @@ export const BookConfigurationEditForm = (props: IBookConfigurationEditFormProps
             configurationUuid={props.bookConfigurationUuid}
             onClose={() => setIsModalOpened(false)}
             onSave={(c) => {
-              notifications.show({
-                title: 'Блок',
-                message: `Блок "${c.title}" сохранён`,
-              })
               saveBlock(c)
             }}
             initialData={currentBlock}

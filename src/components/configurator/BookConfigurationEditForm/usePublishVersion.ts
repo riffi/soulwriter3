@@ -1,11 +1,12 @@
 import {generateUUID} from "@/utils/UUIDUtils";
 import {
   IBlock, IBlockParameter, IBlockParameterDataType, IBlockParameterGroup,
-  IBlockParameterPossibleValue,
+  IBlockParameterPossibleValue, IBlockTab,
   IBookConfiguration,
   IBookConfigurationVersion
 } from "@/entities/ConstructorEntities";
 import {configDatabase} from "@/entities/configuratorDb";
+
 
 
 export const usePublishVersion = (
@@ -42,9 +43,9 @@ export const usePublishVersion = (
 // Копировать блоки из текущей версии в новую
   const copyBlocksToNewVersion = async (currentVersionUuid: string, newVersionUuid: string) => {
     const blocks = await configDatabase.blocks
-    .where('configurationVersionUuid')
-    .equals(currentVersionUuid)
-    .toArray();
+      .where('configurationVersionUuid')
+      .equals(currentVersionUuid)
+      .toArray();
 
     for (const block of blocks) {
       await copyBlockWithParameters(block, newVersionUuid);
@@ -57,14 +58,33 @@ export const usePublishVersion = (
     const newBlock = await createNewBlock(block, newVersionUuid);
 
     const paramGroups = await configDatabase.blockParameterGroups
-    .where('blockUuid')
-    .equals(originalBlockUuid)
-    .toArray();
+      .where('blockUuid')
+      .equals(originalBlockUuid)
+      .toArray();
 
     for (const group of paramGroups) {
       await copyParameterGroupWithParameters(group, newBlock.uuid);
     }
+
+    const BlockTabs = await configDatabase.blockTabs
+      .where('blockUuid')
+      .equals(originalBlockUuid)
+      .toArray();
+    for (const tab of BlockTabs) {
+      await createNewBlockTab(tab, newBlock.uuid);
+    }
   };
+
+  async function createNewBlockTab(tab: IBlockTab, uuid: string | undefined) {
+    const newTab: IBlockTab = {
+      ...tab,
+      id: undefined,
+      uuid: generateUUID(),
+      blockUuid: uuid,
+    }
+    await configDatabase.blockTabs.add(newTab);
+  }
+
 
 // Создать новый блок
   const createNewBlock = async (block: IBlock, newVersionUuid: string) => {
@@ -91,7 +111,7 @@ export const usePublishVersion = (
     .toArray();
 
     for (const param of parameters) {
-      await copyParameterWithPossibleValues(param, newGroup.uuid);
+      await copyParameterWithPossibleValues(param, newGroup.uuid, newBlockUuid);
     }
   };
 
@@ -110,8 +130,8 @@ export const usePublishVersion = (
   };
 
 // Копировать параметр с возможными значениями (для dropdown)
-  const copyParameterWithPossibleValues = async (param: IBlockParameter, newGroupUuid: string) => {
-    const newParam = await createNewParameter(param, newGroupUuid);
+  const copyParameterWithPossibleValues = async (param: IBlockParameter, newGroupUuid: string, newBlockUuid: string) => {
+    const newParam = await createNewParameter(param, newGroupUuid, newBlockUuid);
 
     if (param.dataType === IBlockParameterDataType.dropdown) {
       await copyPossibleValues(param.uuid, newParam.uuid);
@@ -119,12 +139,13 @@ export const usePublishVersion = (
   };
 
 // Создать новый параметр
-  const createNewParameter = async (param: IBlockParameter, newGroupUuid: string) => {
+  const createNewParameter = async (param: IBlockParameter, newGroupUuid: string, newBlockUuid: string) => {
     const newParam: IBlockParameter = {
       ...param,
       id: undefined,
       uuid: generateUUID(),
-      groupUuid: newGroupUuid
+      groupUuid: newGroupUuid,
+      blockUuid: newBlockUuid
     };
 
     const newParamId = await configDatabase.blockParameters.add(newParam);

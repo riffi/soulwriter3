@@ -55,7 +55,7 @@ export const useBookConfigurationEditForm = (configurationUuid: string,
 
   // Cохранение блока
   const saveBlock = async (blockData: IBlock) => {
-      await BlockRepository.save(db, blockData, isBookDb)
+     await BlockRepository.save(db, blockData, isBookDb)
   }
 
   // Удаление блока и связанных с ним данных

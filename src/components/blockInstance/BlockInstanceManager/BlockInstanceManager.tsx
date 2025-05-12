@@ -197,7 +197,6 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
               </Group>
             </div>
         )}
-
         <Table highlightOnHover className={classes.table}>
           <Table.Thead>
             <Table.Tr>

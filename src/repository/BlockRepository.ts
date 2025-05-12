@@ -10,6 +10,7 @@ import {BookDB, bookDb} from "@/entities/bookDb";
 import {BlockRelationRepository} from "@/repository/BlockRelationRepository";
 import {InkLuminApi} from "@/api/inkLuminApi";
 import {BlockInstanceRepository} from "@/repository/BlockInstanceRepository";
+import {notifications} from "@mantine/notifications";
 
 const getByUuid = async (db: BlockAbstractDb, blockUuid: string) => {
   return db.blocks.where("uuid").equals(blockUuid).first()
@@ -156,18 +157,18 @@ const appendDefaultTab = async (db: BlockAbstractDb, blockData: IBlock) => {
 
 // Создание блока
 const create = async (db: BlockAbstractDb, block: IBlock, isBookDb = false) => {
-  block.titleForms = await InkLuminApi.fetchAndPrepareTitleForms(block.title)
-  block.uuid = generateUUID()
-  const blockId = await db.blocks.add(block)
-  const persistedBlockData = await db.blocks.get(blockId)
-  await appendDefaultParamGroup(db, persistedBlockData)
-  await appendDefaultTab(db, persistedBlockData)
+    block.titleForms = await InkLuminApi.fetchAndPrepareTitleForms(block.title)
+    block.uuid = generateUUID()
+    const blockId = await db.blocks.add(block)
+    const persistedBlockData = await db.blocks.get(blockId)
+    await appendDefaultParamGroup(db, persistedBlockData)
+    await appendDefaultTab(db, persistedBlockData)
 
-  // Если это книжная БД, создаем инстанс блока
-  if (isBookDb && block.structureKind === 'single'){
-    await BlockInstanceRepository.createSingleInstance(db as BookDB, block)
-  }
-  return block.uuid
+    // Если это книжная БД, создаем инстанс блока
+    if (isBookDb && block.structureKind === 'single'){
+      await BlockInstanceRepository.createSingleInstance(db as BookDB, block)
+    }
+    return block.uuid
 }
 
 // Обновление данных блока
@@ -192,13 +193,27 @@ const update = async (db: BlockAbstractDb, block: IBlock, isBookDb = false) => {
 
 // Сохранение блока
 const save = async (db: BlockAbstractDb, block: IBlock, isBookDb = false) => {
-  // Создание блока
-  if (!block.uuid) {
-    await create(db, block, isBookDb)
-  }
+  try {
+    // Создание блока
+    if (!block.uuid) {
+      await create(db, block, isBookDb)
+    }
 
-  // Обновление блока
-  await update(db, block, isBookDb)
+    // Обновление блока
+    await update(db, block, isBookDb)
+
+    notifications.show({
+      title: "Успешно",
+      message: "Блок сохранен",
+    });
+  }
+  catch (error){
+      notifications.show({
+        title: "Ошибка запроса",
+        message: error instanceof Error ? error.message : "Ошибка",
+        color: "red",
+      });
+  }
 }
 
 const remove = async (db: BlockAbstractDb, block: IBlock) => {

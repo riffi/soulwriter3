@@ -50,22 +50,7 @@ export const fetchAndPrepareTitleForms = async (phrase: string): Promise<IBlockT
       plural: formsData.plural_nomn || ''
     };
   } catch (error) {
-    console.error('Error fetching word forms:', error);
-    notifications.show({
-      title: "Ошибка запроса",
-      message: error instanceof Error ? error.message : "Ошибка при получении форм слова",
-      color: "red",
-    });
-
-    return {
-      nominative: phrase,
-      genitive: '',
-      dative: '',
-      accusative: '',
-      instrumental: '',
-      prepositional: '',
-      plural: ''
-    };
+    throw new Error(error.message);
   }
 };
 
