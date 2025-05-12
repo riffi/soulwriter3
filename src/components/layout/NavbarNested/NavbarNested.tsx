@@ -211,24 +211,6 @@ export const NavbarNested = ({ toggleNavbar }: { toggleNavbar?: () => void }) =>
             <Logo style={{ width: 150 }} />
             <Code fw={700}>{config.version}</Code>
           </Group>
-
-          {selectedBook && (
-              <>
-                <Space h={20} />
-                <Group gap="xs" align="center">
-                  <IconBooks
-                      size={18}
-                      style={{
-                        color: 'var(--mantine-color-blue-6)',
-                        marginRight: 'var(--mantine-spacing-xs)',
-                      }}
-                  />
-                  <Text fw={700} truncate style={{ maxWidth: 180 }}>
-                    {selectedBook.title}
-                  </Text>
-                </Group>
-              </>
-          )}
         </div>
 
         <ScrollArea className={classes.links}>
@@ -242,6 +224,21 @@ export const NavbarNested = ({ toggleNavbar }: { toggleNavbar?: () => void }) =>
                 />
             ))}
             <Divider my="sm" />
+            {/* Добавьте блок с названием книги здесь */}
+            {selectedBook && (
+                <Box px="md" py="sm">
+                  <Group gap="xs" align="center">
+                    <IconBooks
+                        size={18}
+                        color="var(--mantine-color-blue-6)"
+                        style={{ marginRight: "var(--mantine-spacing-xs)" }}
+                    />
+                    <Text fw={700} truncate style={{ maxWidth: 180 }}>
+                      {selectedBook.title}
+                    </Text>
+                  </Group>
+                </Box>
+            )}
             {dynamicItems.map((item) => (
                 <NavLink
                     {...item}
