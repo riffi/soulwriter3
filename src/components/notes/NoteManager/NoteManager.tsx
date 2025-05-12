@@ -17,7 +17,7 @@ import {
   Tabs
 } from '@mantine/core';
 import { IconFolder, IconList, IconPlus, IconEdit, IconTrash, IconNote } from '@tabler/icons-react';
-import { useNoteManager } from './hook/useNoteManager';
+import { useNoteManager } from '@/components/notes/hook/useNoteManager';
 import { useLiveQuery } from 'dexie-react-hooks';
 import {FolderList} from "@/components/notes/parts/FolderList";
 import {NoteList} from "@/components/notes/parts/NoteList";
@@ -63,6 +63,10 @@ export const NoteManager = () => {
     }
   };
 
+  const handleTagClick = (tag: string) => {
+    setSearchTags(prev => [...prev, tag]);
+  };
+
   return (
       <Container style={{ background: '#fff', paddingBottom: '2rem', paddingTop: '2rem', minHeight: '60vh'}}>
         <Group justify="space-between" mb="md">
@@ -102,12 +106,14 @@ export const NoteManager = () => {
                   value={searchTags}
                   onChange={setSearchTags}
                   style={{ width: 300, marginBottom: 16 }}
+                  clearable
               />
               <NoteList
                   notes={filteredNotes}
                   onDelete={deleteNote}
                   onEdit={(note) => navigate(`/notes/edit/${note.uuid}`)}
                   onAdd={() => setNoteModalOpen(true)}
+                  onTagClick={handleTagClick}
               />
             </>
         )}

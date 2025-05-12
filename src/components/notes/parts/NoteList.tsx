@@ -7,9 +7,10 @@ interface NoteListProps {
   onEdit: (note: INote) => void;
   onDelete: (uuid: string) => void;
   onAdd: () => void;
+  onTagClick: (tag: string) => void;
 }
 
-export const NoteList = ({ notes, onEdit, onDelete,onAdd  }: NoteListProps) => {
+export const NoteList = ({ notes, onEdit, onDelete, onAdd, onTagClick }: NoteListProps) => {
   const rows = [
     ...notes.map((note) => (
         <Table.Tr key={note.uuid}>
@@ -23,7 +24,8 @@ export const NoteList = ({ notes, onEdit, onDelete,onAdd  }: NoteListProps) => {
                   <Badge
                       key={i}
                       variant="light"
-                      style={{fontSize: "0.6rem"}}
+                      style={{fontSize: "0.6rem", cursor: 'pointer'}}
+                      onClick={() => onTagClick(tag.trim())}
                   >
                     {tag}
                   </Badge>

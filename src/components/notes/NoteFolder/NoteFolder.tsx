@@ -15,7 +15,7 @@ import {
   Badge, Space, TagsInput
 } from '@mantine/core';
 import { IconFolder, IconPlus, IconEdit, IconTrash, IconNote } from '@tabler/icons-react';
-import { useNoteManager } from '../NoteManager/hook/useNoteManager';
+import { useNoteManager } from '@/components/notes/hook/useNoteManager';
 import { useLiveQuery } from 'dexie-react-hooks';
 import {INote, INoteGroup} from "@/entities/BookEntities";
 import {configDatabase} from "@/entities/configuratorDb";
@@ -142,13 +142,17 @@ export const NoteFolder = () => {
         />
 
         <Space h="md" />
-        <Text size="lg" mb="md">Заметки</Text>
-        <NoteList
-            notes={notes}
-            onDelete={deleteNote}
-            onEdit={(note) => navigate(`/notes/edit/${note.uuid}`)}
-            onAdd={() => setNoteModalOpen(true)}
-        />
+        {notes?.length === 0 && <></>}
+        {notes?.length > 0 && <>
+          <Text size="lg" mb="md">Заметки</Text>
+          <NoteList
+              notes={notes}
+              onDelete={deleteNote}
+              onEdit={(note) => navigate(`/notes/edit/${note.uuid}`)}
+              onAdd={() => setNoteModalOpen(true)}
+          />
+        </>
+        }
 
         {/* Модалка папки */}
         <Modal
