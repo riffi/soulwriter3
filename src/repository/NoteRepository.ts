@@ -15,7 +15,12 @@ const getByUuid = async (db: configDatabase, uuid: string) => {
   return await db.notes.where('uuid').equals(uuid).first();
 }
 
+const remove = async (db: configDatabase, uuid: string) => {
+  return await db.notes.where('uuid').equals(uuid).delete();
+}
+
 export const NoteRepository = {
   save,
-  getByUuid
+  getByUuid,
+  remove
 }

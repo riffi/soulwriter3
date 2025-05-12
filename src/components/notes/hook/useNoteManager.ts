@@ -41,7 +41,7 @@ export const useNoteManager = () => {
   };
 
   const deleteNoteGroup = async (uuid: string) => {
-    const confirm = await showDialog("Подтверждение", "Удалить группу и все вложенные элементы?");
+    const confirm = await showDialog("Подтверждение", "Удалить папку и все вложенные элементы?");
     if (!confirm) return;
 
     const deleteChildrenRecursively = async (parentUuid: string) => {
@@ -90,7 +90,9 @@ export const useNoteManager = () => {
   };
 
   const deleteNote = async (uuid: string) => {
-    await configDatabase.notes.where('uuid').equals(uuid).delete();
+    const confirm = await showDialog("Подтверждение", "Удалить заметку?");
+    if (!confirm) return;
+    await NoteRepository.remove(configDatabase, uuid);
   };
 
   return {

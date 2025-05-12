@@ -23,6 +23,8 @@ import {FolderList} from "@/components/notes/parts/FolderList";
 import {NoteList} from "@/components/notes/parts/NoteList";
 import {NoteFolderSelector} from "@/components/notes/parts/NoteFolderSelector";
 import {INote, INoteGroup} from "@/entities/BookEntities";
+import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
+import {notifications} from "@mantine/notifications";
 
 export const NoteManager = () => {
   const [mode, setMode] = useState<'folders' | 'list'>('folders');
@@ -30,6 +32,7 @@ export const NoteManager = () => {
   const [noteModalOpen, setNoteModalOpen] = useState(false);
   const [currentGroup, setCurrentGroup] = useState<Partial<INoteGroup>>({});
   const [currentNote, setCurrentNote] = useState<Partial<INote>>({});
+  const {isMobile} = useMedia()
 
   const {
     getTopLevelGroups,
@@ -54,6 +57,18 @@ export const NoteManager = () => {
   };
 
   const handleNoteSubmit = async () => {
+    if (!currentNote.noteGroupUuid) {
+      notifications.show({
+        "message": "Выберите папку",
+        color: 'orange',
+      })
+    }
+    if (!currentNote.title) {
+      notifications.show({
+        "message": "Введите название заметки",
+        color: 'orange',
+      })
+    }
     if (currentNote.title && currentNote.noteGroupUuid) {
       await createNote(currentNote as Omit<INote, 'id' | 'uuid'>);
       setNoteModalOpen(false);
@@ -115,11 +130,13 @@ export const NoteManager = () => {
         {/* Модалка папки */}
         <Modal
             opened={groupModalOpen}
+            fullScreen = {isMobile}
             onClose={() => setGroupModalOpen(false)}
             title={currentGroup.uuid ? 'Редактировать папку' : 'Новая папка'}
         >
           <TextInput
               label="Название"
+              placeholder="Название папки"
               value={currentGroup.title || ''}
               onChange={(e) => setCurrentGroup({ ...currentGroup, title: e.target.value })}
               mb="md"
@@ -132,15 +149,25 @@ export const NoteManager = () => {
         {/* Модалка заметки */}
         <Modal
             opened={noteModalOpen}
+            fullScreen = {isMobile}
             onClose={() => setNoteModalOpen(false)}
             title="Новая заметка"
         >
           <TextInput
               label="Название"
               value={currentNote.title || ''}
+              placeholder="Название заметки"
               onChange={(e) => setCurrentNote({ ...currentNote, title: e.target.value })}
               mb="md"
           />
+          <Text
+            style={{
+              fontWeight: '500',
+              fontSize: '0.8rem',
+            }}
+          >
+            Папка
+          </Text>
           <NoteFolderSelector
               selectedUuid={currentNote?.noteGroupUuid}
               onSelect={(value) => setCurrentNote({ ...currentNote, noteGroupUuid: value })}
