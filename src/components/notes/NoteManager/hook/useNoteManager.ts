@@ -36,15 +36,31 @@ export const useNoteManager = () => {
     const confirm = await showDialog("Подтверждение", "Удалить группу и все вложенные элементы?");
     if (!confirm) return;
 
+    const deleteChildrenRecursively = async (parentUuid: string) => {
+      // Удаляем все дочерние группы (включая глубокую вложенность)
+      const childGroups = await configDatabase.notesGroups
+        .where('parentUuid')
+        .equals(parentUuid)
+        .toArray();
+
+      // Рекурсивно удаляем всех потомков
+      await Promise.all(childGroups.map(async (group) => {
+        await deleteChildrenRecursively(group.uuid); // Сначала удаляем вложенные элементы
+        await configDatabase.notesGroups.delete(group.id);
+      }));
+
+      // Удаляем все заметки в текущей группе
+      await configDatabase.notes
+        .where('noteGroupUuid')
+        .equals(parentUuid)
+        .delete();
+    };
+
     await configDatabase.transaction('rw', configDatabase.notesGroups, configDatabase.notes, async () => {
-      // Удаляем вложенные папки
-      const childGroups = await configDatabase.notesGroups.where('parentUuid').equals(uuid).toArray();
-      await Promise.all(childGroups.map(g => deleteNoteGroup(g.uuid)));
+      // Удаляем всю иерархию
+      await deleteChildrenRecursively(uuid);
 
-      // Удаляем заметки
-      await configDatabase.notes.where('noteGroupUuid').equals(uuid).delete();
-
-      // Удаляем саму папку
+      // Удаляем саму целевую папку
       await configDatabase.notesGroups.where('uuid').equals(uuid).delete();
     });
   };

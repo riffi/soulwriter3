@@ -19,6 +19,8 @@ import { useNoteManager } from '../NoteManager/hook/useNoteManager';
 import { useLiveQuery } from 'dexie-react-hooks';
 import {INote, INoteGroup} from "@/entities/BookEntities";
 import {configDatabase} from "@/entities/configuratorDb";
+import {FolderList} from "@/components/notes/parts/FolderList";
+import {NoteList} from "@/components/notes/parts/NoteList";
 
 export const NoteFolder = () => {
   const { folderId } = useParams();
@@ -94,7 +96,7 @@ export const NoteFolder = () => {
   };
 
   return (
-      <Container>
+      <Container style={{ background: '#fff',paddingBottom: '2rem', minHeight: '60vh'}}>
         <Breadcrumbs mb="md">
           <Button variant="subtle" onClick={() => navigate('/notes')}>
             Главная
@@ -118,86 +120,34 @@ export const NoteFolder = () => {
                 leftSection={<IconPlus size={16} />}
                 onClick={() => setGroupModalOpen(true)}
             >
-              Новая подпапка
+              подпапка
             </Button>
             <Button
                 leftSection={<IconPlus size={16} />}
                 onClick={() => setNoteModalOpen(true)}
             >
-              Новая заметка
+              заметка
             </Button>
           </Group>
         </Group>
 
-        <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }}>
-          {groups.map(group => (
-              <Card key={group.uuid} shadow="sm" padding="lg">
-                <Group justify="space-between">
-                  <Group>
-                    <IconFolder size={24} />
-                    <Text fw={500}>{group.title}</Text>
-                  </Group>
-                  <Group gap={4}>
-                    <ActionIcon
-                        variant="subtle"
-                        onClick={() => navigate(`/notes/folder/${group.uuid}`)}
-                    >
-                      <IconNote size={16} />
-                    </ActionIcon>
-                    <ActionIcon
-                        variant="subtle"
-                        onClick={() => {
-                          setCurrentGroup(group);
-                          setGroupModalOpen(true);
-                        }}
-                    >
-                      <IconEdit size={16} />
-                    </ActionIcon>
-                    <ActionIcon
-                        color="red"
-                        variant="subtle"
-                        onClick={() => deleteNoteGroup(group.uuid)}
-                    >
-                      <IconTrash size={16} />
-                    </ActionIcon>
-                  </Group>
-                </Group>
-              </Card>
-          ))}
-        </SimpleGrid>
+        <FolderList
+            groups={groups}
+            onDelete={deleteNoteGroup}
+            onEdit={(group) => {
+              setCurrentGroup(group);
+              setGroupModalOpen(true);
+            }}
+            onNavigate={(uuid) => navigate(`/notes/folder/${uuid}`)}
+        />
 
-        <Divider my="xl" />
+        {groups?.length > 0 && <Divider my="xl" />}
 
-        <SimpleGrid cols={{ base: 1, sm: 2 }}>
-          {notes.map(note => (
-              <Card key={note.uuid} shadow="sm" padding="lg">
-                <Group justify="space-between">
-                  <Text fw={500}>{note.title}</Text>
-                  <Group gap={4}>
-                    <ActionIcon
-                        variant="subtle"
-                        onClick={() => navigate(`/notes/edit/${note.uuid}`)}
-                    >
-                      <IconEdit size={16} />
-                    </ActionIcon>
-                    <ActionIcon
-                        color="red"
-                        variant="subtle"
-                        onClick={() => deleteNote(note.uuid)}
-                    >
-                      <IconTrash size={16} />
-                    </ActionIcon>
-                  </Group>
-                </Group>
-                <Divider my="sm" />
-                <Group gap={4}>
-                  {note.tags?.split(',').map((tag, i) => (
-                      <Badge key={i} variant="light">{tag}</Badge>
-                  ))}
-                </Group>
-              </Card>
-          ))}
-        </SimpleGrid>
+        <NoteList
+            notes={notes}
+            onDelete={deleteNote}
+            onEdit={(note) => navigate(`/notes/edit/${note.uuid}`)}
+        />
 
         {/* Модалка папки */}
         <Modal

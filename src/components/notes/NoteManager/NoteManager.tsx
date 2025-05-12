@@ -19,6 +19,8 @@ import {
 import { IconFolder, IconList, IconPlus, IconEdit, IconTrash, IconNote } from '@tabler/icons-react';
 import { useNoteManager } from './hook/useNoteManager';
 import { useLiveQuery } from 'dexie-react-hooks';
+import {FolderList} from "@/components/notes/parts/FolderList";
+import {NoteList} from "@/components/notes/parts/NoteList";
 
 export const NoteManager = () => {
   const [mode, setMode] = useState<'folders' | 'list'>('folders');
@@ -62,7 +64,7 @@ export const NoteManager = () => {
   };
 
   return (
-      <Container>
+      <Container style={{ background: '#fff', paddingBottom: '2rem', paddingTop: '2rem', minHeight: '60vh'}}>
         <Group justify="space-between" mb="md">
           <Tabs value={mode} onChange={(v) => setMode(v as 'folders' | 'list')}>
             <Tabs.List>
@@ -71,15 +73,6 @@ export const NoteManager = () => {
             </Tabs.List>
           </Tabs>
 
-          {mode === 'list' && (
-              <TagsInput
-                  placeholder="Поиск по тегам"
-                  value={searchTags}
-                  onChange={setSearchTags}
-                  style={{ width: 300 }}
-              />
-          )}
-
           <Button
               leftSection={<IconPlus size={16} />}
               onClick={() => mode === 'folders'
@@ -87,78 +80,34 @@ export const NoteManager = () => {
                   : setNoteModalOpen(true)
               }
           >
-            {mode === 'folders' ? 'Новая папка' : 'Новая заметка'}
+            {mode === 'folders' ? 'папка' : 'заметка'}
           </Button>
         </Group>
 
         {mode === 'folders' ? (
-            <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }}>
-              {groups.map(group => (
-                  <Card key={group.uuid} shadow="sm" padding="lg">
-                    <Group justify="space-between">
-                      <Group>
-                        <IconFolder size={24} />
-                        <Text fw={500}>{group.title}</Text>
-                      </Group>
-                      <Group gap={4}>
-                        <ActionIcon
-                            variant="subtle"
-                            onClick={() => navigate(`/notes/folder/${group.uuid}`)}
-                        >
-                          <IconNote size={16} />
-                        </ActionIcon>
-                        <ActionIcon
-                            variant="subtle"
-                            onClick={() => {
-                              setCurrentGroup(group);
-                              setGroupModalOpen(true);
-                            }}
-                        >
-                          <IconEdit size={16} />
-                        </ActionIcon>
-                        <ActionIcon
-                            color="red"
-                            variant="subtle"
-                            onClick={() => deleteNoteGroup(group.uuid)}
-                        >
-                          <IconTrash size={16} />
-                        </ActionIcon>
-                      </Group>
-                    </Group>
-                  </Card>
-              ))}
-            </SimpleGrid>
+            <FolderList
+                groups={groups}
+                onDelete={deleteNoteGroup}
+                onEdit={(group) => {
+                  setCurrentGroup(group);
+                  setGroupModalOpen(true);
+                }}
+                onNavigate={(uuid) => navigate(`/notes/folder/${uuid}`)}
+            />
         ) : (
-            <SimpleGrid cols={{ base: 1, sm: 2 }}>
-              {filteredNotes.map(note => (
-                  <Card key={note.uuid} shadow="sm" padding="lg">
-                    <Group justify="space-between">
-                      <Text fw={500}>{note.title}</Text>
-                      <Group gap={4}>
-                        <ActionIcon
-                            variant="subtle"
-                            onClick={() => navigate(`/notes/edit/${note.uuid}`)}
-                        >
-                          <IconEdit size={16} />
-                        </ActionIcon>
-                        <ActionIcon
-                            color="red"
-                            variant="subtle"
-                            onClick={() => deleteNote(note.uuid)}
-                        >
-                          <IconTrash size={16} />
-                        </ActionIcon>
-                      </Group>
-                    </Group>
-                    <Divider my="sm" />
-                    <Group gap={4}>
-                      {note.tags?.split(',').map((tag, i) => (
-                          <Badge key={i} variant="light">{tag}</Badge>
-                      ))}
-                    </Group>
-                  </Card>
-              ))}
-            </SimpleGrid>
+            <>
+              <TagsInput
+                  placeholder="Поиск по тегам"
+                  value={searchTags}
+                  onChange={setSearchTags}
+                  style={{ width: 300, marginBottom: 16 }}
+              />
+              <NoteList
+                  notes={filteredNotes}
+                  onDelete={deleteNote}
+                  onEdit={(note) => navigate(`/notes/edit/${note.uuid}`)}
+              />
+            </>
         )}
 
         {/* Модалка папки */}
