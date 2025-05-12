@@ -132,12 +132,11 @@ export const NoteList = ({ notes, onEdit, onDelete, onAdd, selectedFolderUuid, s
 
   return (
       <>
-        <Group justify="space-between" mb="md">
+        <Group justify="space-between" mb="md" wrap="nowrap" style={{ flexDirection: 'row' }}>
           <TagsInput
               placeholder="Поиск по тегам"
               value={searchTags}
               onChange={(tags) => setSearchTags(tags.map(t => t.toLowerCase()))}
-              style={{ width: 300 }}
               clearable
           />
 
