@@ -114,9 +114,6 @@ export const NoteList = ({ notes, onEdit, onDelete, onAdd, selectedFolderUuid, s
                   {allGroups.find((g) => g.uuid === note.noteGroupUuid)?.title || ''}
                 </Text>
             )}
-          </Table.Td>
-
-          <Table.Td>
             <Group gap={4}>
               {(expandedNoteUuid === note.uuid
                       ? note.tags?.split(',')
@@ -253,8 +250,7 @@ export const NoteList = ({ notes, onEdit, onDelete, onAdd, selectedFolderUuid, s
         <Table.Thead>
           <Table.Tr>
             <Table.Th>Название</Table.Th>
-            <Table.Th>Теги</Table.Th>
-            <Table.Th style={{ textAlign: 'right' }}>Действия</Table.Th>
+            <Table.Th style={{ textAlign: 'right' }}></Table.Th>
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody>{rows}</Table.Tbody>

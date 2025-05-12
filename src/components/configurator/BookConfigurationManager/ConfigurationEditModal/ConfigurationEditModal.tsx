@@ -1,6 +1,7 @@
 import {Button, Group, Modal, TextInput} from "@mantine/core";
 import { useForm } from '@mantine/form';
 import {IBookConfiguration} from "@/entities/ConstructorEntities";
+import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
 
 interface IConfigurationEditModalProps {
   isOpen: boolean
@@ -9,6 +10,8 @@ interface IConfigurationEditModalProps {
   initialData?: IBookConfiguration
 }
 export const ConfigurationEditModal  = (props: IConfigurationEditModalProps) => {
+
+  const {isMobile} = useMedia();
 
   const form = useForm({
     mode: 'uncontrolled',
@@ -21,6 +24,7 @@ export const ConfigurationEditModal  = (props: IConfigurationEditModalProps) => 
           title={props.initialData?.uuid ? 'Редактирование конфигурации' : 'Создание новой конфигурации'}
           opened={props.isOpen}
           onClose={props.onClose}
+          fullScreen={isMobile}
       >
         <form onSubmit={
           form.onSubmit((values) => {

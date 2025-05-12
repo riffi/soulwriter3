@@ -9,6 +9,7 @@ import {useEffect, useState} from "react";
 import {createOptionsFromEnums} from "@/utils/enumUtils";
 import {IconTrash} from "@tabler/icons-react";
 import {useBlockEditForm} from "@/components/configurator/BlockEditForm/useBlockEditForm";
+import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
 
 interface IBlockEditModalProps {
   isOpen: boolean
@@ -23,6 +24,7 @@ export const ParamEditModal  = (props: IBlockEditModalProps) => {
   const [possibleValues, setPossibleValues] = useState<string[]>([]);
   const [newValue, setNewValue] = useState('');
   const { loadPossibleValues, savePossibleValues } = useBlockEditForm(props.blockUuid, props.bookUuid);
+  const {isMobile} = useMedia();
 
   const form = useForm<IBlockParameter>({
     mode: 'controlled',
@@ -80,6 +82,7 @@ export const ParamEditModal  = (props: IBlockEditModalProps) => {
           opened={props.isOpen}
           onClose={props.onClose}
           size="lg"
+          fullScreen={isMobile}
       >
         <form onSubmit={form.onSubmit(handleSubmit)}>
           <Stack gap="sm">

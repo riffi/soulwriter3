@@ -5,6 +5,7 @@ import { notifications } from "@mantine/notifications";
 import { IBlockParameterGroup } from "@/entities/ConstructorEntities";
 import { useState } from "react";
 import {InlineEdit} from "@/components/shared/InlineEdit/InlineEdit";
+import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
 
 interface IGroupsModalProps {
   opened: boolean;
@@ -28,6 +29,7 @@ export const GroupsModal = ({
                               onUpdateGroupTitle, // Добавлен новый проп
                             }: IGroupsModalProps) => {
   const [newGroupTitle, setNewGroupTitle] = useState('');
+  const {isMobile} = useMedia();
 
   const handleSave = () => {
     if (!newGroupTitle.trim()) {
@@ -61,6 +63,7 @@ export const GroupsModal = ({
           onClose={onClose}
           title="Управление вкладками"
           size="lg"
+          fullScreen={isMobile}
       >
         <Flex justify="flex-start" align="self-end" mb="md" gap="md">
           <TextInput

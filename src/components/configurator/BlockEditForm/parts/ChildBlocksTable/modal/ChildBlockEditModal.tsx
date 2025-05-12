@@ -2,6 +2,7 @@
 import {Modal, Select, Button, Stack, Group} from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { IBlock } from "@/entities/ConstructorEntities";
+import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
 
 interface ChildBlockEditModalProps {
   isOpen: boolean;
@@ -23,6 +24,7 @@ export const ChildBlockEditModal = ({
                                       availableBlocks,
                                       initialData,
                                     }: ChildBlockEditModalProps) => {
+  const {isMobile} = useMedia();
   const form = useForm({
     initialValues: {
       blockUuid: initialData?.blockUuid || '',
@@ -36,7 +38,12 @@ export const ChildBlockEditModal = ({
   };
 
   return (
-      <Modal opened={isOpen} onClose={onClose} title={initialData ? "Редактирование блока" : "Добавить дочерний блок"}>
+      <Modal
+          opened={isOpen}
+          onClose={onClose}
+          title={initialData ? "Редактирование блока" : "Добавить дочерний блок"}
+          fullScreen={isMobile}
+      >
         <Stack>
           <Select
               label="Блок"

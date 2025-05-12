@@ -4,6 +4,7 @@ import { BlockInstanceRepository } from "@/repository/BlockInstanceRepository";
 import { bookDb } from "@/entities/bookDb";
 import {generateUUID} from "@/utils/UUIDUtils";
 import {IBlock} from "@/entities/ConstructorEntities";
+import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
 
 interface CreateChildInstanceModalProps {
   opened: boolean;
@@ -19,6 +20,8 @@ export const CreateChildInstanceModal = ({
                                            blockInstanceUuid,
                                            relatedBlock
                                          }: CreateChildInstanceModalProps) => {
+
+  const {isMobile} = useMedia();
   const form = useForm({
     initialValues: {
       title: "",
@@ -40,7 +43,12 @@ export const CreateChildInstanceModal = ({
   };
 
   return (
-      <Modal opened={opened} onClose={onClose} title={`Добавить ${relatedBlock?.title}`}>
+      <Modal
+          opened={opened}
+          onClose={onClose}
+          title={`Добавить ${relatedBlock?.title}`}
+          fullScreen={isMobile}
+      >
         <Stack>
           <TextInput
               label="Название"

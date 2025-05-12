@@ -3,6 +3,7 @@ import {IconFolder, IconNote, IconEdit, IconTrash, IconPlus, IconArrowRightCircl
 import { INoteGroup } from '@/entities/BookEntities';
 import { useState } from 'react';
 import { NoteFolderSelector } from './NoteFolderSelector';
+import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
 
 interface FolderListProps {
   groups: INoteGroup[];
@@ -17,7 +18,7 @@ interface FolderListProps {
 export const FolderList = ({ groups, onEdit, onDelete, onNavigate, onAdd, onMove, currentFolderUuid }: FolderListProps) => {
   const [movingGroup, setMovingGroup] = useState<INoteGroup | null>(null);
   const [selectedFolder, setSelectedFolder] = useState<string>('');
-
+  const {isMobile} = useMedia()
   const handleMoveGroup = async () => {
     if (movingGroup && selectedFolder) {
       onMove(movingGroup, selectedFolder);
@@ -69,6 +70,7 @@ export const FolderList = ({ groups, onEdit, onDelete, onNavigate, onAdd, onMove
             opened={!!movingGroup}
             onClose={() => setMovingGroup(null)}
             title="Переместить папку"
+            fullScreen={isMobile}
         >
           <NoteFolderSelector
               selectedUuid={selectedFolder}

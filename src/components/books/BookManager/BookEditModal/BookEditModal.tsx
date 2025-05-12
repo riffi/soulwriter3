@@ -3,6 +3,7 @@ import { Button, Group, Modal, Select, TextInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { IBookConfiguration } from "@/entities/ConstructorEntities";
 import {IBook} from "@/entities/BookEntities";
+import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
 
 interface BookEditModalProps {
   isOpen: boolean;
@@ -19,6 +20,8 @@ export const BookEditModal = ({
                                 initialData,
                                 configurations,
                               }: BookEditModalProps) => {
+  const {isMobile} = useMedia();
+
   const form = useForm({
     initialValues: initialData || {
       uuid: "",
@@ -56,6 +59,7 @@ export const BookEditModal = ({
           opened={isOpen}
           onClose={onClose}
           size="md"
+          fullScreen={isMobile}
       >
         <form onSubmit={form.onSubmit(handleSubmit)}>
           <TextInput

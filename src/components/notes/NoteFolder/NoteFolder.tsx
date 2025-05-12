@@ -21,6 +21,7 @@ import {INote, INoteGroup} from "@/entities/BookEntities";
 import {configDatabase} from "@/entities/configuratorDb";
 import {FolderList} from "@/components/notes/parts/FolderList";
 import {NoteList} from "@/components/notes/parts/NoteList";
+import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
 
 export const NoteFolder = () => {
   const { folderUuid } = useParams();
@@ -30,7 +31,7 @@ export const NoteFolder = () => {
   const [currentGroup, setCurrentGroup] = useState<Partial<INoteGroup>>({});
   const [currentNote, setCurrentNote] = useState<Partial<INote>>({});
   const [breadcrumbs, setBreadcrumbs] = useState<INoteGroup[]>([]);
-
+  const {isMobile} = useMedia();
   const {
     getChildGroups,
     getNotesByGroup,
@@ -167,6 +168,7 @@ export const NoteFolder = () => {
             opened={groupModalOpen}
             onClose={() => setGroupModalOpen(false)}
             title={currentGroup.uuid ? 'Редактировать папку' : 'Новая папка'}
+            fullScreen={isMobile}
         >
           <TextInput
               label="Название"
@@ -184,6 +186,7 @@ export const NoteFolder = () => {
             opened={noteModalOpen}
             onClose={() => setNoteModalOpen(false)}
             title="Новая заметка"
+            fullScreen={isMobile}
         >
           <TextInput
               label="Название"

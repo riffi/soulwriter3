@@ -1,6 +1,7 @@
 import { useForm } from "@mantine/form";
 import { Modal, Select, Button, Group } from "@mantine/core";
 import {BlockRelationType, IBlock, IBlockRelation} from "@/entities/ConstructorEntities";
+import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
 
 interface RelationEditModalProps {
   isOpen: boolean;
@@ -19,6 +20,7 @@ export const RelationEditModal = ({
                                     blockUuid,
                                     otherBlocks
                                   }: RelationEditModalProps) => {
+  const {isMobile} = useMedia();
   const blocks = otherBlocks;
 
   const form = useForm<IBlockRelation>({
@@ -31,7 +33,12 @@ export const RelationEditModal = ({
   });
 
   return (
-      <Modal opened={isOpen} onClose={onClose} title={initialData ? "Редактирование связи" : "Новая связь"}>
+      <Modal
+          opened={isOpen}
+          onClose={onClose}
+          title={initialData ? "Редактирование связи" : "Новая связь"}
+          fullScreen={isMobile}
+      >
         <form onSubmit={form.onSubmit(onSave)}>
           <Select
               label="Целевой блок"

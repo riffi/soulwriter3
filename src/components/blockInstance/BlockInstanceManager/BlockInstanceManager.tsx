@@ -30,6 +30,7 @@ import {
 import {
   BlockInstanceEditor
 } from "@/components/blockInstance/BlockInstanceEditor/BlockInstanceEditor";
+import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
 
 export interface IBlockInstanceManagerProps {
   blockUuid: string;
@@ -51,7 +52,7 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
 
   const [filtersVisible, { toggle: toggleFilters }] = useDisclosure(false);
   const [filters, setFilters] = useState<Record<string, string[]>>({});
-
+  const {isMobile} = useMedia();
 
   const navigate = useNavigate();
   const { showDialog } = useDialog();
@@ -234,6 +235,7 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
         <Modal
             opened={opened}
             onClose={close}
+            fullscreen={isMobile}
             title={"Создание " + block?.titleForms?.genitive}
             centered
         >

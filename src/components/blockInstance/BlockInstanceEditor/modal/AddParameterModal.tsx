@@ -1,7 +1,17 @@
 import {Button, Group, Modal, Stack} from "@mantine/core";
+import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
 
-export const AddParameterModal = ({ opened, onClose, parameters, onSave }) => (
-    <Modal opened={opened} onClose={onClose} title="Добавить параметр" centered>
+export const AddParameterModal = ({ opened, onClose, parameters, onSave }) => {
+    const {isMobile} = useMedia();
+
+    return (
+    <Modal
+        opened={opened}
+        onClose={onClose}
+        title="Добавить параметр"
+        centered
+        fullScreen={isMobile}
+    >
         <Stack gap="sm">
             {parameters?.map((param) => (
                 <Button
@@ -18,4 +28,5 @@ export const AddParameterModal = ({ opened, onClose, parameters, onSave }) => (
             </Group>
         </Stack>
     </Modal>
-);
+    )
+}

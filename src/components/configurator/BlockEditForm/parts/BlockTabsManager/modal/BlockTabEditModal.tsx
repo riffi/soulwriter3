@@ -2,6 +2,7 @@ import {Button, Group, Modal, Select, Stack, TextInput} from "@mantine/core";
 import {useForm} from "@mantine/form";
 import {IBlock, IBlockRelation, IBlockTab, IBlockTabKind} from "@/entities/ConstructorEntities";
 import {useEffect} from "react";
+import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
 
 interface BlockTabEditModalProps {
   isOpen: boolean;
@@ -24,6 +25,7 @@ export const BlockTabEditModal = ({
                                     otherBlocks,
                                     currentBlockUuid
                                   }: BlockTabEditModalProps) => {
+  const {isMobile} = useMedia();
   const form = useForm<Omit<IBlockTab, 'id'>>({
     initialValues: {
       title: initialData?.title || '',
@@ -62,7 +64,12 @@ export const BlockTabEditModal = ({
   }, [form.values.relationUuid, form.values.childBlockUuid]);
 
   return (
-      <Modal opened={isOpen} onClose={onClose} title={initialData ? "Редактирование вкладки" : "Новая вкладка"}>
+      <Modal
+          opened={isOpen}
+          onClose={onClose}
+          title={initialData ? "Редактирование вкладки" : "Новая вкладка"}
+          fullScreen={isMobile}
+      >
         <Stack>
           <Select
               disabled={initialData?.isDefault === 1}

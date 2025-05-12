@@ -6,6 +6,7 @@ import {
   IBlockStructureKindTitle
 } from "@/entities/ConstructorEntities";
 import {createOptionsFromEnums} from "@/utils/enumUtils";
+import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
 
 interface IBlockEditModalProps {
   configurationUuid: string
@@ -18,6 +19,7 @@ interface IBlockEditModalProps {
 const structureKindOptions = createOptionsFromEnums(IBlockStructureKind, IBlockStructureKindTitle)
 export const BlockEditModal  = (props: IBlockEditModalProps) => {
 
+  const {isMobile} = useMedia();
   const form = useForm({
     mode: 'controlled',
     initialValues: props.initialData
@@ -29,6 +31,7 @@ export const BlockEditModal  = (props: IBlockEditModalProps) => {
           title={props.initialData?.uuid ? 'Редактирование блока' : 'Создание нового блока'}
           opened={props.isOpen}
           onClose={props.onClose}
+          fullScreen={isMobile}
       >
         <form onSubmit={
           form.onSubmit((values) => {

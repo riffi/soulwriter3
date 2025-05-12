@@ -17,6 +17,7 @@ import {
   useBlockRelationsEditor
 } from "@/components/blockInstance/BlockInstanceEditor/components/BlockRelationsEditor/hook/useBlockRelationsEditor";
 import {useDialog} from "@/providers/DialogProvider/DialogProvider";
+import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
 
 interface BlockRelationsEditorProps {
   blockUuid: string;
@@ -38,7 +39,7 @@ export const BlockRelationsEditor = ({
 
   const isRelatedBlockChild = !!relatedBlock.parentBlockUuid;
   const isRelatedBlockTarget = blockRelation.targetBlockUuid === relatedBlock?.uuid;
-
+  const {isMobile} = useMedia();
   const {showDialog} = useDialog();
 
   const {
@@ -113,6 +114,7 @@ export const BlockRelationsEditor = ({
 
         <Modal
             opened={isModalOpen}
+            fullscreen={isMobile}
             onClose={resetModalState}
             title={`Добавить ${relatedBlock?.titleForms?.accusative}`}
         >
