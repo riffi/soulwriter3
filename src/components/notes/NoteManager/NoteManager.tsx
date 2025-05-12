@@ -90,7 +90,7 @@ export const NoteManager = () => {
 
           <Button
               leftSection={<IconPlus size={16} />}
-              onClick={() => mode === 'folders'
+              onClick={() => noteManagerMode === 'folders'
                   ? setGroupModalOpen(true)
                   : setNoteModalOpen(true)
               }
