@@ -2,6 +2,7 @@
 import { Container, Paper, Tabs, Title } from '@mantine/core';
 import {ApiSettingsTab} from "@/components/settings/parts/ApiSettingsTab";
 import {DatabaseTab} from "@/components/settings/parts/DatabaseTab";
+import {NotesBackupTab} from "@/components/settings/parts/NotesBackupTab";
 
 export const SettingsConfigurator = () => {
   return (
@@ -18,6 +19,9 @@ export const SettingsConfigurator = () => {
               <Tabs.Tab value="databases" icon={<span>📁</span>}>
                 Управление БД
               </Tabs.Tab>
+              <Tabs.Tab value="notes" icon={<span>📝</span>}>
+                Управление заметками
+              </Tabs.Tab>
             </Tabs.List>
 
             <Tabs.Panel value="settings" pt="lg">
@@ -26,6 +30,10 @@ export const SettingsConfigurator = () => {
 
             <Tabs.Panel value="databases" pt="lg">
               <DatabaseTab />
+            </Tabs.Panel>
+
+            <Tabs.Panel value="notes" pt="lg">
+              <NotesBackupTab />
             </Tabs.Panel>
           </Tabs>
         </Paper>

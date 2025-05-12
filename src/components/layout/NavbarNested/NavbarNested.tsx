@@ -164,7 +164,10 @@ const getBlockPageTitle = (block: IBlock) => {
 
 export const NavbarNested = ({ toggleNavbar }: { toggleNavbar?: () => void }) => {
   const { selectedBook } = useBookStore();
-  const blocks = useLiveQuery<IBlock[]>(() => bookDb.blocks.toArray(), []);
+  const blocks = useLiveQuery<IBlock[]>(() => {
+    if (!bookDb) {return [];}
+    return bookDb.blocks.toArray()
+  }, [selectedBook]);
 
   const { baseItems, dynamicItems } = useMemo(() => {
     const baseItems = [...BASE_MENU_ITEMS];

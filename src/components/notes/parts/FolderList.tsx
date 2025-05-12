@@ -30,7 +30,7 @@ export const FolderList = ({ groups, onEdit, onDelete, onNavigate, onAdd, onMove
       <>
         <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }}>
           {groups.map((group) => (
-              <Card key={group.uuid} shadow="sm" padding="lg">
+              <Card key={group.uuid} shadow="xs" padding="lg">
                 <Group justify="space-between">
                   <Group
                       style={{ cursor: 'pointer' }}

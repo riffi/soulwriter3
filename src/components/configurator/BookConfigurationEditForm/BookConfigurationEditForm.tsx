@@ -185,7 +185,7 @@ export const BookConfigurationEditForm = (props: IBookConfigurationEditFormProps
             {/* Новая карточка для добавления */}
             {(isBookConfiguration || (currentVersion?.isDraft === 1)) && (
                 <Card
-                    shadow="sm"
+                    shadow="xs"
                     padding="lg"
                     radius="md"
                     withBorder
@@ -207,7 +207,7 @@ export const BookConfigurationEditForm = (props: IBookConfigurationEditFormProps
                 </Card>
             )}
             {blockList?.map((c) =>
-                <Card key={c.uuid} shadow="sm" padding="lg" radius="md" withBorder>
+                <Card key={c.uuid} shadow="xs" padding="lg" radius="md" withBorder>
                   <Stack gap="sm">
                     <Group justify="space-between" wrap="nowrap">
                       <Text fw={500} truncate="end">{c.title}</Text>
