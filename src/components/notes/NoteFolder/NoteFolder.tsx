@@ -158,7 +158,6 @@ export const NoteFolder = () => {
               onEdit={(note) => navigate(`/notes/edit/${note.uuid}`)}
               onAdd={() => setNoteModalOpen(true)}
               selectedFolderUuid={folderUuid}
-              onTagClick={(tag) => {}}
           />
         </>
         }

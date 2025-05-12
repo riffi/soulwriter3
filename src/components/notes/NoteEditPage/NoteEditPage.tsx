@@ -14,11 +14,12 @@ import {
 import { RichEditor } from "@/components/shared/RichEditor/RichEditor";
 import { configDatabase } from "@/entities/configuratorDb";
 import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
-import {IconEdit, IconMenu2, IconSettings} from "@tabler/icons-react";
+import {IconSettings} from "@tabler/icons-react";
 import {InlineEdit} from "@/components/shared/InlineEdit/InlineEdit";
 import {INote} from "@/entities/BookEntities";
 import {InlineTagEdit} from "@/components/shared/InlineEdit/InlineTagEdit";
 import {usePageTitle} from "@/providers/PageTitleProvider/PageTitleProvider";
+import {NoteRepository} from "@/repository/NoteRepository";
 
 
 export const NoteEditPage = () => {
@@ -32,7 +33,7 @@ export const NoteEditPage = () => {
 
   useEffect(() => {
     const loadNote = async () => {
-      const data = await configDatabase.notes.where('uuid').equals(uuid!).first();
+      const data = await NoteRepository.getByUuid(configDatabase, uuid!);
       if (data) {
         setNote(data);
       }
@@ -69,17 +70,14 @@ export const NoteEditPage = () => {
 
   const handleSave = async (data: INote) => {
     if (!data) return;
-
-    await configDatabase.notes.update(data.id!, {
-      ...data,
-    });
+    await NoteRepository.save(configDatabase, data)
     setNote(data);
   };
 
   const handleContentChange = useCallback((content: string) => {
     const updated = { ...note!, body: content };
     setNote(updated);
-    configDatabase.notes.update(updated.id!, updated);
+    NoteRepository.save(configDatabase, updated);
   }, [note]);
 
 

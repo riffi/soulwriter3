@@ -3,6 +3,7 @@ import { configDatabase } from "@/entities/configuratorDb";
 import { INote, INoteGroup } from "@/entities/BookEntities";
 import { generateUUID } from "@/utils/UUIDUtils";
 import { useDialog } from "@/providers/DialogProvider/DialogProvider";
+import {NoteRepository} from "@/repository/NoteRepository";
 
 export const useNoteManager = () => {
   const { showDialog } = useDialog();
@@ -79,13 +80,13 @@ export const useNoteManager = () => {
       body: '',
       order: await configDatabase.notes.count()
     };
-    await configDatabase.notes.add(newNote as INote);
+    await NoteRepository.save(configDatabase, newNote as INote);
     return newNote;
   };
 
   const updateNote = async (note: INote) => {
     if (!note.id) return;
-    await configDatabase.notes.update(note.id, note);
+    await NoteRepository.save(configDatabase, note);
   };
 
   const deleteNote = async (uuid: string) => {

@@ -70,4 +70,5 @@ export interface INote{
   body: string;
   order?: number;
   noteGroupUuid?: string;
+  updatedAt?: string;
 }

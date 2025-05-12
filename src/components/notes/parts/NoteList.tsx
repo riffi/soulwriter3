@@ -1,5 +1,21 @@
-import {Table, Group, Badge, ActionIcon, Text, Modal, Button} from '@mantine/core';
-import {IconEdit, IconTrash, IconArrowRightCircleFilled} from '@tabler/icons-react';
+import {
+  Table,
+  Group,
+  Badge,
+  ActionIcon,
+  Text,
+  Modal,
+  Button,
+  Select,
+  TagsInput, SegmentedControl
+} from '@mantine/core';
+import {
+  IconEdit,
+  IconTrash,
+  IconArrowRightCircleFilled,
+  IconCalendar,
+  IconSortAZ
+} from '@tabler/icons-react';
 import { INote } from '@/entities/BookEntities';
 import {useState} from "react";
 import {useNoteManager} from "@/components/notes/hook/useNoteManager";
@@ -12,18 +28,37 @@ interface NoteListProps {
   onEdit: (note: INote) => void;
   onDelete: (uuid: string) => void;
   onAdd: () => void;
-  onTagClick: (tag: string) => void;
   showFolderName?: boolean;
   selectedFolderUuid?: string;
 }
 
-export const NoteList = ({ notes, onEdit, onDelete, onAdd, onTagClick, selectedFolderUuid, showFolderName  }: NoteListProps) => {
+export const NoteList = ({ notes, onEdit, onDelete, onAdd, selectedFolderUuid, showFolderName  }: NoteListProps) => {
   const [movingNote, setMovingNote] = useState<INote | null>(null);
   const [selectedFolder, setSelectedFolder] = useState<string>('');
+  const [sortType, setSortType] = useState<'date' | 'title'>('date');
+  const [searchTags, setSearchTags] = useState<string[]>([]);
   const { updateNote} = useNoteManager();
 
   // Получаем все группы заметок
   const allGroups = useLiveQuery(() => configDatabase.notesGroups.toArray(), [notes]) || [];
+
+
+  const filteredNotes = notes.filter(note => {
+    const noteTags = note.tags?.toLowerCase().split(',') || [];
+    return searchTags.every(tag => noteTags.includes(tag));
+  });
+
+  // Сортируем заметки
+  const sortedNotes = [...filteredNotes].sort((a, b) => {
+    if (sortType === 'title') {
+      return (a.title || '').localeCompare(b.title || '');
+    }
+
+    const dateA = a.updatedAt ? new Date(a.updatedAt).getTime() : 0;
+    const dateB = b.updatedAt ? new Date(b.updatedAt).getTime() : 0;
+    return dateB - dateA; // Новые сверху
+  });
+
 
   const handleMoveNote = async () => {
     if (movingNote && selectedFolder) {
@@ -36,8 +71,12 @@ export const NoteList = ({ notes, onEdit, onDelete, onAdd, onTagClick, selectedF
     }
   };
 
+  const handleTagClick = (tag: string) => {
+    setSearchTags(prev => [...prev, tag.toLowerCase()]);
+  };
+
   const rows = [
-    ...notes.map((note) => (
+    ...sortedNotes.map((note) => (
         <Table.Tr key={note.uuid}>
           <Table.Td>
             <Text>{note.title}</Text>
@@ -55,7 +94,7 @@ export const NoteList = ({ notes, onEdit, onDelete, onAdd, onTagClick, selectedF
                       key={i}
                       variant="light"
                       style={{fontSize: "0.6rem", cursor: 'pointer'}}
-                      onClick={() => onTagClick(tag.trim())}
+                      onClick={() => handleTagClick(tag.trim())}
                   >
                     {tag}
                   </Badge>
@@ -93,6 +132,34 @@ export const NoteList = ({ notes, onEdit, onDelete, onAdd, onTagClick, selectedF
 
   return (
       <>
+        <Group justify="space-between" mb="md">
+          <TagsInput
+              placeholder="Поиск по тегам"
+              value={searchTags}
+              onChange={(tags) => setSearchTags(tags.map(t => t.toLowerCase()))}
+              style={{ width: 300 }}
+              clearable
+          />
+
+          <SegmentedControl
+              value={sortType}
+              onChange={(value) => setSortType(value as 'date' | 'title')}
+              data={[
+                {
+                  value: 'date',
+                  label: <IconCalendar size="1rem" />,
+                  title: 'Сортировка по дате',
+                },
+                {
+                  value: 'title',
+                  label: <IconSortAZ size="1rem" />,
+                  title: 'Сортировка по алфавиту',
+                },
+              ]}
+              radius="sm"
+              style={{ width: 200 }}
+          />
+        </Group>
       <Table highlightOnHover>
         <Table.Thead>
           <Table.Tr>

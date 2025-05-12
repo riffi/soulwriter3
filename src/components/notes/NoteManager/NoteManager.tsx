@@ -30,7 +30,6 @@ export const NoteManager = () => {
   const [noteModalOpen, setNoteModalOpen] = useState(false);
   const [currentGroup, setCurrentGroup] = useState<Partial<INoteGroup>>({});
   const [currentNote, setCurrentNote] = useState<Partial<INote>>({});
-  const [searchTags, setSearchTags] = useState<string[]>([]);
 
   const {
     getTopLevelGroups,
@@ -46,10 +45,6 @@ export const NoteManager = () => {
   const allNotes = useLiveQuery(getAllNotes) || [];
   const navigate = useNavigate();
 
-  const filteredNotes = allNotes.filter(note => {
-    const noteTags = note.tags?.toLowerCase().split(',') || [];
-    return searchTags.every(tag => noteTags.includes(tag));
-  });
 
   const handleGroupSubmit = async () => {
     if (currentGroup.title) {
@@ -65,9 +60,7 @@ export const NoteManager = () => {
     }
   };
 
-  const handleTagClick = (tag: string) => {
-    setSearchTags(prev => [...prev, tag.toLowerCase()]);
-  };
+
 
   return (
       <Container style={{ background: '#fff', paddingBottom: '2rem', paddingTop: '2rem', minHeight: '60vh'}}>
@@ -109,19 +102,11 @@ export const NoteManager = () => {
             />
         ) : (
             <>
-              <TagsInput
-                  placeholder="Поиск по тегам"
-                  value={searchTags}
-                  onChange={(tags) => setSearchTags(tags.map(t => t.toLowerCase()))}
-                  style={{ width: 300, marginBottom: 16 }}
-                  clearable
-              />
               <NoteList
-                  notes={filteredNotes}
+                  notes={allNotes}
                   onDelete={deleteNote}
                   onEdit={(note) => navigate(`/notes/edit/${note.uuid}`)}
                   onAdd={() => setNoteModalOpen(true)}
-                  onTagClick={handleTagClick}
                   showFolderName
               />
             </>
