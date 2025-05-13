@@ -12,6 +12,8 @@ import { useNavigate } from "react-router-dom";
 import { BlockInstanceRepository } from "@/repository/BlockInstanceRepository";
 import { IBlock, IBlockStructureKind } from "@/entities/ConstructorEntities";
 import {IconArrowRight} from "@tabler/icons-react";
+import {IconViewer} from "@/components/shared/IconViewer/IconViewer";
+import React from "react";
 
 interface BlockCardProps {
   block: IBlock;
@@ -54,6 +56,11 @@ export const DashboardBlockCard = ({ block }: BlockCardProps) => {
         <Stack gap="sm">
           <Group justify="space-between">
             <Group gap="xs" style={{ cursor: 'pointer' }} onClick={handleNavigateToBlockManager}>
+              <IconViewer
+                  iconName={block?.icon}
+                  size={28}
+                  color="var(--mantine-color-blue-7)"
+              />
               <Text
                   fw={500}
                   size="lg"

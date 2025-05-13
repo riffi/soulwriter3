@@ -6,7 +6,7 @@ import {
   Container,
   Space,
   Tabs,
-  Group, SegmentedControl, ActionIcon, Select
+  Group, SegmentedControl, ActionIcon, Select, Drawer, Button, Box, Text
 } from "@mantine/core";
 import { useBlockEditForm } from "@/components/configurator/BlockEditForm/useBlockEditForm";
 import React, { useEffect, useState } from "react";
@@ -18,7 +18,7 @@ import {
 import { notifications } from "@mantine/notifications";
 import { ParamEditModal } from "@/components/configurator/BlockEditForm/modal/ParamEditModal/ParamEditModal";
 import { ParamTable } from "@/components/configurator/BlockEditForm/parts/ParamTable/ParamTable";
-import {IconSettings} from "@tabler/icons-react";
+import {IconSearch, IconSettings} from "@tabler/icons-react";
 import {GroupsModal} from "@/components/configurator/BlockEditForm/modal/GroupsModal/GroupsModal";
 import classes from "./BlockEditForm.module.css";
 import {RelationTable} from "@/components/configurator/BlockEditForm/parts/RelationTable/RelationTable";
@@ -26,6 +26,9 @@ import {ChildBlocksTable} from "@/components/configurator/BlockEditForm/parts/Ch
 import {
   BlockTabsManager
 } from "@/components/configurator/BlockEditForm/parts/BlockTabsManager/BlockTabsManager";
+import * as Gi from 'react-icons/gi';
+import {GameIconSelector} from "@/components/shared/GameIconSelector/GameIconSelector";
+import {IconViewer} from "@/components/shared/IconViewer/IconViewer";
 
 interface IBlockEditFormProps {
   blockUuid: string;
@@ -47,12 +50,15 @@ const INITIAL_FORM_STATE: IFormState = {
   currentParam: undefined,
   isParamModalOpened: false,
   isGroupsModalOpened: false,
-  activeTab: 'parameters',
+  activeTab: 'main',
   isChildModalOpened: false,
 };
 
 export const BlockEditForm = ({ blockUuid, bookUuid }: IBlockEditFormProps) => {
   const [state, setState] = useState<IFormState>(INITIAL_FORM_STATE);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+
   const {
     saveParamGroup,
     paramGroupList,
@@ -75,6 +81,12 @@ export const BlockEditForm = ({ blockUuid, bookUuid }: IBlockEditFormProps) => {
       setState(prev => ({ ...prev, currentGroupUuid: paramGroupList[0].uuid }));
     }
   }, [paramGroupList, state.currentGroupUuid]);
+
+  // Функция для динамического получения иконки по имени
+  const getIconComponent = (iconName: string) => {
+    const IconComponent = Gi[iconName]; // Получаем иконку по имени
+    return IconComponent ? React.createElement(IconComponent, { size: 24 }) : null;
+  };
 
   const getInitialParamData = (): IBlockParameter => ({
     uuid: "",
@@ -173,31 +185,7 @@ export const BlockEditForm = ({ blockUuid, bookUuid }: IBlockEditFormProps) => {
 
         <Space h="md" />
 
-        <Group align="flex-end" spacing="xl" mb="md">
-          <Group>
-            <Select
-                value={block?.structureKind || IBlockStructureKind.single}
-                onChange={(value) => saveBlock({ ...block, structureKind: value })}
-                data={structureKindOptions}
-                size="sm"
-                placeholder="Выберите тип структуры"
-            />
-          </Group>
-        </Group>
-        <Checkbox
-            checked={block?.useTabs === 1}
-            label="Использовать вкладки для группировки параметров"
-            onChange={(e) => saveBlock({ ...block, useTabs: e.currentTarget.checked ? 1 : 0 })}
-            mt="md"
-            mb="xl"
-        />
-        <Checkbox
-            checked={block?.sceneLinkAllowed === 1}
-            label="Привязка к сцене"
-            onChange={(e) => saveBlock({ ...block, sceneLinkAllowed: e.currentTarget.checked ? 1 : 0 })}
-            mt="md"
-            mb="xl"
-        />
+
         <Space h="md" />
 
         <Group mb="md">
@@ -205,6 +193,7 @@ export const BlockEditForm = ({ blockUuid, bookUuid }: IBlockEditFormProps) => {
               value={state.activeTab}
               onChange={(value) => setState(prev => ({ ...prev, activeTab: value as 'parameters' | 'relations' }))}
               data={[
+                { value: 'main', label: 'Основное' },
                 { value: 'parameters', label: 'Параметры' },
                 { value: 'relations', label: 'Связи' },
                 { value: 'children', label: 'Дочерние блоки' },
@@ -212,6 +201,51 @@ export const BlockEditForm = ({ blockUuid, bookUuid }: IBlockEditFormProps) => {
               ]}
           />
         </Group>
+        {state.activeTab === 'main' &&
+            <>
+              <Group align="flex-end" spacing="xl" mb="md">
+                <Group>
+                  <Select
+                      value={block?.structureKind || IBlockStructureKind.single}
+                      onChange={(value) => saveBlock({ ...block, structureKind: value })}
+                      data={structureKindOptions}
+                      size="sm"
+                      placeholder="Выберите тип структуры"
+                  />
+                </Group>
+              </Group>
+              <Checkbox
+                  checked={block?.useTabs === 1}
+                  label="Использовать вкладки для группировки параметров"
+                  onChange={(e) => saveBlock({ ...block, useTabs: e.currentTarget.checked ? 1 : 0 })}
+                  mt="md"
+                  mb="xl"
+              />
+              <Checkbox
+                  checked={block?.sceneLinkAllowed === 1}
+                  label="Привязка к сцене"
+                  onChange={(e) => saveBlock({ ...block, sceneLinkAllowed: e.currentTarget.checked ? 1 : 0 })}
+                  mt="md"
+                  mb="xl"
+              />
+              <Group>
+                <Button
+                    onClick={() => setDrawerOpen(true)}
+                    variant="outline"
+                    size="sm"
+                    leftIcon={<IconSearch size={16} />}
+                >
+                  Выбрать иконку
+                </Button>
+                {block?.icon && (
+                    <Box ml="lg">
+                      <IconViewer iconName={block.icon} color="var(--mantine-color-blue-filled)"/>
+                    </Box>
+                )}
+              </Group>
+            </>
+        }
+
         {state.activeTab === 'parameters' &&
             <>
               {block?.useTabs === 1 ? renderTabsContent() : (
@@ -279,6 +313,22 @@ export const BlockEditForm = ({ blockUuid, bookUuid }: IBlockEditFormProps) => {
             onDeleteGroup={deleteGroup}
             onUpdateGroupTitle={updateGroupTitle} // Добавить новый проп
         />
+        <Drawer
+            opened={drawerOpen}
+            onClose={() => setDrawerOpen(false)}
+            title="Выберите иконку"
+            position="right"
+            size="md"
+        >
+          <GameIconSelector
+              searchQuery={searchQuery}
+              onSearchChange={(e) => setSearchQuery(e.currentTarget.value)}
+              onSelectIcon={(iconName) => {
+                saveBlock({ ...block, icon: iconName });
+                setDrawerOpen(false);
+              }}
+          />
+        </Drawer>
       </Container>
   );
 };

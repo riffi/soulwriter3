@@ -18,7 +18,7 @@ import {
   Divider,
 } from '@mantine/core';
 import { useNavigate } from 'react-router-dom';
-import { useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useBookStore } from '@/stores/bookStore/bookStore';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { bookDb } from '@/entities/bookDb';
@@ -27,9 +27,11 @@ import classes from './NavbarNested.module.css';
 import { Logo } from './Logo';
 import { UserButton } from '../UserButton/UserButton';
 import config from '../../../../package.json';
+import {IconViewer} from "@/components/shared/IconViewer/IconViewer";
 interface NavLinkItem {
   label: string;
   link?: string;
+  icon?: string;
 }
 
 interface NavLinkGroup {
@@ -69,19 +71,32 @@ const NavLink = ({
 
   const linkItems = useMemo(() => (
       hasLinks ? links.map((item) => (
-          <Text<'a'>
-              component="a"
-              className={classes.link}
-              href={item.link}
-              key={item.label}
-              onClick={(e) => {
-                e.preventDefault();
-                navigate(item.link || '#');
-                toggleNavbar?.();
-              }}
-          >
-            {item.label}
-          </Text>
+          <>
+            <Text<'a'>
+                component="a"
+                flex={4}
+                href={item.link}
+                key={item.label}
+                className={classes.link}
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigate(item.link || '#');
+                  toggleNavbar?.();
+                }}
+            >
+              <Group justify="flex-start" gap={0}>
+                <IconViewer
+                    iconName={item.icon}
+                    size={20}
+                    color="var(--mantine-color-blue-7)"
+
+                />
+                <div style={{marginLeft: "10px"}}>
+                  {item.label}
+                </div>
+              </Group>
+            </Text>
+          </>
       )) : null
   ), [hasLinks, links, navigate, toggleNavbar]);
 
@@ -193,6 +208,7 @@ export const NavbarNested = ({ toggleNavbar }: { toggleNavbar?: () => void }) =>
       const knowledgeLinks = blocks?.filter(block => block.parentBlockUuid == null)
         ?.map((block) => ({
           label: getBlockPageTitle(block),
+          icon: block.icon,
           link: `/block-instance/manager?uuid=${block.uuid}`,
         })) || [];
 

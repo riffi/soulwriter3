@@ -2,10 +2,19 @@ import {useNavigate} from "react-router-dom";
 import {
   useBlockInstanceEditor
 } from "@/components/blockInstance/BlockInstanceEditor/hooks/useBlockInstanceEditor";
-import {ActionIcon, Box, Button, Container, Group, SegmentedControl, Tabs,} from "@mantine/core";
+import {
+  ActionIcon,
+  Box,
+  Button,
+  Container,
+  Group,
+  SegmentedControl,
+  Tabs,
+  Title,
+} from "@mantine/core";
 import {IconArrowLeft, IconPlus} from "@tabler/icons-react";
 import classes from "./BlockInstanceEditor.module.css";
-import {useEffect, useState} from "react";
+import React, {useEffect, useState} from "react";
 import {IBlockParameterGroup} from "@/entities/ConstructorEntities";
 import {IBlockParameterInstance} from "@/entities/BookEntities";
 import {bookDb} from "@/entities/bookDb";
@@ -23,6 +32,7 @@ import {
 import {
   ChildInstancesTable
 } from "@/components/blockInstance/BlockInstanceEditor/components/ChildInstancesTable";
+import {IconViewer} from "@/components/shared/IconViewer/IconViewer";
 
 export interface IBlockInstanceEditorProps {
   blockInstanceUuid: string;
@@ -64,6 +74,7 @@ const ParameterContent = ({ availableParameters, fullParams, onAdd, ...props }) 
       <ParameterList fullParams={fullParams} {...props} />
     </Box>
 );
+
 
 export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
   const [currentParamGroup, setCurrentParamGroup] = useState<IBlockParameterGroup | null>(null);
@@ -120,6 +131,27 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
       }
     });
   };
+
+  const header =( <Group>
+    <IconViewer
+        iconName={block?.icon}
+        size={28}
+        style={{
+          color: 'white',
+          boxShadow: '0px 0px 5px rgba(0,0,0,0.2)',
+          backgroundColor: "var(--mantine-color-blue-5)"
+        }}
+    />
+    <Title
+        order={2}
+        style={{
+          textTransform: "capitalize",
+          color: "var(--mantine-color-blue-5)"
+        }}
+    >
+      {block?.titleForms?.nominative}
+    </Title>
+  </Group>)
 
   // Обновляем список вкладок и активную вкладку при изменении blockTabs
   useEffect(() => {

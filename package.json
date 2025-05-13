@@ -2,7 +2,7 @@
   "name": "soulwriter",
   "private": true,
   "type": "module",
-  "version": "0.0.18",
+  "version": "0.0.19",
   "scripts": {
     "dev": "vite --host",
     "build": "vite build",
@@ -51,6 +51,7 @@
     "morphjs": "^0.1.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "react-icons": "^5.5.0",
     "react-router-dom": "^7.5.0",
     "tabler-icons-react": "^1.56.0",
     "vite-plugin-pwa": "^1.0.0",

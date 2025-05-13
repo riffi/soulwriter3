@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { bookDb } from "@/entities/bookDb";
 import { IBlockInstance } from "@/entities/BookEntities";
@@ -31,6 +31,7 @@ import {
   BlockInstanceEditor
 } from "@/components/blockInstance/BlockInstanceEditor/BlockInstanceEditor";
 import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
+import {IconViewer} from "@/components/shared/IconViewer/IconViewer";
 
 export interface IBlockInstanceManagerProps {
   blockUuid: string;
@@ -132,6 +133,27 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
     }));
   };
 
+  const header =( <Group>
+    <IconViewer
+        iconName={block?.icon}
+        size={28}
+        style={{
+          color: 'white',
+          boxShadow: '0px 0px 5px rgba(0,0,0,0.2)',
+          backgroundColor: "var(--mantine-color-blue-5)"
+        }}
+    />
+    <Title
+        order={2}
+        style={{
+          textTransform: "capitalize",
+          color: "var(--mantine-color-blue-5)"
+        }}
+    >
+      {block?.titleForms?.plural}
+    </Title>
+  </Group>)
+
   const clearFilters = () => {
     setFilters({});
   };
@@ -139,12 +161,15 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
     if (!instances || instances.length === 0) {
       return
     }
-    return <BlockInstanceEditor blockInstanceUuid={instances?.[0].uuid}/>
+    return (
+        <>
+          <BlockInstanceEditor blockInstanceUuid={instances?.[0].uuid}/>
+        </>)
   }
   return (
       <Container size="xl" p="0" >
       <Box className={classes.container} pos="relative">
-        <Title order={2} style={{textTransform: "capitalize"}}>{block?.titleForms?.plural}</Title>
+        {header}
         <Space h="md"/>
 
         <Group justify="space-between" mb="md">

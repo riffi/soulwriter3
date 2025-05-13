@@ -81,6 +81,7 @@ export interface IBlock {
   parentBlockUuid?: string; // Ссылка на родительский блок
   titleForms?: IBlockTitleForms
   sceneLinkAllowed: number; // Разрешено ли создавать связи со сценами
+  icon?: string
 }
 
 export interface IBlockParameterGroup{
