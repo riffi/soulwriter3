@@ -1,4 +1,4 @@
-import { Box, Container, Flex } from "@mantine/core";
+import {ActionIcon, Box, Button, Container, Flex, Group} from "@mantine/core";
 import { RichEditor } from "@/components/shared/RichEditor/RichEditor";
 import { WarningsPanel } from "@/components/scenes/SceneEditor/parts/WarningsPanel/WarningsPanel";
 import { SceneStatusPanel } from "@/components/scenes/SceneEditor/parts/SceneStatusPanel";
@@ -8,6 +8,9 @@ import {useEffect} from "react";
 import {InlineEdit} from "@/components/shared/InlineEdit/InlineEdit";
 import {usePageTitle} from "@/providers/PageTitleProvider/PageTitleProvider";
 import {useKeyboardHeight} from "@/components/scenes/SceneEditor/hooks/useKeyboardHeight";
+import {SceneLinkManager} from "@/components/scenes/SceneEditor/parts/SceneLinkManager";
+import {useDisclosure} from "@mantine/hooks";
+import {IconLink} from "@tabler/icons-react";
 interface SceneMobileContentProps {
   sceneBody: string;
   handleContentChange: (contentHTML: string, contentText: string) => void;
@@ -30,20 +33,26 @@ export const SceneMobileContent = ({
                                      saveScene
                                    }: SceneMobileContentProps) => {
   const { setPageTitle, setTitleElement } = usePageTitle();
-
+  const [linkManagerOpened, { open: openLinkManager, close: closeLinkManager }] = useDisclosure(false);
   const keyboardHeight = useKeyboardHeight(true);
 
   // Управление заголовком через эффект
   useEffect(() => {
     if (scene) {
       const headerElement = (
-          <Box style={{ width: '80%' }}>
+          <Group>
             <InlineEdit
                 value={scene.title}
                 onChange={(title) => saveScene({ ...scene, title })}
                 label=""
             />
-          </Box>
+            <ActionIcon
+                variant="outline"
+                onClick={openLinkManager}
+            >
+              <IconLink size={16} />
+            </ActionIcon>
+          </Group>
       );
       setTitleElement(headerElement);
     } else {
@@ -101,6 +110,11 @@ export const SceneMobileContent = ({
             <SceneStatusPanel scene={scene} />
           </Box>
         </Flex>
+        <SceneLinkManager
+            sceneId={scene.id!}
+            opened={linkManagerOpened}
+            onClose={closeLinkManager}
+        />
       </Container>
   )
 }

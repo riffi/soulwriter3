@@ -1,10 +1,10 @@
-import {Drawer, Button, Group, List, Text, Modal, Box, ActionIcon} from "@mantine/core";
+import {Drawer, Button, Group, List, Text, Modal, Box, ActionIcon, ScrollArea, Title, Divider} from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { bookDb } from "@/entities/bookDb";
 import { useEffect, useState } from "react";
 import {IBlockInstance, IBlockInstanceSceneLink} from "@/entities/BookEntities";
 import {IBlock, IBlockStructureKind} from "@/entities/ConstructorEntities";
-import {IconTrash} from "@tabler/icons-react";
+import {IconMan, IconTrash} from "@tabler/icons-react";
 
 interface SceneLinkManagerProps {
   sceneId: number;
@@ -35,14 +35,14 @@ export const SceneLinkManager = ({ sceneId, opened, onClose }: SceneLinkManagerP
   }, [sceneId]);
 
   const handleCreateLink = async (blockInstanceUuid: string) => {
-      const newLink: IBlockInstanceSceneLink = {
-        blockInstanceUuid,
-        sceneId,
-      };
+    const newLink: IBlockInstanceSceneLink = {
+      blockInstanceUuid,
+      sceneId,
+    };
 
-      await bookDb.blockInstanceSceneLinks.add(newLink);
-      setLinks([...links, newLink]);
-      closeModal();
+    await bookDb.blockInstanceSceneLinks.add(newLink);
+    setLinks([...links, newLink]);
+    closeModal();
   };
 
   const handleDeleteLink = async (linkId: number) => {
@@ -62,77 +62,130 @@ export const SceneLinkManager = ({ sceneId, opened, onClose }: SceneLinkManagerP
   const currentBlockInstances = blockInstances.filter(
       instance => instance.blockUuid === selectedBlock?.uuid);
 
+  const availableInstances = currentBlockInstances.filter(
+      instance => !links.some(l => l.blockInstanceUuid === instance.uuid)
+  );
 
   return (
       <Drawer
-          title="Связи сцены"
           opened={opened}
           onClose={onClose}
           position="right"
           size="xl"
+          title={
+            <Title order={3} mb="sm" pb="md" style={{
+              width: '100%'
+            }}>
+              Связи сцены
+            </Title>
+          }
       >
-        <List spacing="sm">
-          <>
-          {blocks?.map(block => {
-            const linkedInstances = getLinkedInstances(block.uuid!);
-
-            return (
-                <Box key={block.uuid}>
-                  <Group justify="space-between" mb="md">
-                    <Text
-                        fw={500}
-                        style={{textTransform: 'capitalize'}}
-                    >
-                      {block.structureKind === IBlockStructureKind.multiple ? block.titleForms?.plural : block.title}
-                    </Text>
-                    <Button
-                        onClick={() => {
-                          setSelectedBlock(block);
-                          openModal();
-                        }}
-                    >
-                      + Добавить
-                    </Button>
-                  </Group>
-                  <Box style={{ marginLeft: '10px' }}>
-                  {linkedInstances.map(instance => {
-                    const link = links.find(l => l.blockInstanceUuid === instance.uuid);
-
-                    return (
-                        <Group key={instance.uuid} justify="space-between">
-                          <Text>{instance.title}</Text>
-                          <ActionIcon
-                              color="red"
-                              variant="subtle"
-                              onClick={() => link?.id && handleDeleteLink(link.id)}
-                          >
-                            <IconTrash size={16} />
-                          </ActionIcon>
-                        </Group>
-                    );
-                  })}
-                  </Box>
-                </Box>
-            );
-          })}
-          </>
-        </List>
-        <Modal opened={modalOpened} onClose={closeModal} title={`Выберите ${selectedBlock?.titleForms?.accusative}`}>
-          <List>
+        <ScrollArea h={`calc(100vh - 120px)`}>
+          <List spacing="md">
             <>
-            {currentBlockInstances.map(i => (
-                <List.Item key={i.uuid}>
-                  <Button
-                      variant="subtle"
-                      fullWidth
-                      onClick={() => handleCreateLink(i.uuid)}
-                  >
-                    {i.title}
-                  </Button>
-                </List.Item>
-            ))}
+            {blocks?.map(block => {
+              const linkedInstances = getLinkedInstances(block.uuid!);
+              const blockTitle = block.structureKind === IBlockStructureKind.multiple
+                  ? block.titleForms?.plural
+                  : block.title;
+
+              return (
+                  <Box key={block.uuid} mb="xl">
+                    <Group justify="space-between" mb="sm">
+                      <Title order={5} c="dimmed" style={{
+                        textTransform: 'capitalize',
+                        paddingBottom: 4
+                      }}>
+                        {blockTitle}
+                      </Title>
+                      <Button
+                          size="xs"
+                          onClick={() => {
+                            setSelectedBlock(block);
+                            openModal();
+                          }}
+                      >
+                        + Добавить
+                      </Button>
+                    </Group>
+                    <>
+                    {linkedInstances.length > 0 ? (
+                        <List
+
+                            listStyleType={'none'}
+                        >
+                          <>
+                          {linkedInstances.map(instance => {
+                            const link = links.find(l => l.blockInstanceUuid === instance.uuid);
+                            return (
+                                <>
+                                  <List.Item
+                                      key={instance.uuid}
+                                      style={{margin: '0'}}
+                                  >
+                                    <Group justify="space-between" w="100%">
+                                      <Text>{instance.title}</Text>
+                                      <ActionIcon
+                                          color="red"
+                                          variant="subtle"
+                                          onClick={() => link?.id && handleDeleteLink(link.id)}
+                                      >
+                                        <IconTrash size={16} />
+                                      </ActionIcon>
+                                    </Group>
+                                  </List.Item>
+                                </>
+                            );
+                          })}
+                          </>
+                        </List>
+                    ) : (
+                        <Text c="dimmed" size="sm" ml="md">
+                          Нет привязанных элементов
+                        </Text>
+                    )}
+                    </>
+                  </Box>
+              );
+            })}
             </>
           </List>
+        </ScrollArea>
+
+        <Modal
+            opened={modalOpened}
+            onClose={closeModal}
+            title={
+              <Title order={4}>
+                Выберите {selectedBlock?.titleForms?.accusative}
+              </Title>
+            }
+            size="lg"
+        >
+          {availableInstances.length > 0 ? (
+              <ScrollArea h={400}>
+                <List spacing="xs" listStyleType={'none'}>
+                  {availableInstances.map(i => (
+                      <List.Item key={i.uuid}>
+                        <Button
+                            variant="light"
+                            fullWidth
+                            onClick={() => handleCreateLink(i.uuid)}
+                            styles={{
+                              inner: { justifyContent: 'start' }
+                            }}
+                        >
+                          {i.title}
+                        </Button>
+                      </List.Item>
+                  ))}
+                </List>
+              </ScrollArea>
+          ) : (
+              <Text c="dimmed" ta="center" py="md">
+                Все элементы уже привязаны
+              </Text>
+          )}
         </Modal>
       </Drawer>
   );

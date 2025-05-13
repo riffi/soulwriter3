@@ -5,7 +5,7 @@ import { SceneStatusPanel } from "@/components/scenes/SceneEditor/parts/SceneSta
 import type { IWarningGroup } from "@/components/shared/RichEditor/types";
 import {IScene} from "@/entities/BookEntities";
 import {useHeaderVisibility} from "@/components/scenes/SceneEditor/hooks/useHeaderVisibility";
-import {IconArrowLeft} from "@tabler/icons-react";
+import {IconArrowLeft, IconLink} from "@tabler/icons-react";
 import {InlineEdit} from "@/components/shared/InlineEdit/InlineEdit";
 import {SceneLinkManager} from "@/components/scenes/SceneEditor/parts/SceneLinkManager";
 import {useDisclosure} from "@mantine/hooks";
@@ -64,6 +64,7 @@ export const SceneDesktopContent = ({
                         <Button
                             variant="outline"
                             onClick={openLinkManager}
+                            leftSection={<IconLink size={16} />}
                         >
                           Связи
                         </Button>
