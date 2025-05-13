@@ -217,6 +217,7 @@ const save = async (db: BlockAbstractDb, block: IBlock, isBookDb = false) => {
 }
 
 const remove = async (db: BlockAbstractDb, block: IBlock) => {
+  /** TODO удалить все инстансы связанные с блоком */
   await db.transaction('rw',
       [
         db.blocks,
