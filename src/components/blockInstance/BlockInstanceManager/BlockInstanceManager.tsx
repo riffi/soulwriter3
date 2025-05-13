@@ -10,12 +10,12 @@ import {
   Box,
   Modal,
   TextInput, Container, Title, Space,
-  MultiSelect
+  MultiSelect, ActionIcon
 } from '@mantine/core';
 import {
   IconPlus,
   IconFilter,
-  IconX
+  IconX, IconFilterOff
 } from '@tabler/icons-react';
 import { useDisclosure } from '@mantine/hooks';
 import { generateUUID } from "@/utils/UUIDUtils";
@@ -32,6 +32,8 @@ import {
 } from "@/components/blockInstance/BlockInstanceEditor/BlockInstanceEditor";
 import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
 import {IconViewer} from "@/components/shared/IconViewer/IconViewer";
+import {usePageTitle} from "@/providers/PageTitleProvider/PageTitleProvider";
+import {IBlockStructureKind} from "@/entities/ConstructorEntities";
 
 export interface IBlockInstanceManagerProps {
   blockUuid: string;
@@ -57,7 +59,34 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
 
   const navigate = useNavigate();
   const { showDialog } = useDialog();
+  const { setPageTitle, setTitleElement } = usePageTitle();
 
+  const header =( <Group>
+    <IconViewer
+        iconName={block?.icon}
+        size={isMobile? 20 : 28}
+        style={{
+          color: 'white',
+          boxShadow: '0px 0px 5px rgba(0,0,0,0.2)',
+          backgroundColor: "var(--mantine-color-blue-5)"
+        }}
+    />
+    <Title
+        order={isMobile? 4 : 2}
+        style={{
+          textTransform: "capitalize",
+          color: "var(--mantine-color-blue-5)"
+        }}
+    >
+      {block?.structureKind === IBlockStructureKind.multiple ? block?.titleForms?.plural : block?.title}
+    </Title>
+  </Group>)
+
+  useEffect(() =>{
+    if (block) {
+      setTitleElement(header);
+    }
+  }, [block])
 
   const handleAddClick = () => {
     setNewInstanceName(`${block?.title}`);
@@ -133,26 +162,7 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
     }));
   };
 
-  const header =( <Group>
-    <IconViewer
-        iconName={block?.icon}
-        size={28}
-        style={{
-          color: 'white',
-          boxShadow: '0px 0px 5px rgba(0,0,0,0.2)',
-          backgroundColor: "var(--mantine-color-blue-5)"
-        }}
-    />
-    <Title
-        order={2}
-        style={{
-          textTransform: "capitalize",
-          color: "var(--mantine-color-blue-5)"
-        }}
-    >
-      {block?.titleForms?.plural}
-    </Title>
-  </Group>)
+
 
   const clearFilters = () => {
     setFilters({});
@@ -169,7 +179,9 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
   return (
       <Container size="xl" p="0" >
       <Box className={classes.container} pos="relative">
-        {header}
+        <Box visibleFrom={"sm"}>
+          {header}
+        </Box>
         <Space h="md"/>
 
         <Group justify="space-between" mb="md">
@@ -184,23 +196,18 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
           </Button>
 
           {displayedParameters?.length > 0 && <Group>
-            <Button
-                variant="subtle"
-                leftSection={<IconFilter size="1rem" />}
+            <ActionIcon
                 onClick={toggleFilters}
-                size="sm"
+                variant={filtersVisible? "filled" : "default"}
             >
-              {filtersVisible ? 'Скрыть фильтры' : 'Показать фильтры'}
-            </Button>
-            <Button
-                variant="subtle"
-                leftSection={<IconX size="1rem" />}
+              <IconFilter size="1rem" />
+            </ActionIcon>
+            {Object.keys(filters).length > 0 && <ActionIcon
                 onClick={clearFilters}
-                disabled={Object.keys(filters).length === 0}
-                size="sm"
+                variant={"default"}
             >
-              Очистить фильтры
-            </Button>
+              <IconFilterOff size="1rem" />
+            </ActionIcon>}
           </Group>
         }
         </Group>

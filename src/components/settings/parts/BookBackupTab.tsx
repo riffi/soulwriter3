@@ -7,6 +7,56 @@ import { notifications } from "@mantine/notifications";
 import { connectToBookDatabase, deleteBookDatabase } from '@/entities/bookDb';
 import Dexie from 'dexie';
 
+async function importBook(event: ProgressEvent<FileReader>) {
+  try {
+    const data = JSON.parse(event.target?.result as string);
+
+    if (!data?.book?.uuid) {
+      throw new Error('Неверный формат файла бэкапа');
+    }
+
+
+    // Обновление/добавление записи книги
+    const existingBook = await configDatabase.books.get({uuid: data.book.uuid});
+    if (existingBook){
+      await configDatabase.books.update(existingBook.id, {...data.book})
+    }
+    else{
+      await configDatabase.books.add({...data.book})
+    }
+
+
+    // Удаление старой БД и создание новой
+    await deleteBookDatabase(data.book.uuid);
+    const db = connectToBookDatabase(data.book.uuid);
+
+    // Импорт данных
+    await Promise.all([
+      db.scenes.bulkAdd(data.scenes || []),
+      db.chapters.bulkAdd(data.chapters || []),
+      db.blockInstances.bulkAdd(data.blockInstances || []),
+      db.blockParameterInstances.bulkAdd(data.blockParameterInstances || []),
+      db.blockInstanceRelations.bulkAdd(data.blockInstanceRelations || []),
+      db.bookConfigurations.bulkAdd(data.bookConfigurations || []),
+      db.configurationVersions.bulkAdd(data.configurationVersions || []),
+      db.blocks.bulkAdd(data.blocks || []),
+      db.blockParameterGroups.bulkAdd(data.blockParameterGroups || []),
+      db.blockParameters.bulkAdd(data.blockParameters || []),
+      db.blockParameterPossibleValues.bulkAdd(data.blockParameterPossibleValues || []),
+      db.blocksRelations.bulkAdd(data.blocksRelations || []),
+      db.blockTabs.bulkAdd(data.blockTabs || []),
+      db.blockInstanceSceneLinks.bulkAdd(data.blockInstanceSceneLinks || []),
+    ]);
+
+    notifications.show({message: "Книга успешно импортирована"});
+  } catch (error) {
+    notifications.show({
+      message: error.message,
+      color: 'red'
+    });
+  }
+}
+
 export const BookBackupTab = () => {
   const [loading, setLoading] = useState(false);
   const [selectedBook, setSelectedBook] = useState<string | null>(null);
@@ -51,6 +101,7 @@ export const BookBackupTab = () => {
         blockParameterPossibleValues: await db.blockParameterPossibleValues.toArray(),
         blocksRelations: await db.blocksRelations.toArray(),
         blockTabs: await db.blockTabs.toArray(),
+        blockInstanceSceneLinks: await db.blockInstanceSceneLinks.toArray()
       };
 
       const blob = new Blob([JSON.stringify(backupData)], { type: 'application/json' });
@@ -79,42 +130,15 @@ export const BookBackupTab = () => {
       setLoading(true);
       try {
         const reader = new FileReader();
-        reader.onload = async (event) => {
-          const data = JSON.parse(event.target?.result as string);
-
-          if (!data?.book?.uuid) {
-            throw new Error('Неверный формат файла бэкапа');
-          }
-
-          // Обновление/добавление записи книги
-          await configDatabase.books.put({ ...data.book, id: undefined });
-
-          // Удаление старой БД и создание новой
-          await deleteBookDatabase(data.book.uuid);
-          const db = connectToBookDatabase(data.book.uuid);
-
-          // Импорт данных
-          await Promise.all([
-            db.scenes.bulkAdd(data.scenes || []),
-            db.chapters.bulkAdd(data.chapters || []),
-            db.blockInstances.bulkAdd(data.blockInstances || []),
-            db.blockParameterInstances.bulkAdd(data.blockParameterInstances || []),
-            db.blockInstanceRelations.bulkAdd(data.blockInstanceRelations || []),
-            db.bookConfigurations.bulkAdd(data.bookConfigurations || []),
-            db.configurationVersions.bulkAdd(data.configurationVersions || []),
-            db.blocks.bulkAdd(data.blocks || []),
-            db.blockParameterGroups.bulkAdd(data.blockParameterGroups || []),
-            db.blockParameters.bulkAdd(data.blockParameters || []),
-            db.blockParameterPossibleValues.bulkAdd(data.blockParameterPossibleValues || []),
-            db.blocksRelations.bulkAdd(data.blocksRelations || []),
-            db.blockTabs.bulkAdd(data.blockTabs || [])
-          ]);
-
-          notifications.show({ message: "Книга успешно импортирована" });
+        reader.onload = (event) => {
+          importBook(event);
         };
         reader.readAsText(file);
       } catch (error) {
-        showDialog('Ошибка', error.message);
+        notifications.show({
+          message: error.message,
+          color: 'red'
+        });
       } finally {
         setLoading(false);
       }

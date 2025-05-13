@@ -10,6 +10,7 @@ import { bookDb } from "@/entities/bookDb";
 import { BlockRepository } from "@/repository/BlockRepository";
 import {DashboardBlockCard} from "@/components/books/BookDashboard/parts/DashboardBlockCard";
 import {usePageTitle} from "@/providers/PageTitleProvider/PageTitleProvider";
+import {useEffect} from "react";
 
 
 export const BookDashboard = (bookUuid: string) => {
@@ -18,7 +19,11 @@ export const BookDashboard = (bookUuid: string) => {
     if (!bookUuid) return [];
     return BlockRepository.getAll(bookDb);
   }, [bookUuid]);
-  setPageTitle(`Рабочий стол книги`);
+
+  useEffect(() =>{
+    setPageTitle(`Рабочий стол книги`);
+  }, [bookUuid])
+
   return (
       <Container fluid p="md">
         <Group justify="space-between" mb="md" visibleFrom="sm">
