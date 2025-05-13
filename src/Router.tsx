@@ -13,6 +13,7 @@ import {SettingsPage} from "@/pages/settings/SettingsPage";
 import {NoteManager} from "@/components/notes/NoteManager/NoteManager";
 import {NoteEditPage} from "@/components/notes/NoteEditPage/NoteEditPage";
 import {NoteFolder} from "@/components/notes/NoteFolder/NoteFolder";
+import {BookDashboardPage} from "@/pages/books/BookDashboardPage";
 const router = createBrowserRouter([
   {
     path: '/',
@@ -37,6 +38,10 @@ const router = createBrowserRouter([
       {
         path: '/books',
         element: <BooksPage/> as ReactNode
+      },
+      {
+        path: '/book/dashboard',
+        element: <BookDashboardPage/> as ReactNode
       },
       {
         path: '/scenes',

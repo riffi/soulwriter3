@@ -117,9 +117,17 @@ const removeRelation = async (db: BookDB, relation: IBlockInstanceRelation)=> {
   return db.blockInstanceRelations.delete(relation.id)
 }
 
+const getInstanceParams = async (db: BookDB, instanceUuid: string) => {
+  return db.blockParameterInstances
+    .where('blockInstanceUuid')
+    .equals(instanceUuid)
+    .toArray();
+}
+
 export const BlockInstanceRepository = {
   getByUuid,
   getBlockInstances,
+  getInstanceParams,
   appendDefaultParams,
   appendDefaultParam,
   getRelatedInstances,

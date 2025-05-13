@@ -2,7 +2,7 @@
   "name": "soulwriter",
   "private": true,
   "type": "module",
-  "version": "0.0.16",
+  "version": "0.0.17",
   "scripts": {
     "dev": "vite --host",
     "build": "vite build",

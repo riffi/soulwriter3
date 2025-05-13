@@ -3,7 +3,7 @@ import {
   IconBrandDatabricks,
   IconGauge,
   IconNotes,
-  IconChevronRight, IconSettings,
+  IconChevronRight, IconSettings, IconCell, IconBox, IconDatabaseCog, IconDashboard,
 } from '@tabler/icons-react';
 import {
   Box,
@@ -129,24 +129,26 @@ const NavLink = ({
 
 const BASE_MENU_ITEMS: NavLinkGroup[] = [
   {
-    label: 'Конфигуратор',
-    icon: IconGauge,
-    link: '/configurator',
-  },
-  {
-    label: 'Книги',
-    icon: IconBooks,
-    link: '/books',
-  },
-  {
-    label: 'Заметки',
-    icon: IconNotes,
-    link: '/notes',
-  },
-  {
-    label: 'Настройки',
-    icon: IconSettings,
-    link: '/settings',
+    label: 'Общее',
+    icon: IconBox,
+    links:[
+      {
+        label: 'Конфигуратор',
+        link: '/configurator',
+      },
+      {
+        label: 'Заметки',
+        link: '/notes',
+      },
+      {
+        label: 'Книги',
+        link: '/books',
+      },
+      {
+        label: 'Настройки',
+        link: '/settings',
+      }
+    ]
   },
 ];
 
@@ -175,17 +177,17 @@ export const NavbarNested = ({ toggleNavbar }: { toggleNavbar?: () => void }) =>
 
     if (selectedBook) {
       dynamicItems.push({
+        label: 'Рабочий стол',
+        icon: IconDashboard,
+        initiallyOpened: true,
+        link: '/book/dashboard',
+      });
+
+      dynamicItems.push({
         label: 'Сцены',
         icon: IconNotes,
         initiallyOpened: true,
         link: '/scenes',
-      });
-
-      dynamicItems.push({
-        label: 'Конфигурация книги',
-        icon: IconGauge,
-        initiallyOpened: true,
-        link: `/configuration/edit/?uuid=${selectedBook.configurationUuid}&bookUuid=${selectedBook.uuid}`,
       });
 
       const knowledgeLinks = blocks?.filter(block => block.parentBlockUuid == null)
@@ -202,6 +204,13 @@ export const NavbarNested = ({ toggleNavbar }: { toggleNavbar?: () => void }) =>
           links: knowledgeLinks,
         });
       }
+
+      dynamicItems.push({
+        label: 'Конфигурация',
+        icon: IconDatabaseCog,
+        initiallyOpened: true,
+        link: `/configuration/edit/?uuid=${selectedBook.configurationUuid}&bookUuid=${selectedBook.uuid}`,
+      });
     }
 
     return { baseItems, dynamicItems };

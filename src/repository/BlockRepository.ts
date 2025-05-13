@@ -281,8 +281,13 @@ const remove = async (db: BlockAbstractDb, block: IBlock) => {
   );
 }
 
+const getAll = async (db: BlockAbstractDb): Promise<IBlock[]> => {
+  return db.blocks.toArray();
+}
+
 
 export const BlockRepository = {
+  getAll,
   getByUuid,
   getSiblings,
   getParameterGroups,
