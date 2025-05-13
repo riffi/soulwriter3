@@ -227,7 +227,6 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
           <Table.Thead>
             <Table.Tr>
               <Table.Th>Название</Table.Th>
-              <Table.Th width={150}>Действия</Table.Th>
             </Table.Tr>
           </Table.Thead>
           <>

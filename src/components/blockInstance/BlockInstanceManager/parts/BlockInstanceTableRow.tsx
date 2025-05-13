@@ -1,10 +1,13 @@
 import { Group, Badge, ActionIcon, Text, Table } from '@mantine/core';
-import { IconEdit, IconTrash } from '@tabler/icons-react';
+import { IconEdit, IconTrash, IconDots } from '@tabler/icons-react';
 import { IBlockInstance } from '@/entities/BookEntities';
 import {IBlockParameter} from "@/entities/ConstructorEntities";
 import {
   IBlockInstanceWithParams
 } from "@/components/blockInstance/BlockInstanceManager/useBlockInstanceManager";
+import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
+import { Drawer, Button, Stack } from '@mantine/core';
+import { useState } from 'react';
 
 interface BlockInstanceTableRowProps {
   instance: IBlockInstanceWithParams;
@@ -19,6 +22,21 @@ export const BlockInstanceTableRow = ({
                                         onEdit,
                                         onDelete,
                                       }: BlockInstanceTableRowProps) => {
+  const {isMobile} = useMedia();
+  const [openedDrawerId, setOpenedDrawerId] = useState<string | null>(null);
+
+  const handleDrawerActions = (action: 'edit' | 'delete') => {
+    setOpenedDrawerId(null);
+    switch(action) {
+      case 'edit':
+        onEdit(instance.uuid!);
+        break;
+      case 'delete':
+        onDelete(instance);
+        break;
+    }
+  };
+
   return (
       <Table.Tr key={instance.uuid}>
         <Table.Td>
@@ -55,20 +73,59 @@ export const BlockInstanceTableRow = ({
         </Table.Td>
         <Table.Td>
           <Group gap={4} justify="center">
-            <ActionIcon
-                variant="subtle"
-                color="blue"
-                onClick={() => onEdit(instance.uuid!)}
-            >
-              <IconEdit size="1rem" />
-            </ActionIcon>
-            <ActionIcon
-                variant="subtle"
-                color="red"
-                onClick={() => onDelete(instance)}
-            >
-              <IconTrash size="1rem" />
-            </ActionIcon>
+            {isMobile ? (
+                <>
+                  <ActionIcon
+                      variant="subtle"
+                      onClick={() => setOpenedDrawerId(instance.uuid!)}
+                  >
+                    <IconDots size={16} />
+                  </ActionIcon>
+
+                  <Drawer
+                      opened={openedDrawerId === instance.uuid}
+                      onClose={() => setOpenedDrawerId(null)}
+                      position="bottom"
+                      title="Действия"
+                      size="25%"
+                  >
+                    <Stack gap="sm">
+                      <Button
+                          variant="subtle"
+                          leftSection={<IconEdit size={16} />}
+                          onClick={() => handleDrawerActions('edit')}
+                      >
+                        Редактировать
+                      </Button>
+                      <Button
+                          color="red"
+                          variant="subtle"
+                          leftSection={<IconTrash size={16} />}
+                          onClick={() => handleDrawerActions('delete')}
+                      >
+                        Удалить
+                      </Button>
+                    </Stack>
+                  </Drawer>
+                </>
+            ) : (
+                <>
+                  <ActionIcon
+                      variant="subtle"
+                      color="blue"
+                      onClick={() => onEdit(instance.uuid!)}
+                  >
+                    <IconEdit size="1rem" />
+                  </ActionIcon>
+                  <ActionIcon
+                      variant="subtle"
+                      color="red"
+                      onClick={() => onDelete(instance)}
+                  >
+                    <IconTrash size="1rem" />
+                  </ActionIcon>
+                </>
+            )}
           </Group>
         </Table.Td>
       </Table.Tr>
