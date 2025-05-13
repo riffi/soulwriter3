@@ -191,6 +191,13 @@ export const BlockEditForm = ({ blockUuid, bookUuid }: IBlockEditFormProps) => {
             mt="md"
             mb="xl"
         />
+        <Checkbox
+            checked={block?.sceneLinkAllowed === 1}
+            label="Привязка к сцене"
+            onChange={(e) => saveBlock({ ...block, sceneLinkAllowed: e.currentTarget.checked ? 1 : 0 })}
+            mt="md"
+            mb="xl"
+        />
         <Space h="md" />
 
         <Group mb="md">

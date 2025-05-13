@@ -1,7 +1,7 @@
 import Dexie from "dexie";
 import {
   IBlockInstance,
-  IBlockInstanceRelation,
+  IBlockInstanceRelation, IBlockInstanceSceneLink,
   IBlockParameterInstance,
   IBook,
   IScene
@@ -17,6 +17,7 @@ const bookSchema={
   blockInstances: '++id, &uuid, blockUuid, title, parentInstanceUuid',
   blockParameterInstances: '++id, &uuid, blockParameterUuid, blockInstanceUuid, blockParameterGroupUuid',
   blockInstanceRelations: '++id, &uuid, sourceInstanceUuid, targetInstanceUuid, blockRelationUuid, sourceBlockUuid, targetBlockUuid ',
+  blockInstanceSceneLinks: '++id, &uuid, blockInstanceUuid, sceneId',
 }
 
 export class BookDB extends BlockAbstractDb{
@@ -27,7 +28,7 @@ export class BookDB extends BlockAbstractDb{
   blockInstanceRelations!: Dexie.Table<IBlockInstanceRelation, number>;
   blockInstances!: Dexie.Table<IBlockInstance, number>;
   blockParameterInstances!: Dexie.Table<IBlockParameterInstance, number>;
-
+  blockInstanceSceneLinks!: Dexie.Table<IBlockInstanceSceneLink, number>;
   constructor(dbName:string) {
     super(dbName);
     this.version(2).stores(bookSchema);

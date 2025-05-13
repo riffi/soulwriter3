@@ -18,6 +18,13 @@ export interface IBlockInstance{
   parentInstanceUuid?: string;
 }
 
+export interface IBlockInstanceSceneLink{
+  id?: number
+  uuid?: string
+  blockInstanceUuid: string
+  sceneId: number
+}
+
 export interface IBlockParameterInstance{
   id?: number;
   uuid?: string;

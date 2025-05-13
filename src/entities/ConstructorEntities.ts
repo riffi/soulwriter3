@@ -80,6 +80,7 @@ export interface IBlock {
   displayKind: string // Вид отображения
   parentBlockUuid?: string; // Ссылка на родительский блок
   titleForms?: IBlockTitleForms
+  sceneLinkAllowed: number; // Разрешено ли создавать связи со сценами
 }
 
 export interface IBlockParameterGroup{

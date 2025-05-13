@@ -7,6 +7,8 @@ import {IScene} from "@/entities/BookEntities";
 import {useHeaderVisibility} from "@/components/scenes/SceneEditor/hooks/useHeaderVisibility";
 import {IconArrowLeft} from "@tabler/icons-react";
 import {InlineEdit} from "@/components/shared/InlineEdit/InlineEdit";
+import {SceneLinkManager} from "@/components/scenes/SceneEditor/parts/SceneLinkManager";
+import {useDisclosure} from "@mantine/hooks";
 
 interface SceneDesktopContentProps {
   scene: IScene;
@@ -33,6 +35,7 @@ export const SceneDesktopContent = ({
                                     }: SceneDesktopContentProps) => {
 
   const { isHeaderVisible, handleEditorScroll } = useHeaderVisibility();
+  const [linkManagerOpened, { open: openLinkManager, close: closeLinkManager }] = useDisclosure(false);
 
   return (
     <Container size="xl" p="0" fluid style={{ height: 'calc(100vh-200px)' }}>
@@ -52,11 +55,19 @@ export const SceneDesktopContent = ({
                       >
                         Назад к списку
                       </Button>
-                      <InlineEdit
-                          value={scene.title}
-                          onChange={(title) => saveScene({ ...scene, title })}
-                          label=""
-                      />
+                      <Group>
+                        <InlineEdit
+                            value={scene.title}
+                            onChange={(title) => saveScene({ ...scene, title })}
+                            label=""
+                        />
+                        <Button
+                            variant="outline"
+                            onClick={openLinkManager}
+                        >
+                          Связи
+                        </Button>
+                      </Group>
                     </Group>
                 )}
                 </>
@@ -85,6 +96,11 @@ export const SceneDesktopContent = ({
         )}
         </>
       </Flex>
+      <SceneLinkManager
+          sceneId={scene.id!}
+          opened={linkManagerOpened}
+          onClose={closeLinkManager}
+      />
     </Container>
 )}
 
