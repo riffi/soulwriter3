@@ -48,6 +48,16 @@ export const relations: Record<TableName, Record<string, { table: TableName; fie
     targetBlockUuid: { table: 'blocks', field: 'uuid' },
     configurationVersionUuid: { table: 'configurationVersions', field: 'uuid' }
   },
+  blockInstanceRelations:{
+    blockRelationUuid: { table: 'blocksRelations', field: 'uuid'},
+    sourceInstanceUuid: { table: 'blockInstances', field: 'uuid'},
+    targetInstanceUuid: { table: 'blockInstances', field: 'uuid'},
+    sourceBlockUuid: { table: 'blocks', field: 'uuid'},
+    targetBlockUuid: { table: 'blocks', field: 'uuid'}
+  },
+  blockInstanceSceneLinks:{
+    blockInstanceUuid: { table: 'blockInstances', field: 'uuid'},
+  },
   blockTabs:{
     blockUuid: { table: 'blocks', field: 'uuid' },
     childBlockUuid: { table: 'blocks', field: 'uuid'},
