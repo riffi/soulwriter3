@@ -95,6 +95,25 @@ export const DbViewer = () => {
     }
   };
 
+  const handleReverseRelationClick = (
+      tableName: TableName,
+      field: string,
+      value: string
+  ) => {
+    const tables = activeTab === 'book' ? bookTables : configTables;
+    const targetTable = tables.find(t => t.name === tableName);
+    if (targetTable) {
+      const filteredData = targetTable.data.filter((item: any) => item[field] === value);
+      const newEntry: HistoryEntry = {
+        table: { name: tableName, data: filteredData },
+        filter: { field, value },
+      };
+      setHistory(prev => [...prev, newEntry]);
+      setSelectedTable({ name: tableName, data: filteredData });
+      setCurrentFilter({ field, value });
+    }
+  };
+
   const handleHistoryBack = () => {
     if (history.length > 1) {
       const newHistory = [...history];
@@ -134,6 +153,7 @@ export const DbViewer = () => {
                   activeTab={activeTab}
                   currentFilter={currentFilter || undefined}
                   onValueClick={(key, value) => handleValueClick(key, value)}
+                  onReverseRelationClick={handleReverseRelationClick}
                   bookTables={bookTables}
                   configTables={configTables}
               />
