@@ -14,6 +14,7 @@ import {
 } from "@/components/configurator/BookConfigurationEditForm/usePublishVersion";
 import {bookDb} from "@/entities/bookDb";
 import {BlockRepository} from "@/repository/BlockRepository";
+import {BlockInstanceRepository} from "@/repository/BlockInstanceRepository";
 
 export const useBookConfigurationEditForm = (configurationUuid: string,
                                              bookUuid?: string,
@@ -62,6 +63,9 @@ export const useBookConfigurationEditForm = (configurationUuid: string,
   const removeBlock = async (block: IBlock) => {
     const result = await showDialog('Подтверждение', 'Вы действительно хотите удалить блок и все связанные с ним данные?');
     if (!result || !block.uuid) return;
+    if (isBookDb){
+      await BlockInstanceRepository.removeByBlock(bookDb, block.uuid)
+    }
     await BlockRepository.remove(db, block)
   };
 

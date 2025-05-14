@@ -95,6 +95,7 @@ const remove = async (db: BookDB, instance: IBlockInstance)=> {
   db.blockInstanceRelations.where('sourceInstanceUuid').equals(instance.uuid).delete();
   db.blockInstanceRelations.where('targetInstanceUuid').equals(instance.uuid).delete();
   db.blockParameterInstances.where('blockInstanceUuid').equals(instance.uuid).delete();
+  db.blockInstanceSceneLinks.where('blockInstanceUuid').equals(instance.uuid).delete();
   db.blockInstances.delete(instance.id);
 }
 
@@ -124,6 +125,13 @@ const getInstanceParams = async (db: BookDB, instanceUuid: string) => {
     .toArray();
 }
 
+const removeByBlock = async (db: BookDB, blockUuid: string) => {
+  const instances = await BlockInstanceRepository.getBlockInstances(db, blockUuid);
+  for (const instance of instances) {
+    await remove(db, instance);
+  }
+}
+
 export const BlockInstanceRepository = {
   getByUuid,
   getBlockInstances,
@@ -137,4 +145,5 @@ export const BlockInstanceRepository = {
   update,
   remove,
   removeRelation,
+  removeByBlock,
 }
