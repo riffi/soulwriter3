@@ -12,20 +12,21 @@ export const useScenes = () => {
   }, []);
 
   const createScene = async (title: string, chapterId?: number) => {
-    const lastSceneOrder = await bookDb.scenes.orderBy('order').last();
     const newScene: IScene = {
       title,
       body: "",
-      order: lastSceneOrder ? lastSceneOrder.order + 1 : 1,
-      chapterId,
-    }
+      order: 0, // Временное значение
+      chapterId: chapterId ?? null
+    };
 
     const sceneId = await bookDb.scenes.add(newScene);
-    notifications.show({
-      title: "Успех",
-      message: "Сцена успешно создана",
-      color: "green",
+
+    // Вызываем пересчет порядка
+    await recalculateGlobalOrder({
+      id: sceneId,
+      newChapterId: chapterId ?? null
     });
+
     return sceneId;
   }
 
@@ -73,34 +74,57 @@ export const useScenes = () => {
   }
 
   const reorderScenes = async (activeId: number, overId: number) => {
-    if (!scenes) return;
+    const allScenes = await bookDb.scenes.orderBy('order').toArray();
 
-    // Создаем копию массива для работы
-    const newOrder = [...scenes];
+    const activeIndex = allScenes.findIndex(s => s.id === activeId);
+    const overIndex = allScenes.findIndex(s => s.id === overId);
 
-    // Находим индексы элементов
-    const oldIndex = newOrder.findIndex(scene => scene.id === activeId);
-    const newIndex = newOrder.findIndex(scene => scene.id === overId);
+    if (activeIndex === -1 || overIndex === -1) return;
 
-    if (oldIndex === -1 || newIndex === -1 || oldIndex === newIndex) return;
+    const newScenes = arrayMove(allScenes, activeIndex, overIndex);
 
-    // Перемещаем элемент
-    const [movedItem] = newOrder.splice(oldIndex, 1);
-    newOrder.splice(newIndex, 0, movedItem);
+    // Используем новую логику пересчета
+    await recalculateGlobalOrder();
+  };
 
-    // Обновляем порядковые номера
-    const updates = newOrder.map((scene, index) => ({
-      id: scene.id!,
-      changes: { order: index + 1 }
-    }));
+  const recalculateGlobalOrder = async (
+      movedScene?: { id: number; newChapterId: number | null }
+  ) => {
+    // Получаем все сцены в текущем порядке
+    const allScenes = await bookDb.scenes.orderBy('order').toArray();
 
-    // Выполняем обновление в транзакции
+    // Если есть перемещаемая сцена - временно удаляем ее из общего списка
+    let movedSceneData: IScene | undefined;
+    if (movedScene) {
+      movedSceneData = allScenes.find(s => s.id === movedScene.id);
+      if (movedSceneData) {
+        allScenes.splice(allScenes.indexOf(movedSceneData), 1);
+      }
+    }
+
+    // Определяем целевую группу для перемещенной сцены
+    const targetGroup = movedScene
+        ? allScenes.filter(s => s.chapterId === movedScene.newChapterId)
+        : [];
+
+    // Вставляем перемещенную сцену в конец целевой группы
+    if (movedSceneData && movedScene) {
+      movedSceneData.chapterId = movedScene.newChapterId;
+      const insertIndex = targetGroup.length > 0
+          ? allScenes.indexOf(targetGroup[targetGroup.length - 1]) + 1
+          : allScenes.length;
+
+      allScenes.splice(insertIndex, 0, movedSceneData);
+    }
+
+    // Обновляем порядковые номера для всех сцен
     await bookDb.transaction('rw', bookDb.scenes, async () => {
-      await Promise.all(
-          updates.map(update =>
-              bookDb.scenes.update(update.id, update.changes)
-          )
-      );
+      for (let i = 0; i < allScenes.length; i++) {
+        await bookDb.scenes.update(allScenes[i].id!, {
+          order: i + 1,
+          chapterId: allScenes[i].chapterId
+        });
+      }
     });
   };
 
@@ -110,6 +134,7 @@ export const useScenes = () => {
     reorderScenes,
     updateSceneOrder,
     createScene,
-    updateScene
+    updateScene,
+    recalculateGlobalOrder
   };
 };

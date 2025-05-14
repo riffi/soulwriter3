@@ -15,7 +15,7 @@ export const SceneTable = ({ openCreateModal }: SceneTableProps) => {
 
   const getScenesForChapter = (chapterId: number | null) => {
     return scenes?.filter(scene =>
-        chapterId ? scene.chapterId === chapterId : scene.chapterId === undefined
+        chapterId ? scene.chapterId === chapterId : ((scene.chapterId === null) || (scene.chapterId === undefined))
     ) || [];
   };
 

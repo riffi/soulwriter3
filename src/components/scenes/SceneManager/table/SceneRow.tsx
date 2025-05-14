@@ -6,6 +6,8 @@ import { useDisclosure } from "@mantine/hooks";
 import { DeleteConfirmationModal } from "../modals/DeleteConfirmationModal";
 import { MoveSceneModal } from "../modals/MoveSceneModal";
 import { useScenes } from "../useScenes";
+import {notifications} from "@mantine/notifications";
+import {bookDb} from "@/entities/bookDb";
 
 interface SceneRowProps {
   scene: {
@@ -21,7 +23,7 @@ export const SceneRow = ({ scene, onDelete, onMove }: SceneRowProps) => {
   const navigate = useNavigate();
   const [openedDeleteModal, { open: openDeleteModal, close: closeDeleteModal }] = useDisclosure(false);
   const [openedMoveModal, { open: openMoveModal, close: closeMoveModal }] = useDisclosure(false);
-  const { updateScene } = useScenes();
+  const { recalculateGlobalOrder } = useScenes();
 
   const handleDelete = () => {
     if (onDelete) {
@@ -30,9 +32,27 @@ export const SceneRow = ({ scene, onDelete, onMove }: SceneRowProps) => {
     closeDeleteModal();
   };
 
-  const handleMove = async (chapterId: number | null) => {
-    await updateScene(scene.id, { chapterId });
-    closeMoveModal();
+  const handleMove = async (newChapterId: number | null) => {
+    try {
+      // Передаем данные о перемещении в recalculateGlobalOrder
+      await recalculateGlobalOrder({
+        id: scene.id,
+        newChapterId
+      });
+
+      closeMoveModal();
+      notifications.show({
+        title: "Успех",
+        message: "Сцена перемещена",
+        color: "green"
+      });
+    } catch (error) {
+      notifications.show({
+        title: "Ошибка",
+        message: "Не удалось переместить сцену",
+        color: "red"
+      });
+    }
   };
 
   return (
