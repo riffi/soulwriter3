@@ -1,10 +1,10 @@
-import {Box, Table, ScrollArea, Title, Text, Group, ActionIcon, Badge} from '@mantine/core';
-import {DatabaseType, TableData, TableName} from "@/pages/tech/DbViewer/types";
-import {TableHeader} from "@/pages/tech/DbViewer/parts/DataTable/TableHeader";
-import {TableRow} from "@/pages/tech/DbViewer/parts/DataTable/TableRow";
-import {Filters} from "@/pages/tech/DbViewer";
-import {useMemo, useState} from "react";
-import {IconFilter, IconX} from "@tabler/icons-react";
+import { Box, Table, ScrollArea, Title, Text, Group, ActionIcon, Badge } from '@mantine/core';
+import { DatabaseType, TableData, TableName } from "@/pages/tech/DbViewer/types";
+import { TableHeader } from "./TableHeader";
+import { TableRow } from "./TableRow";
+import { Filters } from "@/pages/tech/DbViewer";
+import { useMemo, useState } from "react";
+import { IconFilter, IconX } from "@tabler/icons-react";
 
 interface DataTableProps {
   table: TableData;
@@ -20,12 +20,12 @@ interface DataTableProps {
   onClearAllFilters: () => void;
 }
 
-const isPriorityField = (key: string) => ['id', 'uuid', 'title'].includes(key);
+const PRIORITY_FIELDS = ['id', 'uuid', 'title'];
+const isPriorityField = (key: string) => PRIORITY_FIELDS.includes(key);
 
 export const DataTable = ({
                             table,
                             activeTab,
-                            currentFilter,
                             onValueClick,
                             bookTables,
                             configTables,
@@ -35,80 +35,49 @@ export const DataTable = ({
                             onRemoveFilter,
                             onClearAllFilters,
                           }: DataTableProps) => {
+  const [showFilters, setShowFilters] = useState(false);
 
-  const [showFilters, setShowFilters] = useState(true);
+  const allKeys = useMemo(() => {
+    const keys = Array.from(new Set(table.data.flatMap(Object.keys)));
+    return keys.sort((a, b) => {
+      const aIndex = PRIORITY_FIELDS.indexOf(a);
+      const bIndex = PRIORITY_FIELDS.indexOf(b);
 
-  const allKeys = Array.from(
-      new Set(table.data.flatMap(item => Object.keys(item)))
-  ).sort((a, b) => {
-    const priorityFields = ['id', 'uuid', 'title'];
-    const aPriority = priorityFields.indexOf(a);
-    const bPriority = priorityFields.indexOf(b);
-
-    if (aPriority === -1 && bPriority === -1) return a.localeCompare(b);
-    if (aPriority === -1) return 1;
-    if (bPriority === -1) return -1;
-    return aPriority - bPriority;
-  });
+      if (aIndex === -1 && bIndex === -1) return a.localeCompare(b);
+      if (aIndex === -1) return 1;
+      if (bIndex === -1) return -1;
+      return aIndex - bIndex;
+    });
+  }, [table.data]);
 
   const filteredData = useMemo(() => {
     return table.data.filter(item =>
         Object.entries(filters).every(([field, value]) =>
             String(item[field]).toLowerCase().includes(value.toLowerCase())
-        ));
+        )
+    );
   }, [table.data, filters]);
 
   const filterOptions = useMemo(() => {
-    const options: Record<string, string[]> = {};
-    allKeys.forEach(key => {
-      options[key] = Array.from(new Set(table.data.map(item => String(item[key])))).sort();
-    });
-    return options;
+    return allKeys.reduce((acc, key) => {
+      acc[key] = Array.from(new Set(table.data.map(item => String(item[key])))).sort();
+      return acc;
+    }, {} as Record<string, string[]>);
   }, [table.data, allKeys]);
 
   return (
-      <Box mb="xl" p="lg" style={{backgroundColor: 'white'}}>
-        <Group justify="space-between" mb="sm">
-          <Title order={3}>{table.name}</Title>
-          <Group gap="xs">
-            <ActionIcon
-                variant="subtle"
-                color="blue"
-                onClick={() => setShowFilters(!showFilters)}
-            >
-              <IconFilter size={18}/>
-            </ActionIcon>
-            <ActionIcon variant="subtle" color="red" onClick={onClearAllFilters} >
-              <IconX size={18}/>
-            </ActionIcon>
-          </Group>
-        </Group>
-
-        {showFilters && Object.keys(filters).length > 0 && (
-            <Group gap="xs" mb="sm" align="center">
-              <Text size="sm" c="dimmed">Active filters:</Text>
-              {Object.entries(filters).map(([field, value]) => (
-                  <Badge
-                      key={field}
-                      variant="outline"
-                      rightSection={
-                        <ActionIcon
-                            size="xs"
-                            color="red"
-                            onClick={() => onRemoveFilter(field)}
-                        >
-                          <IconX size={10}/>
-                        </ActionIcon>
-                      }
-                  >
-                    {field}: {value}
-                  </Badge>
-              ))}
-            </Group>
-        )}
+      <Box mb="xl" p="lg" bg="white">
+        <HeaderSection
+            tableName={table.name}
+            showFilters={showFilters}
+            onToggleFilters={() => setShowFilters(!showFilters)}
+            onClearAllFilters={onClearAllFilters}
+            filters={filters}
+            onRemoveFilter={onRemoveFilter}
+        />
 
         <ScrollArea>
-          <Table highlightOnHover style={{ tableLayout: 'auto' }}>
+          <Table highlightOnHover tableLayout="auto">
             <TableHeader
                 keys={allKeys}
                 isPriorityField={isPriorityField}
@@ -121,9 +90,8 @@ export const DataTable = ({
             <Table.Tbody>
               {filteredData.map((item, index) => (
                   <TableRow
-                      key={index}
+                      key={`${table.name}-row-${index}`}
                       item={item}
-                      index={index}
                       allKeys={allKeys}
                       table={table}
                       activeTab={activeTab}
@@ -140,3 +108,63 @@ export const DataTable = ({
       </Box>
   );
 };
+
+const HeaderSection = ({
+                         tableName,
+                         showFilters,
+                         onToggleFilters,
+                         onClearAllFilters,
+                         filters,
+                         onRemoveFilter
+                       }: {
+  tableName: string;
+  showFilters: boolean;
+  onToggleFilters: () => void;
+  onClearAllFilters: () => void;
+  filters: Filters;
+  onRemoveFilter: (field: string) => void;
+}) => (
+    <>
+      <Group justify="space-between" mb="sm">
+        <Title order={3}>{tableName}</Title>
+        <Group gap="xs">
+          <ActionIcon
+              variant="subtle"
+              color="blue"
+              onClick={onToggleFilters}
+          >
+            <IconFilter size={18} />
+          </ActionIcon>
+          <ActionIcon variant="subtle" color="red" onClick={onClearAllFilters}>
+            <IconX size={18} />
+          </ActionIcon>
+        </Group>
+      </Group>
+
+      {showFilters && Object.keys(filters).length > 0 && (
+          <ActiveFilters filters={filters} onRemoveFilter={onRemoveFilter} />
+      )}
+    </>
+);
+
+const ActiveFilters = ({ filters, onRemoveFilter }: {
+  filters: Filters;
+  onRemoveFilter: (field: string) => void;
+}) => (
+    <Group gap="xs" mb="sm" align="center">
+      <Text size="sm" c="dimmed">Active filters:</Text>
+      {Object.entries(filters).map(([field, value]) => (
+          <Badge
+              key={field}
+              variant="outline"
+              rightSection={
+                <ActionIcon size="xs" color="red" onClick={() => onRemoveFilter(field)}>
+                  <IconX size={10} />
+                </ActionIcon>
+              }
+          >
+            {field}: {value}
+          </Badge>
+      ))}
+    </Group>
+);
