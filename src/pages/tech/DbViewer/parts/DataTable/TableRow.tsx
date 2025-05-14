@@ -3,7 +3,7 @@ import { RelationPopup } from './RelationPopup';
 import { DatabaseType, relations, TableData, TableName } from "@/pages/tech/DbViewer/types";
 import { getReverseRelations } from "./utils";
 import {useMemo, useState} from 'react';
-import {IconFilter} from "@tabler/icons-react";
+import {IconFilter, IconLink} from "@tabler/icons-react";
 
 interface TableRowProps {
   item: Record<string, unknown>;
@@ -187,9 +187,20 @@ const ReverseRelationLinks = ({ links, onClick }: {
   onClick: (tableName: TableName, field: string, value: string) => void;
 }) => (
     <Table.Tr>
-      <Table.Td colSpan={100} style={{ paddingTop: 0, paddingBottom: 16, paddingLeft: 16 }}>
+      <Table.Td
+          colSpan={100}
+          style={{
+            paddingTop: 0,
+            paddingLeft: 16,
+            backgroundColor:'#f3f3f3',
+            boxShadow:'0px 0px 3px rgba(0,0,0,0.2) inset'
+          }}
+      >
         <Group pt={5}>
-          <Text size="sm" fw={200} c="dimmed">Ссылаются:</Text>
+          <IconLink
+              color={"#aaa"}
+              size={16}
+          ></IconLink>
           <Group gap={8} wrap="wrap">
             {links.map((link) => (
                 <ReverseRelationLink
@@ -210,14 +221,14 @@ const ReverseRelationLink = ({ link, onClick }: {
 }) => (
     <Box
         p={2}
-        style={{ borderRadius: 4, cursor: 'pointer' }}
+        style={{ borderRadius: 4, cursor: 'pointer', color: '#b0b0b0' }}
         onClick={(e) => {
           e.stopPropagation();
           onClick(link.sourceTable as TableName, link.sourceField, link.value);
         }}
     >
-      <Text size="xs" c="dimmed">
-        {link.sourceTable} <Text span fw={600} c="dimmed">({link.count})</Text>
+      <Text size="xs">
+        {link.sourceTable} <Text span fw={600}>({link.count})</Text>
       </Text>
     </Box>
 );
