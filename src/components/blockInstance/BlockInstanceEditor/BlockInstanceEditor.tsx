@@ -289,17 +289,18 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
                         }
                       </>
                       <>
-                        {tab.tabKind === 'relation' && (
+                        {tab.tabKind === 'relation' && (() => {
+                          const relatedBlock = getRelatedBlockByRelationUuid(tab.relationUuid);
+                          return relatedBlock && (
                               <BlockRelationsEditor
                                   key={tab.uuid}
                                   blockInstanceUuid={props.blockInstanceUuid}
                                   blockUuid={block?.uuid}
-                                  relatedBlock={getRelatedBlockByRelationUuid(tab.relationUuid)}
-                                  blockRelation={blockRelations?.find(
-                                      r => r.uuid === tab.relationUuid
-                                  )}
+                                  relatedBlock={relatedBlock}
+                                  blockRelation={blockRelations?.find(r => r.uuid === tab.relationUuid)}
                               />
-                        )}
+                          );
+                        })()}
                       </>
                       <>
                         {tab.tabKind === 'childBlock' && (

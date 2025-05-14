@@ -37,10 +37,11 @@ export const BlockRelationsEditor = ({
   const [targetInstanceUuid, setTargetInstanceUuid] = useState('');
   const [parentInstanceUuid, setParentInstanceUuid] = useState('');
 
-  const isRelatedBlockChild = !!relatedBlock.parentBlockUuid;
+  const isRelatedBlockChild = !!relatedBlock?.parentBlockUuid;
   const isRelatedBlockTarget = blockRelation.targetBlockUuid === relatedBlock?.uuid;
   const {isMobile} = useMedia();
   const {showDialog} = useDialog();
+
 
   const {
     relatedParentInstances,
@@ -58,6 +59,9 @@ export const BlockRelationsEditor = ({
       parentInstanceUuid,
       blockUuid
   );
+
+  if (!relatedBlock) return null
+
   const handleCreateRelation = async () => {
     await createBlockInstanceRelation(targetInstanceUuid, blockRelation?.uuid);
     resetModalState();
