@@ -111,13 +111,17 @@ export const ChapterRow = ({ chapter, scenes, onAddScene }: ChapterRowProps) => 
             </Box>
 
             <Collapse in={isExpanded}>
-              {scenes.map((scene, index, array) => (
-                  <SceneRow
-                      key={`scene-${scene.id}`}
-                      scene={scene}
-                      scenesInChapter={array}
-                  />
-              ))}
+              <Table>
+                <Table.Tbody>
+                {scenes.map((scene, index, array) => (
+                    <SceneRow
+                        key={`scene-${scene.id}`}
+                        scene={scene}
+                        scenesInChapter={array}
+                    />
+                ))}
+                </Table.Tbody>
+              </Table>
             </Collapse>
           </Table.Td>
         </Table.Tr>

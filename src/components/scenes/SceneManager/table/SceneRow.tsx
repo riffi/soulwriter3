@@ -1,5 +1,5 @@
 // src/components/scenes/SceneManager/SceneRow.tsx
-import { ActionIcon, Group, Table } from "@mantine/core";
+import {ActionIcon, Box, Text, Table} from "@mantine/core";
 import {
   IconEdit,
   IconTrash,
@@ -8,7 +8,7 @@ import {
   IconArrowDown
 } from "@tabler/icons-react";
 import { useNavigate } from "react-router-dom";
-import { useDisclosure } from "@mantine/hooks";
+import {useDisclosure, useHover} from "@mantine/hooks";
 import { DeleteConfirmationModal } from "../modals/DeleteConfirmationModal";
 import { MoveSceneModal } from "../modals/MoveSceneModal";
 import { useScenes } from "../useScenes";
@@ -32,6 +32,7 @@ export const SceneRow = ({ scene, onDelete, scenesInChapter }: SceneRowProps) =>
   const [openedMoveModal, { open: openMoveModal, close: closeMoveModal }] = useDisclosure(false);
   const { recalculateGlobalOrder, reorderScenes } = useScenes();
   const currentIndex = scenesInChapter.findIndex(s => s.id === scene.id);
+  const { hovered, ref } = useHover();
 
   const handleMoveUp = () => {
     const prevScene = scenesInChapter[currentIndex - 1];
@@ -56,7 +57,6 @@ export const SceneRow = ({ scene, onDelete, scenesInChapter }: SceneRowProps) =>
 
   const handleMove = async (newChapterId: number | null) => {
     try {
-      // Передаем данные о перемещении в recalculateGlobalOrder
       await recalculateGlobalOrder({
         id: scene.id,
         newChapterId
@@ -79,50 +79,75 @@ export const SceneRow = ({ scene, onDelete, scenesInChapter }: SceneRowProps) =>
 
   return (
       <>
-        <Table.Tr key={`scene-${scene.id}`} highlightOnHover>
+        <Table.Tr
+            key={`scene-${scene.id}`}
+            highlightOnHover
+            ref={ref}
+        >
           <Table.Td
-              style={{ paddingLeft: 32, cursor: 'pointer'}}
-              onClick={() => navigate(`/scene/card?id=${scene.id}`)}
+              colSpan={2}
+              style={{
+                paddingLeft: scene.chapterId ? 30 : 10,
+                cursor: 'pointer',
+              }}
           >
-            {scene.order ? `${scene.order}. ` : ''}{scene.title}
-          </Table.Td>
-          <Table.Td >
-            <Group>
-              <ActionIcon
-                  variant="subtle"
-                  onClick={handleMoveUp}
-                  disabled={currentIndex <= 0}
-                  title="Переместить вверх"
+            <Box
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  cursor: 'pointer'
+                }}
+            >
+              <Text
+                  onClick={() => navigate(`/scene/card?id=${scene.id}`)}
               >
-                <IconArrowUp size={16} />
-              </ActionIcon>
-              <ActionIcon
-                  variant="subtle"
-                  onClick={handleMoveDown}
-                  disabled={currentIndex >= scenesInChapter.length - 1}
-                  title="Переместить вниз"
-              >
-                <IconArrowDown size={16} />
-              </ActionIcon>
-              <ActionIcon
-                  variant="subtle"
-                  onClick={openMoveModal}
-                  title="Перенести в другую главу"
-              >
-                <IconArrowRightCircle size={16} />
-              </ActionIcon>
-              <ActionIcon
-                  variant="subtle"
-                  color="red"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    openDeleteModal();
+                {scene.order ? `${scene.order}. ` : ''}{scene.title}
+              </Text>
+              <Box
+                  ml="auto"
+                  style={{
+                    display: 'flex',
+                    gap: '8px',
+                    transition: 'opacity 0.2s ease',
+                    opacity: hovered? 1 : 0.2
                   }}
-                  title="Удалить"
               >
-                <IconTrash size={16} />
-              </ActionIcon>
-            </Group>
+                <ActionIcon
+                    variant="subtle"
+                    onClick={handleMoveUp}
+                    disabled={currentIndex <= 0}
+                    title="Переместить вверх"
+                >
+                  <IconArrowUp size={16}/>
+                </ActionIcon>
+                <ActionIcon
+                    variant="subtle"
+                    onClick={handleMoveDown}
+                    disabled={currentIndex >= scenesInChapter.length - 1}
+                    title="Переместить вниз"
+                >
+                  <IconArrowDown size={16}/>
+                </ActionIcon>
+                <ActionIcon
+                    variant="subtle"
+                    onClick={openMoveModal}
+                    title="Перенести в другую главу"
+                >
+                  <IconArrowRightCircle size={16}/>
+                </ActionIcon>
+                <ActionIcon
+                    variant="subtle"
+                    color="red"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openDeleteModal();
+                    }}
+                    title="Удалить"
+                >
+                  <IconTrash size={16}/>
+                </ActionIcon>
+              </Box>
+            </Box>
           </Table.Td>
         </Table.Tr>
 

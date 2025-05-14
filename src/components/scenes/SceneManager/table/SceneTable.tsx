@@ -33,7 +33,7 @@ export const SceneTable = ({ openCreateModal }: SceneTableProps) => {
   }
 
   return (
-      <Table horizontalSpacing="sm" verticalSpacing="sm">
+      <Table horizontalSpacing="sm" verticalSpacing="sm" layout={"auto"}>
         <Table.Thead>
           <Table.Tr>
             <Table.Th>Название</Table.Th>

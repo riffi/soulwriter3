@@ -59,7 +59,7 @@ export const SceneManager = () => {
       >
         <Group justify="space-between" mb="md" px="sm">
           <Title visibleFrom="sm" order={1} size="h4">Сцены и главы</Title>
-          <Group>
+          <Group style={{marginTop: isMobile ? '20px' : '0'}}>
             <Button
                 leftSection={<IconPlus size={16} />}
                 onClick={openChapterModal}
