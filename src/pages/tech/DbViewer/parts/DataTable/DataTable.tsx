@@ -41,7 +41,7 @@ export const DataTable = ({
   });
 
   return (
-      <Box mb="xl">
+      <Box mb="xl" p="lg" style={{backgroundColor: 'white'}}>
         <Title order={3} mb="sm">
           {table.name}
           {currentFilter && (
@@ -52,7 +52,10 @@ export const DataTable = ({
         </Title>
 
         <ScrollArea>
-          <Table striped highlightOnHover style={{ tableLayout: 'auto' }}>
+          <Table
+
+              highlightOnHover
+              style={{ tableLayout: 'auto' }}>
             <TableHeader keys={allKeys} isPriorityField={isPriorityField} />
             <Table.Tbody>
               {table.data.map((item, index) => (

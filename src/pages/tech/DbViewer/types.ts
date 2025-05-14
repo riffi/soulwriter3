@@ -55,5 +55,8 @@ export const relations: Record<TableName, Record<string, { table: TableName; fie
   },
   scenes:{
     chaperId: { table: 'chapters', field: 'id'}
+  },
+  notes:{
+    noteGroupUuid: { table: 'notesGroups', field: 'uuid'},
   }
 };

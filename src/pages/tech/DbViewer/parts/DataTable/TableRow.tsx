@@ -64,7 +64,7 @@ export const TableRow = ({
                         span
                         style={{
                           color: typeof value === 'string' && value.includes('uuid') ? 'blue' : '#343a40',
-                          fontSize: '12px',
+                          fontSize: '14px',
                         }}
                         onClick={() => onValueClick(key, String(value))}
                     >
@@ -114,7 +114,12 @@ export const TableRow = ({
         </Table.Tr>
         {reverseLinks.length > 0 && (
             <Table.Tr key={`${index}-links`}>
-              <Table.Td colSpan={allKeys.length} style={{ paddingTop: 0, paddingBottom: 16, paddingLeft: 16 }}>
+              <Table.Td colSpan={allKeys.length} style={{
+                paddingTop: 0,
+                paddingBottom: 16,
+                paddingLeft: 16,
+                backgroundColor: 'white'
+              }}>
                 <Group style={{paddingTop:5}}>
                 <Text
                     size="sm"
@@ -125,12 +130,10 @@ export const TableRow = ({
                   {reverseLinks.map((link: any) => (
                       <Box
                           key={`${link.sourceTable}-${link.sourceField}`}
-                          bg="gray.1"
                           p={2}
                           style={{
                             borderRadius: 4,
                             cursor: 'pointer',
-                            border: '1px solid #ddd',
                           }}
                           onClick={(e) => {
                             e.stopPropagation();
@@ -138,7 +141,7 @@ export const TableRow = ({
                           }}
                       >
                         <Text size="xs" color="dimmed">
-                          {link.sourceTable} <Text span c="blue" fw={600}>({link.count})</Text>
+                          {link.sourceTable} <Text span c="dimmed" fw={600}>({link.count})</Text>
                         </Text>
                       </Box>
                   ))}

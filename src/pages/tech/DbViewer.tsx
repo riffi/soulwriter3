@@ -36,6 +36,7 @@ export const DbViewer = () => {
   }, []);
 
   const handleTabChange = (tab: 'book' | 'config') => {
+    console.log('change tab', tab);
     setActiveTab(tab);
     setSelectedTable(null);
     setHistory([]);
@@ -129,12 +130,12 @@ export const DbViewer = () => {
   return (
   <Box p="md">
     <Title order={2} mb="md">Database Explorer</Title>
-    <Tabs value={activeTab} onTabChange={handleTabChange}>
+    <Tabs value={activeTab} onChange={handleTabChange}>
       <Tabs.List>
         <Tabs.Tab value="book">Book Database</Tabs.Tab>
         <Tabs.Tab value="config">Config Database</Tabs.Tab>
       </Tabs.List>
-      <Tabs.Panel value="book" pt="md">
+      <Tabs.Panel value={activeTab} pt="md">
         <LoadingOverlay visible={loading} />
         {selectedTable ? (
             <>
@@ -158,7 +159,7 @@ export const DbViewer = () => {
               />
             </>
         ) : (
-            <TableList tables={bookTables} onTableClick={handleTableClick} />
+            <TableList tables={activeTab === 'book' ? bookTables : configTables} onTableClick={handleTableClick} />
         )}
       </Tabs.Panel>
     </Tabs>
