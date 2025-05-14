@@ -12,7 +12,14 @@ import {
   Image,
   Space,
 } from "@mantine/core";
-import {IconCheck, IconEdit, IconPlus, IconTrash} from "@tabler/icons-react";
+import {
+  IconCheck,
+  IconDownload,
+  IconEdit,
+  IconPlus,
+  IconTrash,
+  IconUpload
+} from "@tabler/icons-react";
 import React, { useState } from "react";
 import { BookEditModal } from "./BookEditModal/BookEditModal";
 import { useNavigate } from "react-router-dom";
@@ -21,6 +28,7 @@ import {useBookManager} from "@/components/books/BookManager/useBookManager";
 import { useBookStore } from '@/stores/bookStore/bookStore';
 import {notifications} from "@mantine/notifications";
 import {connectToBookDatabase} from "@/entities/bookDb";
+import {exportBook, handleFileImport} from "@/utils/bookBackupManager";
 
 const getBlankBook = (): IBook => ({
   uuid: "",
@@ -84,15 +92,27 @@ export const BookManager = () => {
             {breadCrumbs}
           </Breadcrumbs>
           <Space h={20} />
-          <Button
-              leftSection={<IconPlus />}
-              onClick={() => {
-                setCurrentBook(getBlankBook());
-                setIsModalOpened(true);
-              }}
-          >
-            Добавить книгу
-          </Button>
+          <Group mb="md">
+            <Button
+                leftSection={<IconPlus />}
+                onClick={() => {
+                  setCurrentBook(getBlankBook());
+                  setIsModalOpened(true);
+                }}
+            >
+              Добавить
+            </Button>
+
+            <Button
+                leftSection={<IconUpload size={20} />}
+                onClick={async () => {
+                  await handleFileImport();
+                }}
+                variant="outline"
+            >
+              Загрузить
+            </Button>
+          </Group>
           <Space h={20} />
           <SimpleGrid cols={{ base: 1, sm: 2, lg: 2, xl: 4 }}>
             {books?.map((book) => (
@@ -137,6 +157,14 @@ export const BookManager = () => {
                         }
                     >
                       {selectedBook?.uuid === book.uuid ? 'Выбрана' : 'Выбрать'}
+                    </Button>
+                    <Button
+                        fullWidth
+                        variant="outline"
+                        leftSection={<IconDownload size={18} />}
+                        onClick={async () => await exportBook(book.uuid)}
+                    >
+                      Выгрузить
                     </Button>
                   </Group>
                   <Group mt="md">
