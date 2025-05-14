@@ -49,7 +49,7 @@ export const BlockRelationsEditor = ({
     instanceRelations,
     allRelatedInstances,
     unusedRelatedInstances,
-    createRelation
+    createBlockInstanceRelation
   } = useBlockRelationsEditor(
       blockInstanceUuid,
       relatedBlock,
@@ -59,7 +59,7 @@ export const BlockRelationsEditor = ({
       blockUuid
   );
   const handleCreateRelation = async () => {
-    await createRelation(targetInstanceUuid);
+    await createBlockInstanceRelation(targetInstanceUuid, blockRelation?.uuid);
     resetModalState();
   };
 
