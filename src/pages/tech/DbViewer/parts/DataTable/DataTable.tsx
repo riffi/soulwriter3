@@ -1,10 +1,10 @@
-import {Box, Table, ScrollArea, Title, Text} from '@mantine/core';
+import {Box, Table, ScrollArea, Title, Text, Group, ActionIcon, Badge} from '@mantine/core';
 import {DatabaseType, TableData, TableName} from "@/pages/tech/DbViewer/types";
 import {TableHeader} from "@/pages/tech/DbViewer/parts/DataTable/TableHeader";
 import {TableRow} from "@/pages/tech/DbViewer/parts/DataTable/TableRow";
 import {Filters} from "@/pages/tech/DbViewer";
-import {useMemo} from "react";
-
+import {useMemo, useState} from "react";
+import {IconFilter, IconX} from "@tabler/icons-react";
 
 interface DataTableProps {
   table: TableData;
@@ -36,14 +36,8 @@ export const DataTable = ({
                             onClearAllFilters,
                           }: DataTableProps) => {
 
-  const filteredData = useMemo(() => {
-    return table.data.filter(item =>
-        Object.entries(filters).every(([field, value]) =>
-            String(item[field]).toLowerCase().includes(value.toLowerCase())
-        ));
-  }, [table.data, filters]);
+  const [showFilters, setShowFilters] = useState(true);
 
-  // Собираем и сортируем ключи с приоритетом для id, uuid, title
   const allKeys = Array.from(
       new Set(table.data.flatMap(item => Object.keys(item)))
   ).sort((a, b) => {
@@ -57,45 +51,72 @@ export const DataTable = ({
     return aPriority - bPriority;
   });
 
+  const filteredData = useMemo(() => {
+    return table.data.filter(item =>
+        Object.entries(filters).every(([field, value]) =>
+            String(item[field]).toLowerCase().includes(value.toLowerCase())
+        ));
+  }, [table.data, filters]);
+
+  const filterOptions = useMemo(() => {
+    const options: Record<string, string[]> = {};
+    allKeys.forEach(key => {
+      options[key] = Array.from(new Set(table.data.map(item => String(item[key])))).sort();
+    });
+    return options;
+  }, [table.data, allKeys]);
+
   return (
       <Box mb="xl" p="lg" style={{backgroundColor: 'white'}}>
-        <Title order={3} mb="sm">
-          {table.name}
-          {Object.keys(filters).length > 0 && (
-              <Box size="sm" color="dimmed" mt={4}>
-                Active filters:
-                {Object.entries(filters).map(([field, value]) => (
-                  <span key={field} style={{ marginRight: 8 }}>
-                    {field} = {value}
-                  </span>
-                ))}
-                <button
-                    onClick={onClearAllFilters}
-                    style={{
-                      marginLeft: 10,
-                      background: 'none',
-                      border: 'none',
-                      color: '#228be6',
-                      cursor: 'pointer'
-                    }}
-                >
-                  Clear all
-                </button>
-              </Box>
-          )}
-        </Title>
+        <Group justify="space-between" mb="sm">
+          <Title order={3}>{table.name}</Title>
+          <Group gap="xs">
+            <ActionIcon
+                variant="subtle"
+                color="blue"
+                onClick={() => setShowFilters(!showFilters)}
+            >
+              <IconFilter size={18}/>
+            </ActionIcon>
+            <ActionIcon variant="subtle" color="red" onClick={onClearAllFilters} >
+              <IconX size={18}/>
+            </ActionIcon>
+          </Group>
+        </Group>
+
+        {showFilters && Object.keys(filters).length > 0 && (
+            <Group gap="xs" mb="sm" align="center">
+              <Text size="sm" c="dimmed">Active filters:</Text>
+              {Object.entries(filters).map(([field, value]) => (
+                  <Badge
+                      key={field}
+                      variant="outline"
+                      rightSection={
+                        <ActionIcon
+                            size="xs"
+                            color="red"
+                            onClick={() => onRemoveFilter(field)}
+                        >
+                          <IconX size={10}/>
+                        </ActionIcon>
+                      }
+                  >
+                    {field}: {value}
+                  </Badge>
+              ))}
+            </Group>
+        )}
 
         <ScrollArea>
-          <Table
-
-              highlightOnHover
-              style={{ tableLayout: 'auto' }}>
+          <Table highlightOnHover style={{ tableLayout: 'auto' }}>
             <TableHeader
                 keys={allKeys}
                 isPriorityField={isPriorityField}
                 filters={filters}
                 onAddFilter={onAddFilter}
                 onRemoveFilter={onRemoveFilter}
+                filterOptions={filterOptions}
+                showFilters={showFilters}
             />
             <Table.Tbody>
               {filteredData.map((item, index) => (
