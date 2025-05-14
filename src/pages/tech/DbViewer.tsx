@@ -8,51 +8,18 @@ import {
   Text,
   Box,
   Tabs,
-  List
+  List, TableData
 } from '@mantine/core';
 import { bookDb } from '@/entities/bookDb';
 import { configDatabase } from '@/entities/configuratorDb';
+import {NavigationHistory} from "@/pages/tech/DbViewer/parts/NavigationHistory";
+import {DataTable} from "@/pages/tech/DbViewer/parts/DataTable";
+import {TableList} from "@/pages/tech/DbViewer/parts/TableList";
+import {HistoryEntry, relations} from "@/pages/tech/DbViewer/types";
 
 type TableName = keyof typeof bookDb | keyof typeof configDatabase;
 
-interface TableData {
-  name: TableName;
-  data: any[];
-}
 
-interface HistoryEntry {
-  table: TableData;
-  filter?: {
-    field: string;
-    value: string;
-  };
-}
-
-const relations: Record<TableName, Record<string, { table: TableName; field: string; db: 'book' | 'config' }>> = {
-  configurationVersions: {
-    configurationUuid: { table: 'bookConfigurations', field: 'uuid'},
-  },
-  blockInstances: {
-    blockUuid: { table: 'blocks', field: 'uuid'},
-    parentInstanceUuid: { table: 'blockInstances', field: 'uuid'}
-  },
-  blocks: {
-    parentBlockUuid: { table: 'blocks', field: 'uuid'},
-    configurationVersionUuid: { table: 'configurationVersions', field: 'uuid' }
-  },
-  blockParameters: {
-    blockUuid: { table: 'blocks', field: 'uuid' },
-    linkedBlockUuid: { table: 'blocks', field: 'uuid'}
-  },
-  blocksRelations: {
-    sourceBlockUuid: { table: 'blocks', field: 'uuid' },
-    targetBlockUuid: { table: 'blocks', field: 'uuid' },
-    configurationVersionUuid: { table: 'configurationVersions', field: 'uuid' }
-  },
-  blockTabs:{
-    blockUuid: { table: 'blocks', field: 'uuid' },
-  }
-};
 
 export const DbViewer = () => {
   const [activeTab, setActiveTab] = useState<'book' | 'config'>('book');
@@ -98,7 +65,7 @@ export const DbViewer = () => {
     setCurrentFilter(null);
   };
 
-  const handleValueClick = async (key: string, value: string, currentDb: 'book' | 'config') => {
+  const handleValueClick = async (key: string, value: string) => {
 
 
     const tableRelations = relations[selectedTable?.name as TableName];
@@ -108,7 +75,7 @@ export const DbViewer = () => {
     if (relation) {
       setLoading(true);
       try {
-        const db = currentDb === 'book' ? bookDb : configDatabase;
+        const db = activeTab === 'book' ? bookDb : configDatabase;
         const relatedData = await db[relation.table]
         .where(relation.field)
         .equals(value)
@@ -140,207 +107,43 @@ export const DbViewer = () => {
     }
   };
 
-  const renderTableList = (tables: TableData[]) => (
-      <List spacing="xs" size="xs">
-        {tables.map((table) => (
-            <List.Item
-                key={table.name}
-                onClick={() => handleTableClick(table)}
-                style={{ cursor: 'pointer', padding: '2px' }}
-                sx={{ '&:hover': { backgroundColor: '#f8f9fa' } }}
-            >
-              <Text weight={500}>{table.name}</Text>
-            </List.Item>
-        ))}
-      </List>
-  );
-
-  const renderTableData = (table: TableData) => {
-    // Собираем и сортируем ключи с приоритетом для id, uuid, title
-    const allKeys = Array.from(
-        new Set(table.data.flatMap(item => Object.keys(item)))
-    ).sort((a, b) => {
-      const priorityFields = ['id', 'uuid', 'title'];
-      const aPriority = priorityFields.indexOf(a);
-      const bPriority = priorityFields.indexOf(b);
-
-      if (aPriority === -1 && bPriority === -1) return a.localeCompare(b);
-      if (aPriority === -1) return 1;
-      if (bPriority === -1) return -1;
-      return aPriority - bPriority;
-    });
-
-    const isPriorityField = (key: string) => ['id', 'uuid', 'title'].includes(key);
-
-    return (
-        <Box mb="xl">
-          <Title order={3} mb="sm">
-            {table.name} ({activeTab} database)
-            {currentFilter && (
-                <Text size="sm" color="dimmed" mt={4}>
-                  Filtered by: {currentFilter.field} = {currentFilter.value}
-                </Text>
-            )}
-          </Title>
-
-          <ScrollArea>
-            <Table striped highlightOnHover style={{ tableLayout: 'auto' }}>
-              <Table.Thead>
-                <Table.Tr>
-                  {allKeys.map((key) => (
-                      <Table.Th
-                          key={key}
-                          style={{
-                            textAlign: 'left',
-                            fontWeight: isPriorityField(key) ? 700 : 500,
-                            borderBottom: isPriorityField(key) ? '2px solid #343a40' : 'none',
-                            whiteSpace: 'nowrap',
-                            minWidth: 'min-content',
-                            maxWidth: '300px'
-                          }}
-                      >
-                        {key}
-                      </Table.Th>
-                  ))}
-                </Table.Tr>
-              </Table.Thead>
-              <Table.Tbody>
-                {table.data.map((item, index) => (
-                    <Table.Tr key={index}>
-                      {allKeys.map((key) => {
-                        const value = item.hasOwnProperty(key) ? item[key] : null;
-                        return (
-                            <Table.Td
-                                key={key}
-                                style={{
-                                  cursor: 'pointer',
-                                  fontWeight: isPriorityField(key) ? 600 : 400,
-                                  whiteSpace: 'nowrap',
-                                  maxWidth: '300px',
-                                  overflow: 'hidden',
-                                  textOverflow: 'ellipsis'
-                                }}
-                            >
-                              <Text
-                                  span
-                                  style={{
-                                    color: typeof value === 'string' && value.includes('uuid') ? 'blue' : '#343a40',
-                                    fontSize: '12px',
-                                  }}
-                                  onClick={() => handleValueClick(key, String(value), activeTab)}
-                              >
-                                {value !== null ? JSON.stringify(value) : '—'}
-                              </Text>
-
-                              {/* Добавляем отображение связанного title */}
-                              {(relations[selectedTable?.name as TableName]?.[key] && value) && (() => {
-                                const relation = relations[selectedTable!.name][key];
-                                 const targetTables = activeTab === 'book' ? bookTables : configTables;
-                                const relatedTable = targetTables.find(t => t.name === relation.table);
-                                const relatedEntry = relatedTable?.data.find(
-                                    (item: any) => item[relation.field] === value
-                                );
-
-                                return (
-                                    relatedEntry?.title && (
-                                        <Text
-                                            size="xs"
-                                            color="gray"
-                                            style={{ display: 'block', lineHeight: 1.2, marginTop: 2 }}
-                                        >
-                                          {relatedEntry.title}
-                                        </Text>
-                                    )
-                                );
-                              })()}
-                            </Table.Td>
-                        );
-                      })}
-                    </Table.Tr>
-                ))}
-              </Table.Tbody>
-            </Table>
-          </ScrollArea>
-        </Box>
-    );
-  };
 
   return (
-      <Box p="md">
-        <Title order={2} mb="md">Database Explorer</Title>
+  <Box p="md">
+    <Title order={2} mb="md">Database Explorer</Title>
+    <Tabs value={activeTab} onTabChange={handleTabChange}>
+      <Tabs.List>
+        <Tabs.Tab value="book">Book Database</Tabs.Tab>
+        <Tabs.Tab value="config">Config Database</Tabs.Tab>
+      </Tabs.List>
+      <Tabs.Panel value="book" pt="md">
+        <LoadingOverlay visible={loading} />
+        {selectedTable ? (
+            <>
+              <NavigationHistory
+                  historyLength={history.length}
+                  onBackToTables={() => {
+                    setSelectedTable(null);
+                    setHistory([]);
+                    setCurrentFilter(null);
+                  }}
+                  onHistoryBack={handleHistoryBack}
+              />
+              <DataTable
+                  table={selectedTable}
+                  activeTab={activeTab}
+                  currentFilter={currentFilter || undefined}
+                  onValueClick={(key, value) => handleValueClick(key, value)}
+                  bookTables={bookTables}
+                  configTables={configTables}
+              />
+            </>
+        ) : (
+            <TableList tables={bookTables} onTableClick={handleTableClick} />
+        )}
+      </Tabs.Panel>
+    </Tabs>
 
-        <Tabs value={activeTab} onTabChange={handleTabChange}>
-          <Tabs.List>
-            <Tabs.Tab value="book">Book Database</Tabs.Tab>
-            <Tabs.Tab value="config">Config Database</Tabs.Tab>
-          </Tabs.List>
-
-          <Tabs.Panel value="book" pt="md">
-            <LoadingOverlay visible={loading} />
-            {selectedTable ? (
-                <>
-                  <Box mb="md" style={{ display: 'flex', gap: 12 }}>
-                    <Text
-                        color="blue"
-                        style={{ cursor: 'pointer' }}
-                        onClick={() => {
-                          setSelectedTable(null);
-                          setHistory([]);
-                          setCurrentFilter(null);
-                        }}
-                    >
-                      ← Back to tables list
-                    </Text>
-                    {history.length > 1 && (
-                        <Text
-                            color="blue"
-                            style={{ cursor: 'pointer' }}
-                            onClick={handleHistoryBack}
-                        >
-                          ← Back to previous
-                        </Text>
-                    )}
-                  </Box>
-                  {renderTableData(selectedTable)}
-                </>
-            ) : (
-                renderTableList(bookTables)
-            )}
-          </Tabs.Panel>
-
-          <Tabs.Panel value="config" pt="md">
-            <LoadingOverlay visible={loading} />
-            {selectedTable ? (
-                <>
-                  <Box mb="md" style={{ display: 'flex', gap: 12 }}>
-                    <Text
-                        color="blue"
-                        style={{ cursor: 'pointer' }}
-                        onClick={() => {
-                          setSelectedTable(null);
-                          setHistory([]);
-                          setCurrentFilter(null);
-                        }}
-                    >
-                      ← Back to tables list
-                    </Text>
-                    {history.length > 1 && (
-                        <Text
-                            color="blue"
-                            style={{ cursor: 'pointer' }}
-                            onClick={handleHistoryBack}
-                        >
-                          ← Back to previous
-                        </Text>
-                    )}
-                  </Box>
-                  {renderTableData(selectedTable)}
-                </>
-            ) : (
-                renderTableList(configTables)
-            )}
-          </Tabs.Panel>
-        </Tabs>
-      </Box>
-  );
+  </Box>
+);
 };
