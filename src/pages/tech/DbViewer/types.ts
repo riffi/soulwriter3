@@ -18,7 +18,7 @@ export interface HistoryEntry {
 
 export type DatabaseType = 'book' | 'config';
 
-export const relations: Record<TableName, Record<string, { table: TableName; field: string; db: 'book' | 'config' }>> = {
+export const relations: Record<TableName, Record<string, { table: TableName; field: string}>> = {
   configurationVersions: {
     configurationUuid: { table: 'bookConfigurations', field: 'uuid'},
   },
@@ -30,9 +30,18 @@ export const relations: Record<TableName, Record<string, { table: TableName; fie
     parentBlockUuid: { table: 'blocks', field: 'uuid'},
     configurationVersionUuid: { table: 'configurationVersions', field: 'uuid' }
   },
+  blockParameterGroups:{
+    blockUuid: { table: 'blocks', field: 'uuid'}
+  },
   blockParameters: {
     blockUuid: { table: 'blocks', field: 'uuid' },
-    linkedBlockUuid: { table: 'blocks', field: 'uuid'}
+    linkedBlockUuid: { table: 'blocks', field: 'uuid'},
+    groupUuid: { table: 'blockParameterGroups', field: 'uuid'}
+  },
+  blockParameterInstances:{
+    blockInstanceUuid: { table: 'blockInstances', field: 'uuid'},
+    blockParameterUuid: { table: 'blockParameters', field: 'uuid'},
+    blockParameterGroupUuid: { table: 'blockParameterGroups', field: 'uuid'}
   },
   blocksRelations: {
     sourceBlockUuid: { table: 'blocks', field: 'uuid' },
@@ -43,5 +52,8 @@ export const relations: Record<TableName, Record<string, { table: TableName; fie
     blockUuid: { table: 'blocks', field: 'uuid' },
     childBlockUuid: { table: 'blocks', field: 'uuid'},
     relationUuid: { table: 'blocksRelations', field: 'uuid'}
+  },
+  scenes:{
+    chaperId: { table: 'chapters', field: 'id'}
   }
 };

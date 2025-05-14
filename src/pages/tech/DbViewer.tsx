@@ -8,14 +8,14 @@ import {
   Text,
   Box,
   Tabs,
-  List, TableData
+  List,
 } from '@mantine/core';
 import { bookDb } from '@/entities/bookDb';
 import { configDatabase } from '@/entities/configuratorDb';
 import {NavigationHistory} from "@/pages/tech/DbViewer/parts/NavigationHistory";
-import {DataTable} from "@/pages/tech/DbViewer/parts/DataTable";
+import {DataTable} from "@/pages/tech/DbViewer/parts/DataTable/DataTable";
 import {TableList} from "@/pages/tech/DbViewer/parts/TableList";
-import {HistoryEntry, relations} from "@/pages/tech/DbViewer/types";
+import {HistoryEntry, relations, TableData} from "@/pages/tech/DbViewer/types";
 
 type TableName = keyof typeof bookDb | keyof typeof configDatabase;
 
@@ -66,7 +66,6 @@ export const DbViewer = () => {
   };
 
   const handleValueClick = async (key: string, value: string) => {
-
 
     const tableRelations = relations[selectedTable?.name as TableName];
     if (!tableRelations || !selectedTable) return;

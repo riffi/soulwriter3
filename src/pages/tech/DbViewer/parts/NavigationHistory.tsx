@@ -1,4 +1,4 @@
-import { Box, Text } from '@mantine/core';
+import {Box, Text, ActionIcon, Group, Button} from '@mantine/core';
 import { IconArrowLeft, IconTable } from '@tabler/icons-react';
 
 interface NavigationHistoryProps {
@@ -13,17 +13,20 @@ export const NavigationHistory = ({
                                     onHistoryBack,
                                   }: NavigationHistoryProps) => (
     <Box mb="md" style={{ display: 'flex', gap: 12 }}>
-      <IconTable
-          style={{ cursor: 'pointer' }}
-          onClick={onBackToTables}
-          size={20}
-      />
+        <Button
+            leftSection={<IconTable size={20} />}
+            onClick={onBackToTables}
+        >
+          К таблицам
+        </Button>
+
       {historyLength > 1 && (
-          <IconArrowLeft
-              style={{ cursor: 'pointer' }}
+          <Button
+              leftSection={<IconArrowLeft size={20} />}
               onClick={onHistoryBack}
-              size={20}
-          />
+          >
+            Назад
+          </Button>
       )}
     </Box>
 );
