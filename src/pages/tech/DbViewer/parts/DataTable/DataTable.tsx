@@ -100,6 +100,8 @@ export const DataTable = ({
                       isPriorityField={isPriorityField}
                       onValueClick={onValueClick}
                       onReverseRelationClick={onReverseRelationClick}
+                      showFilters={showFilters}
+                      onAddFilter={onAddFilter}
                   />
               ))}
             </Table.Tbody>

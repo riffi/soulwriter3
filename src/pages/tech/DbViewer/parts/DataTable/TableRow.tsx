@@ -2,7 +2,8 @@ import { Table, Text, Group, Stack, Box, ActionIcon } from '@mantine/core';
 import { RelationPopup } from './RelationPopup';
 import { DatabaseType, relations, TableData, TableName } from "@/pages/tech/DbViewer/types";
 import { getReverseRelations } from "./utils";
-import { useMemo } from 'react';
+import {useMemo, useState} from 'react';
+import {IconFilter} from "@tabler/icons-react";
 
 interface TableRowProps {
   item: Record<string, unknown>;
@@ -14,6 +15,8 @@ interface TableRowProps {
   isPriorityField: (key: string) => boolean;
   onValueClick: (key: string, value: string) => void;
   onReverseRelationClick: (tableName: TableName, field: string, value: string) => void;
+  showFilters: boolean;
+  onAddFilter: (field: string, value: string) => void;
 }
 
 const cellStyle = {
@@ -30,7 +33,9 @@ const TableCellContent = ({
                             tableName,
                             fieldKey,
                             targetTables,
-                            onClick
+                            onClick,
+                            showFilters,
+                            onAddFilter
                           }: {
   value: unknown;
   isPriority: boolean;
@@ -38,7 +43,10 @@ const TableCellContent = ({
   fieldKey: string;
   targetTables: TableData[];
   onClick: () => void;
+  showFilters: boolean;
+  onAddFilter: (field: string, value: string) => void;
 }) => {
+  const [isHovered, setIsHovered] = useState(false);
   const relatedEntry = useMemo(() =>
           getRelatedEntry(tableName, fieldKey, value, targetTables),
       [tableName, fieldKey, value, targetTables]
@@ -46,7 +54,12 @@ const TableCellContent = ({
 
   return (
       <Stack p={0} gap={0}>
-        <Group gap={5}>
+        <Group
+            gap={5}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+            style={{ position: 'relative' }}
+        >
           <Text
               span
               style={{
@@ -65,6 +78,27 @@ const TableCellContent = ({
                         : String(value)}
           </Text>
           {relatedEntry && <RelationPopup relatedEntry={relatedEntry} />}
+          {showFilters && isHovered && (
+              <ActionIcon
+                  size="xs"
+                  variant="transparent"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onAddFilter(fieldKey, String(value));
+                  }}
+                  style={{
+                    position: 'absolute',
+                    right: 4,
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'white',
+                    borderRadius: '50%',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+                  }}
+              >
+                <IconFilter size={12} />
+              </ActionIcon>
+          )}
         </Group>
 
         {relatedEntry?.title && (
@@ -99,7 +133,9 @@ export const TableRow = ({
                            configTables,
                            isPriorityField,
                            onValueClick,
-                           onReverseRelationClick
+                           onReverseRelationClick,
+                           showFilters,
+                           onAddFilter
                          }: TableRowProps) => {
   const tableName = table.name as TableName;
   const targetTables = activeTab === 'book' ? bookTables : configTables;
@@ -134,6 +170,8 @@ export const TableRow = ({
                     fieldKey={key}
                     targetTables={targetTables}
                     onClick={() => onValueClick(key, String(item[key]))}
+                    showFilters={showFilters}
+                    onAddFilter={onAddFilter}
                 />
               </Table.Td>
           ))}
