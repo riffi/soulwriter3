@@ -20,12 +20,48 @@ interface TableData {
   data: any[];
 }
 
+interface HistoryEntry {
+  table: TableData;
+  filter?: {
+    field: string;
+    value: string;
+  };
+}
+
+const relations: Record<TableName, Record<string, { table: TableName; field: string; db: 'book' | 'config' }>> = {
+  configurationVersions: {
+    configurationUuid: { table: 'bookConfigurations', field: 'uuid'},
+  },
+  blockInstances: {
+    blockUuid: { table: 'blocks', field: 'uuid'},
+    parentInstanceUuid: { table: 'blockInstances', field: 'uuid'}
+  },
+  blocks: {
+    parentBlockUuid: { table: 'blocks', field: 'uuid'},
+    configurationVersionUuid: { table: 'configurationVersions', field: 'uuid' }
+  },
+  blockParameters: {
+    blockUuid: { table: 'blocks', field: 'uuid' },
+    linkedBlockUuid: { table: 'blocks', field: 'uuid'}
+  },
+  blocksRelations: {
+    sourceBlockUuid: { table: 'blocks', field: 'uuid' },
+    targetBlockUuid: { table: 'blocks', field: 'uuid' },
+    configurationVersionUuid: { table: 'configurationVersions', field: 'uuid' }
+  },
+  blockTabs:{
+    blockUuid: { table: 'blocks', field: 'uuid' },
+  }
+};
+
 export const DbViewer = () => {
   const [activeTab, setActiveTab] = useState<'book' | 'config'>('book');
   const [bookTables, setBookTables] = useState<TableData[]>([]);
   const [configTables, setConfigTables] = useState<TableData[]>([]);
   const [selectedTable, setSelectedTable] = useState<TableData | null>(null);
   const [loading, setLoading] = useState(false);
+  const [history, setHistory] = useState<HistoryEntry[]>([]);
+  const [currentFilter, setCurrentFilter] = useState<{ field: string; value: string } | null>(null);
 
   useEffect(() => {
     loadTableList('book');
@@ -34,7 +70,9 @@ export const DbViewer = () => {
 
   const handleTabChange = (tab: 'book' | 'config') => {
     setActiveTab(tab);
-    setSelectedTable(null); // Сбрасываем выбранную таблицу при переключении вкладок
+    setSelectedTable(null);
+    setHistory([]);
+    setCurrentFilter(null);
   };
 
   const loadTableList = async (dbType: 'book' | 'config') => {
@@ -48,37 +86,23 @@ export const DbViewer = () => {
           }))
       );
 
-      if (dbType === 'book') setBookTables(tables);
-      else setConfigTables(tables);
+      dbType === 'book' ? setBookTables(tables) : setConfigTables(tables);
     } finally {
       setLoading(false);
     }
   };
 
   const handleTableClick = (table: TableData) => {
+    setHistory([{ table }]);
     setSelectedTable(table);
+    setCurrentFilter(null);
   };
 
   const handleValueClick = async (key: string, value: string, currentDb: 'book' | 'config') => {
-    const relations: Record<TableName, Record<string, { table: TableName; field: string; db: 'book' | 'config' }>> = {
-      configurationVersions:{
-        configurationUuid: { table: 'bookConfigurations', field: 'uuid'},
-      },
-      blockInstances: {
-        blockUuid: { table: 'blocks', field: 'uuid'}
-      },
-      blocks: {
-        parentBlockUuid: { table: 'blocks', field: 'uuid'},
-        configurationVersionUuid: { table: 'configurationVersions', field: 'uuid' }
-      },
-      blockParameters: {
-        blockUuid: { table: 'blocks', field: 'uuid'},
-        linkedBlockUuid: { table: 'blocks', field: 'uuid'}
-      }
-    };
+
 
     const tableRelations = relations[selectedTable?.name as TableName];
-    if (!tableRelations) return;
+    if (!tableRelations || !selectedTable) return;
 
     const relation = tableRelations[key];
     if (relation) {
@@ -90,13 +114,29 @@ export const DbViewer = () => {
         .equals(value)
         .toArray();
 
-        setSelectedTable({
-          name: relation.table,
-          data: relatedData
-        });
+        const newEntry: HistoryEntry = {
+          table: selectedTable,
+          filter: { field: key, value }
+        };
+
+        setHistory(prev => [...prev, { table: { name: relation.table, data: relatedData }, filter: { field: key, value } }]);
+        setSelectedTable({ name: relation.table, data: relatedData });
+        setCurrentFilter({ field: key, value });
       } finally {
         setLoading(false);
       }
+    }
+  };
+
+  const handleHistoryBack = () => {
+    if (history.length > 1) {
+      const newHistory = [...history];
+      newHistory.pop();
+      const prevEntry = newHistory[newHistory.length - 1];
+
+      setSelectedTable(prevEntry.table);
+      setCurrentFilter(prevEntry.filter || null);
+      setHistory(newHistory);
     }
   };
 
@@ -116,53 +156,87 @@ export const DbViewer = () => {
   );
 
   const renderTableData = (table: TableData) => {
-    // Собираем все уникальные ключи из всех записей
+    // Собираем и сортируем ключи с приоритетом для id, uuid, title
     const allKeys = Array.from(
         new Set(table.data.flatMap(item => Object.keys(item)))
-    );
+    ).sort((a, b) => {
+      const priorityFields = ['id', 'uuid', 'title'];
+      const aPriority = priorityFields.indexOf(a);
+      const bPriority = priorityFields.indexOf(b);
+
+      if (aPriority === -1 && bPriority === -1) return a.localeCompare(b);
+      if (aPriority === -1) return 1;
+      if (bPriority === -1) return -1;
+      return aPriority - bPriority;
+    });
+
+    const isPriorityField = (key: string) => ['id', 'uuid', 'title'].includes(key);
 
     return (
         <Box mb="xl">
           <Title order={3} mb="sm">
             {table.name} ({activeTab} database)
+            {currentFilter && (
+                <Text size="sm" color="dimmed" mt={4}>
+                  Filtered by: {currentFilter.field} = {currentFilter.value}
+                </Text>
+            )}
           </Title>
 
           <ScrollArea>
-            <Table striped highlightOnHover>
+            <Table striped highlightOnHover style={{ tableLayout: 'auto' }}>
               <Table.Thead>
                 <Table.Tr>
                   {allKeys.map((key) => (
                       <Table.Th
                           key={key}
-                          style={{ textAlign: 'left' }}
+                          style={{
+                            textAlign: 'left',
+                            fontWeight: isPriorityField(key) ? 700 : 500,
+                            borderBottom: isPriorityField(key) ? '2px solid #343a40' : 'none',
+                            whiteSpace: 'nowrap',
+                            minWidth: 'min-content',
+                            maxWidth: '300px'
+                          }}
                       >
                         {key}
                       </Table.Th>
                   ))}
                 </Table.Tr>
               </Table.Thead>
-              <tbody>
-              {table.data.map((item, index) => (
-                  <Table.Tr key={index}>
-                    {allKeys.map((key) => {
-                      const value = item.hasOwnProperty(key) ? item[key] : null;
-                      return (
-                          <Table.Td key={key} style={{ cursor: 'pointer' }}>
-                            <Text
-                                span
+              <Table.Tbody>
+                {table.data.map((item, index) => (
+                    <Table.Tr key={index}>
+                      {allKeys.map((key) => {
+                        const value = item.hasOwnProperty(key) ? item[key] : null;
+                        return (
+                            <Table.Td
+                                key={key}
                                 style={{
-                                  color: typeof value === 'string' && value.includes('uuid') ? 'blue' : 'gray',
-                                  fontSize: '12px',
+                                  cursor: 'pointer',
+                                  fontWeight: isPriorityField(key) ? 600 : 400,
+                                  whiteSpace: 'nowrap',
+                                  maxWidth: '300px',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis'
                                 }}
-                                onClick={() => handleValueClick(key, String(value), activeTab)}
                             >
-                              {value !== null ? JSON.stringify(value) : '—'}
-                            </Text>
-                          </Table.Td>
-                      )})}
-                  </Table.Tr>
-              ))}
-              </tbody>
+                              <Text
+                                  span
+                                  style={{
+                                    color: typeof value === 'string' && value.includes('uuid') ? 'blue' : '#343a40',
+                                    fontSize: '12px',
+                                  }}
+                                  onClick={() => handleValueClick(key, String(value), activeTab)}
+                              >
+                                {value !== null ? JSON.stringify(value) : '—'}
+                              </Text>
+                            </Table.Td>
+                        );
+                      })}
+                    </Table.Tr>
+                ))}
+              </Table.Tbody>
             </Table>
           </ScrollArea>
         </Box>
@@ -183,14 +257,28 @@ export const DbViewer = () => {
             <LoadingOverlay visible={loading} />
             {selectedTable ? (
                 <>
-                  <Text
-                      mb="md"
-                      color="blue"
-                      style={{ cursor: 'pointer' }}
-                      onClick={() => setSelectedTable(null)}
-                  >
-                    ← Back to tables list
-                  </Text>
+                  <Box mb="md" style={{ display: 'flex', gap: 12 }}>
+                    <Text
+                        color="blue"
+                        style={{ cursor: 'pointer' }}
+                        onClick={() => {
+                          setSelectedTable(null);
+                          setHistory([]);
+                          setCurrentFilter(null);
+                        }}
+                    >
+                      ← Back to tables list
+                    </Text>
+                    {history.length > 1 && (
+                        <Text
+                            color="blue"
+                            style={{ cursor: 'pointer' }}
+                            onClick={handleHistoryBack}
+                        >
+                          ← Back to previous
+                        </Text>
+                    )}
+                  </Box>
                   {renderTableData(selectedTable)}
                 </>
             ) : (
@@ -202,14 +290,28 @@ export const DbViewer = () => {
             <LoadingOverlay visible={loading} />
             {selectedTable ? (
                 <>
-                  <Text
-                      mb="md"
-                      color="blue"
-                      style={{ cursor: 'pointer' }}
-                      onClick={() => setSelectedTable(null)}
-                  >
-                    ← Back to tables list
-                  </Text>
+                  <Box mb="md" style={{ display: 'flex', gap: 12 }}>
+                    <Text
+                        color="blue"
+                        style={{ cursor: 'pointer' }}
+                        onClick={() => {
+                          setSelectedTable(null);
+                          setHistory([]);
+                          setCurrentFilter(null);
+                        }}
+                    >
+                      ← Back to tables list
+                    </Text>
+                    {history.length > 1 && (
+                        <Text
+                            color="blue"
+                            style={{ cursor: 'pointer' }}
+                            onClick={handleHistoryBack}
+                        >
+                          ← Back to previous
+                        </Text>
+                    )}
+                  </Box>
                   {renderTableData(selectedTable)}
                 </>
             ) : (
