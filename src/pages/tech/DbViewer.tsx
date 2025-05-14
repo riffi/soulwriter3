@@ -231,6 +231,28 @@ export const DbViewer = () => {
                               >
                                 {value !== null ? JSON.stringify(value) : '—'}
                               </Text>
+
+                              {/* Добавляем отображение связанного title */}
+                              {(relations[selectedTable?.name as TableName]?.[key] && value) && (() => {
+                                const relation = relations[selectedTable!.name][key];
+                                 const targetTables = activeTab === 'book' ? bookTables : configTables;
+                                const relatedTable = targetTables.find(t => t.name === relation.table);
+                                const relatedEntry = relatedTable?.data.find(
+                                    (item: any) => item[relation.field] === value
+                                );
+
+                                return (
+                                    relatedEntry?.title && (
+                                        <Text
+                                            size="xs"
+                                            color="gray"
+                                            style={{ display: 'block', lineHeight: 1.2, marginTop: 2 }}
+                                        >
+                                          {relatedEntry.title}
+                                        </Text>
+                                    )
+                                );
+                              })()}
                             </Table.Td>
                         );
                       })}
