@@ -140,6 +140,18 @@ export const DbViewer = () => {
     }
   };
 
+  const handleDeleteRecord = async (tableName: TableName, id: number) => {
+    setLoading(true);
+    try {
+      const db = activeTab === 'book' ? bookDb : configDatabase;
+      await db[tableName].delete(id);
+      // Обновляем список таблиц
+      await loadTableList(activeTab);
+    } finally {
+      setLoading(false);
+    }
+  };
+
 
   return (
   <Box p="md">
@@ -174,6 +186,7 @@ export const DbViewer = () => {
                   onAddFilter={handleAddFilter}
                   onRemoveFilter={handleRemoveFilter}
                   onClearAllFilters={handleClearAllFilters}
+                  onDeleteRecord={handleDeleteRecord}
               />
             </>
         ) : (

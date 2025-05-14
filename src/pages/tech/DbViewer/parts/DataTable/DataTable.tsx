@@ -18,6 +18,7 @@ interface DataTableProps {
   onAddFilter: (field: string, value: string) => void;
   onRemoveFilter: (field: string) => void;
   onClearAllFilters: () => void;
+  onDeleteRecord: (tableName: string, id: number) => void;
 }
 
 const PRIORITY_FIELDS = ['id', 'uuid', 'title'];
@@ -34,6 +35,7 @@ export const DataTable = ({
                             onAddFilter,
                             onRemoveFilter,
                             onClearAllFilters,
+                            onDeleteRecord
                           }: DataTableProps) => {
   const [showFilters, setShowFilters] = useState(false);
 
@@ -102,6 +104,7 @@ export const DataTable = ({
                       onReverseRelationClick={onReverseRelationClick}
                       showFilters={showFilters}
                       onAddFilter={onAddFilter}
+                      onDeleteRecord={onDeleteRecord}
                   />
               ))}
             </Table.Tbody>

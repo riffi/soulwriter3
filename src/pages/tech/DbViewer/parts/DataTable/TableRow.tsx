@@ -3,7 +3,7 @@ import { RelationPopup } from './RelationPopup';
 import { DatabaseType, relations, TableData, TableName } from "@/pages/tech/DbViewer/types";
 import { getReverseRelations } from "./utils";
 import {useMemo, useState} from 'react';
-import {IconFilter, IconLink} from "@tabler/icons-react";
+import {IconFilter, IconLink, IconTrash} from "@tabler/icons-react";
 
 interface TableRowProps {
   item: Record<string, unknown>;
@@ -17,6 +17,7 @@ interface TableRowProps {
   onReverseRelationClick: (tableName: TableName, field: string, value: string) => void;
   showFilters: boolean;
   onAddFilter: (field: string, value: string) => void;
+  onDeleteRecord: (tableName: string, id: number) => void;
 }
 
 const cellStyle = {
@@ -24,7 +25,8 @@ const cellStyle = {
   whiteSpace: 'nowrap',
   maxWidth: '300px',
   overflow: 'hidden',
-  textOverflow: 'ellipsis'
+  textOverflow: 'ellipsis',
+  minWidth: '40px'
 };
 
 const TableCellContent = ({
@@ -135,7 +137,8 @@ export const TableRow = ({
                            onValueClick,
                            onReverseRelationClick,
                            showFilters,
-                           onAddFilter
+                           onAddFilter,
+                           onDeleteRecord
                          }: TableRowProps) => {
   const tableName = table.name as TableName;
   const targetTables = activeTab === 'book' ? bookTables : configTables;
@@ -175,6 +178,19 @@ export const TableRow = ({
                 />
               </Table.Td>
           ))}
+          <Table.Td>
+            <ActionIcon
+                color="red"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (item.id) {
+                    onDeleteRecord(table.name, Number(item.id));
+                  }
+                }}
+            >
+              <IconTrash size={16} />
+            </ActionIcon>
+          </Table.Td>
         </Table.Tr>
 
         {reverseLinks.length > 0 && <ReverseRelationLinks links={reverseLinks} onClick={onReverseRelationClick} />}
