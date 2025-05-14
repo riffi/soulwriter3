@@ -6,10 +6,10 @@ import {
   Container,
   Space,
   Tabs,
-  Group, SegmentedControl, ActionIcon, Select, Drawer, Button, Box, Text
+  Group, SegmentedControl, ActionIcon, Select, Drawer, Button, Box, Text, ScrollArea
 } from "@mantine/core";
 import { useBlockEditForm } from "@/components/configurator/BlockEditForm/useBlockEditForm";
-import React, { useEffect, useState } from "react";
+import React, {useCallback, useEffect, useRef, useState} from "react";
 import {
   IBlockParameter, IBlockParameterDataType, IBlockRelation,
   IBlockStructureKind,
@@ -18,7 +18,7 @@ import {
 import { notifications } from "@mantine/notifications";
 import { ParamEditModal } from "@/components/configurator/BlockEditForm/modal/ParamEditModal/ParamEditModal";
 import { ParamTable } from "@/components/configurator/BlockEditForm/parts/ParamTable/ParamTable";
-import {IconSearch, IconSettings} from "@tabler/icons-react";
+import {IconArrowLeft, IconArrowRight, IconSearch, IconSettings} from "@tabler/icons-react";
 import {GroupsModal} from "@/components/configurator/BlockEditForm/modal/GroupsModal/GroupsModal";
 import classes from "./BlockEditForm.module.css";
 import {RelationTable} from "@/components/configurator/BlockEditForm/parts/RelationTable/RelationTable";
@@ -81,12 +81,6 @@ export const BlockEditForm = ({ blockUuid, bookUuid }: IBlockEditFormProps) => {
       setState(prev => ({ ...prev, currentGroupUuid: paramGroupList[0].uuid }));
     }
   }, [paramGroupList, state.currentGroupUuid]);
-
-  // Функция для динамического получения иконки по имени
-  const getIconComponent = (iconName: string) => {
-    const IconComponent = Gi[iconName]; // Получаем иконку по имени
-    return IconComponent ? React.createElement(IconComponent, { size: 24 }) : null;
-  };
 
   const getInitialParamData = (): IBlockParameter => ({
     uuid: "",
@@ -188,19 +182,35 @@ export const BlockEditForm = ({ blockUuid, bookUuid }: IBlockEditFormProps) => {
 
         <Space h="md" />
 
-        <Group mb="md">
-          <SegmentedControl
-              value={state.activeTab}
-              onChange={(value) => setState(prev => ({ ...prev, activeTab: value as 'parameters' | 'relations' }))}
-              data={[
-                { value: 'main', label: 'Основное' },
-                { value: 'parameters', label: 'Параметры' },
-                { value: 'relations', label: 'Связи' },
-                { value: 'children', label: 'Дочерние блоки' },
-                { value: 'tabs', label: 'Вкладки' },
-              ]}
-          />
+        <Group mb="md" pos="relative" style={{ overflow: 'visible' }}>
+
+          <ScrollArea
+              type="hover"
+              offsetScrollbars
+              styles={{
+                viewport: { scrollBehavior: 'smooth' },
+                root: { flex: 1 }
+              }}
+          >
+            <SegmentedControl
+                value={state.activeTab}
+                onChange={(value) => setState(prev => ({ ...prev, activeTab: value as typeof prev.activeTab }))}
+                data={[
+                  { value: 'main', label: 'Основное' },
+                  { value: 'parameters', label: 'Параметры' },
+                  { value: 'relations', label: 'Связи' },
+                  { value: 'children', label: 'Дочерние' }, // Сократите длинные названия
+                  { value: 'tabs', label: 'Вкладки' },
+                ]}
+                styles={{
+                  root: {
+                    minWidth: 380, // Минимальная ширина для десктопов
+                  },
+                }}
+            />
+          </ScrollArea>
         </Group>
+
         {state.activeTab === 'main' &&
             <>
               <Group align="flex-end" spacing="xl" mb="md">
@@ -228,20 +238,23 @@ export const BlockEditForm = ({ blockUuid, bookUuid }: IBlockEditFormProps) => {
                   mt="md"
                   mb="xl"
               />
-              <Group>
+              <Group gap={"xs"}>
                 <Button
                     onClick={() => setDrawerOpen(true)}
                     variant="outline"
                     size="sm"
-                    leftIcon={<IconSearch size={16} />}
+                    leftSection={
+                        block?.icon && (  <IconViewer
+                        iconName={block.icon}
+                        style={{
+                          color: "var(--mantine-color-blue-filled)",
+                        }}
+
+                      />)
+                    }
                 >
-                  Выбрать иконку
+                  {block?.icon ? 'Изменить иконку' : 'Выбрать иконку'}
                 </Button>
-                {block?.icon && (
-                    <Box ml="lg">
-                      <IconViewer iconName={block.icon} color="var(--mantine-color-blue-filled)"/>
-                    </Box>
-                )}
               </Group>
             </>
         }

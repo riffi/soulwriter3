@@ -20,6 +20,8 @@ export const BookDashboard = (bookUuid: string) => {
     return BlockRepository.getAll(bookDb);
   }, [bookUuid]);
 
+  const notChildBlocks = blocks?.filter(block => block.parentBlockUuid == null)
+
   useEffect(() =>{
     setPageTitle(`Рабочий стол книги`);
   }, [bookUuid])
@@ -31,7 +33,7 @@ export const BookDashboard = (bookUuid: string) => {
         </Group>
 
         <SimpleGrid cols={{ base: 1, sm: 2, lg: 3, xl: 4 }} spacing="md">
-          {blocks?.map((block) => (
+          {notChildBlocks?.map((block) => (
               <DashboardBlockCard key={block.uuid} block={block} />
           ))}
         </SimpleGrid>

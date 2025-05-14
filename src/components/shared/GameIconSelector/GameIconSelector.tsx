@@ -75,7 +75,7 @@ export const GameIconSelector = ({
               <Grid.Col span={3} key={icon.name}>
                 <Box
                     onClick={() => onSelectIcon(icon.name)}
-                    style={{ cursor: 'pointer', textAlign: 'center' }}
+                    style={{ cursor: 'pointer', textAlign: 'center', color: '#555' }}
                 >
                   {icon.component}
                   <Text size="xs" mt={4}>

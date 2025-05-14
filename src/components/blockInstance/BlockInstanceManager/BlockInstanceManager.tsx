@@ -266,7 +266,7 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
         <Modal
             opened={opened}
             onClose={close}
-            fullscreen={isMobile}
+            fullScreen={isMobile}
             title={"Создание " + block?.titleForms?.genitive}
             centered
         >
