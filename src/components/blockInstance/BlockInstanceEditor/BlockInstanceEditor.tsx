@@ -295,7 +295,7 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
                                   blockInstanceUuid={props.blockInstanceUuid}
                                   blockUuid={block?.uuid}
                                   relatedBlock={getRelatedBlockByRelationUuid(tab.relationUuid)}
-                                  blockRelation={blockRelations?.find(r =>
+                                  blockRelation={blockRelations?.find(
                                       r => r.uuid === tab.relationUuid
                                   )}
                               />
