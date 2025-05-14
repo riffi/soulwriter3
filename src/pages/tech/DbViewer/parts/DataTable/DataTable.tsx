@@ -77,7 +77,7 @@ export const DataTable = ({
         />
 
         <ScrollArea>
-          <Table highlightOnHover tableLayout="auto">
+          <Table highlightOnHover withColumnBorders withTableBorder  tableLayout="auto">
             <TableHeader
                 keys={allKeys}
                 isPriorityField={isPriorityField}

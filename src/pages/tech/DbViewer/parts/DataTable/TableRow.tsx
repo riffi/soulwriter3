@@ -56,7 +56,13 @@ const TableCellContent = ({
               }}
               onClick={onClick}
           >
-            {value  ? JSON.stringify(value) : '—'}
+            {value === undefined
+                ? '—'
+                : typeof value === 'string'
+                    ? value
+                    : typeof value === 'object' && value !== null
+                        ? JSON.stringify(value)
+                        : String(value)}
           </Text>
           {relatedEntry && <RelationPopup relatedEntry={relatedEntry} />}
         </Group>
