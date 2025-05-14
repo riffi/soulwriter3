@@ -41,16 +41,19 @@ export const SceneTable = ({ openCreateModal }: SceneTableProps) => {
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody>
-          {getScenesForChapter(null).map((scene) => (
-              <SceneRow key={`scene-${scene.id}`} scene={scene} />
-          ))}
-
           {chapters?.map((chapter) => (
               <ChapterRow
                   key={`chapter-${chapter.id}`}
                   chapter={chapter}
                   scenes={getScenesForChapter(chapter.id)}
                   onAddScene={() => openCreateModal(chapter.id)}
+              />
+          ))}
+          {getScenesForChapter(null).map((scene, index, array) => (
+              <SceneRow
+                  key={`scene-${scene.id}`}
+                  scene={scene}
+                  scenesInChapter={array}
               />
           ))}
         </Table.Tbody>

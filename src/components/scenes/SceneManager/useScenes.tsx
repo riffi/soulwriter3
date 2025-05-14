@@ -81,10 +81,9 @@ export const useScenes = () => {
 
     if (activeIndex === -1 || overIndex === -1) return;
 
-    const newScenes = arrayMove(allScenes, activeIndex, overIndex);
+    await bookDb.scenes.update(activeId, { order: overIndex + 1});
+    await bookDb.scenes.update(overId, { order: activeIndex + 1});
 
-    // Используем новую логику пересчета
-    await recalculateGlobalOrder();
   };
 
   const recalculateGlobalOrder = async (

@@ -111,11 +111,11 @@ export const ChapterRow = ({ chapter, scenes, onAddScene }: ChapterRowProps) => 
             </Box>
 
             <Collapse in={isExpanded}>
-              {scenes.map((scene) => (
+              {scenes.map((scene, index, array) => (
                   <SceneRow
                       key={`scene-${scene.id}`}
                       scene={scene}
-                      onDelete={() => handleDeleteScene(scene.id)}
+                      scenesInChapter={array}
                   />
               ))}
             </Collapse>

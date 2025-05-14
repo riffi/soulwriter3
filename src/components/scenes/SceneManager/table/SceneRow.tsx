@@ -1,6 +1,12 @@
 // src/components/scenes/SceneManager/SceneRow.tsx
 import { ActionIcon, Group, Table } from "@mantine/core";
-import { IconEdit, IconTrash, IconArrowRightCircle} from "@tabler/icons-react";
+import {
+  IconEdit,
+  IconTrash,
+  IconArrowRightCircle,
+  IconArrowUp,
+  IconArrowDown
+} from "@tabler/icons-react";
 import { useNavigate } from "react-router-dom";
 import { useDisclosure } from "@mantine/hooks";
 import { DeleteConfirmationModal } from "../modals/DeleteConfirmationModal";
@@ -17,13 +23,29 @@ interface SceneRowProps {
     chapterId?: number;
   };
   onDelete?: (id: number) => void;
+  scenesInChapter: Array<{ id: number }>;
 }
 
-export const SceneRow = ({ scene, onDelete, onMove }: SceneRowProps) => {
+export const SceneRow = ({ scene, onDelete, scenesInChapter }: SceneRowProps) => {
   const navigate = useNavigate();
   const [openedDeleteModal, { open: openDeleteModal, close: closeDeleteModal }] = useDisclosure(false);
   const [openedMoveModal, { open: openMoveModal, close: closeMoveModal }] = useDisclosure(false);
-  const { recalculateGlobalOrder } = useScenes();
+  const { recalculateGlobalOrder, reorderScenes } = useScenes();
+  const currentIndex = scenesInChapter.findIndex(s => s.id === scene.id);
+
+  const handleMoveUp = () => {
+    const prevScene = scenesInChapter[currentIndex - 1];
+    if (prevScene) {
+      reorderScenes(scene.id, prevScene.id);
+    }
+  };
+
+  const handleMoveDown = () => {
+    const nextScene = scenesInChapter[currentIndex + 1];
+    if (nextScene) {
+      reorderScenes(scene.id, nextScene.id);
+    }
+  };
 
   const handleDelete = () => {
     if (onDelete) {
@@ -64,8 +86,24 @@ export const SceneRow = ({ scene, onDelete, onMove }: SceneRowProps) => {
           >
             {scene.order ? `${scene.order}. ` : ''}{scene.title}
           </Table.Td>
-          <Table.Td style={{ width: '150px' }}>
+          <Table.Td >
             <Group>
+              <ActionIcon
+                  variant="subtle"
+                  onClick={handleMoveUp}
+                  disabled={currentIndex <= 0}
+                  title="Переместить вверх"
+              >
+                <IconArrowUp size={16} />
+              </ActionIcon>
+              <ActionIcon
+                  variant="subtle"
+                  onClick={handleMoveDown}
+                  disabled={currentIndex >= scenesInChapter.length - 1}
+                  title="Переместить вниз"
+              >
+                <IconArrowDown size={16} />
+              </ActionIcon>
               <ActionIcon
                   variant="subtle"
                   onClick={openMoveModal}
