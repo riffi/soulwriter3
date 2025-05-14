@@ -18,7 +18,7 @@ import {TableList} from "@/pages/tech/DbViewer/parts/TableList";
 import {HistoryEntry, relations, TableData} from "@/pages/tech/DbViewer/types";
 
 type TableName = keyof typeof bookDb | keyof typeof configDatabase;
-
+export type Filters = Record<string, string>;
 
 
 export const DbViewer = () => {
@@ -30,13 +30,27 @@ export const DbViewer = () => {
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [currentFilter, setCurrentFilter] = useState<{ field: string; value: string } | null>(null);
 
+  const [filters, setFilters] = useState<Filters>({});
+  const handleAddFilter = (field: string, value: string) => {
+    setFilters(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleRemoveFilter = (field: string) => {
+    const newFilters = { ...filters };
+    delete newFilters[field];
+    setFilters(newFilters);
+  };
+
+  const handleClearAllFilters = () => {
+    setFilters({});
+  };
+
   useEffect(() => {
     loadTableList('book');
     loadTableList('config');
   }, []);
 
   const handleTabChange = (tab: 'book' | 'config') => {
-    console.log('change tab', tab);
     setActiveTab(tab);
     setSelectedTable(null);
     setHistory([]);
@@ -156,6 +170,10 @@ export const DbViewer = () => {
                   onReverseRelationClick={handleReverseRelationClick}
                   bookTables={bookTables}
                   configTables={configTables}
+                  filters={filters}
+                  onAddFilter={handleAddFilter}
+                  onRemoveFilter={handleRemoveFilter}
+                  onClearAllFilters={handleClearAllFilters}
               />
             </>
         ) : (
