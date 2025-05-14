@@ -1,5 +1,6 @@
-import { Box, Table, ScrollArea, Title, Text } from '@mantine/core';
+import {Box, Table, ScrollArea, Title, Text, Popover, ActionIcon} from '@mantine/core';
 import {TableData, DatabaseType, relations, TableName} from '../types';
+import {IconInfoCircle} from "@tabler/icons-react";
 
 interface DataTableProps {
   table: TableData;
@@ -9,6 +10,24 @@ interface DataTableProps {
   bookTables: TableData[];
   configTables: TableData[];
 }
+
+const RelationPopup = ({ relatedEntry }: { relatedEntry: any }) => {
+  return (
+      <Popover>
+        <Popover.Target>
+          <ActionIcon size="xs" onClick={(e) => e.stopPropagation()}>
+            <IconInfoCircle style={{ width: '14px', height: '14px' }} />
+          </ActionIcon>
+        </Popover.Target>
+        <Popover.Dropdown>
+          <Text size="sm" style={{ whiteSpace: 'pre-wrap' }}>
+            {JSON.stringify(relatedEntry, null, 2)}
+          </Text>
+        </Popover.Dropdown>
+      </Popover>
+  );
+};
+
 
 export const DataTable = ({
                             table,
@@ -84,42 +103,61 @@ export const DataTable = ({
                                   textOverflow: 'ellipsis'
                                 }}
                             >
-                              <Text
-                                  span
-                                  style={{
-                                    color: typeof value === 'string' && value.includes('uuid') ? 'blue' : '#343a40',
-                                    fontSize: '12px',
-                                  }}
-                                  onClick={() => onValueClick(key, String(value))}
-                              >
-                                {value !== null ? JSON.stringify(value) : '—'}
-                              </Text>
+                              <div style={{display: 'flex', alignItems: 'center', gap: 4}}>
+                                <Text
+                                    span
+                                    style={{
+                                      color: typeof value === 'string' && value.includes('uuid') ? 'blue' : '#343a40',
+                                      fontSize: '12px',
+                                    }}
+                                    onClick={() => onValueClick(key, String(value))}
+                                >
+                                  {value !== null ? JSON.stringify(value) : '—'}
+                                </Text>
+                                {(() => {
+                                  const relation = relations[table?.name as TableName]?.[key];
+                                  if (!relation || !value) return null;
 
-                              {/* Добавляем отображение связанного title */}
-                              {(relations[table?.name as TableName]?.[key] && value) && (() => {
-                                const relation = relations[table!.name][key];
-                                const targetTables = activeTab === 'book' ? bookTables : configTables;
-                                const relatedTable = targetTables.find(t => t.name === relation.table);
-                                const relatedEntry = relatedTable?.data.find(
-                                    (item: any) => item[relation.field] === value
-                                );
+                                  const targetTables = activeTab === 'book' ? bookTables : configTables;
+                                  const relatedTable = targetTables.find(t => t.name === relation.table);
+                                  const relatedEntry = relatedTable?.data.find(
+                                  (item: any) => item[relation.field] === value
+                                  );
 
-                                return (
-                                    relatedEntry?.title && (
-                                        <Text
-                                            size="xs"
-                                            color="gray"
-                                            style={{ display: 'block', lineHeight: 1.2, marginTop: 2 }}
-                                        >
-                                          {relatedEntry.title}
-                                        </Text>
-                                    )
-                                );
-                              })()}
+                                  return relatedEntry && <RelationPopup relatedEntry={relatedEntry} />;
+                                  })()
+                                }
+                              </div>
+
+                                {/* Добавляем отображение связанного title */}
+                                {(relations[table?.name as TableName]?.[key] && value) && (() => {
+                                  const relation = relations[table!.name][key];
+                                  const targetTables = activeTab === 'book' ? bookTables : configTables;
+                                  const relatedTable = targetTables.find(t => t.name === relation.table);
+                                  const relatedEntry = relatedTable?.data.find(
+                                      (item: any) => item[relation.field] === value
+                                  );
+
+                                  return (
+                                      relatedEntry?.title && (
+                                          <Text
+                                              size="xs"
+                                              color="gray"
+                                              style={{
+                                                display: 'block',
+                                                lineHeight: 1.2,
+                                                marginTop: 2
+                                              }}
+                                          >
+                                            {relatedEntry.title}
+                                          </Text>
+                                      )
+                                  );
+                                })()}
                             </Table.Td>
-                        );
+                      );
                       })}
-                    </Table.Tr>
+                      </Table.Tr>
                 ))}
               </Table.Tbody>
             </Table>
