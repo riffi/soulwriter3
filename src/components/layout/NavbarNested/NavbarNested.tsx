@@ -162,7 +162,11 @@ const BASE_MENU_ITEMS: NavLinkGroup[] = [
       {
         label: 'Настройки',
         link: '/settings',
-      }
+      },
+      {
+        label: 'База данных',
+        link: '/db-viewer',
+      },
     ]
   },
 ];
