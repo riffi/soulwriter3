@@ -92,11 +92,13 @@ const update = async (db: BookDB, instance: IBlockInstance)=> {
 }
 
 const remove = async (db: BookDB, instance: IBlockInstance)=> {
-  db.blockInstanceRelations.where('sourceInstanceUuid').equals(instance.uuid).delete();
-  db.blockInstanceRelations.where('targetInstanceUuid').equals(instance.uuid).delete();
-  db.blockParameterInstances.where('blockInstanceUuid').equals(instance.uuid).delete();
-  db.blockInstanceSceneLinks.where('blockInstanceUuid').equals(instance.uuid).delete();
-  db.blockInstances.delete(instance.id);
+  await Promise.all([
+    db.blockInstanceRelations.where('sourceInstanceUuid').equals(instance.uuid).delete(),
+    db.blockInstanceRelations.where('targetInstanceUuid').equals(instance.uuid).delete(),
+    db.blockParameterInstances.where('blockInstanceUuid').equals(instance.uuid).delete(),
+    db.blockInstanceSceneLinks.where('blockInstanceUuid').equals(instance.uuid).delete(),
+    db.blockInstances.delete(instance.id)
+  ])
 }
 
 

@@ -217,7 +217,6 @@ const save = async (db: BlockAbstractDb, block: IBlock, isBookDb = false) => {
 }
 
 const remove = async (db: BlockAbstractDb, block: IBlock) => {
-  /** TODO удалить все инстансы связанные с блоком */
   await db.transaction('rw',
       [
         db.blocks,
@@ -267,8 +266,15 @@ const remove = async (db: BlockAbstractDb, block: IBlock) => {
           .delete();
 
         // Удаляем связи блока
-        await db.blocksRelations.where('sourceBlockUuid').equals(block.uuid).delete();
-        await db.blocksRelations.where('targetBlockUuid').equals(block.uuid).delete();
+        const [sourceRelations, targetRelations] = await Promise.all([
+          db.blocksRelations.where('sourceBlockUuid').equals(block.uuid).toArray(),
+          db.blocksRelations.where('targetBlockUuid').equals(block.uuid).toArray()
+        ]);
+        const allRelations = [...sourceRelations, ...targetRelations];
+        for (const relation of allRelations) {
+          await BlockRelationRepository.remove(db, relation.uuid);
+        }
+
 
         //Удаляем вкладки блока
         await db.blockTabs.where('blockUuid').equals(block.uuid).delete();

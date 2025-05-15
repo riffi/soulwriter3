@@ -37,15 +37,7 @@ export const useRelationTable = (block: IBlock, bookUuid?: string, otherBlocks?:
 
   const saveRelation = async (relation: IBlockRelation) => {
     try {
-      if (!relation.uuid) {
-        relation.uuid = generateUUID();
-        await db.blocksRelations.add(relation);
-      } else {
-        const existing = await db.blocksRelations.where('uuid').equals(relation.uuid).first();
-        if (existing) {
-          await db.blocksRelations.update(existing.id!, relation);
-        }
-      }
+      await BlockRelationRepository.save(db, relation);
       notifications.show({
         title: "Успешно",
         message: "Связь сохранена",
@@ -64,7 +56,7 @@ export const useRelationTable = (block: IBlock, bookUuid?: string, otherBlocks?:
 
   const deleteRelation = async (relationUuid: string) => {
     try {
-      await db.blocksRelations.where('uuid').equals(relationUuid).delete();
+      await BlockRelationRepository.remove(db, relationUuid);
       notifications.show({
         title: "Успешно",
         message: "Связь удалена",

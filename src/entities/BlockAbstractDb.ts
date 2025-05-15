@@ -14,7 +14,7 @@ export const baseSchema={
   blockParameters: '++id, &uuid, groupUuid, blockUuid, dataType, linkedBlockUuid, linkedParameterUuid, isDefault, displayInCard',
   blockParameterPossibleValues: '++id, &uuid, parameterUuid, value',
   blocksRelations: '++id, &uuid, sourceBlockUuid, targetBlockUuid, configurationVersionUuid',
-  blockTabs: '++id, &uuid, blockUuid, title',
+  blockTabs: '++id, &uuid, blockUuid, title, relationUuid',
 }
 
 export class BlockAbstractDb extends Dexie{
