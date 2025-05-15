@@ -6,18 +6,18 @@ import {
   Stack, Checkbox, ActionIcon
 } from "@mantine/core";
 
-import classes from "../../BlockInstanceEditor.module.css";
+import classes from "../../../BlockInstanceEditor.module.css";
 import { IBlockParameterInstance } from "@/entities/BookEntities";
-import { FullParam } from "../../types";
+import { FullParam } from "../../../types";
 import {
   IBlockParameterDataType,
   IBlockParameterPossibleValue
 } from "@/entities/ConstructorEntities";
 import {
   ParameterActions
-} from "@/components/blockInstance/BlockInstanceEditor/parts/InstanceParameterEditor/ParameterActionsProps";
+} from "@/components/blockInstance/BlockInstanceEditor/parts/InstanceParameterEditor/parts/ParameterActionsProps";
 
-import {ParameterEditVariantRenderer} from "@/components/blockInstance/BlockInstanceEditor/parts/InstanceParameterEditor/ParameterEditVariantRenderer";
+import {ParameterEditVariantRenderer} from "@/components/blockInstance/BlockInstanceEditor/parts/InstanceParameterEditor/parts/ParameterEditVariantRenderer";
 import {useState} from "react";
 import {useDialog} from "@/providers/DialogProvider/DialogProvider";
 import {IconTrash} from "@tabler/icons-react";
