@@ -2,10 +2,12 @@ import React, {useState, useEffect, useMemo, useCallback} from 'react';
 import { Flex, ScrollArea, NavLink, Container, Loader, Text } from '@mantine/core';
 import { IScene, IChapter } from '@/entities/BookEntities';
 import {bookDb} from "@/entities/bookDb";
+import {useScrollSpy} from "@mantine/hooks";
 
 interface TOCItem {
   type: 'chapter' | 'scene';
   id: number;
+  order: number;
   title: string;
   children?: TOCItem[];
 }
@@ -22,16 +24,22 @@ export const BookReader: React.FC<BookReaderProps> = ({  }) => {
   const [error, setError] = useState<string | null>(null);
   const [activeSection, setActiveSection] = useState<{ chapterId?: number; sceneId?: number }>({});
 
+  const sceneSpy = useScrollSpy({
+    selector: '[data-scene]',
+    getDepth: (element) => Number(element.getAttribute('data-scene')),
+    getValue: (element) => element.getAttribute('data-scene') || '',
+    offset: 100,
+  });
 
 
 
   useEffect(() => {
-    const initDB = async () => {
+    const loadData = async () => {
       try {
 
         // Загрузка данных
         const chaptersData = await bookDb.chapters.orderBy('order').toArray();
-        const scenesData = await bookDb.scenes.toArray();
+        const scenesData = await bookDb.scenes.orderBy('order').toArray();
 
         setChapters(chaptersData);
         setScenes(scenesData);
@@ -47,10 +55,12 @@ export const BookReader: React.FC<BookReaderProps> = ({  }) => {
 
           newTocItems.push({
             type: 'chapter',
+            order: chapter.order || 0,
             id: chapter.id!,
             title: chapter.title,
             children: chapterScenes.map(scene => ({
               type: 'scene' as const,
+              order: scene.order || 0,
               id: scene.id!,
               title: scene.title
             }))
@@ -65,11 +75,13 @@ export const BookReader: React.FC<BookReaderProps> = ({  }) => {
         newTocItems.push(...standaloneScenes.map(scene => ({
           type: 'scene' as const,
           id: scene.id!,
+          order: scene.order || 0,
           title: scene.title,
           children: undefined
         })));
 
         setTocItems(newTocItems);
+        sceneSpy.reinitialize();
       } catch (err) {
         setError('Ошибка загрузки данных');
         console.error(err);
@@ -78,29 +90,36 @@ export const BookReader: React.FC<BookReaderProps> = ({  }) => {
       }
     };
 
-    initDB();
+    loadData();
 
     return () => {
     };
   }, []);
 
+
+  useEffect(() => {
+    sceneSpy.reinitialize();
+  }, [tocItems, scenes, chapters]);
+
+
   // Функция прокрутки
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
     if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
+      element.scrollIntoView({ behavior: 'auto' });
     }
   };
 
   // Рендер TOC
 // Модифицированный рендер TOC
   const renderTOC = useMemo(() => {
+    const currentScene = scenes[sceneSpy.active]
+    const currentChapter = chapters[chapters.findIndex(c => c.id === currentScene?.chapterId)];
     return (items: TOCItem[]) => {
       return items.map(item => {
-        const isActiveChapter = item.type === 'chapter' && item.id === activeSection.chapterId;
-        const isActiveScene = item.type === 'scene' && item.id === activeSection.sceneId;
 
         if (item.type === 'chapter') {
+          const isActive = item.order === currentChapter.order;
           return (
               <NavLink
                   key={`chapter-${item.id}`}
@@ -108,13 +127,13 @@ export const BookReader: React.FC<BookReaderProps> = ({  }) => {
                   icon={<span style={{ fontSize: '1rem' }}>📚</span>}
                   styles={{
                     root: {
-                      backgroundColor: isActiveChapter ? '#e7f5ff' : 'transparent',
-                      fontWeight: isActiveChapter ? 600 : 'normal'
+                      backgroundColor: isActive ? '#e7f5ff' : 'transparent',
+                      fontWeight: isActive ? 600 : 'normal'
                     }
                   }}
               >
                 {item.children?.map(child => {
-                  const isChildActive = child.id === activeSection.sceneId;
+                  const isChildActive = currentScene.id === child.id;
                   return (
                       <NavLink
                           key={`scene-${child.id}`}
@@ -133,7 +152,7 @@ export const BookReader: React.FC<BookReaderProps> = ({  }) => {
               </NavLink>
           );
         } else {
-          const isActive = item.id === activeSection.sceneId;
+          const isActive = item.id === currentScene.id;
           return (
               <NavLink
                   key={`scene-${item.id}`}
@@ -151,7 +170,7 @@ export const BookReader: React.FC<BookReaderProps> = ({  }) => {
         }
       });
     };
-  }, [activeSection]);
+  }, [sceneSpy]);
 
   if (loading) {
     return (
@@ -171,6 +190,7 @@ export const BookReader: React.FC<BookReaderProps> = ({  }) => {
 
   return (
       <Flex>
+
         {/* Левая панель TOC (фиксированная) */}
         <div style={{
           width: 300,
@@ -196,6 +216,7 @@ export const BookReader: React.FC<BookReaderProps> = ({  }) => {
           overflowY: 'auto'
         }}>
           <Container size="lg">
+
             {tocItems.map(item => {
               if (item.type === 'chapter') {
                 const chapter = chapters.find(c => c.id === item.id);
@@ -222,6 +243,7 @@ export const BookReader: React.FC<BookReaderProps> = ({  }) => {
                           <div
                               key={`scene-content-${scene.id}`}
                               id={`scene-${scene.id}`}
+                              data-scene
                               style={{marginBottom: '2rem'}}
                           >
                             <h3 style={{
