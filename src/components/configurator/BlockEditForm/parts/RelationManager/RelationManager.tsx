@@ -2,22 +2,22 @@ import { Table, ActionIcon, Group, Button } from "@mantine/core";
 import { IconEdit, IconTrash, IconPlus } from "@tabler/icons-react";
 import {IBlock, IBlockRelation} from "@/entities/ConstructorEntities";
 import {
-  useRelationTable
-} from "@/components/configurator/BlockEditForm/parts/RelationTable/hook/useRelationTable";
-import {RelationEditModal} from "@/components/configurator/BlockEditForm/parts/RelationTable/modal/RelationEditModal";
+  useRelationManager
+} from "@/components/configurator/BlockEditForm/parts/RelationManager/hook/useRelationManager";
+import {RelationEditModal} from "@/components/configurator/BlockEditForm/parts/RelationManager/modal/RelationEditModal";
 
 
-interface RelationTableProps {
+interface RelationManagerProps {
   otherBlocks: IBlock[]
   block: IBlock
   bookUuid: string
 }
 
-export const RelationTable = ({
+export const RelationManager = ({
                                 otherBlocks,
                                 block,
                                 bookUuid
-                              }: RelationTableProps) => {
+                              }: RelationManagerProps) => {
 
   const {
     blockRelations,
@@ -27,7 +27,7 @@ export const RelationTable = ({
     handleCloseModal,
     saveRelation,
     deleteRelation,
-  } = useRelationTable(block, bookUuid);
+  } = useRelationManager(block, bookUuid);
 
   const blockCorrespondsToRelation = (block: IBlock, relation: IBlockRelation): boolean => {
     return (relation.targetBlockUuid === block.uuid) ||

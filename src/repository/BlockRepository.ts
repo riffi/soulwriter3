@@ -292,6 +292,24 @@ const getAll = async (db: BlockAbstractDb): Promise<IBlock[]> => {
   return db.blocks.toArray();
 }
 
+const unlinkChildFromParent = async (db: BlockAbstractDb, childBlock: IBlock) => {
+  await db.blocks.update(childBlock.id!, {
+    ...childBlock,
+    parentBlockUuid: null,
+    displayKind: 'list'
+  });
+}
+
+const linkChildToParent = async (db: BlockAbstractDb, childBlock: IBlock, parentUuid: string) => {
+  await db.blocks.update(childBlock.id!, {
+    ...childBlock,
+    parentBlockUuid: parentUuid,
+  });
+}
+
+const getChildren = async (db: BlockAbstractDb, parentBlockUuid: string) => {
+  return db.blocks.where('parentBlockUuid').equals(parentBlockUuid).toArray();
+}
 
 export const BlockRepository = {
   getAll,
@@ -307,5 +325,8 @@ export const BlockRepository = {
   deleteParameterGroup,
   updateParamPossibleValues,
   save,
-  remove
+  remove,
+  unlinkChildFromParent,
+  linkChildToParent,
+  getChildren
 }

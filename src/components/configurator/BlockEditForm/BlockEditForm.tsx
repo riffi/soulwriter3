@@ -2,96 +2,46 @@
 import {
   Anchor,
   Breadcrumbs,
-  Checkbox,
   Container,
   Space,
-  Tabs,
-  Group, SegmentedControl, ActionIcon, Select, Drawer, Button, Box, Text, ScrollArea
+  Group, SegmentedControl, ScrollArea
 } from "@mantine/core";
 import { useBlockEditForm } from "@/components/configurator/BlockEditForm/useBlockEditForm";
-import React, {useCallback, useEffect, useRef, useState} from "react";
-import {
-  IBlockParameter, IBlockParameterDataType, IBlockRelation,
-  IBlockStructureKind,
-  IBlockStructureKindTitle
-} from "@/entities/ConstructorEntities";
-import { notifications } from "@mantine/notifications";
-import { ParamEditModal } from "@/components/configurator/BlockEditForm/modal/ParamEditModal/ParamEditModal";
-import { ParamTable } from "@/components/configurator/BlockEditForm/parts/ParamTable/ParamTable";
-import {IconArrowLeft, IconArrowRight, IconSearch, IconSettings} from "@tabler/icons-react";
-import {GroupsModal} from "@/components/configurator/BlockEditForm/modal/GroupsModal/GroupsModal";
+import React, {useState} from "react";
 import classes from "./BlockEditForm.module.css";
-import {RelationTable} from "@/components/configurator/BlockEditForm/parts/RelationTable/RelationTable";
-import {ChildBlocksTable} from "@/components/configurator/BlockEditForm/parts/ChildBlocksTable/ChildBlocksTable";
+import {RelationManager} from "@/components/configurator/BlockEditForm/parts/RelationManager/RelationManager";
+import {ChildBlocksManager} from "@/components/configurator/BlockEditForm/parts/ChildBlocksManager/ChildBlocksManager";
 import {
   BlockTabsManager
 } from "@/components/configurator/BlockEditForm/parts/BlockTabsManager/BlockTabsManager";
-import * as Gi from 'react-icons/gi';
-import {GameIconSelector} from "@/components/shared/GameIconSelector/GameIconSelector";
-import {IconViewer} from "@/components/shared/IconViewer/IconViewer";
 import {
   MainTabContent
 } from "@/components/configurator/BlockEditForm/parts/MainTabContent/MainTabContent";
+import {
+  ParamManager
+} from "@/components/configurator/BlockEditForm/parts/ParamManager/ParamManager";
 
 interface IBlockEditFormProps {
   blockUuid: string;
   bookUuid?: string;
 }
 
-interface IFormState {
-  currentGroupUuid?: string;
-  currentParam?: IBlockParameter;
-  currentRelation?: IBlockRelation;
-  isParamModalOpened: boolean;
-  isGroupsModalOpened: boolean;
-  activeTab: 'parameters' | 'relations' | 'children'  | 'tabs';
-  isChildModalOpened: boolean;
-}
-
-const INITIAL_FORM_STATE: IFormState = {
-  currentGroupUuid: undefined,
-  currentParam: undefined,
-  isParamModalOpened: false,
-  isGroupsModalOpened: false,
-  activeTab: 'main',
-  isChildModalOpened: false,
-};
 
 export const BlockEditForm = ({ blockUuid, bookUuid }: IBlockEditFormProps) => {
-  const [state, setState] = useState<IFormState>(INITIAL_FORM_STATE);
+
+  const [activeTab, setActiveTab] = useState<'main', 'parameters' | 'relations' | 'children'  | 'tabs'>('main');
 
 
   const {
-    saveParamGroup,
-    paramGroupList,
-    block,
-    otherBlocks,
     saveBlock,
     configuration,
+    block,
+    otherBlocks,
     paramList,
-    saveParam,
-    deleteParam,
-    moveGroupUp,
-    moveGroupDown,
-    updateGroupTitle,
-    deleteGroup,
+    paramGroupList,
     blockRelations,
-  } = useBlockEditForm(blockUuid, bookUuid, state.currentGroupUuid);
+  } = useBlockEditForm(blockUuid, bookUuid);
 
-  useEffect(() => {
-    if (paramGroupList?.length > 0 && !state.currentGroupUuid) {
-      setState(prev => ({ ...prev, currentGroupUuid: paramGroupList[0].uuid }));
-    }
-  }, [paramGroupList, state.currentGroupUuid]);
-
-  const getInitialParamData = (): IBlockParameter => ({
-    uuid: "",
-    title: "",
-    description: "",
-    groupUuid: state.currentGroupUuid,
-    dataType: IBlockParameterDataType.string,
-    orderNumber: paramList?.length || 0,
-  });
 
   const breadCrumbs = [
     { title: "Конфигуратор", href: "/configurator" },
@@ -107,64 +57,6 @@ export const BlockEditForm = ({ blockUuid, bookUuid }: IBlockEditFormProps) => {
   ));
 
 
-  const handleParamModalOpen = (param?: IBlockParameter) => {
-    setState(prev => ({
-      ...prev,
-      currentParam: param || getInitialParamData(),
-      isParamModalOpened: true,
-    }));
-  };
-
-  const handleSaveGroup = (newTitle: string) => {
-
-    saveParamGroup({
-      uuid: "",
-      blockUuid,
-      title: newTitle,
-      description: "",
-      orderNumber: paramGroupList?.length || 0,
-    });
-
-  };
-
-  const renderTabsContent = () => (
-      <>
-        <Tabs
-            value={state.currentGroupUuid}
-            onChange={(value) => setState(prev => ({
-              ...prev,
-              currentGroupUuid: value || paramGroupList?.[0]?.uuid
-            }))}
-        >
-          <Tabs.List>
-            {paramGroupList?.map((group) => (
-                <Tabs.Tab value={group.uuid} key={group.uuid}>
-                  {group.title}
-                </Tabs.Tab>
-            ))}
-            <ActionIcon
-                variant="subtle"
-                color="gray"
-                onClick={() => setState(prev => ({ ...prev, isGroupsModalOpened: true }))}
-                ml="auto"
-                mr="sm"
-            >
-              <IconSettings size="1rem" />
-            </ActionIcon>
-          </Tabs.List>
-          {paramGroupList?.map((group) => (
-              <Tabs.Panel value={group.uuid} key={group.uuid}>
-                <ParamTable
-                    params={paramList?.filter((param) => param.groupUuid === group.uuid) || []}
-                    onAddParam={() => handleParamModalOpen(getInitialParamData())}
-                    onEditParam={handleParamModalOpen}
-                    onDeleteParam={deleteParam}
-                />
-              </Tabs.Panel>
-          ))}
-        </Tabs>
-      </>
-  );
 
   return (
       <Container size="lg" py="md" className={classes.container}>
@@ -189,8 +81,8 @@ export const BlockEditForm = ({ blockUuid, bookUuid }: IBlockEditFormProps) => {
               }}
           >
             <SegmentedControl
-                value={state.activeTab}
-                onChange={(value) => setState(prev => ({ ...prev, activeTab: value as typeof prev.activeTab }))}
+                value={activeTab}
+                onChange={(value) => setActiveTab(value)}
                 data={[
                   { value: 'main', label: 'Основное' },
                   { value: 'parameters', label: 'Параметры' },
@@ -207,7 +99,7 @@ export const BlockEditForm = ({ blockUuid, bookUuid }: IBlockEditFormProps) => {
           </ScrollArea>
         </Group>
 
-        {state.activeTab === 'main' &&
+        {activeTab === 'main' &&
             <>
               <MainTabContent
                   block={block}
@@ -216,30 +108,29 @@ export const BlockEditForm = ({ blockUuid, bookUuid }: IBlockEditFormProps) => {
             </>
         }
 
-        {state.activeTab === 'parameters' &&
+        {activeTab === 'parameters' &&
             <>
-              {block?.useTabs === 1 ? renderTabsContent() : (
-                  <ParamTable
-                      params={paramList || []}
-                      onAddParam={() => handleParamModalOpen(getInitialParamData())}
-                      onEditParam={handleParamModalOpen}
-                      onDeleteParam={deleteParam}
-                  />
-              )}
+              <ParamManager
+                  blockUuid={blockUuid}
+                  bookUuid={bookUuid}
+                  useTabs={block?.useTabs}
+                  paramList={paramList}
+                  paramGroupList={paramGroupList}
+              />
             </>
         }
-        {state.activeTab === 'relations' &&
+        {activeTab === 'relations' &&
             <>
-              <RelationTable
+              <RelationManager
                   otherBlocks={otherBlocks || []}
                   block={block}
                   bookUuid={bookUuid}
               />
             </>
         }
-        {state.activeTab === 'children' && (
+        {activeTab === 'children' && (
             <>
-              <ChildBlocksTable
+              <ChildBlocksManager
                   otherBlocks={otherBlocks || []}
                   blockUuid={blockUuid}
                   bookUuid={bookUuid}
@@ -248,7 +139,7 @@ export const BlockEditForm = ({ blockUuid, bookUuid }: IBlockEditFormProps) => {
             </>
         )}
 
-        {state.activeTab === 'tabs' && (
+        {activeTab === 'tabs' && (
             <BlockTabsManager
                 otherRelations={blockRelations || []}
                 currentBlockUuid={blockUuid}
@@ -256,34 +147,6 @@ export const BlockEditForm = ({ blockUuid, bookUuid }: IBlockEditFormProps) => {
                 bookUuid={bookUuid}
             />
         )}
-
-        {state.isParamModalOpened && <ParamEditModal
-            isOpen={state.isParamModalOpened}
-            onClose={() => setState(prev => ({ ...prev, isParamModalOpened: false }))}
-            onSave={(param) => {
-              notifications.show({
-                title: "Параметр",
-                message: `Параметр "${param.title}" сохранён`,
-              });
-              saveParam(param);
-              setState(prev => ({ ...prev, isParamModalOpened: false }))
-            }}
-            initialData={state.currentParam}
-            blockUuid={blockUuid}
-            bookUuid={bookUuid}
-        />}
-
-        <GroupsModal
-            opened={state.isGroupsModalOpened}
-            onClose={() => setState(prev => ({ ...prev, isGroupsModalOpened: false }))}
-            paramGroupList={paramGroupList || []}
-            onSaveGroup={handleSaveGroup}
-            onMoveGroupUp={moveGroupUp}
-            onMoveGroupDown={moveGroupDown}
-            onDeleteGroup={deleteGroup}
-            onUpdateGroupTitle={updateGroupTitle} // Добавить новый проп
-        />
-
       </Container>
   );
 };

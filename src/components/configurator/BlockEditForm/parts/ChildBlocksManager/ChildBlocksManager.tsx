@@ -4,38 +4,38 @@ import {IBlock, IBlockDisplayKindTitle} from "@/entities/ConstructorEntities";
 import { ChildBlockEditModal } from "./modal/ChildBlockEditModal";
 import { useState } from "react";
 import {
-  useChildBlocksTable
-} from "@/components/configurator/BlockEditForm/parts/ChildBlocksTable/hook/useChildBlockTable";
+  useChildBlocksManager
+} from "@/components/configurator/BlockEditForm/parts/ChildBlocksManager/hook/useChildBlockManager";
 
-interface ChildBlocksTableProps {
+interface ChildBlocksManagerProps {
   blockUuid: string;
   bookUuid?: string;
   otherBlocks: IBlock[];
 }
 
 
-export const ChildBlocksTable = ({
+export const ChildBlocksManager = ({
                                    blockUuid,
                                    bookUuid,
                                    otherBlocks,
-                                 }: ChildBlocksTableProps) => {
+                                 }: ChildBlocksManagerProps) => {
   const [editingBlock, setEditingBlock] = useState<IBlock | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const {
     childrenBlocks,
     availableBlocks,
-    addChild,
+    linkChild,
     updateChildDisplayKind,
-    removeChild
-  } = useChildBlocksTable(blockUuid, bookUuid, otherBlocks);
+    unlinkChild
+  } = useChildBlocksManager(blockUuid, bookUuid, otherBlocks);
 
 
   const handleSave = async (blockUuid: string, displayKind: string) => {
     if (editingBlock) {
       await updateChildDisplayKind(editingBlock.uuid!, displayKind);
     } else {
-      await addChild(blockUuid, displayKind);
+      await linkChild(blockUuid, displayKind);
     }
     setEditingBlock(null);
   };
@@ -49,7 +49,7 @@ export const ChildBlocksTable = ({
               size="sm"
               variant="light"
           >
-            Добавить дочерний блок
+            Привязать дочерний блок
           </Button>
         </Group>
 
@@ -82,7 +82,7 @@ export const ChildBlocksTable = ({
                       <ActionIcon
                           variant="subtle"
                           color="red"
-                          onClick={() => removeChild(block.uuid!)}
+                          onClick={() => unlinkChild(block.uuid!)}
                       >
                         <IconTrash size="1rem" />
                       </ActionIcon>

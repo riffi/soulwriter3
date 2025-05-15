@@ -41,7 +41,7 @@ export const ChildBlockEditModal = ({
       <Modal
           opened={isOpen}
           onClose={onClose}
-          title={initialData ? "Редактирование блока" : "Добавить дочерний блок"}
+          title={initialData ? "Редактирование блока" : "Привязать дочерний блок"}
           fullScreen={isMobile}
       >
         <Stack>

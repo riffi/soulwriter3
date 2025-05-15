@@ -5,11 +5,11 @@ import { bookDb } from "@/entities/bookDb";
 import { BlockRepository } from "@/repository/BlockRepository";
 import { notifications } from "@mantine/notifications";
 
-export const useChildBlocksTable = (blockUuid: string, bookUuid?: string, otherBlocks: IBlock[]) => {
+export const useChildBlocksManager = (blockUuid: string, bookUuid?: string, otherBlocks: IBlock[]) => {
   const db = bookUuid ? bookDb : configDatabase;
 
   const childrenBlocks = useLiveQuery<IBlock[]>(() => {
-    return db.blocks.where("parentBlockUuid").equals(blockUuid).toArray();
+    return BlockRepository.getChildren(db, blockUuid);
   }, [blockUuid]);
 
 
@@ -17,24 +17,25 @@ export const useChildBlocksTable = (blockUuid: string, bookUuid?: string, otherB
       b => !childrenBlocks?.some(child => child.uuid === b.uuid)
   ) || [];
 
-  const addChild = async (childBlockUuid: string, displayKind: string) => {
+  const linkChild = async (childBlockUuid: string, displayKind: string) => {
     try {
       const childBlock = await BlockRepository.getByUuid(db, childBlockUuid);
       if (childBlock) {
-        await db.blocks.update(childBlock.id!, {
-          ...childBlock,
-          parentBlockUuid: blockUuid,
-          displayKind
-        });
+        await BlockRepository.linkChildToParent(db,
+            {
+              ...childBlock,
+              displayKind
+            },
+            blockUuid);
         notifications.show({
           title: "Успешно",
-          message: "Дочерний блок добавлен",
+          message: "Дочерний блок привязан",
         });
       }
     } catch (error) {
       notifications.show({
         title: "Ошибка",
-        message: "Не удалось добавить дочерний блок",
+        message: "Не удалось привязать дочерний блок",
         color: "red",
       });
     }
@@ -62,24 +63,20 @@ export const useChildBlocksTable = (blockUuid: string, bookUuid?: string, otherB
     }
   };
 
-  const removeChild = async (childBlockUuid: string) => {
+  const unlinkChild = async (childBlockUuid: string) => {
     try {
       const childBlock = await BlockRepository.getByUuid(db, childBlockUuid);
       if (childBlock) {
-        await db.blocks.update(childBlock.id!, {
-          ...childBlock,
-          parentBlockUuid: null,
-          displayKind: 'list'
-        });
+        await BlockRepository.unlinkChildFromParent(db, childBlock);
         notifications.show({
           title: "Успешно",
-          message: "Дочерний блок удалён",
+          message: "Дочерний блок отвязан",
         });
       }
     } catch (error) {
       notifications.show({
         title: "Ошибка",
-        message: "Не удалось удалить дочерний блок",
+        message: "Не удалось отвязать дочерний блок",
         color: "red",
       });
     }
@@ -89,8 +86,8 @@ export const useChildBlocksTable = (blockUuid: string, bookUuid?: string, otherB
     childrenBlocks: childrenBlocks || [],
     otherBlocks: otherBlocks || [],
     availableBlocks,
-    addChild,
+    linkChild,
     updateChildDisplayKind,
-    removeChild
+    unlinkChild
   };
 };

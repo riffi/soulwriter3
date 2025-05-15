@@ -7,7 +7,7 @@ import { notifications } from "@mantine/notifications";
 import { generateUUID } from "@/utils/UUIDUtils";
 import { useState } from "react";
 
-export const useRelationTable = (block: IBlock, bookUuid?: string, otherBlocks?: IBlock[]) => {
+export const useRelationManager = (block: IBlock, bookUuid?: string, otherBlocks?: IBlock[]) => {
   const db = bookUuid ? bookDb : configDatabase;
   const isBookDb = !!bookUuid;
   const blockUuid = block.uuid;
