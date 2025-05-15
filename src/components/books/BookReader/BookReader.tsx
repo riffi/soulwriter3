@@ -1,10 +1,10 @@
 import React, {useMemo, useCallback, useEffect} from 'react';
-import { Flex, NavLink, Container, Loader, Text, ScrollArea } from '@mantine/core';
+import {NavLink, Container, Loader, Text, ScrollArea } from '@mantine/core';
 import { useScrollSpy } from '@mantine/hooks';
 import styles from './BookReader.module.css';
 import {useBookReader} from "@/components/books/BookReader/useBookReader";
-import {SceneComponent} from "@/components/books/BookReader/parts/SceneComponent";
-import {IconFolder, IconLibrary} from "@tabler/icons-react";
+import {BookReaderScene} from "@/components/books/BookReader/parts/BookReaderScene";
+import {IconLibrary} from "@tabler/icons-react";
 
 
 interface TOCItem {
@@ -135,14 +135,14 @@ export const BookReader: React.FC = () => {
                 <div key={item.id}>
                   <h2 className={styles.chapterTitle}>{item.title}</h2>
                   {item.children?.map(child => (
-                      <SceneComponent
+                      <BookReaderScene
                           key={child.id}
                           scene={scenes.find(s => s.id === child.id)!}
                       />
                   ))}
                 </div>
             ) : (
-                <SceneComponent key={item.id} scene={scenes.find(s => s.id === item.id)!} />
+                <BookReaderScene key={item.id} scene={scenes.find(s => s.id === item.id)!} />
             ))}
           </Container>
         </div>

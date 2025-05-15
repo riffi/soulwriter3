@@ -6,7 +6,7 @@ interface SceneProps {
   scene: IScene;
 }
 
-export const SceneComponent: React.FC<SceneProps> = ({ scene }) => (
+export const BookReaderScene: React.FC<SceneProps> = ({ scene }) => (
     <div id={`scene-${scene.id}`} data-scene>
       <h3 className={styles.sceneTitle}>{scene.title}</h3>
       <div
