@@ -1,0 +1,64 @@
+/* BookReader.module.css */
+.container {
+  display: flex;
+}
+
+.loaderContainer {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.errorContainer {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.tocPanel {
+  width: 300px;
+  position: fixed;
+  left: 300px;
+  top: 0;
+  bottom: 0;
+  background-color: #f8f9fa;
+  padding: 1rem;
+  overflow-y: auto;
+}
+
+.contentPanel {
+  flex: 1;
+  margin-left: 300px;
+  padding: 1.5rem;
+  background-color: white;
+  min-height: 100vh;
+  max-width: 1200px;
+  overflow-y: auto;
+}
+
+.chapterTitle {
+  font-size: 2rem;
+  font-weight: 700;
+  border-bottom: 2px solid #e0e0e0;
+  padding-bottom: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.sceneTitle {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.contentBody {
+  line-height: 1.8;
+  font-family: "Segoe UI", sans-serif;
+  font-size: 1rem;
+}
+
+.activeItem {
+  background-color: #e7f5ff !important;
+  font-weight: 600 !important;
+}

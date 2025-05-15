@@ -1,8 +1,11 @@
-import React, {useState, useEffect, useMemo, useCallback} from 'react';
-import { Flex, ScrollArea, NavLink, Container, Loader, Text } from '@mantine/core';
-import { IScene, IChapter } from '@/entities/BookEntities';
-import {bookDb} from "@/entities/bookDb";
-import {useScrollSpy} from "@mantine/hooks";
+import React, {useMemo, useCallback, useEffect} from 'react';
+import { Flex, NavLink, Container, Loader, Text, ScrollArea } from '@mantine/core';
+import { useScrollSpy } from '@mantine/hooks';
+import styles from './BookReader.module.css';
+import {useBookReader} from "@/components/books/BookReader/useBookReader";
+import {SceneComponent} from "@/components/books/BookReader/parts/SceneComponent";
+import {IconFolder, IconLibrary} from "@tabler/icons-react";
+
 
 interface TOCItem {
   type: 'chapter' | 'scene';
@@ -11,294 +14,138 @@ interface TOCItem {
   title: string;
   children?: TOCItem[];
 }
+const TOCItemComponent: React.FC<{
+  item: TOCItem;
+  currentSceneId?: number;
+  currentChapterId?: number;
+  onNavigate: (id: string) => void;
+}> = ({ item, currentSceneId, currentChapterId, onNavigate }) => {
+  if (item.type === 'chapter') {
+    return (
+        <NavLink
+            label={item.title}
+            leftSection={<IconLibrary/>}
+            className={item.id === currentChapterId ? styles.activeItem : ''}
+        >
+          {item.children?.map(child => (
+              <TOCItemComponent
+                  key={child.id}
+                  item={child}
+                  currentSceneId={currentSceneId}
+                  onNavigate={onNavigate}
+              />
+          ))}
+        </NavLink>
+    );
+  }
 
-interface BookReaderProps {
+  return (
+      <NavLink
+          label={item.title}
+          onClick={() => onNavigate(`scene-${item.id}`)}
+          size="sm"
+          className={item.id === currentSceneId ? styles.activeItem : ''}
+      />
+  );
+};
 
-}
-
-export const BookReader: React.FC<BookReaderProps> = ({  }) => {
-  const [tocItems, setTocItems] = useState<TOCItem[]>([]);
-  const [scenes, setScenes] = useState<IScene[]>([]);
-  const [chapters, setChapters] = useState<IChapter[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [activeSection, setActiveSection] = useState<{ chapterId?: number; sceneId?: number }>({});
-
-  const sceneSpy = useScrollSpy({
+export const BookReader: React.FC = () => {
+  const { scenes, chapters, loading, error } = useBookReader();
+  const { active: activeSceneIndex, reinitialize: reinitializeSceneSpy } = useScrollSpy({
     selector: '[data-scene]',
-    getDepth: (element) => Number(element.getAttribute('data-scene')),
-    getValue: (element) => element.getAttribute('data-scene') || '',
+    getDepth: el => Number(el.getAttribute('data-scene')),
+    getValue: el => el.getAttribute('data-scene') || '',
     offset: 100,
   });
 
+  const currentScene = scenes[activeSceneIndex];
+  const currentChapter = chapters.find(c => c.id === currentScene?.chapterId);
 
-
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-
-        // Загрузка данных
-        const chaptersData = await bookDb.chapters.orderBy('order').toArray();
-        const scenesData = await bookDb.scenes.orderBy('order').toArray();
-
-        setChapters(chaptersData);
-        setScenes(scenesData);
-
-        // Построение TOC
-        const newTocItems: TOCItem[] = [];
-
-        // Главы и их сцены
-        for (const chapter of chaptersData) {
-          const chapterScenes = scenesData
-          .filter(scene => scene.chapterId === chapter.id)
-          .sort((a, b) => (a.order || 0) - (b.order || 0));
-
-          newTocItems.push({
-            type: 'chapter',
-            order: chapter.order || 0,
-            id: chapter.id!,
-            title: chapter.title,
-            children: chapterScenes.map(scene => ({
-              type: 'scene' as const,
-              order: scene.order || 0,
-              id: scene.id!,
-              title: scene.title
-            }))
-          });
-        }
-
-        // Сцены без главы
-        const standaloneScenes = scenesData
-        .filter(scene => !scene.chapterId)
-        .sort((a, b) => (a.order || 0) - (b.order || 0));
-
-        newTocItems.push(...standaloneScenes.map(scene => ({
-          type: 'scene' as const,
-          id: scene.id!,
-          order: scene.order || 0,
-          title: scene.title,
-          children: undefined
-        })));
-
-        setTocItems(newTocItems);
-        sceneSpy.reinitialize();
-      } catch (err) {
-        setError('Ошибка загрузки данных');
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadData();
-
-    return () => {
-    };
+  const scrollToSection = useCallback((id: string) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: 'auto' });
   }, []);
 
-
   useEffect(() => {
-    sceneSpy.reinitialize();
-  }, [tocItems, scenes, chapters]);
+    reinitializeSceneSpy();
+  }, [scenes, chapters]);
 
+  const buildTOC = useMemo(() => {
+    const chapterItems: TOCItem[] = chapters.map(chapter => ({
+      type: 'chapter' as const,
+      id: chapter.id!,
+      order: chapter.order,
+      title: chapter.title,
+      children: scenes
+      .filter(s => s.chapterId === chapter.id)
+      .map(scene => ({
+        type: 'scene' as const,
+        id: scene.id!,
+        order: scene.order,
+        title: scene.title,
+      })),
+    }));
 
-  // Функция прокрутки
-  const scrollToSection = (id: string) => {
-    const element = document.getElementById(id);
-    if (element) {
-      element.scrollIntoView({ behavior: 'auto' });
-    }
-  };
+    const standaloneScenes: TOCItem[] = scenes
+    .filter(s => !s.chapterId)
+    .map(scene => ({
+      type: 'scene' as const,
+      id: scene.id!,
+      order: scene.order,
+      title: scene.title,
+    }));
 
-  // Рендер TOC
-// Модифицированный рендер TOC
-  const renderTOC = useMemo(() => {
-    const currentScene = scenes[sceneSpy.active]
-    const currentChapter = chapters[chapters.findIndex(c => c.id === currentScene?.chapterId)];
-    return (items: TOCItem[]) => {
-      return items.map(item => {
-
-        if (item.type === 'chapter') {
-          const isActive = item.order === currentChapter.order;
-          return (
-              <NavLink
-                  key={`chapter-${item.id}`}
-                  label={item.title}
-                  icon={<span style={{ fontSize: '1rem' }}>📚</span>}
-                  styles={{
-                    root: {
-                      backgroundColor: isActive ? '#e7f5ff' : 'transparent',
-                      fontWeight: isActive ? 600 : 'normal'
-                    }
-                  }}
-              >
-                {item.children?.map(child => {
-                  const isChildActive = currentScene.id === child.id;
-                  return (
-                      <NavLink
-                          key={`scene-${child.id}`}
-                          label={child.title}
-                          onClick={() => scrollToSection(`scene-${child.id}`)}
-                          size="sm"
-                          styles={{
-                            root: {
-                              backgroundColor: isChildActive ? '#e7f5ff' : 'transparent',
-                              fontWeight: isChildActive ? 600 : 'normal'
-                            }
-                          }}
-                      />
-                  );
-                })}
-              </NavLink>
-          );
-        } else {
-          const isActive = item.id === currentScene.id;
-          return (
-              <NavLink
-                  key={`scene-${item.id}`}
-                  label={item.title}
-                  onClick={() => scrollToSection(`scene-${item.id}`)}
-                  styles={{
-                    root: {
-                      backgroundColor: isActive ? '#e7f5ff' : 'transparent',
-                      fontWeight: isActive ? 600 : 'normal'
-                    }
-                  }}
-                  size="sm"
-              />
-          );
-        }
-      });
-    };
-  }, [sceneSpy]);
+    return [...chapterItems, ...standaloneScenes];
+  }, [chapters, scenes]);
 
   if (loading) {
     return (
-        <Flex justify="center" align="center" h="100vh">
+        <div className={styles.loaderContainer}>
           <Loader size="xl" />
-        </Flex>
+        </div>
     );
   }
 
   if (error) {
     return (
-        <Flex justify="center" align="center" h="100vh">
+        <div className={styles.errorContainer}>
           <Text color="red" size="lg">{error}</Text>
-        </Flex>
+        </div>
     );
   }
 
   return (
-      <Flex>
-
-        {/* Левая панель TOC (фиксированная) */}
-        <div style={{
-          width: 300,
-          position: 'fixed', // Фиксированное позиционирование
-          left:300,
-          top: 0,
-          bottom: 0,
-          backgroundColor: '#f8f9fa',
-          padding: '1rem',
-          overflowY: 'auto' // Прокрутка только внутри TOC при необходимости
-        }}>
-          {renderTOC(tocItems)}
+      <div className={styles.container}>
+        <div className={styles.tocPanel}>
+          <ScrollArea>
+            {buildTOC.map(item => (
+                <TOCItemComponent
+                    key={`${item.type}-${item.id}`}
+                    item={item}
+                    currentSceneId={currentScene?.id}
+                    currentChapterId={currentChapter?.id}
+                    onNavigate={scrollToSection}
+                />
+            ))}
+          </ScrollArea>
         </div>
 
-        {/* Правая панель контента */}
-        <div style={{
-          flex: 1,
-          marginLeft: 300, // Отступ равен ширине TOC
-          padding: '1.5rem',
-          backgroundColor: 'white',
-          minHeight: '100vh', // Для заполнения всей высоты
-          maxWidth: '1200px', // Ограничение ширины по ширине экрана минус ширина TOC
-          overflowY: 'auto'
-        }}>
+        <div className={styles.contentPanel}>
           <Container size="lg">
-
-            {tocItems.map(item => {
-              if (item.type === 'chapter') {
-                const chapter = chapters.find(c => c.id === item.id);
-                const chapterScenes = item.children
-                ?.map(child => scenes.find(s => s.id === child.id))
-                .filter(Boolean) as IScene[];
-
-                return (
-                    <div
-                        key={`chapter-content-${item.id}`}
-                        id={`chapter-${item.id}`}
-                        data-chapter
-                        data-chapter-id={item.id}>
-                      <h2 style={{
-                        fontSize: '2rem',
-                        fontWeight: 700,
-                        borderBottom: '2px solid #e0e0e0',
-                        paddingBottom: '0.5rem',
-                        marginBottom: '1.5rem'
-                      }}>
-                        {chapter?.title}
-                      </h2>
-                      {chapterScenes.map(scene => (
-                          <div
-                              key={`scene-content-${scene.id}`}
-                              id={`scene-${scene.id}`}
-                              data-scene
-                              style={{marginBottom: '2rem'}}
-                          >
-                            <h3 style={{
-                              fontSize: '1.5rem',
-                              fontWeight: 600,
-                              marginBottom: '0.5rem'
-                            }}>
-                              {scene.title}
-                            </h3>
-                            <div
-                                dangerouslySetInnerHTML={{__html: scene.body}}
-                                style={{
-                                  lineHeight: 1.8,
-                                  fontFamily: '"Segoe UI", sans-serif',
-                                  fontSize: '1rem'
-                                }}
-                            />
-                          </div>
-                      ))}
-                    </div>
-                );
-              } else {
-                const scene = scenes.find(s => s.id === item.id);
-                if (!scene) return null;
-
-                return (
-                    <div
-                        key={`scene-content-${scene.id}`}
-                        id={`scene-${scene.id}`}
-                        style={{marginBottom: '2rem'}}
-                        data-scene
-                        data-scene-id={scene?.id}
-                    >
-                      <h3 style={{
-                        fontSize: '1.5rem',
-                        fontWeight: 600,
-                        marginBottom: '0.5rem'
-                      }}>
-                        {scene.title}
-                      </h3>
-                      <div
-                          dangerouslySetInnerHTML={{__html: scene.body}}
-                          style={{
-                            lineHeight: 1.8,
-                            fontFamily: '"Segoe UI", sans-serif',
-                            fontSize: '1rem'
-                          }}
+            {buildTOC.map(item => item.type === 'chapter' ? (
+                <div key={item.id}>
+                  <h2 className={styles.chapterTitle}>{item.title}</h2>
+                  {item.children?.map(child => (
+                      <SceneComponent
+                          key={child.id}
+                          scene={scenes.find(s => s.id === child.id)!}
                       />
-                    </div>
-                );
-              }
-            })}
+                  ))}
+                </div>
+            ) : (
+                <SceneComponent key={item.id} scene={scenes.find(s => s.id === item.id)!} />
+            ))}
           </Container>
         </div>
-      </Flex>
+      </div>
   );
 };
-
