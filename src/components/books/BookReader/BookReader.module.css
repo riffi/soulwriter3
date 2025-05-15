@@ -34,8 +34,18 @@
   padding: 1.5rem;
   background-color: white;
   min-height: 100vh;
-  max-width: 1200px;
+  max-width: 900px;
   overflow-y: auto;
+}
+
+@media (max-width: 768px) {
+  .contentPanel {
+    margin-left: 0;
+    padding: 0;
+  }
+  .tocPanel {
+    display: none;
+  }
 }
 
 .chapterTitle {
@@ -46,11 +56,6 @@
   margin-bottom: 1.5rem;
 }
 
-.sceneTitle {
-  font-size: 1.5rem;
-  font-weight: 600;
-  margin-bottom: 0.5rem;
-}
 
 .contentBody {
   line-height: 1.8;
@@ -64,3 +69,6 @@
   background-color: #e7f5ff !important;
   font-weight: 600 !important;
 }
+
+
+
