@@ -6,16 +6,16 @@ import { BlockInstanceRepository } from "@/repository/BlockInstanceRepository";
 import { IBlockInstanceRelation } from "@/entities/BookEntities";
 import {
   RelationRow
-} from "@/components/blockInstance/BlockInstanceEditor/components/BlockRelationsEditor/RelationRow";
+} from "@/components/blockInstance/BlockInstanceEditor/parts/InstanceRelationsEditor/RelationRow";
 import {
   DefaultModal
-} from "@/components/blockInstance/BlockInstanceEditor/components/BlockRelationsEditor/modal/DefaultModal";
+} from "@/components/blockInstance/BlockInstanceEditor/parts/InstanceRelationsEditor/modal/DefaultModal";
 import {
   ChildBlockModal
-} from "@/components/blockInstance/BlockInstanceEditor/components/BlockRelationsEditor/modal/ChildBlockModal";
+} from "@/components/blockInstance/BlockInstanceEditor/parts/InstanceRelationsEditor/modal/ChildBlockModal";
 import {
   useBlockRelationsEditor
-} from "@/components/blockInstance/BlockInstanceEditor/components/BlockRelationsEditor/hook/useBlockRelationsEditor";
+} from "@/components/blockInstance/BlockInstanceEditor/parts/InstanceRelationsEditor/hook/useBlockRelationsEditor";
 import {useDialog} from "@/providers/DialogProvider/DialogProvider";
 import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
 
@@ -27,7 +27,7 @@ interface BlockRelationsEditorProps {
 }
 
 
-export const BlockRelationsEditor = ({
+export const InstanceRelationsEditor = ({
                                        blockInstanceUuid,
                                        relatedBlock,
                                        blockRelation,

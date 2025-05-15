@@ -20,18 +20,18 @@ import {IBlockParameterInstance} from "@/entities/BookEntities";
 import {bookDb} from "@/entities/bookDb";
 import {
   ParameterList
-} from "@/components/blockInstance/BlockInstanceEditor/components/ParameterList";
+} from "@/components/blockInstance/BlockInstanceEditor/parts/InstanceParameterEditor/ParameterList";
 import {FullParam} from "@/components/blockInstance/BlockInstanceEditor/types";
 import {InlineEdit} from "@/components/shared/InlineEdit/InlineEdit";
 import {
-  BlockRelationsEditor
-} from "@/components/blockInstance/BlockInstanceEditor/components/BlockRelationsEditor/BlockRelationsEditor";
+  InstanceRelationsEditor
+} from "@/components/blockInstance/BlockInstanceEditor/parts/InstanceRelationsEditor/InstanceRelationsEditor";
 import {
   AddParameterModal
-} from "@/components/blockInstance/BlockInstanceEditor/modal/AddParameterModal";
+} from "@/components/blockInstance/BlockInstanceEditor/parts/InstanceParameterEditor/modal/AddParameterModal";
 import {
   ChildInstancesTable
-} from "@/components/blockInstance/BlockInstanceEditor/components/ChildInstancesTable";
+} from "@/components/blockInstance/BlockInstanceEditor/parts/InstanceChildrenEditor/ChildInstancesTable";
 import {IconViewer} from "@/components/shared/IconViewer/IconViewer";
 
 export interface IBlockInstanceEditorProps {
@@ -131,27 +131,6 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
       }
     });
   };
-
-  const header =( <Group>
-    <IconViewer
-        iconName={block?.icon}
-        size={28}
-        style={{
-          color: 'white',
-          boxShadow: '0px 0px 5px rgba(0,0,0,0.2)',
-          backgroundColor: "var(--mantine-color-blue-5)"
-        }}
-    />
-    <Title
-        order={2}
-        style={{
-          textTransform: "capitalize",
-          color: "var(--mantine-color-blue-5)"
-        }}
-    >
-      {block?.titleForms?.nominative}
-    </Title>
-  </Group>)
 
   // Обновляем список вкладок и активную вкладку при изменении blockTabs
   useEffect(() => {
@@ -292,7 +271,7 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
                         {tab.tabKind === 'relation' && (() => {
                           const relatedBlock = getRelatedBlockByRelationUuid(tab.relationUuid);
                           return relatedBlock && (
-                              <BlockRelationsEditor
+                              <InstanceRelationsEditor
                                   key={tab.uuid}
                                   blockInstanceUuid={props.blockInstanceUuid}
                                   blockUuid={block?.uuid}
