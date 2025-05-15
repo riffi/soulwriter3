@@ -15,6 +15,7 @@ import {NoteEditPage} from "@/components/notes/NoteEditPage/NoteEditPage";
 import {NoteFolder} from "@/components/notes/NoteFolder/NoteFolder";
 import {BookDashboardPage} from "@/pages/books/BookDashboardPage";
 import {DbViewer} from "@/pages/tech/DbViewer";
+import {BookReaderPage} from "@/pages/books/BookReaderPage";
 
 
 const router = createBrowserRouter([
@@ -77,6 +78,10 @@ const router = createBrowserRouter([
       {
         path: '/db-viewer',
         element: <DbViewer /> as ReactNode,
+      },
+      {
+        path: '/book/reader',
+        element: <BookReaderPage /> as ReactNode,
       }
     ]
   },

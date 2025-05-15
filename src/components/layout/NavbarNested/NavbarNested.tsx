@@ -208,6 +208,14 @@ export const NavbarNested = ({ toggleNavbar }: { toggleNavbar?: () => void }) =>
         initiallyOpened: true,
         link: '/scenes',
       });
+      dynamicItems.push({
+        label: 'Чтение',
+        icon: IconBooks,
+        initiallyOpened: true,
+        link: '/book/reader',
+      });
+
+
 
       const knowledgeLinks = blocks?.filter(block => block.parentBlockUuid == null)
         ?.map((block) => ({
