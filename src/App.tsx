@@ -12,7 +12,7 @@ import {MediaQueryProvider} from "@/providers/MediaQueryProvider/MediaQueryProvi
 
 export default function App() {
   return (
-    <MantineProvider defaultColorScheme={"light"}>
+    <MantineProvider defaultColorScheme={"light"} datesLocale="ru">
       <DialogProvider>
         <PageTitleProvider>
           <MediaQueryProvider>

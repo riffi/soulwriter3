@@ -1910,9 +1910,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mantine/core@npm:^7.17.4":
-  version: 7.17.7
-  resolution: "@mantine/core@npm:7.17.7"
+"@mantine/core@npm:^8.0.1":
+  version: 8.0.1
+  resolution: "@mantine/core@npm:8.0.1"
   dependencies:
     "@floating-ui/react": "npm:^0.26.28"
     clsx: "npm:^2.1.1"
@@ -1921,10 +1921,25 @@ __metadata:
     react-textarea-autosize: "npm:8.5.9"
     type-fest: "npm:^4.27.0"
   peerDependencies:
-    "@mantine/hooks": 7.17.7
+    "@mantine/hooks": 8.0.1
     react: ^18.x || ^19.x
     react-dom: ^18.x || ^19.x
-  checksum: 10c0/1f17e1ec259e0878e8f65eec0619527fc9f36c2af7a252f4fc2314ad363331431a79deda82c808f069802450a0a9993fa1cc50aad835e84997b5b2fd632eb6c6
+  checksum: 10c0/cb07af8fa3221de2b6e2ebf4742ca13207b118ad76bf3a4bba662a7f51625fae5aebf91f7f46bb3af00d5adf1f5155bb92846593aef34811d543585582321b09
+  languageName: node
+  linkType: hard
+
+"@mantine/dates@npm:^8.0.1":
+  version: 8.0.1
+  resolution: "@mantine/dates@npm:8.0.1"
+  dependencies:
+    clsx: "npm:^2.1.1"
+  peerDependencies:
+    "@mantine/core": 8.0.1
+    "@mantine/hooks": 8.0.1
+    dayjs: ">=1.0.0"
+    react: ^18.x || ^19.x
+    react-dom: ^18.x || ^19.x
+  checksum: 10c0/cb1a1b91238548ccae4e2d15875b349c169eedea0d04d19475d1c7f2c61a1c6b20d09457345c483d51790f8bfa1b7bda29859e57ca49caa71f85bd53fe405175
   languageName: node
   linkType: hard
 
@@ -1940,12 +1955,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mantine/hooks@npm:^7.17.4":
-  version: 7.17.7
-  resolution: "@mantine/hooks@npm:7.17.7"
+"@mantine/hooks@npm:^8.0.1":
+  version: 8.0.1
+  resolution: "@mantine/hooks@npm:8.0.1"
   peerDependencies:
     react: ^18.x || ^19.x
-  checksum: 10c0/f1e13e5a9f009ffc68201f015724520ca221661076a4d08e31339cdbc5a03b206443a3c84e63aaaf16fb916e55b8c4ba5b779f0a741e19193f9a53fb312a26fb
+  checksum: 10c0/5ee0459d5b393e8e512f1a10c6e8a28235f10f0930503b05477daf3404f6266015e20806e20005c7458a9f66efe310fc85be448be7409bb541e782ed7586bb91
   languageName: node
   linkType: hard
 
@@ -4219,6 +4234,13 @@ __metadata:
     es-errors: "npm:^1.3.0"
     is-data-view: "npm:^1.0.1"
   checksum: 10c0/fa7aa40078025b7810dcffc16df02c480573b7b53ef1205aa6a61533011005c1890e5ba17018c692ce7c900212b547262d33279fde801ad9843edc0863bf78c4
+  languageName: node
+  linkType: hard
+
+"dayjs@npm:^1.11.13":
+  version: 1.11.13
+  resolution: "dayjs@npm:1.11.13"
+  checksum: 10c0/a3caf6ac8363c7dade9d1ee797848ddcf25c1ace68d9fe8678ecf8ba0675825430de5d793672ec87b24a69bf04a1544b176547b2539982275d5542a7955f35b7
   languageName: node
   linkType: hard
 
@@ -8629,9 +8651,10 @@ __metadata:
     "@emotion/styled": "npm:^11.14.0"
     "@eslint/js": "npm:^9.23.0"
     "@ianvs/prettier-plugin-sort-imports": "npm:^4.4.1"
-    "@mantine/core": "npm:^7.17.4"
+    "@mantine/core": "npm:^8.0.1"
+    "@mantine/dates": "npm:^8.0.1"
     "@mantine/form": "npm:^7.17.3"
-    "@mantine/hooks": "npm:^7.17.4"
+    "@mantine/hooks": "npm:^8.0.1"
     "@mantine/notifications": "npm:^7.17.3"
     "@mantine/tiptap": "npm:^7.17.4"
     "@storybook/react": "npm:^8.6.8"
@@ -8657,6 +8680,7 @@ __metadata:
     "@types/react-dom": "npm:^19.0.4"
     "@vitejs/plugin-react": "npm:^4.3.4"
     az: "npm:^0.2.3"
+    dayjs: "npm:^1.11.13"
     dexie: "npm:^4.0.11"
     dexie-react-hooks: "npm:^1.1.7"
     eslint: "npm:^9.23.0"

@@ -115,7 +115,7 @@ export const InstanceParameterEditor = ({
     }
   };
 
-  const handleUpdateParameterValue = async (instance: IBlockParameterInstance, newValue: string) => {
+  const handleUpdateParameterValue = async (instance: IBlockParameterInstance, newValue: string | number) => {
     try {
       await bookDb.blockParameterInstances.update(instance.id, {
         ...instance,

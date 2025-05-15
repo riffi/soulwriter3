@@ -2,15 +2,19 @@ export enum IBlockParameterDataType {
   string = 'string',
   text = 'text',
   checkbox = 'checkbox',
+  datePicker = 'datePicker',
+  colorPicker = 'colorPicker',
   dropdown = 'dropdown',
-  blockReference = 'block-reference',
-  blockParamReference = 'block-param-reference',
+  blockReference = 'blockReference',
+  blockParamReference = 'blockParamReference',
 }
 
 export enum IBlockParameterDataTypeTitle{
   string = 'Строка',
   text = 'Текст',
   checkbox = 'Галочка',
+  datePicker = 'Дата',
+  colorPicker = 'Цвет',
   dropdown = 'Выпадающий список',
   blockReference = 'Ссылка на блок',
   blockParamReference = 'Ссылка на параметр блока',

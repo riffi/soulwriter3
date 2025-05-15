@@ -24,9 +24,32 @@ import {IconTrash} from "@tabler/icons-react";
 
 interface ParameterListProps {
   fullParams: FullParam[];
-  onSaveEdit: (instance: IBlockParameterInstance, newValue: string) => void;
+  onSaveEdit: (instance: IBlockParameterInstance, newValue: string | number ) => void;
   onDelete?: (instanceId: number) => void;
   possibleValuesMap?: Record<string, IBlockParameterPossibleValue[]>;
+}
+
+function CheckBoxParameterInstanceViewer(props: {
+  fullParam: FullParam,
+  onChange: (value: number) => void,
+  onDelete: () => Promise<void>
+}) {
+  return <Group justify="space-between" align="center" w="100%">
+    <Checkbox
+        label={props.fullParam.parameter?.title}
+        checked={props.fullParam.instance.value === 1}
+        onChange={(e) =>  props.onChange(e.currentTarget.checked ? 1 : 0)}
+    />
+    {props.fullParam.parameter?.isDefault !== 1 && (
+        <ActionIcon
+            variant="subtle"
+            color="red"
+            onClick={props.onDelete}
+        >
+          <IconTrash size="1rem"/>
+        </ActionIcon>
+    )}
+  </Group>;
 }
 
 export const ParameterList = ({
@@ -64,37 +87,19 @@ export const ParameterList = ({
           const parameter = fullParam.parameter;
           const isExpanded = expandedParams[paramUuid] || false; // Проверка состояния
           const needsTruncation = fullParam.instance.value?.length > 500;
-          const showHeader = parameter && parameter.dataType !== IBlockParameterDataType.checkbox;
 
           function renderViewMode() {
-            if (fullParam.parameter?.dataType === IBlockParameterDataType.checkbox) {
+            if (parameter?.dataType === IBlockParameterDataType.colorPicker) {
               return (
-                  <Group justify="space-between" align="center" w="100%">
-                    <Checkbox
-                        label={fullParam.parameter.title}
-                        checked={fullParam.instance.value === "true"}
-                        onChange={(e) =>
-                            onSaveEdit(
-                                fullParam.instance,
-                                e.currentTarget.checked.toString()
-                            )
-                        }
-                    />
-                    {!fullParam.parameter.isDefault && (
-                        <ActionIcon
-                            variant="subtle"
-                            color="red"
-                            onClick={async () => {
-                              const result = await showDialog("Подтверждение", `Удалить ${fullParam.parameter?.title || "Параметр"}?`);
-                              if (!result) return;
-                              onDelete?.(fullParam.instance.id);
-                            }}
-                        >
-                          <IconTrash size="1rem" />
-                        </ActionIcon>
-                    )}
-                  </Group>
-              );
+                  <Box style={{
+                    margin: '5px 2px',
+                    borderRadius: 5,
+                    height: 20,
+                    width: 60,
+                    backgroundColor: fullParam.instance.value
+                  }}>
+                  </Box>
+              )
             }
             return <Text component="div" className={classes.contentWrapper}>
               <div
@@ -177,14 +182,35 @@ export const ParameterList = ({
                   className={classes.parameterItem}
               >
                 <>
-                  {showHeader && renderHeader()}
+                  {(fullParam.parameter?.dataType === IBlockParameterDataType.checkbox) && (
+                  <CheckBoxParameterInstanceViewer fullParam={fullParam}
+                    onChange={(value) =>
+                        onSaveEdit(
+                            fullParam.instance,
+                            value
+                        )
+                    }
+                    onDelete={async () => {
+                      const result = await showDialog("Подтверждение", `Удалить ${fullParam.parameter?.title || "Параметр"}?`);
+                      if (!result) return;
+                      onDelete?.(fullParam.instance.id);
+                    }}
+                  />)}
                 </>
-
-                <Box className={classes.textContent}>
+                <>
+                {(fullParam.parameter?.dataType !== IBlockParameterDataType.checkbox) && (
                   <>
-                    {isEditing ? renderEditMode()  : renderViewMode()}
+                    <>
+                      {renderHeader()}
+                    </>
+                    <Box className={classes.textContent}>
+                      <>
+                        {isEditing ? renderEditMode()  : renderViewMode()}
+                      </>
+                    </Box>
                   </>
-                </Box>
+                )}
+                </>
               </Box>
           );
         })}

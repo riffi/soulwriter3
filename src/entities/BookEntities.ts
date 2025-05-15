@@ -31,7 +31,7 @@ export interface IBlockParameterInstance{
   blockInstanceUuid: string
   blockParameterUuid: string
   blockParameterGroupUuid: string;
-  value: string;
+  value: string | number;
 }
 
 export interface IScene{
