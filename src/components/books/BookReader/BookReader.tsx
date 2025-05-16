@@ -7,7 +7,6 @@ import {BookReaderScene} from "@/components/books/BookReader/parts/BookReaderSce
 import {IconBook, IconBookmark, IconLibrary, IconList} from "@tabler/icons-react";
 import {bookDb} from "@/entities/bookDb";
 
-
 interface TOCItem {
   type: 'chapter' | 'scene';
   id: number;
@@ -15,6 +14,7 @@ interface TOCItem {
   title: string;
   children?: TOCItem[];
 }
+
 const TOCItemComponent: React.FC<{
   item: TOCItem;
   currentSceneId?: number;
@@ -27,9 +27,10 @@ const TOCItemComponent: React.FC<{
         <NavLink
             label={`${item.order}. ${item.title}`}
             defaultOpened={true}
-            leftSection={<IconLibrary size={18} color={isActive ? "#228be6" : "#495057"} />}
+            leftSection={<IconLibrary size={16} color={isActive ? "#228be6" : "#495057"} />}
             className={isActive ? styles.activeItem : ''}
             fw={500}
+            styles={{ root: { padding: '4px 8px' } }} /* Reduced padding */
         >
           <div className={styles.tocNestedItem}>
             {item.children?.map(child => (
@@ -53,7 +54,8 @@ const TOCItemComponent: React.FC<{
           onClick={() => onNavigate(`scene-${item.id}`)}
           size="sm"
           className={isActive ? styles.activeItem : ''}
-          leftSection={<IconBookmark size={14} color={isActive ? "#228be6" : "#868e96"} />}
+          leftSection={<IconBookmark size={12} color={isActive ? "#228be6" : "#868e96"} />} /* Smaller icon */
+          styles={{ root: { padding: '2px 8px' } }} /* Reduced padding */
       />
   );
 };
@@ -105,17 +107,9 @@ export const BookReader: React.FC = () => {
     return [...chapterItems, ...standaloneScenes];
   }, [chapters, scenes]);
 
-
-
   const handleSceneUpdate = useCallback(async (sceneId: number, newBody: string) => {
     try {
       await bookDb.scenes.update(sceneId, { body: newBody });
-      // setData(prev => ({
-      //   ...prev,
-      //   scenes: prev.scenes.map(scene =>
-      //       scene.id === sceneId ? { ...scene, body: newBody } : scene
-      //   )
-      // }));
     } catch (err) {
       console.error('Ошибка сохранения сцены:', err);
     }
@@ -125,7 +119,7 @@ export const BookReader: React.FC = () => {
       <div className={styles.container}>
         <div className={styles.tocPanel}>
           <div className={styles.tocHeader}>
-            <IconBook size={24} />
+            <IconBook size={20} />
             <span>Содержание</span>
           </div>
           <ScrollArea>

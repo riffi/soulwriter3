@@ -8,7 +8,7 @@
 /* Панель оглавления слева */
 .tocPanel {
   width: 280px;
-  min-width: 280px;
+  min-width: 240px;
   height: 100%;
   overflow-y: auto;
   border-right: 1px solid #e9ecef;
@@ -21,30 +21,30 @@
 }
 
 .tocHeader {
-  padding: 0 1rem 1rem;
-  margin-bottom: 1rem;
+  padding: 0.5rem 0.75rem; /* Reduced padding */
+  margin-bottom: 0.5rem; /* Reduced margin */
   border-bottom: 1px solid #e9ecef;
-  font-size: 1.25rem;
+  font-size: 1rem; /* Reduced font size */
   font-weight: 600;
   color: #228be6;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.3rem; /* Reduced gap */
 }
 
 .tocNestedItem {
-  padding-left: 0.75rem;
-  border-left: 2px solid #e9ecef;
-  margin-left: 0.75rem;
+  padding-left: 0.5rem; /* Reduced padding */
+  border-left: 1px solid #e9ecef; /* Thinner border */
+  margin-left: 0.5rem; /* Reduced margin */
 }
 
 /* Панель контента по центру */
 .contentPanel {
-  margin-left: 280px; /* Ширина tocPanel */
-  width: calc(100% - 280px);
+  margin-left: 240px; /* Adjusted for smaller tocPanel */
+  width: calc(100% - 240px);
   display: flex;
   justify-content: center; /* Центрирование содержимого */
-  padding: 2rem 0;
+  padding: 1.5rem 0; /* Reduced padding */
 }
 
 /* Контейнер для содержимого с центрированием */
@@ -52,7 +52,7 @@
   max-width: 850px; /* Оптимальная ширина для чтения */
   width: 100%;
   background-color: #fff;
-  padding: 2rem;
+  padding: 1.5rem; /* Reduced padding */
 }
 
 /* Стили для активного элемента в оглавлении */
@@ -63,19 +63,19 @@
 
 /* Стиль для заголовка главы */
 .chapterTitle {
-  margin-top: 2rem;
-  margin-bottom: 1.5rem;
-  border-bottom: 2px solid #e9ecef;
-  padding-bottom: 0.75rem;
+  margin-top: 1.5rem; /* Reduced margin */
+  margin-bottom: 1rem; /* Reduced margin */
+  border-bottom: 1px solid #e9ecef; /* Thinner border */
+  padding-bottom: 0.5rem; /* Reduced padding */
   color: #228be6;
-  font-size: 1.75rem;
+  font-size: 1.5rem; /* Reduced font size */
   font-weight: 600;
 }
 
 /* Стиль для содержимого сцены */
 .contentBody {
-  margin-bottom: 2.5rem;
-  line-height: 1.75;
+  margin-bottom: 1.5rem; /* Reduced margin */
+  line-height: 1.6; /* Slightly tighter line height */
   color: #343a40;
-  font-size: 1.05rem;
+  font-size: 1rem; /* Slightly smaller font */
 }
