@@ -1,11 +1,12 @@
 import React, { useMemo, useCallback, useEffect, useState } from 'react';
 import { NavLink, Loader, Text, ScrollArea, Divider, ActionIcon, Button } from '@mantine/core';
-import { useScrollSpy, useWindowScroll } from '@mantine/hooks';
+import { useScrollSpy, useWindowScroll} from '@mantine/hooks';
 import styles from './BookReader.module.css';
 import { useBookReader } from "@/components/books/BookReader/useBookReader";
 import { BookReaderScene } from "@/components/books/BookReader/parts/BookReaderScene";
 import { IconBook, IconBookmark, IconLibrary, IconList, IconArrowUp, IconMenu2 } from "@tabler/icons-react";
 import { bookDb } from "@/entities/bookDb";
+import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
 
 interface TOCItem {
   type: 'chapter' | 'scene';
@@ -81,11 +82,12 @@ export const BookReader: React.FC = () => {
   const [showScrollButton, setShowScrollButton] = useState(false);
   const [isTocOpen, setIsTocOpen] = useState(true);
 
+
   const currentScene = activeSceneOrder !== undefined ? scenes?.find(s => s.order === activeSceneOrder + 1) : null;
   const currentChapter = chapters?.find(c => c.id === currentScene?.chapterId);
 
   const scrollToSection = useCallback((id: string) => {
-    document.getElementById(id)?.scrollIntoView({ behavior: 'auto' });
+    document.getElementById(id)?.scrollIntoView({ behavior: 'auto'});
     setIsTocOpen(false); // Close TOC on mobile after navigation
   }, []);
 
@@ -182,14 +184,6 @@ export const BookReader: React.FC = () => {
         </div>
 
         <div className={styles.contentPanel}>
-          <Button
-              className={styles.tocToggleButton}
-              onClick={() => setIsTocOpen(!isTocOpen)}
-              variant="subtle"
-              leftSection={<IconMenu2 size={20} />}
-          >
-            {isTocOpen ? 'Скрыть оглавление' : 'Показать оглавление'}
-          </Button>
           <div>
             {buildTOC.map(item => item.type === 'chapter' ? (
                 <div key={item.id}>
@@ -231,6 +225,18 @@ export const BookReader: React.FC = () => {
               <IconArrowUp size={20} />
             </ActionIcon>
         )}
+
+        <ActionIcon
+            className={styles.tocToggleButton}
+            onClick={() => setIsTocOpen(!isTocOpen)}
+            variant="filled"
+            color="blue"
+            radius="xl"
+            size="lg"
+            aria-label="Toggle table of contents"
+        >
+          <IconMenu2 size={20} />
+        </ActionIcon>
       </div>
   );
 };

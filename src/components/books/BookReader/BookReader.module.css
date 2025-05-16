@@ -94,6 +94,17 @@
   background-color: #228be6;
   color: #fff;
   border: none;
+  opacity: 0.5;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.scrollTopButton:hover {
+  opacity: 1;
+}
+
+/* Стили для кнопки возврата наверх при наведении */
+.scrollTopButton:hover {
+  background-color: #1e73be;
 }
 
 /* Медиа-запросы для мобильных устройств */
@@ -124,8 +135,22 @@
 
   .tocToggleButton {
     display: flex;
-    align-self: flex-start;
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+    top: auto;
+    z-index: 10;
+    margin-bottom: 0;
+    border-radius: 50%;
+    padding: 0;
+    opacity: 0.5;
+    transition: opacity 0.3s ease-in-out;
   }
+
+  .tocToggleButton:hover{
+    opacity: 1;
+  }
+
 
   .chapterTitle {
     font-size: 1.25rem;

@@ -4,6 +4,7 @@ import styles from '../BookReader.module.css';
 import { IconEdit, IconEye } from '@tabler/icons-react';
 import { RichEditor } from '@/components/shared/RichEditor/RichEditor';
 import { ActionIcon, Box, Group, Space, Title } from "@mantine/core";
+import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
 
 interface SceneProps {
   scene: IScene;
@@ -23,9 +24,10 @@ export const BookReaderScene: React.FC<SceneProps> = ({
   const handleContentChange = (contentHtml: string) => {
     onSceneUpdate(scene.id!, contentHtml);
   };
+  const { isMobile } = useMedia();
 
   return (
-      <Box id={`scene-${scene.id}`} data-scene>
+      <Box id={`scene-${scene.id}`} data-scene style={{ scrollMarginTop: isMobile ? '50px' : '10px' }}>
         <Group>
           <Title order={4}>{scene.title}</Title>
           {!isEditing ? (
