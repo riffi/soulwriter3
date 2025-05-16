@@ -1,5 +1,5 @@
 import React, {useMemo, useCallback, useEffect, useState} from 'react';
-import {NavLink, Container, Loader, Text, ScrollArea } from '@mantine/core';
+import {NavLink, Loader, Text, ScrollArea } from '@mantine/core';
 import { useScrollSpy } from '@mantine/hooks';
 import styles from './BookReader.module.css';
 import {useBookReader} from "@/components/books/BookReader/useBookReader";
@@ -131,7 +131,7 @@ export const BookReader: React.FC = () => {
         </div>
 
         <div className={styles.contentPanel}>
-          <Container size="lg">
+          <div>
             {buildTOC.map(item => item.type === 'chapter' ? (
                 <div key={item.id}>
                   <h2 className={styles.chapterTitle}>{item.title}</h2>
@@ -156,7 +156,7 @@ export const BookReader: React.FC = () => {
                     onSceneUpdate={handleSceneUpdate}
                 />
             ))}
-          </Container>
+          </div>
         </div>
       </div>
   );

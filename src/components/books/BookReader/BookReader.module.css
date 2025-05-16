@@ -1,74 +1,58 @@
-/* BookReader.module.css */
+/* Основной контейнер для BookReader */
 .container {
   display: flex;
+  width: 100%;
+  position: relative;
 }
 
-.loaderContainer {
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.errorContainer {
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
+/* Панель оглавления слева */
 .tocPanel {
-  width: 300px;
+  width: 280px;
+  min-width: 280px;
+  height: 100%;
+  overflow-y: auto;
+  border-right: 1px solid #e9ecef;
   position: fixed;
   left: 300px;
   top: 0;
   bottom: 0;
   background-color: #f8f9fa;
-  padding: 1rem;
-  overflow-y: auto;
+  z-index: 10;
 }
 
+/* Панель контента по центру */
 .contentPanel {
-  flex: 1;
-  margin-left: 300px;
-  padding: 1.5rem;
-  background-color: white;
-  min-height: 100vh;
-  max-width: 900px;
-  overflow-y: auto;
+  margin-left: 280px; /* Ширина tocPanel */
+  width: calc(100% - 280px);
+  display: flex;
+  justify-content: center; /* Центрирование содержимого */
+  padding: 2rem 0;
 }
 
-@media (max-width: 768px) {
-  .contentPanel {
-    margin-left: 0;
-    padding: 0;
-  }
-  .tocPanel {
-    display: none;
-  }
+/* Контейнер для содержимого с центрированием */
+.contentPanel > div {
+  max-width: 850px; /* Оптимальная ширина для чтения */
+  width: 100%;
+  background-color: #fff;
+  padding: 2rem;
 }
 
-.chapterTitle {
-  font-size: 2rem;
-  font-weight: 700;
-  border-bottom: 2px solid #e0e0e0;
-  padding-bottom: 0.5rem;
-  margin-bottom: 1.5rem;
-}
-
-
-.contentBody {
-  line-height: 1.8;
-  font-family: "Segoe UI", sans-serif;
-  font-size: 1rem;
-  text-indent: 2em;
-
-}
-
+/* Стили для активного элемента в оглавлении */
 .activeItem {
-  background-color: #e7f5ff !important;
-  font-weight: 600 !important;
+  background-color: rgba(0, 0, 255, 0.05);
+  font-weight: bold;
 }
 
+/* Стиль для заголовка главы */
+.chapterTitle {
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid #e9ecef;
+  padding-bottom: 0.5rem;
+}
 
-
+/* Стиль для содержимого сцены */
+.contentBody {
+  margin-bottom: 2rem;
+  line-height: 1.6;
+}

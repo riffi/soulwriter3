@@ -1,7 +1,7 @@
 import React from 'react';
 import { IScene } from '@/entities/BookEntities';
 import styles from '../BookReader.module.css';
-import {IconEdit, IconEye, IconX} from '@tabler/icons-react';
+import {IconEdit, IconEye} from '@tabler/icons-react';
 import { RichEditor } from '@/components/shared/RichEditor/RichEditor';
 import {ActionIcon, Box, Group, Space, Title} from "@mantine/core";
 
