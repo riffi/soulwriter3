@@ -1,5 +1,5 @@
-import { Container, Group, Title, Button } from "@mantine/core";
-import { IconPlus } from "@tabler/icons-react";
+import { Container, Group, Title, Button, ActionIcon, Tooltip } from "@mantine/core";
+import { IconPlus, IconFolderOff, IconFolderPlus } from "@tabler/icons-react";
 import { usePageTitle } from "@/providers/PageTitleProvider/PageTitleProvider";
 import { SceneTable } from "./table/SceneTable";
 import { useDisclosure } from "@mantine/hooks";
@@ -10,6 +10,7 @@ import { useScenes } from "./useScenes";
 import { useChapters } from "./useChapters";
 import {useState} from "react";
 import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
+import {useBookStore} from "@/stores/bookStore/bookStore";
 
 export const SceneManager = () => {
   const { setPageTitle } = usePageTitle();
@@ -18,6 +19,8 @@ export const SceneManager = () => {
   const [chapterForNewScene, setChapterForNewScene] = useState<number | null>(null);
   const navigate = useNavigate();
   const { isMobile} = useMedia();
+  const { collapsedChapters } = useBookStore();
+  const { chapters } = useChapters();
 
   const { createScene } = useScenes();
   const { createChapter } = useChapters();
@@ -46,6 +49,32 @@ export const SceneManager = () => {
     }
   };
 
+  const collapseAllChapters = () => {
+    // Get all chapter IDs that aren't already collapsed
+    const chapterIds = chapters?.map(chapter => chapter.id) || [];
+    // Add all chapters to collapsed chapters
+    const store = useBookStore.getState();
+    const currentCollapsed = store.collapsedChapters;
+
+    // For each chapter that isn't already collapsed, add it to the collapsed list
+    chapterIds.forEach(id => {
+      if (!currentCollapsed.includes(id)) {
+        store.toggleChapterCollapse(id);
+      }
+    });
+  };
+
+  const expandAllChapters = () => {
+    // Get current collapsed chapters
+    const store = useBookStore.getState();
+    const currentCollapsed = [...store.collapsedChapters];
+
+    // Toggle each collapsed chapter to expand them all
+    currentCollapsed.forEach(id => {
+      store.toggleChapterCollapse(id);
+    });
+  };
+
   return (
       <Container
           fluid={isMobile}
@@ -58,7 +87,29 @@ export const SceneManager = () => {
           }}
       >
         <Group justify="space-between" mb="md" px="sm">
-          <Title visibleFrom="sm" order={1} size="h4">Сцены и главы</Title>
+          <Group>
+            <Title visibleFrom="sm" order={1} size="h4">Сцены и главы</Title>
+            <Group ml="md">
+              <Tooltip label="Свернуть все главы">
+                <ActionIcon
+                  variant="subtle"
+                  onClick={collapseAllChapters}
+                  disabled={!chapters?.length}
+                >
+                  <IconFolderOff size={18} />
+                </ActionIcon>
+              </Tooltip>
+              <Tooltip label="Развернуть все главы">
+                <ActionIcon
+                  variant="subtle"
+                  onClick={expandAllChapters}
+                  disabled={!collapsedChapters.length}
+                >
+                  <IconFolderPlus size={18} />
+                </ActionIcon>
+              </Tooltip>
+            </Group>
+          </Group>
           <Group style={{marginTop: isMobile ? '20px' : '0'}}>
             <Button
                 leftSection={<IconPlus size={16} />}
