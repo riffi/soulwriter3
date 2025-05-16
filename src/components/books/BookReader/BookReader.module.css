@@ -52,7 +52,7 @@
   max-width: 850px; /* Оптимальная ширина для чтения */
   width: 100%;
   background-color: #fff;
-  padding: 1.5rem; /* Reduced padding */
+  padding: 2.5rem; /* Reduced padding */
 }
 
 /* Стили для активного элемента в оглавлении */
@@ -78,4 +78,13 @@
   line-height: 1.6; /* Slightly tighter line height */
   color: #343a40;
   font-size: 1rem; /* Slightly smaller font */
+}
+
+.scrollTopButton{
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: #228be6;
+  color: #fff;
+  border: none;
 }

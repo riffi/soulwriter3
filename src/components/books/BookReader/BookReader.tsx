@@ -1,10 +1,10 @@
 import React, {useMemo, useCallback, useEffect, useState} from 'react';
-import {NavLink, Loader, Text, ScrollArea, Divider } from '@mantine/core';
-import { useScrollSpy } from '@mantine/hooks';
+import {NavLink, Loader, Text, ScrollArea, Divider, ActionIcon } from '@mantine/core';
+import { useScrollSpy, useWindowScroll } from '@mantine/hooks';
 import styles from './BookReader.module.css';
 import {useBookReader} from "@/components/books/BookReader/useBookReader";
 import {BookReaderScene} from "@/components/books/BookReader/parts/BookReaderScene";
-import {IconBook, IconBookmark, IconLibrary, IconList} from "@tabler/icons-react";
+import {IconBook, IconBookmark, IconLibrary, IconList, IconArrowUp} from "@tabler/icons-react";
 import {bookDb} from "@/entities/bookDb";
 
 interface TOCItem {
@@ -78,6 +78,8 @@ export const BookReader: React.FC = () => {
   });
   const [editingSceneId, setEditingSceneId] = useState<number | null>(null);
   const [openChapters, setOpenChapters] = useState<Set<number>>(new Set());
+  const [scroll, scrollTo] = useWindowScroll();
+  const [showScrollButton, setShowScrollButton] = useState(false);
 
   const currentScene = activeSceneOrder !== undefined ? scenes?.find(s => s.order === activeSceneOrder + 1) : null
   const currentChapter = chapters?.find(c => c.id === currentScene?.chapterId);
@@ -86,9 +88,18 @@ export const BookReader: React.FC = () => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'auto' });
   }, []);
 
+  const scrollToTop = () => {
+    scrollTo({ y: 0, x: 0 });
+  };
+
   useEffect(() => {
     reinitializeSceneSpy();
   }, [scenes, chapters]);
+
+  useEffect(() => {
+    const showButton = scroll.y > 300;
+    setShowScrollButton(showButton);
+  }, [scroll.y]);
 
   useEffect(() => {
     if (currentScene?.chapterId) {
@@ -197,6 +208,20 @@ export const BookReader: React.FC = () => {
             ))}
           </div>
         </div>
+
+        {showScrollButton && (
+          <ActionIcon
+            onClick={scrollToTop}
+            className={styles.scrollTopButton}
+            variant="filled"
+            color="blue"
+            radius="xl"
+            size="lg"
+            aria-label="Scroll to top"
+          >
+            <IconArrowUp size={20} />
+          </ActionIcon>
+        )}
       </div>
   );
 };
