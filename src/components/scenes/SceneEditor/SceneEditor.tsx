@@ -37,7 +37,9 @@ export const SceneEditor = ({ sceneId}: SceneEditorProps) => {
   },
   [scene, saveScene]
 );
-
+  useEffect(() => {
+    setWarningGroups([])
+  }, [sceneId])
 
   // Обновление состояния редактора при изменении текста сцены
   useEffect(() => {
