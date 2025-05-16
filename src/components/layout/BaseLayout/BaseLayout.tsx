@@ -37,7 +37,7 @@ export const BaseLayout = () =>  {
               <Burger
                   opened={opened}
                   onClick={toggle}
-                  hiddenFrom="sm"
+                  // hiddenFrom="sm"
                   lineSize={1}
                   size="lg"
               />
@@ -50,7 +50,7 @@ export const BaseLayout = () =>  {
           </AppShell.Header>
 
           <AppShell.Navbar>
-            <NavbarNested toggleNavbar={toggle}/>
+            <NavbarNested toggleNavbar={toggle} opened={opened}/>
           </AppShell.Navbar>
 
           <AppShell.Main>

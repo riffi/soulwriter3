@@ -15,7 +15,7 @@ import {
   Code,
   ScrollArea,
   Space,
-  Divider,
+  Divider, Burger,
 } from '@mantine/core';
 import { useNavigate } from 'react-router-dom';
 import React, { useState, useMemo } from 'react';
@@ -183,7 +183,7 @@ const getBlockPageTitle = (block: IBlock) => {
   }
 }
 
-export const NavbarNested = ({ toggleNavbar }: { toggleNavbar?: () => void }) => {
+export const NavbarNested = ({ toggleNavbar, opened }: { toggleNavbar?: () => void, opened: boolean }) => {
   const { selectedBook } = useBookStore();
   const blocks = useLiveQuery<IBlock[]>(() => {
     if (!bookDb) {return [];}
@@ -248,6 +248,13 @@ export const NavbarNested = ({ toggleNavbar }: { toggleNavbar?: () => void }) =>
       <nav className={classes.navbar} aria-label="Основное меню">
         <div className={classes.header}>
           <Group justify="space-between">
+            <Burger
+                opened={opened}
+                onClick={toggleNavbar}
+                visibleFrom="sm"
+                lineSize={1}
+                size="lg"
+            />
             <Logo style={{ width: 150 }} />
             <Code fw={700}>{config.version}</Code>
           </Group>
