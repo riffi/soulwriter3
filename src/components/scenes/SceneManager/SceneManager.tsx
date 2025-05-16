@@ -1,4 +1,4 @@
-import { Container, Group, Title, Button, ActionIcon, Tooltip } from "@mantine/core";
+import {Container, Group, Title, Button, ActionIcon, Tooltip, LoadingOverlay} from "@mantine/core";
 import { IconPlus, IconFolderOff, IconFolderPlus } from "@tabler/icons-react";
 import { usePageTitle } from "@/providers/PageTitleProvider/PageTitleProvider";
 import { SceneTable } from "./table/SceneTable";
@@ -8,7 +8,7 @@ import { CreateChapterModal } from "./modals/CreateChapterModal";
 import { useNavigate } from "react-router-dom";
 import { useScenes } from "./useScenes";
 import { useChapters } from "./useChapters";
-import {useState} from "react";
+import React, {useState} from "react";
 import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
 import {useBookStore} from "@/stores/bookStore/bookStore";
 
@@ -22,7 +22,7 @@ export const SceneManager = () => {
   const { collapsedChapters } = useBookStore();
   const { chapters } = useChapters();
 
-  const { createScene } = useScenes();
+  const { createScene, scenes } = useScenes();
   const { createChapter } = useChapters();
 
   setPageTitle('Сцены и главы');
@@ -74,7 +74,15 @@ export const SceneManager = () => {
       store.toggleChapterCollapse(id);
     });
   };
-
+  if (!scenes || !chapters) return (
+      <LoadingOverlay
+          zIndex={1000}
+          visible={true}
+          overlayProps={{ radius: 'sm', blur: 2 }}
+          loaderProps={{ color: 'blue', type: 'bars' }}
+          style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0}}
+      />
+  );
   return (
       <Container
           fluid={isMobile}

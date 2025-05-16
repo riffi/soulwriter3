@@ -1,5 +1,5 @@
 import React, { useMemo, useCallback, useEffect, useState } from 'react';
-import { NavLink, Loader, Text, ScrollArea, Divider, ActionIcon, Button } from '@mantine/core';
+import { NavLink, Loader, Text, ScrollArea, Divider, ActionIcon, Button, LoadingOverlay } from '@mantine/core';
 import { useScrollSpy, useWindowScroll} from '@mantine/hooks';
 import styles from './BookReader.module.css';
 import { useBookReader } from "@/components/books/BookReader/useBookReader";
@@ -82,7 +82,6 @@ export const BookReader: React.FC = () => {
   const [showScrollButton, setShowScrollButton] = useState(false);
   const [isTocOpen, setIsTocOpen] = useState(true);
 
-
   const currentScene = activeSceneOrder !== undefined ? scenes?.find(s => s.order === activeSceneOrder + 1) : null;
   const currentChapter = chapters?.find(c => c.id === currentScene?.chapterId);
 
@@ -163,6 +162,13 @@ export const BookReader: React.FC = () => {
 
   return (
       <div className={styles.container}>
+        <LoadingOverlay
+            visible={loading}
+            zIndex={1000}
+            overlayProps={{ radius: 'sm', blur: 2 }}
+            loaderProps={{ color: 'blue', type: 'bars' }}
+            style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0}}
+        />
         <div className={`${styles.tocPanel} ${isTocOpen ? styles.tocPanelOpen : ''}`}>
           <div className={styles.tocHeader}>
             <IconBook size={20} />
