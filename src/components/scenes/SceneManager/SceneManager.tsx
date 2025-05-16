@@ -86,49 +86,84 @@ export const SceneManager = () => {
             paddingTop: '20px',
           }}
       >
-        <Group justify="space-between" mb="md" px="sm">
-          <Group>
-            <Title visibleFrom="sm" order={1} size="h4">Сцены и главы</Title>
-            <Group ml="md">
-              <Tooltip label="Свернуть все главы">
-                <ActionIcon
+        <Group
+            justify="space-between"
+            mb="md"
+            px="sm"
+            wrap={isMobile ? "wrap" : "nowrap"}
+        >
+
+          {isMobile ? (
+              <Group position="right" spacing={8} style={{width: '100%', marginTop: '10px'}}>
+                <Button
+                    leftSection={<IconPlus size={14} />}
+                    onClick={openChapterModal}
+                    size="xs"
+                    variant="outline"
+                    compact
+                >
+                  Новая глава
+                </Button>
+                <Button
+                    leftSection={<IconPlus size={14} />}
+                    onClick={() => {
+                      setChapterForNewScene(null);
+                      openCreateModal();
+                    }}
+                    size="xs"
+                    compact
+                >
+                  Новая сцена
+                </Button>
+              </Group>
+          ) : (
+              <Group>
+                <Title visibleFrom="sm" order={1} size="h4">Сцены и главы</Title>
+                <Button
+                    leftSection={<IconPlus size={16} />}
+                    onClick={openChapterModal}
+                    size="sm"
+                    variant="outline"
+                >
+                  Новая глава
+                </Button>
+                <Button
+                    leftSection={<IconPlus size={16} />}
+                    onClick={() => {
+                      setChapterForNewScene(null);
+                      openCreateModal();
+                    }}
+                    size="sm"
+                >
+                  Новая сцена
+                </Button>
+              </Group>
+          )}
+        </Group>
+
+        <Group>
+
+          <Group ml={isMobile ? "md" : "md"} spacing={8}>
+            <Tooltip label="Свернуть все главы">
+              <ActionIcon
                   variant="subtle"
                   onClick={collapseAllChapters}
                   disabled={!chapters?.length}
-                >
-                  <IconFolderOff size={18} />
-                </ActionIcon>
-              </Tooltip>
-              <Tooltip label="Развернуть все главы">
-                <ActionIcon
+                  size={isMobile ? "sm" : "md"}
+              >
+                <IconFolderOff size={isMobile ? 18 : 18} />
+              </ActionIcon>
+            </Tooltip>
+            <Tooltip label="Развернуть все главы">
+              <ActionIcon
                   variant="subtle"
                   onClick={expandAllChapters}
                   disabled={!collapsedChapters.length}
-                >
-                  <IconFolderPlus size={18} />
-                </ActionIcon>
-              </Tooltip>
-            </Group>
-          </Group>
-          <Group style={{marginTop: isMobile ? '20px' : '0'}}>
-            <Button
-                leftSection={<IconPlus size={16} />}
-                onClick={openChapterModal}
-                size="sm"
-                variant="outline"
-            >
-              Новая глава
-            </Button>
-            <Button
-                leftSection={<IconPlus size={16} />}
-                onClick={() => {
-                  setChapterForNewScene(null);
-                  openCreateModal();
-                }}
-                size="sm"
-            >
-              Новая сцена
-            </Button>
+                  size={isMobile ? "sm" : "md"}
+              >
+                <IconFolderPlus size={isMobile ? 18 : 18} />
+              </ActionIcon>
+            </Tooltip>
           </Group>
         </Group>
 
