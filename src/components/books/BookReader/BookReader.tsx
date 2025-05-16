@@ -20,13 +20,19 @@ const TOCItemComponent: React.FC<{
   currentSceneId?: number;
   currentChapterId?: number;
   onNavigate: (id: string) => void;
-}> = ({ item, currentSceneId, currentChapterId, onNavigate }) => {
+  openChapters: Set<number>;
+  onToggleChapter: (id: number) => void;
+}> = ({ item, currentSceneId, currentChapterId, onNavigate, openChapters, onToggleChapter }) => {
   if (item.type === 'chapter') {
     const isActive = item.id === currentChapterId;
+    const containsCurrentScene = item.children?.some(child => child.id === currentSceneId);
+    // Chapter is open if it's manually opened by user or contains current scene
+    const isOpen = openChapters.has(item.id) || containsCurrentScene;
     return (
         <NavLink
             label={`${item.order}. ${item.title}`}
-            defaultOpened={true}
+            opened={isOpen}
+            onClick={() => onToggleChapter(item.id)}
             leftSection={<IconLibrary size={16} color={isActive ? "#228be6" : "#495057"} />}
             className={isActive ? styles.activeItem : ''}
             fw={500}
@@ -40,6 +46,8 @@ const TOCItemComponent: React.FC<{
                     currentSceneId={currentSceneId}
                     currentChapterId={currentChapterId}
                     onNavigate={onNavigate}
+                    openChapters={openChapters}
+                    onToggleChapter={onToggleChapter}
                 />
             ))}
           </div>
@@ -69,6 +77,8 @@ export const BookReader: React.FC = () => {
     offset: 100,
   });
   const [editingSceneId, setEditingSceneId] = useState<number | null>(null);
+  const [openChapters, setOpenChapters] = useState<Set<number>>(new Set());
+
   const currentScene = activeSceneOrder !== undefined ? scenes?.find(s => s.order === activeSceneOrder + 1) : null
   const currentChapter = chapters?.find(c => c.id === currentScene?.chapterId);
 
@@ -79,6 +89,28 @@ export const BookReader: React.FC = () => {
   useEffect(() => {
     reinitializeSceneSpy();
   }, [scenes, chapters]);
+
+  useEffect(() => {
+    if (currentScene?.chapterId) {
+      setOpenChapters(prev => {
+        const newSet = new Set(prev);
+        newSet.add(currentScene.chapterId!);
+        return newSet;
+      });
+    }
+  }, [currentScene?.chapterId]);
+
+  const toggleChapter = useCallback((chapterId: number) => {
+    setOpenChapters(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(chapterId)) {
+        newSet.delete(chapterId);
+      } else {
+        newSet.add(chapterId);
+      }
+      return newSet;
+    });
+  }, []);
 
   const buildTOC = useMemo(() => {
     const chapterItems: TOCItem[] = chapters?.map(chapter => ({
@@ -130,6 +162,8 @@ export const BookReader: React.FC = () => {
                     currentSceneId={currentScene?.id}
                     currentChapterId={currentChapter?.id}
                     onNavigate={scrollToSection}
+                    openChapters={openChapters}
+                    onToggleChapter={toggleChapter}
                 />
             ))}
           </ScrollArea>
