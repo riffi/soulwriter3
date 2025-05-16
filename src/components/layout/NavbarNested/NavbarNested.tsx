@@ -15,10 +15,10 @@ import {
   Code,
   ScrollArea,
   Space,
-  Divider, Burger,
+  Divider, Burger, Title, Tooltip,
 } from '@mantine/core';
 import { useNavigate } from 'react-router-dom';
-import React, { useState, useMemo } from 'react';
+import React, {useState, useMemo, useRef} from 'react';
 import { useBookStore } from '@/stores/bookStore/bookStore';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { bookDb } from '@/entities/bookDb';
@@ -185,6 +185,11 @@ const getBlockPageTitle = (block: IBlock) => {
 
 export const NavbarNested = ({ toggleNavbar, opened }: { toggleNavbar?: () => void, opened: boolean }) => {
   const { selectedBook } = useBookStore();
+  const [hoveredItem, setHoveredItem] = useState<string | null>(null);
+  const hoverTimeout = useRef<NodeJS.Timeout | null>(null);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
+
   const blocks = useLiveQuery<IBlock[]>(() => {
     if (!bookDb) {return [];}
     return bookDb.blocks.toArray()
@@ -244,6 +249,100 @@ export const NavbarNested = ({ toggleNavbar, opened }: { toggleNavbar?: () => vo
     return { baseItems, dynamicItems };
   }, [selectedBook, blocks]);
 
+  // Обработчик для задержки скрытия
+  const handleMouseLeave = () => {
+    hoverTimeout.current = setTimeout(() => {
+      setHoveredItem(null);
+    }, 200);
+  };
+
+  // Отмена таймера при повторном ховере
+  const cancelHoverTimeout = () => {
+    if (hoverTimeout.current) {
+      clearTimeout(hoverTimeout.current);
+      hoverTimeout.current = null;
+    }
+  };
+
+  const renderCollapsedNavbar = () => (
+      <div className={classes.navbarCollapsed} aria-label="Основное меню">
+        <div className={classes.wrapper} ref={wrapperRef}>
+          <div className={classes.aside}>
+            <Burger
+                opened={opened}
+                onClick={toggleNavbar}
+                visibleFrom="sm"
+                lineSize={1}
+                size="lg"
+            />
+            <div className={classes.logo}>
+              <Logo style={{ width: 40 }} />
+            </div>
+            {[...baseItems, ...dynamicItems].map((item) => (
+                <Tooltip
+                    label={item.label}
+                    position="right"
+                    withArrow
+                    transitionProps={{ duration: 0 }}
+                    key={item.label}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      navigate(item.link || '#');
+                    }}
+                >
+                  <div
+                      className={classes.menuItemContainer}
+                      onMouseEnter={() => {
+                        cancelHoverTimeout();
+                        setHoveredItem(item.label);
+                      }}
+                      onMouseLeave={handleMouseLeave}
+                  >
+                    <UnstyledButton
+                        className={classes.mainLink}
+                        onClick={() => {
+                          if (item.link) navigate(item.link);
+                        }}
+                    >
+                      <item.icon size={22} stroke={1.5} />
+                    </UnstyledButton>
+
+                    {hoveredItem === item.label && item.links?.length > 0 && (
+                        <div
+                            className={classes.popover}
+                            onMouseEnter={cancelHoverTimeout}
+                            onMouseLeave={handleMouseLeave}
+                        >
+                          <Title order={4} className={classes.title}>
+                            {item.label}
+                          </Title>
+                          {item.links?.map((link) => (
+                              <a
+                                  className={classes.popoverLink}
+                                  href={link.link}
+                                  key={link.label}
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    navigate(link.link || '#');
+                                  }}
+                              >
+                                {link.label}
+                              </a>
+                          ))}
+                        </div>
+                    )}
+                  </div>
+                </Tooltip>
+            ))}
+          </div>
+        </div>
+      </div>
+  );
+
+  if (!opened) {
+    return renderCollapsedNavbar();
+  }
+
   return (
       <nav className={classes.navbar} aria-label="Основное меню">
         <div className={classes.header}>
@@ -266,7 +365,6 @@ export const NavbarNested = ({ toggleNavbar, opened }: { toggleNavbar?: () => vo
                 <NavLink
                     {...item}
                     key={item.label}
-                    toggleNavbar={toggleNavbar}
                     isBaseItem // Активируем особый стиль
                 />
             ))}
@@ -290,7 +388,6 @@ export const NavbarNested = ({ toggleNavbar, opened }: { toggleNavbar?: () => vo
                 <NavLink
                     {...item}
                     key={item.label}
-                    toggleNavbar={toggleNavbar}
                 />
             ))}
           </div>

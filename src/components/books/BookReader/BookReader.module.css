@@ -7,13 +7,12 @@
 
 /* Панель оглавления слева */
 .tocPanel {
-  width: 280px;
+  width: 350px;
   min-width: 240px;
   height: 100%;
   overflow-y: auto;
   border-right: 1px solid #e9ecef;
   position: fixed;
-  left: 300px;
   top: 0;
   bottom: 0;
   background-color: #f8f9fa;

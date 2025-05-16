@@ -21,7 +21,7 @@ export const BaseLayout = () =>  {
               }
             }
             navbar={{
-              width: 300,
+              width: opened ? 300 : 60,
               breakpoint: 'sm',
               collapsed: { mobile: !opened },
             }}
@@ -37,11 +37,11 @@ export const BaseLayout = () =>  {
               <Burger
                   opened={opened}
                   onClick={toggle}
-                  // hiddenFrom="sm"
+                  hiddenFrom="sm"
                   lineSize={1}
                   size="lg"
               />
-              {titleElement || (
+              {isMobile && titleElement || (
                   <Text fw={500} hiddenFrom="sm">
                     {pageTitle}
                   </Text>
