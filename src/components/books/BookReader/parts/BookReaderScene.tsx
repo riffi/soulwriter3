@@ -29,7 +29,13 @@ export const BookReaderScene: React.FC<SceneProps> = ({
   return (
       <Box id={`scene-${scene.id}`} data-scene style={{ scrollMarginTop: isMobile ? '50px' : '10px' }}>
         <Group>
-          <Title order={4}>{scene.title}</Title>
+          <Title
+              order={4}
+              style={{
+                color: isEditing ? 'var(--mantine-color-gray-8)' : 'var(--mantine-color-gray-7)',
+              }}
+
+          >{scene.title}</Title>
           {!isEditing ? (
               <ActionIcon
                   onClick={onEditStart}
