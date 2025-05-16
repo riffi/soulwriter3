@@ -21,38 +21,38 @@
 }
 
 .tocHeader {
-  padding: 0.5rem 0.75rem; /* Reduced padding */
-  margin-bottom: 0.5rem; /* Reduced margin */
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 0.5rem;
   border-bottom: 1px solid #e9ecef;
-  font-size: 1rem; /* Reduced font size */
+  font-size: 1rem;
   font-weight: 600;
   color: #228be6;
   display: flex;
   align-items: center;
-  gap: 0.3rem; /* Reduced gap */
+  gap: 0.3rem;
 }
 
 .tocNestedItem {
-  padding-left: 0.5rem; /* Reduced padding */
-  border-left: 1px solid #e9ecef; /* Thinner border */
-  margin-left: 0.5rem; /* Reduced margin */
+  padding-left: 0.5rem;
+  border-left: 1px solid #e9ecef;
+  margin-left: 0.5rem;
 }
 
 /* Панель контента по центру */
 .contentPanel {
-  margin-left: 240px; /* Adjusted for smaller tocPanel */
-  width: calc(100% - 240px);
+  margin-left: 280px;
+  width: calc(100% - 280px);
   display: flex;
-  justify-content: center; /* Центрирование содержимого */
-  padding: 1.5rem 0; /* Reduced padding */
+  justify-content: center;
+  padding: 1.5rem;
 }
 
 /* Контейнер для содержимого с центрированием */
 .contentPanel > div {
-  max-width: 850px; /* Оптимальная ширина для чтения */
+  max-width: 850px;
   width: 100%;
   background-color: #fff;
-  padding: 2.5rem; /* Reduced padding */
+  padding: 1.5rem;
 }
 
 /* Стили для активного элемента в оглавлении */
@@ -63,28 +63,75 @@
 
 /* Стиль для заголовка главы */
 .chapterTitle {
-  margin-top: 1.5rem; /* Reduced margin */
-  margin-bottom: 1rem; /* Reduced margin */
-  border-bottom: 1px solid #e9ecef; /* Thinner border */
-  padding-bottom: 0.5rem; /* Reduced padding */
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid #e9ecef;
+  padding-bottom: 0.5rem;
   color: #228be6;
-  font-size: 1.5rem; /* Reduced font size */
+  font-size: 1.5rem;
   font-weight: 600;
 }
 
 /* Стиль для содержимого сцены */
 .contentBody {
-  margin-bottom: 1.5rem; /* Reduced margin */
-  line-height: 1.6; /* Slightly tighter line height */
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
   color: #343a40;
-  font-size: 1rem; /* Slightly smaller font */
+  font-size: 1rem;
 }
 
-.scrollTopButton{
+/* Кнопка для показа/скрытия оглавления */
+.tocToggleButton {
+  display: none;
+  margin-bottom: 1rem;
+}
+
+/* Кнопка возврата наверх */
+.scrollTopButton {
   position: fixed;
   bottom: 20px;
   right: 20px;
   background-color: #228be6;
   color: #fff;
   border: none;
+}
+
+/* Медиа-запросы для мобильных устройств */
+@media (max-width: 768px) {
+  .tocPanel {
+    width: 100%;
+    left: 0;
+    min-width: 100%;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease-in-out;
+    z-index: 100;
+  }
+
+  .tocPanelOpen {
+    transform: translateX(0);
+  }
+
+  .contentPanel {
+    margin-left: 0;
+    width: 100%;
+    padding: 0.5rem;
+    flex-direction: column;
+  }
+
+  .contentPanel > div {
+    padding: 1rem;
+  }
+
+  .tocToggleButton {
+    display: flex;
+    align-self: flex-start;
+  }
+
+  .chapterTitle {
+    font-size: 1.25rem;
+  }
+
+  .contentBody {
+    font-size: 0.95rem;
+  }
 }

@@ -1,11 +1,11 @@
-import React, {useMemo, useCallback, useEffect, useState} from 'react';
-import {NavLink, Loader, Text, ScrollArea, Divider, ActionIcon } from '@mantine/core';
+import React, { useMemo, useCallback, useEffect, useState } from 'react';
+import { NavLink, Loader, Text, ScrollArea, Divider, ActionIcon, Button } from '@mantine/core';
 import { useScrollSpy, useWindowScroll } from '@mantine/hooks';
 import styles from './BookReader.module.css';
-import {useBookReader} from "@/components/books/BookReader/useBookReader";
-import {BookReaderScene} from "@/components/books/BookReader/parts/BookReaderScene";
-import {IconBook, IconBookmark, IconLibrary, IconList, IconArrowUp} from "@tabler/icons-react";
-import {bookDb} from "@/entities/bookDb";
+import { useBookReader } from "@/components/books/BookReader/useBookReader";
+import { BookReaderScene } from "@/components/books/BookReader/parts/BookReaderScene";
+import { IconBook, IconBookmark, IconLibrary, IconList, IconArrowUp, IconMenu2 } from "@tabler/icons-react";
+import { bookDb } from "@/entities/bookDb";
 
 interface TOCItem {
   type: 'chapter' | 'scene';
@@ -26,7 +26,6 @@ const TOCItemComponent: React.FC<{
   if (item.type === 'chapter') {
     const isActive = item.id === currentChapterId;
     const containsCurrentScene = item.children?.some(child => child.id === currentSceneId);
-    // Chapter is open if it's manually opened by user or contains current scene
     const isOpen = openChapters.has(item.id) || containsCurrentScene;
     return (
         <NavLink
@@ -36,7 +35,7 @@ const TOCItemComponent: React.FC<{
             leftSection={<IconLibrary size={16} color={isActive ? "#228be6" : "#495057"} />}
             className={isActive ? styles.activeItem : ''}
             fw={500}
-            styles={{ root: { padding: '4px 8px' } }} /* Reduced padding */
+            styles={{ root: { padding: '4px 8px' } }}
         >
           <div className={styles.tocNestedItem}>
             {item.children?.map(child => (
@@ -62,8 +61,8 @@ const TOCItemComponent: React.FC<{
           onClick={() => onNavigate(`scene-${item.id}`)}
           size="sm"
           className={isActive ? styles.activeItem : ''}
-          leftSection={<IconBookmark size={12} color={isActive ? "#228be6" : "#868e96"} />} /* Smaller icon */
-          styles={{ root: { padding: '2px 8px' } }} /* Reduced padding */
+          leftSection={<IconBookmark size={12} color={isActive ? "#228be6" : "#868e96"} />}
+          styles={{ root: { padding: '2px 8px' } }}
       />
   );
 };
@@ -80,12 +79,14 @@ export const BookReader: React.FC = () => {
   const [openChapters, setOpenChapters] = useState<Set<number>>(new Set());
   const [scroll, scrollTo] = useWindowScroll();
   const [showScrollButton, setShowScrollButton] = useState(false);
+  const [isTocOpen, setIsTocOpen] = useState(true);
 
-  const currentScene = activeSceneOrder !== undefined ? scenes?.find(s => s.order === activeSceneOrder + 1) : null
+  const currentScene = activeSceneOrder !== undefined ? scenes?.find(s => s.order === activeSceneOrder + 1) : null;
   const currentChapter = chapters?.find(c => c.id === currentScene?.chapterId);
 
   const scrollToSection = useCallback((id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'auto' });
+    setIsTocOpen(false); // Close TOC on mobile after navigation
   }, []);
 
   const scrollToTop = () => {
@@ -160,7 +161,7 @@ export const BookReader: React.FC = () => {
 
   return (
       <div className={styles.container}>
-        <div className={styles.tocPanel}>
+        <div className={`${styles.tocPanel} ${isTocOpen ? styles.tocPanelOpen : ''}`}>
           <div className={styles.tocHeader}>
             <IconBook size={20} />
             <span>Содержание</span>
@@ -181,6 +182,14 @@ export const BookReader: React.FC = () => {
         </div>
 
         <div className={styles.contentPanel}>
+          <Button
+              className={styles.tocToggleButton}
+              onClick={() => setIsTocOpen(!isTocOpen)}
+              variant="subtle"
+              leftSection={<IconMenu2 size={20} />}
+          >
+            {isTocOpen ? 'Скрыть оглавление' : 'Показать оглавление'}
+          </Button>
           <div>
             {buildTOC.map(item => item.type === 'chapter' ? (
                 <div key={item.id}>
@@ -210,17 +219,17 @@ export const BookReader: React.FC = () => {
         </div>
 
         {showScrollButton && (
-          <ActionIcon
-            onClick={scrollToTop}
-            className={styles.scrollTopButton}
-            variant="filled"
-            color="blue"
-            radius="xl"
-            size="lg"
-            aria-label="Scroll to top"
-          >
-            <IconArrowUp size={20} />
-          </ActionIcon>
+            <ActionIcon
+                onClick={scrollToTop}
+                className={styles.scrollTopButton}
+                variant="filled"
+                color="blue"
+                radius="xl"
+                size="lg"
+                aria-label="Scroll to top"
+            >
+              <IconArrowUp size={20} />
+            </ActionIcon>
         )}
       </div>
   );
