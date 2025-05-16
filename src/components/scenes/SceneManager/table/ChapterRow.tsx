@@ -9,17 +9,11 @@ import { EditChapterModal } from "../modals/EditChapterModal";
 import { DeleteConfirmationModal } from "../modals/DeleteConfirmationModal";
 import {useDisclosure} from "@mantine/hooks";
 import {useScenes} from "@/components/scenes/SceneManager/useScenes";
+import {IChapter, IScene} from "@/entities/BookEntities";
 
 interface ChapterRowProps {
-  chapter: {
-    id: number;
-    title: string;
-  };
-  scenes: Array<{
-    id: number;
-    title: string;
-    order: number;
-  }>;
+  chapter: IChapter;
+  scenes: IScene[];
   onAddScene: () => void;
 }
 
@@ -77,7 +71,9 @@ export const ChapterRow = ({ chapter, scenes, onAddScene }: ChapterRowProps) => 
                 {isExpanded ? <IconChevronDown size={16} /> : <IconChevronRight size={16} />}
               </ActionIcon>
               {isExpanded ? <IconFolderOpen size={18} /> : <IconFolder size={18} />}
-              <span style={{ marginLeft: 8, fontWeight: 600 }}>{chapter.title}</span>
+              <span style={{ marginLeft: 8, fontWeight: 600 }}>
+                {chapter.order ? `${chapter.order}. ` : ''} {chapter.title}
+              </span>
               <Box ml="auto" style={{ display: 'flex', gap: '8px' }}>
                 <ActionIcon
                     variant="subtle"
@@ -111,13 +107,14 @@ export const ChapterRow = ({ chapter, scenes, onAddScene }: ChapterRowProps) => 
             </Box>
 
             <Collapse in={isExpanded}>
-              <Table>
+              <Table highlightOnHover>
                 <Table.Tbody>
                 {scenes.map((scene, index, array) => (
                     <SceneRow
                         key={`scene-${scene.id}`}
                         scene={scene}
                         scenesInChapter={array}
+                        onUpdateChapter={handleDeleteScene}
                     />
                 ))}
                 </Table.Tbody>

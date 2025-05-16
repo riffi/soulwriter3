@@ -44,7 +44,10 @@ export const useEditorState = (
     extensions: getEditorExtensions(),
     content,
     onUpdate: ({ editor }) => onUpdate(editor),
-    onBlur: ({ editor }) => editor.setEditable(false),
+    onBlur: ({ editor }) => {
+      editor.setEditable(false)
+      onContentChange?.(editor.getHTML(), editor.getText())
+    },
     onTransaction: ({ editor, transaction }) => {
       if (transaction.meta?.pointer) {
         editor.setEditable(true);

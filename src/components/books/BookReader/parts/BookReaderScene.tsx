@@ -1,7 +1,7 @@
 import React from 'react';
 import { IScene } from '@/entities/BookEntities';
 import styles from '../BookReader.module.css';
-import { IconEdit, IconX } from '@tabler/icons-react';
+import {IconEdit, IconEye, IconX} from '@tabler/icons-react';
 import { RichEditor } from '@/components/shared/RichEditor/RichEditor';
 import {ActionIcon, Box, Group, Space, Title} from "@mantine/core";
 
@@ -32,16 +32,16 @@ export const BookReaderScene: React.FC<SceneProps> = ({
           {!isEditing ? (
               <ActionIcon
                   onClick={onEditStart}
-                  variant="outline"
+                  variant="subtle"
               >
                 <IconEdit size={16} />
               </ActionIcon>
           ) : (
               <ActionIcon
                   onClick={onEditCancel}
-                  variant="outline"
+                  variant="subtle"
               >
-                <IconX size={16} />
+                <IconEye size={16} />
               </ActionIcon>
           )}
         </Group>

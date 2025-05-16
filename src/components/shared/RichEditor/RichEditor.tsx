@@ -1,6 +1,5 @@
 // SceneRichTextEditor.tsx
 import {RichTextEditor} from '@mantine/tiptap';
-import {useEffect, useState} from "react";
 import '@mantine/tiptap/styles.css';
 
 import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
@@ -22,6 +21,7 @@ import {IconCheck} from "@tabler/icons-react";
 import {CheckSimplifyButton} from "@/components/shared/RichEditor/toolbar/CheckSimplifyButton";
 import {CheckSpellingButton} from "@/components/shared/RichEditor/toolbar/CheckSpellingButton";
 import {CheckRhymesButton} from "@/components/shared/RichEditor/toolbar/CheckRhymesButton";
+import {useState} from "react";
 
 
 export interface IRichEditorConstraints {

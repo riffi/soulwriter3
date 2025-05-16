@@ -33,7 +33,11 @@ export const SceneTable = ({ openCreateModal }: SceneTableProps) => {
   }
 
   return (
-      <Table horizontalSpacing="sm" verticalSpacing="sm" layout={"auto"}>
+      <Table
+          horizontalSpacing="sm"
+          verticalSpacing="sm"
+          layout={"auto"}
+      >
         <Table.Thead>
           <Table.Tr>
             <Table.Th>Название</Table.Th>
@@ -54,6 +58,7 @@ export const SceneTable = ({ openCreateModal }: SceneTableProps) => {
                   key={`scene-${scene.id}`}
                   scene={scene}
                   scenesInChapter={array}
+                  onDelete={handleDelete }
               />
           ))}
         </Table.Tbody>

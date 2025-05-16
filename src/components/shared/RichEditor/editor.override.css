@@ -2,6 +2,10 @@
   --rte-sticky-offset: 0px  !important;
   margin-left: 5px;
 }
+
+.ProseMirror{
+  text-indent: 2em;
+}
 /* В вашем глобальном CSS */
 @media (max-width: 48em) {
   .ProseMirror {

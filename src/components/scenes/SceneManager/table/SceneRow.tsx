@@ -1,7 +1,6 @@
 // src/components/scenes/SceneManager/SceneRow.tsx
 import {ActionIcon, Box, Text, Table} from "@mantine/core";
 import {
-  IconEdit,
   IconTrash,
   IconArrowRightCircle,
   IconArrowUp,
@@ -13,16 +12,10 @@ import { DeleteConfirmationModal } from "../modals/DeleteConfirmationModal";
 import { MoveSceneModal } from "../modals/MoveSceneModal";
 import { useScenes } from "../useScenes";
 import {notifications} from "@mantine/notifications";
-import {bookDb} from "@/entities/bookDb";
+import {IScene} from "@/entities/BookEntities";
 
 interface SceneRowProps {
-  scene: {
-    id: number;
-    title: string;
-    order?: number;
-    chapterId?: number;
-  };
-  onDelete?: (id: number) => void;
+  scene: IScene;
   scenesInChapter: Array<{ id: number }>;
 }
 
@@ -30,7 +23,7 @@ export const SceneRow = ({ scene, onDelete, scenesInChapter }: SceneRowProps) =>
   const navigate = useNavigate();
   const [openedDeleteModal, { open: openDeleteModal, close: closeDeleteModal }] = useDisclosure(false);
   const [openedMoveModal, { open: openMoveModal, close: closeMoveModal }] = useDisclosure(false);
-  const { recalculateGlobalOrder, reorderScenes } = useScenes();
+  const { recalculateGlobalOrder, reorderScenes, deleteScene } = useScenes();
   const currentIndex = scenesInChapter.findIndex(s => s.id === scene.id);
   const { hovered, ref } = useHover();
 
@@ -50,7 +43,7 @@ export const SceneRow = ({ scene, onDelete, scenesInChapter }: SceneRowProps) =>
 
   const handleDelete = () => {
     if (onDelete) {
-      onDelete(scene.id);
+      deleteScene(scene.id);
     }
     closeDeleteModal();
   };
@@ -81,7 +74,6 @@ export const SceneRow = ({ scene, onDelete, scenesInChapter }: SceneRowProps) =>
       <>
         <Table.Tr
             key={`scene-${scene.id}`}
-            highlightOnHover
             ref={ref}
         >
           <Table.Td

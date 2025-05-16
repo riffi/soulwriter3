@@ -24,7 +24,7 @@ const TOCItemComponent: React.FC<{
   if (item.type === 'chapter') {
     return (
         <NavLink
-            label={item.title}
+            label={`${item.order}. ${item.title}`}
             defaultOpened={true}
             leftSection={<IconLibrary/>}
             className={item.id === currentChapterId ? styles.activeItem : ''}
