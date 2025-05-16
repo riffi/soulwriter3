@@ -1,15 +1,13 @@
-import { Box, Collapse, ActionIcon, Group } from "@mantine/core";
+import { Box, Collapse, ActionIcon, Table } from "@mantine/core";
 import { IconChevronDown, IconChevronRight, IconFolder, IconFolderOpen, IconPlus, IconEdit, IconTrash } from "@tabler/icons-react";
-import { useState } from "react";
 import { SceneRow } from "./SceneRow";
-import { Table } from "@mantine/core";
-import { useNavigate } from "react-router-dom";
 import { useChapters } from "../useChapters";
 import { EditChapterModal } from "../modals/EditChapterModal";
 import { DeleteConfirmationModal } from "../modals/DeleteConfirmationModal";
 import {useDisclosure} from "@mantine/hooks";
 import {useScenes} from "@/components/scenes/SceneManager/useScenes";
 import {IChapter, IScene} from "@/entities/BookEntities";
+import {useBookStore} from "@/stores/bookStore/bookStore";
 
 interface ChapterRowProps {
   chapter: IChapter;
@@ -18,14 +16,13 @@ interface ChapterRowProps {
 }
 
 export const ChapterRow = ({ chapter, scenes, onAddScene }: ChapterRowProps) => {
-  const [isExpanded, setIsExpanded] = useState(true);
+  const { collapsedChapters, toggleChapterCollapse } = useBookStore();
+  const isExpanded = !collapsedChapters.includes(chapter.id);
   const [openedEditModal, { open: openEditModal, close: closeEditModal }] = useDisclosure(false);
   const [openedDeleteModal, { open: openDeleteModal, close: closeDeleteModal }] = useDisclosure(false);
   const { deleteChapter, updateChapter } = useChapters();
   const { deleteScene } = useScenes();
-  const navigate = useNavigate();
 
-  const toggleChapter = () => setIsExpanded(!isExpanded);
 
   const handleDeleteChapter = async () => {
     try {
@@ -65,7 +62,7 @@ export const ChapterRow = ({ chapter, scenes, onAddScene }: ChapterRowProps) => 
                   backgroundColor: 'var(--mantine-color-gray-0)',
                   cursor: 'pointer'
                 }}
-                onClick={toggleChapter}
+                onClick={() => toggleChapterCollapse(chapter.id)}
             >
               <ActionIcon variant="transparent" mr="sm">
                 {isExpanded ? <IconChevronDown size={16} /> : <IconChevronRight size={16} />}
