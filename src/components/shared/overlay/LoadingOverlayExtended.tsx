@@ -1,5 +1,5 @@
 // LoadingOverlay.tsx
-import {LoadingOverlay as MantineLoadingOverlay, Stack} from '@mantine/core';
+import {LoadingOverlay, Stack} from '@mantine/core';
 import { IconRepeat } from '@tabler/icons-react';
 import { keyframes, css } from '@emotion/react';
 import styled from '@emotion/styled';
@@ -28,7 +28,7 @@ const StyledIcon = styled(IconRepeat)`
   filter: drop-shadow(0 0 2px rgba(113, 213, 255, 0.3));
 `;
 
-export const LoadingOverlay = ({ visible, message }: LoadingOverlayProps) => (
+export const LoadingOverlayExtended = ({ visible, message }: LoadingOverlayProps) => (
     <div style={{
       position: 'fixed',
       top: 0,
@@ -38,7 +38,7 @@ export const LoadingOverlay = ({ visible, message }: LoadingOverlayProps) => (
       pointerEvents: 'none',
       zIndex: 1000
     }}>
-      <MantineLoadingOverlay
+      <LoadingOverlay
           visible={visible}
           zIndex={1000}
           overlayProps={{ blur: 5, backgroundOpacity: 0.95 }}

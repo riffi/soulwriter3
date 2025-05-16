@@ -16,6 +16,7 @@ import {NoteFolder} from "@/components/notes/NoteFolder/NoteFolder";
 import {BookDashboardPage} from "@/pages/books/BookDashboardPage";
 import {DbViewer} from "@/pages/tech/DbViewer";
 import {BookReaderPage} from "@/pages/books/BookReaderPage";
+import {SceneLayout} from "@/components/scenes/SceneLayout/SceneLayout";
 
 
 const router = createBrowserRouter([

@@ -1,13 +1,11 @@
 import { Modal, TextInput, Button } from "@mantine/core";
 import { useState, useEffect } from "react";
+import {IChapter} from "@/entities/BookEntities";
 
 interface EditChapterModalProps {
   opened: boolean;
   onClose: () => void;
-  chapter: {
-    id: number;
-    title: string;
-  };
+  chapter: IChapter;
   onUpdate: (title: string) => void;
 }
 

@@ -5,7 +5,7 @@ import '@mantine/tiptap/styles.css';
 import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
 import './editor.override.css'
 import {EditorToolBar} from "@/components/shared/RichEditor/toolbar/EditorToolBar";
-import {LoadingOverlay} from "@/components/shared/overlay/LoadingOverlay";
+import {LoadingOverlayExtended} from "@/components/shared/overlay/LoadingOverlayExtended";
 import {CheckRepeatsButton} from "@/components/shared/RichEditor/toolbar/CheckRepeatsButton";
 import {CheckClichesButton} from "@/components/shared/RichEditor/toolbar/CheckClishesButton";
 import {
@@ -76,7 +76,7 @@ export const RichEditor = (props: ISceneRichTextEditorProps) => {
 
   return (
   <>
-    <LoadingOverlay
+    <LoadingOverlayExtended
         visible={loadingState.isLoading}
         message={loadingState.message}
     />

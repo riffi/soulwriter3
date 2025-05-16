@@ -13,9 +13,10 @@ interface ChapterRowProps {
   chapter: IChapter;
   scenes: IScene[];
   onAddScene: () => void;
+  openScene: (sceneId: number) => void;
 }
 
-export const ChapterRow = ({ chapter, scenes, onAddScene }: ChapterRowProps) => {
+export const ChapterRow = ({ chapter, scenes, onAddScene, openScene }: ChapterRowProps) => {
   const { collapsedChapters, toggleChapterCollapse } = useBookStore();
   const isExpanded = !collapsedChapters.includes(chapter.id);
   const [openedEditModal, { open: openEditModal, close: closeEditModal }] = useDisclosure(false);
@@ -112,6 +113,7 @@ export const ChapterRow = ({ chapter, scenes, onAddScene }: ChapterRowProps) => 
                         scene={scene}
                         scenesInChapter={array}
                         onUpdateChapter={handleDeleteScene}
+                        openScene={openScene}
                     />
                 ))}
                 </Table.Tbody>

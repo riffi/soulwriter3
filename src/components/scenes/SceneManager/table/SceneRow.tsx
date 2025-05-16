@@ -13,19 +13,22 @@ import { MoveSceneModal } from "../modals/MoveSceneModal";
 import { useScenes } from "../useScenes";
 import {notifications} from "@mantine/notifications";
 import {IScene} from "@/entities/BookEntities";
+import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
 
 interface SceneRowProps {
   scene: IScene;
   scenesInChapter: Array<{ id: number }>;
+  openScene: (sceneId: number) => void;
 }
 
-export const SceneRow = ({ scene, onDelete, scenesInChapter }: SceneRowProps) => {
+export const SceneRow = ({ scene, scenesInChapter, openScene }: SceneRowProps) => {
   const navigate = useNavigate();
   const [openedDeleteModal, { open: openDeleteModal, close: closeDeleteModal }] = useDisclosure(false);
   const [openedMoveModal, { open: openMoveModal, close: closeMoveModal }] = useDisclosure(false);
   const { recalculateGlobalOrder, reorderScenes, deleteScene } = useScenes();
   const currentIndex = scenesInChapter.findIndex(s => s.id === scene.id);
   const { hovered, ref } = useHover();
+  const { isMobile } = useMedia();
 
   const handleMoveUp = () => {
     const prevScene = scenesInChapter[currentIndex - 1];
@@ -42,10 +45,19 @@ export const SceneRow = ({ scene, onDelete, scenesInChapter }: SceneRowProps) =>
   };
 
   const handleDelete = () => {
-    if (onDelete) {
-      deleteScene(scene.id);
-    }
+    deleteScene(scene.id);
     closeDeleteModal();
+  };
+
+  const handleClick = () => {
+    if (openScene){
+      openScene(scene.id);
+    }
+    if (isMobile) {
+      navigate(`/scene/card?id=${scene.id}`);
+    } else {
+      openScene(scene.id);
+    }
   };
 
   const handleMove = async (newChapterId: number | null) => {
@@ -91,7 +103,7 @@ export const SceneRow = ({ scene, onDelete, scenesInChapter }: SceneRowProps) =>
                 }}
             >
               <Text
-                  onClick={() => navigate(`/scene/card?id=${scene.id}`)}
+                  onClick={handleClick}
               >
                 {scene.order ? `${scene.order}. ` : ''}{scene.title}
               </Text>

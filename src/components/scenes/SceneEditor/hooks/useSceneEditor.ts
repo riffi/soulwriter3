@@ -4,13 +4,9 @@ import { IScene } from "@/entities/BookEntities";
 import { useLiveQuery } from "dexie-react-hooks";
 
 export const useSceneEditor = (sceneId?: number) => {
+
+
   const scene: IScene | undefined = useLiveQuery<IScene>(async () => {
-    if (!sceneId) {
-      // Для новой сцены устанавливаем порядок как последний + 1
-      const lastScene = await bookDb.scenes.orderBy('order').last();
-      const newOrder = lastScene ? lastScene.order + 1 : 1;
-      return { body: "", title: "Новая сцена", order: newOrder };
-    }
     return bookDb.scenes.get(Number(sceneId));
   }, [sceneId]);
 

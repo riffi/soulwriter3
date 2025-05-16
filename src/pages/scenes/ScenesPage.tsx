@@ -1,10 +1,10 @@
-import {SceneManager} from "@/components/scenes/SceneManager/SceneManager";
+import {SceneLayout} from "@/components/scenes/SceneLayout/SceneLayout";
 
 
 export const ScenesPage = () => {
   return (
       <>
-        <SceneManager/>
+        <SceneLayout/>
       </>
   )
 }

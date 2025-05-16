@@ -1,6 +1,6 @@
 import {useCallback, useEffect, useRef, useState} from "react";
 import {debounce} from "lodash";
-import {useEditor} from "@tiptap/react";
+import {Editor, useEditor} from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
 import Superscript from "@tiptap/extension-superscript";
@@ -46,7 +46,9 @@ export const useEditorState = (
     onUpdate: ({ editor }) => onUpdate(editor),
     onBlur: ({ editor }) => {
       editor.setEditable(false)
-      onContentChange?.(editor.getHTML(), editor.getText())
+      if (editor.getHTML() != initialContent) {
+         onContentChange?.(editor.getHTML(), editor.getText())
+      }
     },
     onTransaction: ({ editor, transaction }) => {
       if (transaction.meta?.pointer) {
@@ -70,7 +72,9 @@ export const useEditorState = (
   );
 
   const editor = useEditor(createEditorConfig(localContent, editor => {
-    debouncedContentChange(editor.getHTML(), editor.getText());
+    if (editor.getHTML() != initialContent) {
+      debouncedContentChange(editor.getHTML(), editor.getText());
+    }
   }));
 
   useEffect(() => () => debouncedContentChange.cancel(), []);
@@ -80,6 +84,8 @@ export const useEditorState = (
     if (editor && initialContent !== undefined) {
       const currentContent = editor.getHTML();
       if (currentContent !== initialContent) {
+        console.log("initialContent changed")
+        debouncedContentChange.cancel()
         // Сохраняем позицию курсора
         const { from, to } = editor.state.selection;
         editor.commands.setContent(initialContent);

@@ -12,7 +12,10 @@ import React, {useState} from "react";
 import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
 import {useBookStore} from "@/stores/bookStore/bookStore";
 
-export const SceneManager = () => {
+export interface SceneManagerProps {
+  openScene: (sceneId: number) => void;
+}
+export const SceneManager = (props: SceneManagerProps) => {
   const { setPageTitle } = usePageTitle();
   const [openedCreateModal, { open: openCreateModal, close: closeCreateModal }] = useDisclosure(false);
   const [openedChapterModal, { open: openChapterModal, close: closeChapterModal }] = useDisclosure(false);
@@ -33,7 +36,11 @@ export const SceneManager = () => {
       const newSceneId = await createScene(title, chapterForNewScene ?? undefined);
       closeCreateModal();
       setChapterForNewScene(null);
-      navigate(`/scene/card?id=${newSceneId}`);
+      if (isMobile) {
+        navigate(`/scene/card?id=${newSceneId}`);
+      } else {
+        navigate(`?id=${newSceneId}`, { replace: true });
+      }
     } catch (error) {
       console.error("Failed to create scene:", error);
     }
@@ -180,6 +187,7 @@ export const SceneManager = () => {
               setChapterForNewScene(chapterId);
               openCreateModal();
             }}
+            openScene={props.openScene}
         />
 
         <CreateSceneModal

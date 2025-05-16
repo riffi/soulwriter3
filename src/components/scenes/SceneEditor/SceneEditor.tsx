@@ -6,12 +6,13 @@ import type { SceneEditorProps } from "./types";
 import {IWarningGroup} from "@/components/shared/RichEditor/types";
 import {SceneMobileContent} from "@/components/scenes/SceneEditor/parts/SceneMobileContent";
 import {SceneDesktopContent} from "@/components/scenes/SceneEditor/parts/SceneDesktopContent";
+import {Box, LoadingOverlay} from "@mantine/core";
 
-export const SceneEditor = ({ sceneId }: SceneEditorProps) => {
+export const SceneEditor = ({ sceneId}: SceneEditorProps) => {
   const navigate = useNavigate();
   const { isMobile } = useMedia();
 
-  const { scene, saveScene } = useSceneEditor(sceneId ? Number(sceneId) : undefined);
+  const { scene, saveScene } = useSceneEditor(sceneId);
 
   const [selectedGroup, setSelectedGroup] = useState<IWarningGroup>();
   const [sceneBody, setSceneBody] = useState("");
@@ -21,9 +22,9 @@ export const SceneEditor = ({ sceneId }: SceneEditorProps) => {
   // Обработчик изменения контента в редакторе
   const handleContentChange = useCallback(
   (contentHTML, contentText) => {
-
+    console.log("handleContentChange");
     if (!scene?.id || contentHTML === scene.body) return;
-
+    console.log("updateScene", scene?.id);
     const updatedScene = {
       ...scene,
       body: contentHTML,
@@ -48,8 +49,17 @@ export const SceneEditor = ({ sceneId }: SceneEditorProps) => {
   if (!scene?.id) return null;
 
 
+  if (scene?.id !== sceneId) {
+    return (
+        <Box pos="relative" style={{minHeight: "100dvh"}}>
+          <LoadingOverlay visible={true} overlayBlur={2} />;
+        </Box>
+    )
+  }
+
   return (
       <>
+      {scene?.id === sceneId && (<Box>
         {isMobile ? (
             <SceneMobileContent
                 sceneBody={sceneBody}
@@ -74,6 +84,8 @@ export const SceneEditor = ({ sceneId }: SceneEditorProps) => {
                 setSelectedGroup={setSelectedGroup}
             />
         )}
+      </Box>)
+      }
       </>
   );
 };

@@ -7,9 +7,10 @@ import { SceneRow } from "./SceneRow";
 
 interface SceneTableProps {
   openCreateModal: (chapterId: number) => void;
+  openScene: (sceneId: number) => void;
 }
 
-export const SceneTable = ({ openCreateModal }: SceneTableProps) => {
+export const SceneTable = ({ openCreateModal, openScene }: SceneTableProps) => {
   const { scenes } = useScenes();
   const { chapters } = useChapters();
 
@@ -51,6 +52,7 @@ export const SceneTable = ({ openCreateModal }: SceneTableProps) => {
                   chapter={chapter}
                   scenes={getScenesForChapter(chapter.id)}
                   onAddScene={() => openCreateModal(chapter.id)}
+                  openScene={openScene}
               />
           ))}
           {getScenesForChapter(null).map((scene, index, array) => (
@@ -58,7 +60,8 @@ export const SceneTable = ({ openCreateModal }: SceneTableProps) => {
                   key={`scene-${scene.id}`}
                   scene={scene}
                   scenesInChapter={array}
-                  onDelete={handleDelete }
+                  onDelete={handleDelete}
+                  openScene={openScene}
               />
           ))}
         </Table.Tbody>
