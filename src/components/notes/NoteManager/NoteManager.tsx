@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import {useEffect, useState} from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Container,
@@ -26,6 +26,7 @@ import {INote, INoteGroup} from "@/entities/BookEntities";
 import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
 import {notifications} from "@mantine/notifications";
 import { useUiSettingsStore } from '@/stores/uiSettingsStore/uiSettingsStore';
+import {usePageTitle} from "@/providers/PageTitleProvider/PageTitleProvider";
 
 export const NoteManager = () => {
   const { noteManagerMode, setNoteManagerMode } = useUiSettingsStore();
@@ -48,7 +49,11 @@ export const NoteManager = () => {
   const groups = useLiveQuery(getTopLevelGroups) || [];
   const allNotes = useLiveQuery(getAllNotes) || [];
   const navigate = useNavigate();
+  const {setPageTitle} = usePageTitle();
 
+  useEffect(() => {
+    setPageTitle('Заметки')
+  }, [])
 
   const handleGroupSubmit = async () => {
     if (currentGroup.title) {

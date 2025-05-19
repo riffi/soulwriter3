@@ -41,6 +41,7 @@ export const SceneLayout = () => {
           }}>
             <SceneManager
                 openScene={openScene}
+                selectedSceneId={sceneId}
             />
           </Box>
         </Box>

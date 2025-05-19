@@ -19,9 +19,10 @@ interface SceneRowProps {
   scene: IScene;
   scenesInChapter: Array<{ id: number }>;
   openScene: (sceneId: number) => void;
+  selectedSceneId?: number;
 }
 
-export const SceneRow = ({ scene, scenesInChapter, openScene }: SceneRowProps) => {
+export const SceneRow = ({ scene, scenesInChapter, openScene, selectedSceneId }: SceneRowProps) => {
   const navigate = useNavigate();
   const [openedDeleteModal, { open: openDeleteModal, close: closeDeleteModal }] = useDisclosure(false);
   const [openedMoveModal, { open: openMoveModal, close: closeMoveModal }] = useDisclosure(false);
@@ -87,6 +88,9 @@ export const SceneRow = ({ scene, scenesInChapter, openScene }: SceneRowProps) =
         <Table.Tr
             key={`scene-${scene.id}`}
             ref={ref}
+            style={{
+              backgroundColor: selectedSceneId === scene.id ? '#e6f7ff' : 'white'
+            }}
         >
           <Table.Td
               colSpan={2}
@@ -99,7 +103,7 @@ export const SceneRow = ({ scene, scenesInChapter, openScene }: SceneRowProps) =
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  cursor: 'pointer'
+                  cursor: 'pointer',
                 }}
                 onClick={handleClick}
             >

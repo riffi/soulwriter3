@@ -41,10 +41,10 @@ export const SceneEditor = ({ sceneId}: SceneEditorProps) => {
 
   // Обновление состояния редактора при изменении текста сцены
   useEffect(() => {
-    if (scene?.body && scene.body !== sceneBody) {
+    if (scene?.body !== undefined  && scene.body !== sceneBody) {
       setSceneBody(scene.body);
     }
-  }, [scene?.body]);
+  }, [scene, scene?.body]);
 
   if (!scene?.id) return null;
 

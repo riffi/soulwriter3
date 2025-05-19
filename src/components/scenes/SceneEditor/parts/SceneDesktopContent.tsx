@@ -1,4 +1,4 @@
-import {Box, Button, Container, Flex, Group, Paper} from "@mantine/core";
+import {Box, Button, Container, Flex, Group, Paper, Text} from "@mantine/core";
 import { RichEditor } from "@/components/shared/RichEditor/RichEditor";
 import { WarningsPanel } from "@/components/scenes/SceneEditor/parts/WarningsPanel/WarningsPanel";
 import { SceneStatusPanel } from "@/components/scenes/SceneEditor/parts/SceneStatusPanel";
@@ -61,42 +61,38 @@ export const SceneDesktopContent = ({
                 <>
                 {isHeaderVisible && (
                     <Group p={10} justify="space-between" align="center" direction="row" wrap="wrap">
-                      <Button
-                          variant="subtle"
-                          leftSection={<IconArrowLeft size={16} />}
-                          onClick={() => navigate('/scenes')}
-                          mb="sm"
-                          p={0}
-                      >
-                        Назад к списку
-                      </Button>
                       <Group>
                         <InlineEdit
                             value={scene.title}
+                            textProps={{
+                              style: { fontSize: '1.5rem' }
+                            }}
                             onChange={(title) => saveScene({ ...scene, title })}
                             label=""
                         />
-                        <Button
-                            variant="outline"
-                            onClick={openLinkManager}
-                            leftSection={<IconLink size={16} />}
-                        >
-                          Связи
-                        </Button>
-                        <Button
-                            variant={"outline"}
-                            onClick={() => setReadOnly(!readOnly)}
-                            active={!readOnly}
-                            leftSection={
-                              <>
-                                {!readOnly ? <IconEye size={16} /> :
-                                <IconEdit size={16} />}
-                              </>
-                            }
-                        >
-                          {readOnly && 'Редактирование'}
-                          {!readOnly && 'Просмотр'}
-                        </Button>
+                        <Group>
+                          <Button
+                              variant="outline"
+                              onClick={openLinkManager}
+                              leftSection={<IconLink size={16} />}
+                          >
+                            Связи
+                          </Button>
+                          <Button
+                              variant={"outline"}
+                              onClick={() => setReadOnly(!readOnly)}
+                              active={!readOnly}
+                              leftSection={
+                                <>
+                                  {!readOnly ? <IconEye size={16} /> :
+                                  <IconEdit size={16} />}
+                                </>
+                              }
+                          >
+                            {readOnly && 'Редактирование'}
+                            {!readOnly && 'Просмотр'}
+                          </Button>
+                        </Group>
                       </Group>
                     </Group>
                 )}
@@ -111,17 +107,33 @@ export const SceneDesktopContent = ({
                     onScroll={handleEditorScroll}
                 />
               }
+              <>
               {readOnly && (
                   <div>
-                    <div
+                    {sceneBody !== '' && <div
                         style={{
                           textIndent: '1rem',
                         }}
                         dangerouslySetInnerHTML={{ __html: sceneBody }}>
                     </div>
+                    }
+                    {sceneBody === '' && <div
+                        style={{
+                          textIndent: '1rem',
+                        }}
+                        >
+                      <Text
+                          color="dimmed"
+                          onClick={() => setReadOnly(!readOnly)}
+                      >
+                        Нет текста
+                      </Text>
+                    </div>
+                    }
                   </div>
               )}
-                <SceneStatusPanel scene={scene} />
+              </>
+              <SceneStatusPanel scene={scene} />
             </Paper>
           </Container>
         </Box>
