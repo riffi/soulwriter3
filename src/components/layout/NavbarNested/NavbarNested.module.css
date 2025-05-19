@@ -117,7 +117,6 @@
 
 .mainLink {
   width: 44px;
-  height: 44px;
   border-radius: var(--mantine-radius-md);
   display: flex;
   align-items: center;
@@ -132,12 +131,11 @@
 
 .title {
   font-family: Outfit, var(--mantine-font-family);
-  margin-bottom: var(--mantine-spacing-xl);
+  margin-bottom: var(--mantine-spacing-xs);
   background-color: var(--mantine-color-body);
-  padding: var(--mantine-spacing-md);
   font-weight: 500;
-  padding-top: 18px;
-  height: 60px;
+  font-size: var(--mantine-font-size-md);
+  padding-bottom: 10px;
   border-bottom: 1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-7));
 }
 
@@ -151,12 +149,10 @@
   border-top-right-radius: var(--mantine-radius-md);
   border-bottom-right-radius: var(--mantine-radius-md);
   color: light-dark(var(--mantine-color-gray-7), var(--mantine-color-dark-0));
-  padding: 0 var(--mantine-spacing-md);
+  padding: var(--mantine-spacing-xs);
   font-size: var(--mantine-font-size-sm);
   margin-right: var(--mantine-spacing-md);
   font-weight: 500;
-  height: 44px;
-  line-height: 44px;
 
   &:hover {
     background-color: light-dark(var(--mantine-color-gray-1), var(--mantine-color-dark-5));
@@ -171,13 +167,13 @@
 .popover {
   position: fixed;
   left: 60px;
-  top: 0;
+  margin-top: -100px;
   width: 240px;
   background: light-dark(var(--mantine-color-white), var(--mantine-color-dark-6));
   border: 1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
   border-radius: var(--mantine-radius-md);
   box-shadow: var(--mantine-shadow-md);
-  z-index: 100000;
+  z-index: -1;
   padding: var(--mantine-spacing-md);
 }
 

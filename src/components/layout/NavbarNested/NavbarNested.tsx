@@ -1,146 +1,31 @@
-import {
-  IconBooks,
-  IconBrandDatabricks,
-  IconGauge,
-  IconNotes,
-  IconChevronRight, IconSettings, IconCell, IconBox, IconDatabaseCog, IconDashboard,
-} from '@tabler/icons-react';
-import {
-  Box,
-  Collapse,
-  Group,
-  Text,
-  ThemeIcon,
-  UnstyledButton,
-  Code,
-  ScrollArea,
-  Space,
-  Divider, Burger, Title, Tooltip,
-} from '@mantine/core';
-import { useNavigate } from 'react-router-dom';
-import React, {useState, useMemo, useRef} from 'react';
+import React, { useState, useMemo } from 'react';
 import { useBookStore } from '@/stores/bookStore/bookStore';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { bookDb } from '@/entities/bookDb';
-import {IBlock, IBlockStructureKind} from '@/entities/ConstructorEntities';
-import classes from './NavbarNested.module.css';
-import { Logo } from './Logo';
-import { UserButton } from '../UserButton/UserButton';
-import config from '../../../../package.json';
-import {IconViewer} from "@/components/shared/IconViewer/IconViewer";
-interface NavLinkItem {
+import { IBlock, IBlockStructureKind } from '@/entities/ConstructorEntities';
+import {
+  IconBooks,
+  IconBox,
+  IconBrandDatabricks,
+  IconDashboard, IconDatabaseCog,
+  IconNotes
+} from "@tabler/icons-react";
+import {CollapsedNavbar} from "@/components/layout/NavbarNested/parts/CollapsedNavbar";
+import {ExpandedNavbar} from "@/components/layout/NavbarNested/parts/ExpandedNavbar";
+
+export interface NavLinkItem {
   label: string;
   link?: string;
   icon?: string;
 }
 
-interface NavLinkGroup {
+export interface NavLinkGroup {
   label: string;
   icon: React.FC<any>;
   initiallyOpened?: boolean;
   links?: NavLinkItem[];
   link?: string;
 }
-
-interface NavLinkProps extends NavLinkGroup {
-  toggleNavbar?: () => void;
-  isBaseItem?: boolean; // Новый пропс для стилизации
-}
-
-const NavLink = ({
-                   icon: Icon,
-                   label,
-                   initiallyOpened = false,
-                   links,
-                   link,
-                   toggleNavbar,
-                   isBaseItem = false // Значение по умолчанию
-                 }: NavLinkProps) => {
-  const navigate = useNavigate();
-  const [opened, setOpened] = useState(initiallyOpened);
-  const hasLinks = links && links.length > 0;
-
-  const handleClick = () => {
-    if (link) {
-      navigate(link);
-      toggleNavbar?.();
-    } else if (hasLinks) {
-      setOpened((prev) => !prev);
-    }
-  };
-
-  const linkItems = useMemo(() => (
-      hasLinks ? links.map((item) => (
-          <>
-            <Text<'a'>
-                component="a"
-                flex={4}
-                href={item.link}
-                key={item.label}
-                className={classes.link}
-                onClick={(e) => {
-                  e.preventDefault();
-                  navigate(item.link || '#');
-                  toggleNavbar?.();
-                }}
-            >
-              <Group justify="flex-start" gap={0}>
-                <IconViewer
-                    iconName={item.icon}
-                    size={20}
-                    color="var(--mantine-color-blue-7)"
-
-                />
-                <div style={{marginLeft: "10px"}}>
-                  {item.label}
-                </div>
-              </Group>
-            </Text>
-          </>
-      )) : null
-  ), [hasLinks, links, navigate, toggleNavbar]);
-
-  return (
-      <>
-        <UnstyledButton
-            onClick={handleClick}
-            className={isBaseItem ? classes.baseControl : classes.control} // Разные стили
-            aria-expanded={hasLinks ? opened : undefined}
-        >
-          <Group justify="space-between" gap={0}>
-            <Box style={{ display: 'flex', alignItems: 'center' }}>
-              <ThemeIcon
-                  variant={isBaseItem ? 'filled' : 'light'} // Разные варианты иконок
-                  size={30}
-                  color={isBaseItem ? 'blue' : undefined}
-              >
-                <Icon size={18} />
-              </ThemeIcon>
-              <Box ml="md" fw={isBaseItem ? 700 : 500}> {/* Разная толщина текста */}
-                {label}
-              </Box>
-            </Box>
-            {hasLinks && (
-                <IconChevronRight
-                    className={classes.chevron}
-                    stroke={1.5}
-                    size={16}
-                    style={{
-                      transform: opened ? 'rotate(-90deg)' : 'none',
-                      transition: 'transform 200ms ease'
-                    }}
-                />
-            )}
-          </Group>
-        </UnstyledButton>
-        {hasLinks && (
-            <Collapse in={opened} transitionDuration={200}>
-              {linkItems}
-            </Collapse>
-        )}
-      </>
-  );
-};
 
 const BASE_MENU_ITEMS: NavLinkGroup[] = [
   {
@@ -172,230 +57,63 @@ const BASE_MENU_ITEMS: NavLinkGroup[] = [
 ];
 
 const getBlockPageTitle = (block: IBlock) => {
-  if (block.structureKind === IBlockStructureKind.single){
+  if (block.structureKind === IBlockStructureKind.single) {
     return block.title;
   }
-  else if (block.structureKind === IBlockStructureKind.multiple){
-    return block.titleForms?.plural
-  }
-  else {
-    return block.title
-  }
-}
+  return block.titleForms?.plural || block.title;
+};
 
-export const NavbarNested = ({ toggleNavbar, opened }: { toggleNavbar?: () => void, opened: boolean }) => {
+export const NavbarNested = ({ toggleNavbar, opened }: { toggleNavbar?: () => void; opened: boolean }) => {
   const { selectedBook } = useBookStore();
-  const [hoveredItem, setHoveredItem] = useState<string | null>(null);
-  const hoverTimeout = useRef<NodeJS.Timeout | null>(null);
-  const wrapperRef = useRef<HTMLDivElement>(null);
-  const navigate = useNavigate();
 
   const blocks = useLiveQuery<IBlock[]>(() => {
-    if (!bookDb) {return [];}
-    return bookDb.blocks.toArray()
+    return selectedBook ? bookDb.blocks.toArray() : [];
   }, [selectedBook]);
 
   const { baseItems, dynamicItems } = useMemo(() => {
-    const baseItems = [...BASE_MENU_ITEMS];
     const dynamicItems: NavLinkGroup[] = [];
 
     if (selectedBook) {
-      dynamicItems.push({
-        label: 'Рабочий стол',
-        icon: IconDashboard,
-        initiallyOpened: true,
-        link: '/book/dashboard',
-      });
-
-      dynamicItems.push({
-        label: 'Сцены',
-        icon: IconNotes,
-        initiallyOpened: true,
-        link: '/scenes',
-      });
-      dynamicItems.push({
-        label: 'Чтение',
-        icon: IconBooks,
-        initiallyOpened: true,
-        link: '/book/reader',
-      });
-
-
-
-      const knowledgeLinks = blocks?.filter(block => block.parentBlockUuid == null)
-        ?.map((block) => ({
-          label: getBlockPageTitle(block),
-          icon: block.icon,
-          link: `/block-instance/manager?uuid=${block.uuid}`,
-        })) || [];
-
-      if (knowledgeLinks.length > 0) {
-        dynamicItems.push({
-          label: 'База знаний',
-          icon: IconBrandDatabricks,
-          initiallyOpened: true,
-          links: knowledgeLinks,
-        });
-      }
-
-      dynamicItems.push({
-        label: 'Конфигурация',
-        icon: IconDatabaseCog,
-        initiallyOpened: true,
-        link: `/configuration/edit/?uuid=${selectedBook.configurationUuid}&bookUuid=${selectedBook.uuid}`,
-      });
+      dynamicItems.push(
+          { label: 'Рабочий стол', icon: IconDashboard, link: '/book/dashboard' },
+          { label: 'Сцены', icon: IconNotes, link: '/scenes' },
+          { label: 'Чтение', icon: IconBooks, link: '/book/reader' },
+          {
+            label: 'База знаний',
+            icon: IconBrandDatabricks,
+            links: blocks?.filter(b => !b.parentBlockUuid).map(b => ({
+              label: getBlockPageTitle(b),
+              icon: b.icon,
+              link: `/block-instance/manager?uuid=${b.uuid}`
+            })) || []
+          },
+          {
+            label: 'Конфигурация',
+            icon: IconDatabaseCog,
+            link: `/configuration/edit/?uuid=${selectedBook.configurationUuid}&bookUuid=${selectedBook.uuid}`
+          }
+      );
     }
 
-    return { baseItems, dynamicItems };
+    return {
+      baseItems: BASE_MENU_ITEMS,
+      dynamicItems
+    };
   }, [selectedBook, blocks]);
 
-  // Обработчик для задержки скрытия
-  const handleMouseLeave = () => {
-    hoverTimeout.current = setTimeout(() => {
-      setHoveredItem(null);
-    }, 200);
-  };
-
-  // Отмена таймера при повторном ховере
-  const cancelHoverTimeout = () => {
-    if (hoverTimeout.current) {
-      clearTimeout(hoverTimeout.current);
-      hoverTimeout.current = null;
-    }
-  };
-
-  const renderCollapsedNavbar = () => (
-      <div className={classes.navbarCollapsed} aria-label="Основное меню">
-        <div className={classes.wrapper} ref={wrapperRef}>
-          <div className={classes.aside}>
-            <Burger
-                opened={opened}
-                onClick={toggleNavbar}
-                visibleFrom="sm"
-                lineSize={1}
-                size="lg"
-            />
-            <div className={classes.logo}>
-              <Logo style={{ width: 40 }} />
-            </div>
-            {[...baseItems, ...dynamicItems].map((item) => (
-                <Tooltip
-                    label={item.label}
-                    position="right"
-                    withArrow
-                    transitionProps={{ duration: 0 }}
-                    key={item.label}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      navigate(item.link || '#');
-                    }}
-                >
-                  <div
-                      className={classes.menuItemContainer}
-                      onMouseEnter={() => {
-                        cancelHoverTimeout();
-                        setHoveredItem(item.label);
-                      }}
-                      onMouseLeave={handleMouseLeave}
-                  >
-                    <UnstyledButton
-                        className={classes.mainLink}
-                        onClick={() => {
-                          if (item.link) navigate(item.link);
-                        }}
-                    >
-                      <item.icon size={22} stroke={1.5} />
-                    </UnstyledButton>
-
-                    {hoveredItem === item.label && item.links?.length > 0 && (
-                        <div
-                            className={classes.popover}
-                            onMouseEnter={cancelHoverTimeout}
-                            onMouseLeave={handleMouseLeave}
-                        >
-                          <Title order={4} className={classes.title}>
-                            {item.label}
-                          </Title>
-                          {item.links?.map((link) => (
-                              <a
-                                  className={classes.popoverLink}
-                                  href={link.link}
-                                  key={link.label}
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    navigate(link.link || '#');
-                                  }}
-                              >
-                                {link.label}
-                              </a>
-                          ))}
-                        </div>
-                    )}
-                  </div>
-                </Tooltip>
-            ))}
-          </div>
-        </div>
-      </div>
-  );
-
   if (!opened) {
-    return renderCollapsedNavbar();
+    return <CollapsedNavbar
+        opened={opened}
+        toggleNavbar={toggleNavbar}
+        baseItems={baseItems}
+        dynamicItems={dynamicItems}
+    />;
   }
 
-  return (
-      <nav className={classes.navbar} aria-label="Основное меню">
-        <div className={classes.header}>
-          <Group justify="space-between">
-            <Burger
-                opened={opened}
-                onClick={toggleNavbar}
-                visibleFrom="sm"
-                lineSize={1}
-                size="lg"
-            />
-            <Logo style={{ width: 150 }} />
-            <Code fw={700}>{config.version}</Code>
-          </Group>
-        </div>
-
-        <ScrollArea className={classes.links}>
-          <div className={classes.linksInner}>
-            {baseItems.map((item) => (
-                <NavLink
-                    {...item}
-                    key={item.label}
-                    isBaseItem // Активируем особый стиль
-                />
-            ))}
-            <Divider my="sm" />
-            {/* Добавьте блок с названием книги здесь */}
-            {selectedBook && (
-                <Box px="md" py="sm">
-                  <Group gap="xs" align="center">
-                    <IconBooks
-                        size={18}
-                        color="var(--mantine-color-blue-6)"
-                        style={{ marginRight: "var(--mantine-spacing-xs)" }}
-                    />
-                    <Text fw={700} truncate style={{ maxWidth: 180 }}>
-                      {selectedBook.title}
-                    </Text>
-                  </Group>
-                </Box>
-            )}
-            {dynamicItems.map((item) => (
-                <NavLink
-                    {...item}
-                    key={item.label}
-                />
-            ))}
-          </div>
-        </ScrollArea>
-
-        <div className={classes.footer}>
-          <UserButton />
-        </div>
-      </nav>
-  );
+  return <ExpandedNavbar
+      opened={opened}
+      toggleNavbar={toggleNavbar}
+      baseItems={baseItems}
+      dynamicItems={dynamicItems}
+  />;
 };
