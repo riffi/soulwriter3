@@ -22,9 +22,7 @@ export const SceneEditor = ({ sceneId}: SceneEditorProps) => {
   // Обработчик изменения контента в редакторе
   const handleContentChange = useCallback(
   (contentHTML, contentText) => {
-    console.log("handleContentChange");
     if (!scene?.id || contentHTML === scene.body) return;
-    console.log("updateScene", scene?.id);
     const updatedScene = {
       ...scene,
       body: contentHTML,

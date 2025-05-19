@@ -50,7 +50,7 @@ const router = createBrowserRouter([
       },
       {
         path: '/scenes',
-        element: <ScenesPage/> as ReactNode
+        element: <ScenesPage/> as ReactNode,
       },
       {
         path: '/scene/card',

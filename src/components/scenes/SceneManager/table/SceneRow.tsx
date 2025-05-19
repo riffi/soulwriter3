@@ -101,9 +101,10 @@ export const SceneRow = ({ scene, scenesInChapter, openScene }: SceneRowProps) =
                   alignItems: 'center',
                   cursor: 'pointer'
                 }}
+                onClick={handleClick}
             >
               <Text
-                  onClick={handleClick}
+
               >
                 {scene.order ? `${scene.order}. ` : ''}{scene.title}
               </Text>
@@ -118,7 +119,10 @@ export const SceneRow = ({ scene, scenesInChapter, openScene }: SceneRowProps) =
               >
                 <ActionIcon
                     variant="subtle"
-                    onClick={handleMoveUp}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleMoveUp()
+                    }}
                     disabled={currentIndex <= 0}
                     title="Переместить вверх"
                 >
@@ -126,16 +130,23 @@ export const SceneRow = ({ scene, scenesInChapter, openScene }: SceneRowProps) =
                 </ActionIcon>
                 <ActionIcon
                     variant="subtle"
-                    onClick={handleMoveDown}
-                    disabled={currentIndex >= scenesInChapter.length - 1}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleMoveDown()
+                    }}
+                     disabled={currentIndex >= scenesInChapter.length - 1}
                     title="Переместить вниз"
                 >
                   <IconArrowDown size={16}/>
                 </ActionIcon>
                 <ActionIcon
                     variant="subtle"
-                    onClick={openMoveModal}
-                    title="Перенести в другую главу"
+                    handleMoveDown
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openMoveModal()
+                    }}
+                   title="Перенести в другую главу"
                 >
                   <IconArrowRightCircle size={16}/>
                 </ActionIcon>

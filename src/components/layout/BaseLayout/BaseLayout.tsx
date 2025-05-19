@@ -33,7 +33,7 @@ export const BaseLayout = () =>  {
             }}
         >
           <AppShell.Header>
-            <Group h="100%" px="md" justify="space-between" align="center" gap="0">
+            <Group px="md" justify="space-between" align="center" gap="0">
               <Burger
                   opened={opened}
                   onClick={toggle}

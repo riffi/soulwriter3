@@ -27,7 +27,6 @@ export const SceneLayout = () => {
 
   return (
       <Box display="flex" style={{
-        height: "calc(100vh - 60px)",
       }}>
         <Box style={{
           width: "500px",

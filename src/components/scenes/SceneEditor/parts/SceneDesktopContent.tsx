@@ -5,10 +5,11 @@ import { SceneStatusPanel } from "@/components/scenes/SceneEditor/parts/SceneSta
 import type { IWarningGroup } from "@/components/shared/RichEditor/types";
 import {IScene} from "@/entities/BookEntities";
 import {useHeaderVisibility} from "@/components/scenes/SceneEditor/hooks/useHeaderVisibility";
-import {IconArrowLeft, IconLink} from "@tabler/icons-react";
+import {IconArrowLeft, IconLink, IconEdit, IconEye} from "@tabler/icons-react";
 import {InlineEdit} from "@/components/shared/InlineEdit/InlineEdit";
 import {SceneLinkManager} from "@/components/scenes/SceneEditor/parts/SceneLinkManager";
 import {useDisclosure} from "@mantine/hooks";
+import {useState} from "react";
 
 interface SceneDesktopContentProps {
   scene: IScene;
@@ -36,13 +37,27 @@ export const SceneDesktopContent = ({
 
   const { isHeaderVisible, handleEditorScroll } = useHeaderVisibility();
   const [linkManagerOpened, { open: openLinkManager, close: closeLinkManager }] = useDisclosure(false);
+  const [readOnly, setReadOnly] = useState(true);
 
   return (
-    <Container size="xl" p="0" fluid style={{ height: 'calc(100vh-200px)' }}>
+    <Container size="xl" p="0" fluid >
       <Flex gap="md" justify="space-between" align="flex-start" wrap="wrap">
         <Box flex={10}>
-          <Container size="xl" p="0" style={{ height: 'calc(100vh-200px)' }}>
-            <Paper withBorder p="lg" radius="md" shadow="sm">
+          <Container
+              size="xl"
+              p="0"
+
+          >
+            <Paper
+                withBorder
+                p="lg"
+                radius="md"
+                shadow="sm"
+                style={{
+                  maxWidth: '900px',
+                  flex: 1,
+                }}
+            >
                 <>
                 {isHeaderVisible && (
                     <Group p={10} justify="space-between" align="center" direction="row" wrap="wrap">
@@ -68,10 +83,25 @@ export const SceneDesktopContent = ({
                         >
                           Связи
                         </Button>
+                        <Button
+                            variant={"outline"}
+                            onClick={() => setReadOnly(!readOnly)}
+                            active={!readOnly}
+                            leftSection={
+                              <>
+                                {!readOnly ? <IconEye size={16} /> :
+                                <IconEdit size={16} />}
+                              </>
+                            }
+                        >
+                          {readOnly && 'Редактирование'}
+                          {!readOnly && 'Просмотр'}
+                        </Button>
                       </Group>
                     </Group>
                 )}
                 </>
+              { !readOnly &&
                 <RichEditor
                     initialContent={sceneBody}
                     onContentChange={handleContentChange}
@@ -80,6 +110,17 @@ export const SceneDesktopContent = ({
                     setSelectedGroup={setSelectedGroup}
                     onScroll={handleEditorScroll}
                 />
+              }
+              {readOnly && (
+                  <div>
+                    <div
+                        style={{
+                          textIndent: '1rem',
+                        }}
+                        dangerouslySetInnerHTML={{ __html: sceneBody }}>
+                    </div>
+                  </div>
+              )}
                 <SceneStatusPanel scene={scene} />
             </Paper>
           </Container>

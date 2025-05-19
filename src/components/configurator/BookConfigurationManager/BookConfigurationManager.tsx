@@ -14,10 +14,11 @@ import {IconDownload, IconEdit, IconSettings, IconTablePlus, IconTrash} from "@t
 import {
   ConfigurationEditModal
 } from "@/components/configurator/BookConfigurationManager/ConfigurationEditModal/ConfigurationEditModal";
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import {IBookConfiguration} from "@/entities/ConstructorEntities";
 import { notifications } from '@mantine/notifications';
 import {useNavigate} from "react-router-dom";
+import {usePageTitle} from "@/providers/PageTitleProvider/PageTitleProvider";
 
 const getBlackConfiguration = (): IBookConfiguration => {
   return {
@@ -40,6 +41,7 @@ export const BookConfigurationManager = () =>{
 
   const [isModalOpened, setIsModalOpened] = useState<boolean>(false)
   const [currentBookConfiguration, setCurrentBookConfiguration] = useState<IBookConfiguration>(getBlackConfiguration())
+  const {setPageTitle} = usePageTitle()
 
   const breadCrumbs = [
     { title: 'Конфигуратор', href: '/configurator' },
@@ -48,6 +50,10 @@ export const BookConfigurationManager = () =>{
         {item.title}
       </Anchor>
   ));
+
+  useEffect(() => {
+    setPageTitle('Конфигуратор')
+  }, [])
 
   // Обработчик экспорта
   const handleExport = async (configUuid: string) => {

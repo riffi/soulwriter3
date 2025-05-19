@@ -1,5 +1,5 @@
 // src/contexts/PageTitleContext.tsx
-import { createContext, useContext, useState } from 'react';
+import {createContext, useContext, useEffect, useState} from 'react';
 import React from 'react';
 
 interface PageTitleContextType {
@@ -21,6 +21,12 @@ export const usePageTitle = () => useContext(PageTitleContext);
 export const PageTitleProvider = ({ children }: { children: React.ReactNode }) => {
   const [pageTitle, setPageTitleState] = useState('');
   const [titleElement, setTitleElementState] = useState<React.ReactNode>(null);
+
+  useEffect(() => {
+    if (pageTitle) {
+      document.title = pageTitle;
+    }
+  }, [pageTitle]);
 
   const setPageTitle = (title: string) => {
     setPageTitleState(title);
