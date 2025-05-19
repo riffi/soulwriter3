@@ -116,7 +116,8 @@ export const CollapsedNavbar = ({
                                   key={link.label}
                                   onClick={(e) => {
                                     e.preventDefault();
-                                    navigate(link.link || '#');
+                                    e.stopPropagation();
+                                    navigate(link.link);
                                   }}
                               >
                                 {link.label}

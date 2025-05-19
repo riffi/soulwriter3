@@ -135,6 +135,7 @@ export const ExpandedNavbar = ({
       <nav className={classes.navbar} aria-label="Основное меню">
         <div className={classes.header}>
           <Group justify="space-between">
+            <Logo style={{ width: 150 }} />
             <Burger
                 opened={opened}
                 onClick={toggleNavbar}
@@ -142,7 +143,6 @@ export const ExpandedNavbar = ({
                 lineSize={1}
                 size="lg"
             />
-            <Logo style={{ width: 150 }} />
             <Code fw={700}>{config.version}</Code>
           </Group>
         </div>
@@ -175,6 +175,7 @@ export const ExpandedNavbar = ({
                 <NavLink
                     {...item}
                     key={item.label}
+                    toggleNavbar={toggleNavbar}
                 />
             ))}
           </div>
