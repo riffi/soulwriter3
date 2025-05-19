@@ -13,16 +13,54 @@ interface SceneTableProps {
   openScene: (sceneId: number) => void;
   selectedSceneId?: number;
   mode?: 'manager' | 'split';
-  scenes?: ISceneWithInstances;
+  scenes?: ISceneWithInstances[];
   chapters?: IChapter[];
+  searchQuery?: string;
+  selectedInstanceUuid?: string | null;
 }
 
-export const SceneTable = ({ openCreateModal, openScene, selectedSceneId, mode, scenes, chapters }: SceneTableProps) => {
+export const SceneTable = ({
+                             openCreateModal,
+                             openScene,
+                             selectedSceneId,
+                             mode,
+                             scenes,
+                             chapters,
+                             searchQuery,
+                             selectedInstanceUuid
+                           }: SceneTableProps) => {
 
+  // Функция фильтрации сцен
+  const filterScenes = (scenes: ISceneWithInstances[]) => {
+    return scenes.filter(scene => {
+      const matchesSearch = scene.title.toLowerCase().includes(searchQuery?.toLowerCase() || '') ||
+          chapters?.find(c => c.id === scene.chapterId)?.title.toLowerCase().includes(searchQuery?.toLowerCase() || '');
+
+      const matchesInstance = !selectedInstanceUuid ||
+          scene.blockInstances.some(bi =>
+              bi.instances.some(i => i.uuid === selectedInstanceUuid)
+          );
+
+      return matchesSearch && matchesInstance;
+    });
+  };
+
+  // Функция фильтрации глав
+  const filterChapters = (chapters: IChapter[], filteredScenes: ISceneWithInstances[]) => {
+    return chapters.filter(chapter => {
+      const hasScenes = filteredScenes.some(scene => scene.chapterId === chapter.id);
+      return hasScenes;
+    });
+  };
+
+  const filteredScenes = scenes ? filterScenes(scenes) : [];
+  const filteredChapters = chapters ? filterChapters(chapters, filteredScenes) : [];
+
+  // Получение сцен для главы с учетом фильтрации
   const getScenesForChapter = (chapterId: number | null) => {
-    return scenes?.filter(scene =>
-        chapterId ? scene.chapterId === chapterId : ((scene.chapterId === null) || (scene.chapterId === undefined))
-    ) || [];
+    return filteredScenes.filter(scene =>
+        chapterId ? scene.chapterId === chapterId : !scene.chapterId
+    );
   };
 
   if (!scenes || !chapters)  return (
@@ -54,14 +92,9 @@ export const SceneTable = ({ openCreateModal, openScene, selectedSceneId, mode, 
           verticalSpacing="sm"
           layout={"auto"}
       >
-        <Table.Thead>
-          <Table.Tr>
-            <Table.Th>Название</Table.Th>
-            <Table.Th w={150}>Действия</Table.Th>
-          </Table.Tr>
-        </Table.Thead>
+
         <Table.Tbody>
-          {chapters?.map((chapter) => (
+          {filteredChapters?.map((chapter) => (
               <ChapterRow
                   key={`chapter-${chapter.id}`}
                   chapter={chapter}

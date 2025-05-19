@@ -5,13 +5,17 @@ import {
   Button,
   ActionIcon,
   Tooltip,
-  Box
+  Box, TextInput, Select, Collapse
 } from "@mantine/core";
 import {
   IconPlus,
   IconFolderOff,
   IconFolderPlus,
-  IconArrowsMaximize, IconArrowsMinimize
+  IconArrowsMaximize,
+  IconArrowsMinimize,
+  IconFilter,
+  IconX,
+  IconSearch,
 } from "@tabler/icons-react";
 import { usePageTitle } from "@/providers/PageTitleProvider/PageTitleProvider";
 import { SceneTable } from "./table/SceneTable";
@@ -26,6 +30,7 @@ import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
 import {useBookStore} from "@/stores/bookStore/bookStore";
 import {IChapter, IScene} from "@/entities/BookEntities";
 import {useLiveQuery} from "dexie-react-hooks";
+import {bookDb} from "@/entities/bookDb";
 
 export interface SceneManagerProps {
   openScene: (sceneId: number) => void;
@@ -40,6 +45,13 @@ export const SceneManager = (props: SceneManagerProps) => {
   const [openedCreateModal, { open: openCreateModal, close: closeCreateModal }] = useDisclosure(false);
   const [openedChapterModal, { open: openChapterModal, close: closeChapterModal }] = useDisclosure(false);
   const [chapterForNewScene, setChapterForNewScene] = useState<number | null>(null);
+  const [isFiltersOpen, { toggle: toggleFilters }] = useDisclosure(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedBlock, setSelectedBlock] = useState<string | null>(null);
+  const [selectedInstance, setSelectedInstance] = useState<string | null>(null);
+  const [availableBlocks, setAvailableBlocks] = useState<IBlock[]>([]);
+  const [availableInstances, setAvailableInstances] = useState<any[]>([]);
+
   const navigate = useNavigate();
   const { isMobile} = useMedia();
   const { collapsedChapters } = useBookStore();
@@ -56,6 +68,28 @@ export const SceneManager = (props: SceneManagerProps) => {
   useEffect(() =>{
     setPageTitle('Сцены и главы');
   }, [])
+
+  useEffect(() => {
+    const loadBlocks = async () => {
+      const blocks = await bookDb.blocks
+      .filter(b => b.showInSceneList === 1)
+      .toArray();
+      setAvailableBlocks(blocks);
+    };
+    loadBlocks();
+  }, []);
+
+  useEffect(() => {
+    const loadInstances = async () => {
+      if (!selectedBlock) return;
+      const instances = await bookDb.blockInstances
+      .where('blockUuid')
+      .equals(selectedBlock)
+      .toArray();
+      setAvailableInstances(instances);
+    };
+    loadInstances();
+  }, [selectedBlock]);
 
 
   const handleCreateScene = async (title: string) => {
@@ -210,8 +244,61 @@ export const SceneManager = (props: SceneManagerProps) => {
 
                 </Group>
             )}
-          </Group>
+            <Group ml="auto" gap={8}>
+              <Tooltip label="Фильтры">
+                <ActionIcon
+                    variant={isFiltersOpen ? "filled" : "subtle"}
+                    onClick={toggleFilters}
+                >
+                  <IconFilter size={16} />
+                </ActionIcon>
+              </Tooltip>
 
+              {(searchQuery || selectedInstance) && (
+                  <Tooltip label="Очистить фильтры">
+                    <ActionIcon
+                        variant="subtle"
+                        color="red"
+                        onClick={() => {
+                          setSearchQuery('');
+                          setSelectedBlock(null);
+                          setSelectedInstance(null);
+                        }}
+                    >
+                      <IconX size={16} />
+                    </ActionIcon>
+                  </Tooltip>
+              )}
+            </Group>
+          </Group>
+          <Collapse in={isFiltersOpen}>
+            <Group p="md" gap="md" align="flex-end">
+              <TextInput
+                  placeholder="Поиск по названию..."
+                  leftSection={<IconSearch size={14} />}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.currentTarget.value)}
+                  style={{ flex: 1 }}
+              />
+
+              <Select
+                  placeholder="Выберите блок"
+                  data={availableBlocks.map(b => ({ value: b.uuid, label: b.titleForms?.plural }))}
+                  value={selectedBlock}
+                  onChange={setSelectedBlock}
+                  clearable
+              />
+
+              <Select
+                  placeholder="Выберите инстанс"
+                  data={availableInstances.map(i => ({ value: i.uuid, label: i.title }))}
+                  value={selectedInstance}
+                  onChange={setSelectedInstance}
+                  disabled={!selectedBlock}
+                  clearable
+              />
+            </Group>
+          </Collapse>
           <Group>
 
             <Group ml={isMobile ? "md" : "md"} spacing={8}>
@@ -249,6 +336,8 @@ export const SceneManager = (props: SceneManagerProps) => {
             mode={props.mode}
             scenes={scenesWithBlockInstances}
             chapters={props.chapters}
+            searchQuery={searchQuery}
+            selectedInstanceUuid={selectedInstance}
         />
 
         <CreateSceneModal
