@@ -26,6 +26,7 @@ import classes from '../NavbarNested.module.css';
 import {Logo} from "@/components/layout/NavbarNested/Logo";
 import {NavLinkGroup} from "@/components/layout/NavbarNested/NavbarNested";
 import {LogoCollapsed} from "@/components/layout/NavbarNested/LogoCollapsed";
+import {IconViewer} from "@/components/shared/IconViewer/IconViewer";
 
 export const CollapsedNavbar = ({
                                   opened,
@@ -68,7 +69,7 @@ export const CollapsedNavbar = ({
                 size="lg"
             />
             <div className={classes.logo}>
-              <LogoCollapsed style={{ width: 40 }} />
+              <LogoCollapsed style={{ width: 35 }} />
             </div>
             {[...baseItems, ...dynamicItems].map((item) => (
                 <Tooltip
@@ -113,18 +114,39 @@ export const CollapsedNavbar = ({
                             {item.label}
                           </Title>
                           {item.links?.map((link) => (
-                              <a
-                                  className={classes.popoverLink}
-                                  href={link.link}
-                                  key={link.label}
+                              <Group
+                                  justify="flex-start"
+                                  gap={0}
                                   onClick={(e) => {
                                     e.preventDefault();
                                     e.stopPropagation();
                                     navigate(link.link);
                                   }}
+                                  className={classes.popoverLink}
                               >
-                                {link.label}
-                              </a>
+                                <IconViewer
+                                    iconName={link.icon}
+                                    size={20}
+                                    color="var(--mantine-color-blue-7)"
+                                    backgroundColor={"transparent"}
+
+                                />
+                                <div style={{marginLeft: "10px"}}  className={classes.popoverLinkText}>
+                                  {link.label}
+                                </div>
+                              </Group>
+                              // <a
+                              //     className={classes.popoverLink}
+                              //     href={link.link}
+                              //     key={link.label}
+                              //     onClick={(e) => {
+                              //       e.preventDefault();
+                              //       e.stopPropagation();
+                              //       navigate(link.link);
+                              //     }}
+                              // >
+                              //   {link.label}
+                              // </a>
                           ))}
                         </div>
                     )}

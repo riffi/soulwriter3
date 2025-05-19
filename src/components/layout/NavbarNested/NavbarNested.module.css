@@ -140,24 +140,29 @@
 }
 
 .logo {
-
+  margin-top: 10px;
 }
 
 .popoverLink{
-  display: block;
-  text-decoration: none;
-  border-top-right-radius: var(--mantine-radius-md);
-  border-bottom-right-radius: var(--mantine-radius-md);
-  color: light-dark(var(--mantine-color-gray-7), var(--mantine-color-dark-0));
-  padding: var(--mantine-spacing-xs);
-  font-size: var(--mantine-font-size-sm);
-  margin-right: var(--mantine-spacing-md);
-  font-weight: 500;
-
+  cursor: pointer;
+  padding: 5px;
   &:hover {
     background-color: light-dark(var(--mantine-color-gray-1), var(--mantine-color-dark-5));
     color: light-dark(var(--mantine-color-dark), var(--mantine-color-light));
   }
+}
+
+.popoverLinkText{
+  display: block;
+  text-decoration: none;
+  text-transform: Capitalize;
+
+  color: light-dark(var(--mantine-color-gray-7), var(--mantine-color-dark-0));
+
+  font-size: var(--mantine-font-size-sm);
+  font-weight: 500;
+
+
 }
 
 .menuItemContainer {
@@ -168,12 +173,13 @@
   position: fixed;
   left: 60px;
   margin-top: -100px;
-  width: 240px;
   background: light-dark(var(--mantine-color-white), var(--mantine-color-dark-6));
   border: 1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
-  border-radius: var(--mantine-radius-md);
+  border-left: none;
   box-shadow: var(--mantine-shadow-md);
-  z-index: -1;
+  z-index: 100;
   padding: var(--mantine-spacing-md);
+  border-top-right-radius: var(--mantine-radius-md);
+  border-bottom-right-radius: var(--mantine-radius-md);
 }
 
