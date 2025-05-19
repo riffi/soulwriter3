@@ -13,7 +13,7 @@ import {
   IconFolderOff,
   IconFolderPlus,
   IconMaximize,
-  IconMinimize
+  IconMinimize, IconArrowsMaximize, IconArrowsMinimize
 } from "@tabler/icons-react";
 import { usePageTitle } from "@/providers/PageTitleProvider/PageTitleProvider";
 import { SceneTable } from "./table/SceneTable";
@@ -124,6 +124,29 @@ export const SceneManager = (props: SceneManagerProps) => {
               borderBottom: '1px solid #E0E0E0',
             }}
         >
+          {!isMobile && (
+              <Tooltip
+                  label={props.mode === 'split' ? "Развернуть редактор" : "Свернуть редактор"}
+              >
+                <ActionIcon
+                    variant="subtle"
+                    onClick={props.onToggleMode}
+                    size="md"
+                    style={{
+                      position: 'absolute',
+                      right: '-10px',
+                      top: '-15px',
+                      color: 'grey',
+                    }}
+                >
+                  {props.mode === 'split' ? (
+                      <IconArrowsMaximize size={18} />
+                  ) : (
+                      <IconArrowsMinimize size={18} />
+                  )}
+                </ActionIcon>
+              </Tooltip>
+          )}
           <Group
               justify="space-between"
               mb="md"
@@ -175,21 +198,7 @@ export const SceneManager = (props: SceneManagerProps) => {
                   >
                     Новая сцена
                   </Button>
-                  {!isMobile && (
-                      <Tooltip label={props.mode === 'split' ? "Развернуть редактор" : "Свернуть редактор"}>
-                        <ActionIcon
-                            variant="subtle"
-                            onClick={props.onToggleMode}
-                            size="md"
-                        >
-                          {props.mode === 'manager' ? (
-                              <IconMaximize size={18} />
-                          ) : (
-                              <IconMinimize size={18} />
-                          )}
-                        </ActionIcon>
-                      </Tooltip>
-                  )}
+
                 </Group>
             )}
           </Group>
