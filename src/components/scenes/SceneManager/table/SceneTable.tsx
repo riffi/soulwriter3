@@ -5,7 +5,7 @@ import { useChapters } from "../useChapters";
 import { ChapterRow } from "./ChapterRow";
 import { SceneRow } from "./SceneRow";
 import React from "react";
-import {IChapter, IScene} from "@/entities/BookEntities";
+import {IChapter, IScene, ISceneWithInstances} from "@/entities/BookEntities";
 import {useLiveQuery} from "dexie-react-hooks";
 
 interface SceneTableProps {
@@ -13,21 +13,14 @@ interface SceneTableProps {
   openScene: (sceneId: number) => void;
   selectedSceneId?: number;
   mode?: 'manager' | 'split';
-  scenes?: IScene[];
+  scenes?: ISceneWithInstances;
   chapters?: IChapter[];
 }
 
 export const SceneTable = ({ openCreateModal, openScene, selectedSceneId, mode, scenes, chapters }: SceneTableProps) => {
 
-  const {getScenesWithBlockInstances} = useScenes()
-
-  const scenesWithBlockInstances = useLiveQuery(() =>
-      getScenesWithBlockInstances(scenes),
-      [scenes]
-  )
-
   const getScenesForChapter = (chapterId: number | null) => {
-    return scenesWithBlockInstances?.filter(scene =>
+    return scenes?.filter(scene =>
         chapterId ? scene.chapterId === chapterId : ((scene.chapterId === null) || (scene.chapterId === undefined))
     ) || [];
   };
@@ -89,7 +82,7 @@ export const SceneTable = ({ openCreateModal, openScene, selectedSceneId, mode, 
                   openScene={openScene}
                   selectedSceneId={selectedSceneId}
                   mode={mode}
-                  scenes={scenesWithBlockInstances}
+                  scenes={scenes}
                   chapters={chapters}
               />
           ))}

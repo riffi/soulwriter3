@@ -1,5 +1,5 @@
 // src/components/scenes/SceneManager/SceneRow.tsx
-import {ActionIcon, Box, Text, Table, Stack, Badge, Group} from "@mantine/core";
+import {ActionIcon, Box, Text, Table, Stack, Group} from "@mantine/core";
 import {
   IconTrash,
   IconArrowRightCircle,
@@ -14,9 +14,7 @@ import { useScenes } from "../useScenes";
 import {notifications} from "@mantine/notifications";
 import {
   IChapter,
-  IScene,
   ISceneWithInstances,
-  ISceneWithInstancesBlock
 } from "@/entities/BookEntities";
 import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
 import {IconViewer} from "@/components/shared/IconViewer/IconViewer";

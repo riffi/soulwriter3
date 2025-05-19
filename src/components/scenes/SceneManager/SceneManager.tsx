@@ -25,6 +25,7 @@ import React, {useEffect, useState} from "react";
 import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
 import {useBookStore} from "@/stores/bookStore/bookStore";
 import {IChapter, IScene} from "@/entities/BookEntities";
+import {useLiveQuery} from "dexie-react-hooks";
 
 export interface SceneManagerProps {
   openScene: (sceneId: number) => void;
@@ -44,10 +45,18 @@ export const SceneManager = (props: SceneManagerProps) => {
   const { collapsedChapters } = useBookStore();
   const {  createChapter } = useChapters(props.chapters);
 
-  const { createScene} = useScenes(props.scenes);
+  const {getScenesWithBlockInstances,  createScene} = useScenes(props.scenes);
 
+  // Добавляем к сценам привязки к экземплярам блоков
+  const scenesWithBlockInstances = useLiveQuery(() =>
+          getScenesWithBlockInstances(props.scenes),
+      [props.scenes]
+  );
 
-  setPageTitle('Сцены и главы');
+  useEffect(() =>{
+    setPageTitle('Сцены и главы');
+  }, [])
+
 
   const handleCreateScene = async (title: string) => {
     if (!title.trim()) return;
@@ -238,7 +247,7 @@ export const SceneManager = (props: SceneManagerProps) => {
             openScene={props.openScene}
             selectedSceneId={props.selectedSceneId}
             mode={props.mode}
-            scenes={props.scenes}
+            scenes={scenesWithBlockInstances}
             chapters={props.chapters}
         />
 
