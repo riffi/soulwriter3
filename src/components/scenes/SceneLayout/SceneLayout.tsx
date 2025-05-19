@@ -1,10 +1,10 @@
 // SceneLayout.tsx
 import { useMedia } from "@/providers/MediaQueryProvider/MediaQueryProvider";
 import {useLocation, useNavigate} from "react-router-dom";
-import { Box } from "@mantine/core";
+import {Box, LoadingOverlay} from "@mantine/core";
 import {SceneEditor} from "@/components/scenes/SceneEditor/SceneEditor";
 import {SceneManager} from "@/components/scenes/SceneManager/SceneManager";
-import {useState} from "react";
+import React, {useState} from "react";
 import {useSceneLayout} from "@/components/scenes/SceneLayout/hooks/useSceneLayout";
 
 export const SceneLayout = () => {
@@ -13,6 +13,7 @@ export const SceneLayout = () => {
   const [sceneId, setSceneId] = useState<number | undefined>();
   const [mode, setMode] = useState<'manager' | 'split'>('split');
   const {scenes, chapters} = useSceneLayout()
+  const loading = !scenes || !chapters
 
   const openScene = (sceneId: number) => {
     if (isMobile) {
@@ -54,6 +55,13 @@ export const SceneLayout = () => {
 
   return (
       <Box display="flex">
+        <LoadingOverlay
+            visible={loading}
+            zIndex={1000}
+            overlayProps={{ radius: 'sm', blur: 2 }}
+            loaderProps={{ color: 'blue', type: 'bars' }}
+            style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0}}
+        />
         <Box style={{
           width: "500px",
           flexShrink: 0,
@@ -84,7 +92,7 @@ const Placeholder = () => (
     <Box
         display="flex"
         style={{
-          height: "100%",
+          height: "100dvh",
           alignItems: "center",
           justifyContent: "center",
           color: "#999",

@@ -5,7 +5,7 @@ import {
   Button,
   ActionIcon,
   Tooltip,
-  Box, TextInput, Select, Collapse
+  Box, TextInput, Select, Collapse, Drawer, Stack, Text
 } from "@mantine/core";
 import {
   IconPlus,
@@ -15,11 +15,11 @@ import {
   IconArrowsMinimize,
   IconFilter,
   IconX,
-  IconSearch,
+  IconSearch, IconFolderOpen, IconFolder, IconFolderUp, IconNote,
 } from "@tabler/icons-react";
 import { usePageTitle } from "@/providers/PageTitleProvider/PageTitleProvider";
 import { SceneTable } from "./table/SceneTable";
-import { useDisclosure } from "@mantine/hooks";
+import { useDisclosure, useDebouncedValue } from "@mantine/hooks";
 import { CreateSceneModal } from "./modals/CreateSceneModal";
 import { CreateChapterModal } from "./modals/CreateChapterModal";
 import { useNavigate } from "react-router-dom";
@@ -45,9 +45,11 @@ export const SceneManager = (props: SceneManagerProps) => {
   const [openedCreateModal, { open: openCreateModal, close: closeCreateModal }] = useDisclosure(false);
   const [openedChapterModal, { open: openChapterModal, close: closeChapterModal }] = useDisclosure(false);
   const [chapterForNewScene, setChapterForNewScene] = useState<number | null>(null);
-  const [isFiltersOpen, { toggle: toggleFilters }] = useDisclosure(false);
+
+  const [openedFilters, { open: openFilters, close: closeFilters }] = useDisclosure(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedBlock, setSelectedBlock] = useState<string | null>(null);
+  const [debouncedSearch] = useDebouncedValue(searchQuery, 400);
+  const [selectedBlock, setSelectedBlock] = useState<IBlock | null>(null);
   const [selectedInstance, setSelectedInstance] = useState<string | null>(null);
   const [availableBlocks, setAvailableBlocks] = useState<IBlock[]>([]);
   const [availableInstances, setAvailableInstances] = useState<any[]>([]);
@@ -84,7 +86,7 @@ export const SceneManager = (props: SceneManagerProps) => {
       if (!selectedBlock) return;
       const instances = await bookDb.blockInstances
       .where('blockUuid')
-      .equals(selectedBlock)
+      .equals(selectedBlock.uuid)
       .toArray();
       setAvailableInstances(instances);
     };
@@ -156,7 +158,6 @@ export const SceneManager = (props: SceneManagerProps) => {
             maxWidth: isMobile || props.mode === 'manager' ? undefined : '600px',
           }}
       >
-
         <Box
             style={{
               position: 'sticky',
@@ -197,64 +198,63 @@ export const SceneManager = (props: SceneManagerProps) => {
               wrap={isMobile ? "wrap" : "nowrap"}
           >
 
-            {isMobile ? (
-                <Group position="right" spacing={8} style={{width: '100%', marginTop: '10px'}}>
-                  <Button
-                      leftSection={<IconPlus size={14} />}
-                      onClick={openChapterModal}
-                      size="xs"
-                      variant="outline"
-                      compact
-                  >
-                    Новая глава
-                  </Button>
-                  <Button
-                      leftSection={<IconPlus size={14} />}
-                      onClick={() => {
-                        setChapterForNewScene(null);
-                        openCreateModal();
-                      }}
-                      size="xs"
-                      compact
-                  >
-                    Новая сцена
-                  </Button>
-                </Group>
-            ) : (
-                <Group>
-                  <Title visibleFrom="sm" order={1} size="h4">Сцены и главы</Title>
-                  <Button
-                      leftSection={<IconPlus size={16} />}
-                      onClick={openChapterModal}
-                      size="sm"
-                      variant="outline"
-                  >
-                    Новая глава
-                  </Button>
-                  <Button
-                      leftSection={<IconPlus size={16} />}
-                      onClick={() => {
-                        setChapterForNewScene(null);
-                        openCreateModal();
-                      }}
-                      size="sm"
-                  >
-                    Новая сцена
-                  </Button>
+            <Title
+                order={3}
+                visibleFrom={"sm"}
+            >
+              Сцены и главы
+            </Title>
+            <Group>
+              <Tooltip label="Добавить главу">
+                <ActionIcon
+                    onClick={openChapterModal}
+                >
+                  <IconFolderPlus size={16} />
+                </ActionIcon>
+              </Tooltip>
+              <Tooltip label="Добавить сцену">
+                <ActionIcon
+                    onClick={() => {
+                      setChapterForNewScene(null);
+                      openCreateModal();
+                    }}
+                >
+                  <IconNote size={16} />
+                </ActionIcon>
+              </Tooltip>
 
-                </Group>
-            )}
+              <Tooltip label="Свернуть все главы">
+                <ActionIcon
+                    variant="subtle"
+                    onClick={collapseAllChapters}
+                    disabled={!props.chapters?.length}
+                    size={isMobile ? "sm" : "md"}
+                >
+                  <IconFolderUp size={isMobile ? 18 : 18} />
+                </ActionIcon>
+              </Tooltip>
+              <Tooltip label="Развернуть все главы">
+                <ActionIcon
+                    variant="subtle"
+                    onClick={expandAllChapters}
+                    disabled={!collapsedChapters.length}
+                    size={isMobile ? "sm" : "md"}
+                >
+                  <IconFolderOpen size={isMobile ? 18 : 18} />
+                </ActionIcon>
+              </Tooltip>
+            </Group>
             <Group ml="auto" gap={8}>
               <Tooltip label="Фильтры">
                 <ActionIcon
-                    variant={isFiltersOpen ? "filled" : "subtle"}
-                    onClick={toggleFilters}
+                    variant={openedFilters ? "filled" : "subtle"}
+                    onClick={openFilters}
                 >
                   <IconFilter size={16} />
                 </ActionIcon>
               </Tooltip>
 
-              {(searchQuery || selectedInstance) && (
+              {(debouncedSearch || selectedInstance) && (
                   <Tooltip label="Очистить фильтры">
                     <ActionIcon
                         variant="subtle"
@@ -271,58 +271,7 @@ export const SceneManager = (props: SceneManagerProps) => {
               )}
             </Group>
           </Group>
-          <Collapse in={isFiltersOpen}>
-            <Group p="md" gap="md" align="flex-end">
-              <TextInput
-                  placeholder="Поиск по названию..."
-                  leftSection={<IconSearch size={14} />}
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.currentTarget.value)}
-                  style={{ flex: 1 }}
-              />
-
-              <Select
-                  placeholder="Выберите блок"
-                  data={availableBlocks.map(b => ({ value: b.uuid, label: b.titleForms?.plural }))}
-                  value={selectedBlock}
-                  onChange={setSelectedBlock}
-                  clearable
-              />
-
-              <Select
-                  placeholder="Выберите инстанс"
-                  data={availableInstances.map(i => ({ value: i.uuid, label: i.title }))}
-                  value={selectedInstance}
-                  onChange={setSelectedInstance}
-                  disabled={!selectedBlock}
-                  clearable
-              />
-            </Group>
-          </Collapse>
           <Group>
-
-            <Group ml={isMobile ? "md" : "md"} spacing={8}>
-              <Tooltip label="Свернуть все главы">
-                <ActionIcon
-                    variant="subtle"
-                    onClick={collapseAllChapters}
-                    disabled={!props.chapters?.length}
-                    size={isMobile ? "sm" : "md"}
-                >
-                  <IconFolderOff size={isMobile ? 18 : 18} />
-                </ActionIcon>
-              </Tooltip>
-              <Tooltip label="Развернуть все главы">
-                <ActionIcon
-                    variant="subtle"
-                    onClick={expandAllChapters}
-                    disabled={!collapsedChapters.length}
-                    size={isMobile ? "sm" : "md"}
-                >
-                  <IconFolderPlus size={isMobile ? 18 : 18} />
-                </ActionIcon>
-              </Tooltip>
-            </Group>
           </Group>
         </Box>
 
@@ -336,7 +285,7 @@ export const SceneManager = (props: SceneManagerProps) => {
             mode={props.mode}
             scenes={scenesWithBlockInstances}
             chapters={props.chapters}
-            searchQuery={searchQuery}
+            searchQuery={debouncedSearch}
             selectedInstanceUuid={selectedInstance}
         />
 
@@ -354,6 +303,46 @@ export const SceneManager = (props: SceneManagerProps) => {
             onClose={closeChapterModal}
             onCreate={handleCreateChapter}
         />
+
+        <Drawer
+            opened={openedFilters}
+            onClose={closeFilters}
+            title="Фильтры"
+            position="right"
+            size={isMobile ? "100%" : "400px"}
+            padding="md"
+        >
+          <Stack>
+            <Group gap="md" align="flex-end">
+              <TextInput
+                  placeholder="Поиск по названию..."
+                  leftSection={<IconSearch size={14} />}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.currentTarget.value)}
+                  style={{ flex: 1 }}
+              />
+            </Group>
+            <Text>Поиск по базе знаний</Text>
+            <Group gap="md" align="flex-end">
+              <Select
+                  placeholder="Элемент базы знаний"
+                  data={availableBlocks.map(b => ({ value: b.uuid, label: b.titleForms?.plural }))}
+                  value={selectedBlock ? selectedBlock?.uuid : ''}
+                  onChange={(uuid) => setSelectedBlock(availableBlocks.find(b => b.uuid === uuid))}
+                  clearable
+              />
+
+              <Select
+                  placeholder={selectedBlock ? selectedBlock?.title : ''}
+                  data={availableInstances.map(i => ({ value: i.uuid, label: i.title }))}
+                  value={selectedInstance}
+                  onChange={setSelectedInstance}
+                  disabled={!selectedBlock}
+                  clearable
+              />
+            </Group>
+          </Stack>
+        </Drawer>
       </Container>
   );
 };
