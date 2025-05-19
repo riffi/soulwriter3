@@ -60,39 +60,37 @@ export const SceneDesktopContent = ({
             >
                 <>
                 {isHeaderVisible && (
-                    <Group p={10} justify="space-between" align="center" direction="row" wrap="wrap">
-                      <Group>
-                        <InlineEdit
-                            value={scene.title}
-                            textProps={{
-                              style: { fontSize: '1.5rem' }
-                            }}
-                            onChange={(title) => saveScene({ ...scene, title })}
-                            label=""
-                        />
-                        <Group>
-                          <Button
-                              variant="outline"
-                              onClick={openLinkManager}
-                              leftSection={<IconLink size={16} />}
-                          >
-                            Связи
-                          </Button>
-                          <Button
-                              variant={"outline"}
-                              onClick={() => setReadOnly(!readOnly)}
-                              active={!readOnly}
-                              leftSection={
-                                <>
-                                  {!readOnly ? <IconEye size={16} /> :
-                                  <IconEdit size={16} />}
-                                </>
-                              }
-                          >
-                            {readOnly && 'Редактирование'}
-                            {!readOnly && 'Просмотр'}
-                          </Button>
-                        </Group>
+                    <Group p={10} justify="space-between" align="center" w="100%">
+                      <InlineEdit
+                          value={scene.title}
+                          textProps={{
+                            style: { fontSize: '1.5rem' }
+                          }}
+                          onChange={(title) => saveScene({ ...scene, title })}
+                          label=""
+                      />
+                      <Group  gap="sm">
+                        <Button
+                            variant="outline"
+                            onClick={openLinkManager}
+                            leftSection={<IconLink size={16} />}
+                        >
+                          Связи
+                        </Button>
+                        <Button
+                            variant={"outline"}
+                            onClick={() => setReadOnly(!readOnly)}
+                            active={!readOnly}
+                            leftSection={
+                              <>
+                                {!readOnly ? <IconEye size={16} /> :
+                                <IconEdit size={16} />}
+                              </>
+                            }
+                        >
+                          {readOnly && 'Редактирование'}
+                          {!readOnly && 'Просмотр'}
+                        </Button>
                       </Group>
                     </Group>
                 )}
