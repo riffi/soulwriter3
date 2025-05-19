@@ -80,7 +80,9 @@ export const CollapsedNavbar = ({
                     key={item.label}
                     onClick={(e) => {
                       e.preventDefault();
-                      navigate(item.link || '#');
+                      if (item.link){
+                        navigate(item.link || '#');
+                      }
                     }}
                 >
                   <div
@@ -93,7 +95,8 @@ export const CollapsedNavbar = ({
                   >
                     <UnstyledButton
                         className={classes.mainLink}
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.preventDefault();
                           if (item.link) navigate(item.link);
                         }}
                     >
