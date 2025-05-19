@@ -11,9 +11,10 @@ interface SceneTableProps {
   openCreateModal: (chapterId: number) => void;
   openScene: (sceneId: number) => void;
   selectedSceneId?: number;
+  mode?: 'manager' | 'split';
 }
 
-export const SceneTable = ({ openCreateModal, openScene, selectedSceneId }: SceneTableProps) => {
+export const SceneTable = ({ openCreateModal, openScene, selectedSceneId, mode }: SceneTableProps) => {
   const { scenes } = useScenes();
   const { chapters } = useChapters();
 
@@ -67,6 +68,7 @@ export const SceneTable = ({ openCreateModal, openScene, selectedSceneId }: Scen
                   onAddScene={() => openCreateModal(chapter.id)}
                   openScene={openScene}
                   selectedSceneId={selectedSceneId}
+                  mode={mode}
               />
           ))}
           {getScenesForChapter(null).map((scene, index, array) => (
@@ -77,6 +79,7 @@ export const SceneTable = ({ openCreateModal, openScene, selectedSceneId }: Scen
                   onDelete={handleDelete}
                   openScene={openScene}
                   selectedSceneId={selectedSceneId}
+                  mode={mode}
               />
           ))}
         </Table.Tbody>

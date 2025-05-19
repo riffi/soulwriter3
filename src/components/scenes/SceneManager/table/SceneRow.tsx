@@ -1,5 +1,5 @@
 // src/components/scenes/SceneManager/SceneRow.tsx
-import {ActionIcon, Box, Text, Table} from "@mantine/core";
+import {ActionIcon, Box, Text, Table, Stack} from "@mantine/core";
 import {
   IconTrash,
   IconArrowRightCircle,
@@ -20,9 +20,10 @@ interface SceneRowProps {
   scenesInChapter: Array<{ id: number }>;
   openScene: (sceneId: number) => void;
   selectedSceneId?: number;
+  mode?: 'manager' | 'split';
 }
 
-export const SceneRow = ({ scene, scenesInChapter, openScene, selectedSceneId }: SceneRowProps) => {
+export const SceneRow = ({ scene, scenesInChapter, openScene, selectedSceneId, mode }: SceneRowProps) => {
   const navigate = useNavigate();
   const [openedDeleteModal, { open: openDeleteModal, close: closeDeleteModal }] = useDisclosure(false);
   const [openedMoveModal, { open: openMoveModal, close: closeMoveModal }] = useDisclosure(false);
@@ -107,11 +108,16 @@ export const SceneRow = ({ scene, scenesInChapter, openScene, selectedSceneId }:
                 }}
                 onClick={handleClick}
             >
-              <Text
-
-              >
-                {scene.order ? `${scene.order}. ` : ''}{scene.title}
-              </Text>
+              <Stack gap={0}>
+                <Text style={{fontSize: 14, color: '#444'}}>
+                  {scene.order ? `${scene.order}. ` : ''}{scene.title}
+                </Text>
+                {mode ==='manager' &&
+                <Text style={{fontSize: 11, color: '#999'}}>
+                  Символов: {scene.totalSymbolCountWithSpaces}
+                </Text>
+                }
+              </Stack>
               <Box
                   ml="auto"
                   style={{

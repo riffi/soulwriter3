@@ -15,9 +15,10 @@ interface ChapterRowProps {
   onAddScene: () => void;
   openScene: (sceneId: number) => void;
   selectedSceneId?: number;
+  mode?: 'manager' | 'split';
 }
 
-export const ChapterRow = ({ chapter, scenes, onAddScene, openScene, selectedSceneId }: ChapterRowProps) => {
+export const ChapterRow = ({ chapter, scenes, onAddScene, openScene, selectedSceneId, mode }: ChapterRowProps) => {
   const { collapsedChapters, toggleChapterCollapse } = useBookStore();
   const isExpanded = !collapsedChapters.includes(chapter.id);
   const [openedEditModal, { open: openEditModal, close: closeEditModal }] = useDisclosure(false);
@@ -70,7 +71,7 @@ export const ChapterRow = ({ chapter, scenes, onAddScene, openScene, selectedSce
                 {isExpanded ? <IconChevronDown size={16} /> : <IconChevronRight size={16} />}
               </ActionIcon>
               {isExpanded ? <IconFolderOpen size={18} /> : <IconFolder size={18} />}
-              <span style={{ marginLeft: 8, fontWeight: 600 }}>
+              <span style={{ marginLeft: 8, fontWeight: 600, fontSize: 14 }}>
                 {chapter.order ? `${chapter.order}. ` : ''} {chapter.title}
               </span>
               <Box ml="auto" style={{ display: 'flex', gap: '8px' }}>
@@ -116,6 +117,7 @@ export const ChapterRow = ({ chapter, scenes, onAddScene, openScene, selectedSce
                         onUpdateChapter={handleDeleteScene}
                         openScene={openScene}
                         selectedSceneId={selectedSceneId}
+                        mode={mode}
                     />
                 ))}
                 </Table.Tbody>

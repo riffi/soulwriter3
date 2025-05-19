@@ -5,15 +5,13 @@ import {
   Button,
   ActionIcon,
   Tooltip,
-  LoadingOverlay,
   Box
 } from "@mantine/core";
 import {
   IconPlus,
   IconFolderOff,
   IconFolderPlus,
-  IconMaximize,
-  IconMinimize, IconArrowsMaximize, IconArrowsMinimize
+  IconArrowsMaximize, IconArrowsMinimize
 } from "@tabler/icons-react";
 import { usePageTitle } from "@/providers/PageTitleProvider/PageTitleProvider";
 import { SceneTable } from "./table/SceneTable";
@@ -237,6 +235,7 @@ export const SceneManager = (props: SceneManagerProps) => {
             }}
             openScene={props.openScene}
             selectedSceneId={props.selectedSceneId}
+            mode={props.mode}
         />
 
         <CreateSceneModal
