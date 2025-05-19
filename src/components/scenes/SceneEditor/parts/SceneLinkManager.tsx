@@ -38,6 +38,7 @@ export const SceneLinkManager = ({ sceneId, opened, onClose }: SceneLinkManagerP
     const newLink: IBlockInstanceSceneLink = {
       blockInstanceUuid,
       sceneId,
+      blockUuid: selectedBlock?.uuid!,
     };
 
     await bookDb.blockInstanceSceneLinks.add(newLink);

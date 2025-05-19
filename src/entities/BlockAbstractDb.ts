@@ -9,7 +9,7 @@ import {
 export const baseSchema={
   bookConfigurations: '++id, &uuid, title',
   configurationVersions: '++id, &uuid, configurationUuid, versionNumber, isDraft',
-  blocks: '++id, &uuid, configurationVersionUuid, parentBlockUuid, title, sceneLinkAllowed',
+  blocks: '++id, &uuid, configurationVersionUuid, parentBlockUuid, title, sceneLinkAllowed, showInSceneList',
   blockParameterGroups: '++id, &uuid, blockUuid, title',
   blockParameters: '++id, &uuid, groupUuid, blockUuid, dataType, linkedBlockUuid, linkedParameterUuid, isDefault, displayInCard',
   blockParameterPossibleValues: '++id, &uuid, parameterUuid, value',

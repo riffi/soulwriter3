@@ -57,6 +57,7 @@ export const relations: Record<TableName, Record<string, { table: TableName; fie
   },
   blockInstanceSceneLinks:{
     blockInstanceUuid: { table: 'blockInstances', field: 'uuid'},
+    blockUuid: { table: 'blocks', field: 'uuid'}
   },
   blockTabs:{
     blockUuid: { table: 'blocks', field: 'uuid' },

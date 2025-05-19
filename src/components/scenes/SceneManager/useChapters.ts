@@ -6,8 +6,7 @@ import { arrayMove } from "@dnd-kit/sortable";
 import {IChapter} from "@/entities/BookEntities";
 
 
-export const useChapters = () => {
-  const chapters = useLiveQuery(() => bookDb.chapters.orderBy("order").toArray(), []);
+export const useChapters = (chapters?: IChapter[]) => {
 
   const createChapter = async (title: string) => {
     const lastChapterOrder = await bookDb.chapters.orderBy('order').last();

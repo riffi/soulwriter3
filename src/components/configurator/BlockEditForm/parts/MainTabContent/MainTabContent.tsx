@@ -54,6 +54,14 @@ export const MainTabContent = ({ block, saveBlock }: MainTabContentProps) => {
             mb="xl"
         />
 
+        <Checkbox
+            checked={block?.showInSceneList === 1}
+            label="Отображать в списке сцен"
+            onChange={(e) => saveBlock({ ...block, showInSceneList: e.currentTarget.checked ? 1 : 0 })}
+            mt="md"
+            mb="xl"
+        />
+
         <Group gap="xs">
           <Button
               onClick={() => setDrawerOpen(true)}

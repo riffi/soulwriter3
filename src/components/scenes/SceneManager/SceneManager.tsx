@@ -24,26 +24,27 @@ import { useChapters } from "./useChapters";
 import React, {useEffect, useState} from "react";
 import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
 import {useBookStore} from "@/stores/bookStore/bookStore";
-import {IScene} from "@/entities/BookEntities";
+import {IChapter, IScene} from "@/entities/BookEntities";
 
 export interface SceneManagerProps {
   openScene: (sceneId: number) => void;
   selectedSceneId?: number | undefined;
   mode?: 'manager' | 'split';
   onToggleMode?: () => void;
+  scenes?: IScene[];
+  chapters?: IChapter[];
 }
 export const SceneManager = (props: SceneManagerProps) => {
   const { setPageTitle } = usePageTitle();
   const [openedCreateModal, { open: openCreateModal, close: closeCreateModal }] = useDisclosure(false);
   const [openedChapterModal, { open: openChapterModal, close: closeChapterModal }] = useDisclosure(false);
   const [chapterForNewScene, setChapterForNewScene] = useState<number | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
   const navigate = useNavigate();
   const { isMobile} = useMedia();
   const { collapsedChapters } = useBookStore();
-  const { chapters, createChapter } = useChapters();
+  const {  createChapter } = useChapters(props.chapters);
 
-  const { createScene, scenes} = useScenes();
+  const { createScene} = useScenes(props.scenes);
 
 
   setPageTitle('Сцены и главы');
@@ -76,7 +77,7 @@ export const SceneManager = (props: SceneManagerProps) => {
 
   const collapseAllChapters = () => {
     // Get all chapter IDs that aren't already collapsed
-    const chapterIds = chapters?.map(chapter => chapter.id) || [];
+    const chapterIds = props.chapters?.map(chapter => chapter.id) || [];
     // Add all chapters to collapsed chapters
     const store = useBookStore.getState();
     const currentCollapsed = store.collapsedChapters;
@@ -109,6 +110,7 @@ export const SceneManager = (props: SceneManagerProps) => {
             borderRadius: '5px',
             boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
             paddingTop: '20px',
+            maxWidth: isMobile || props.mode === 'manager' ? undefined : '600px',
           }}
       >
 
@@ -208,7 +210,7 @@ export const SceneManager = (props: SceneManagerProps) => {
                 <ActionIcon
                     variant="subtle"
                     onClick={collapseAllChapters}
-                    disabled={!chapters?.length}
+                    disabled={!props.chapters?.length}
                     size={isMobile ? "sm" : "md"}
                 >
                   <IconFolderOff size={isMobile ? 18 : 18} />
@@ -236,6 +238,8 @@ export const SceneManager = (props: SceneManagerProps) => {
             openScene={props.openScene}
             selectedSceneId={props.selectedSceneId}
             mode={props.mode}
+            scenes={props.scenes}
+            chapters={props.chapters}
         />
 
         <CreateSceneModal

@@ -6,25 +6,26 @@ import { EditChapterModal } from "../modals/EditChapterModal";
 import { DeleteConfirmationModal } from "../modals/DeleteConfirmationModal";
 import {useDisclosure} from "@mantine/hooks";
 import {useScenes} from "@/components/scenes/SceneManager/useScenes";
-import {IChapter, IScene} from "@/entities/BookEntities";
+import {IChapter, IScene, ISceneWithInstances} from "@/entities/BookEntities";
 import {useBookStore} from "@/stores/bookStore/bookStore";
 
 interface ChapterRowProps {
   chapter: IChapter;
-  scenes: IScene[];
+  scenes: ISceneWithInstances[];
+  chapters: IChapter[];
   onAddScene: () => void;
   openScene: (sceneId: number) => void;
   selectedSceneId?: number;
   mode?: 'manager' | 'split';
 }
 
-export const ChapterRow = ({ chapter, scenes, onAddScene, openScene, selectedSceneId, mode }: ChapterRowProps) => {
+export const ChapterRow = ({ chapter, scenes, onAddScene, openScene, selectedSceneId, mode, chapters }: ChapterRowProps) => {
   const { collapsedChapters, toggleChapterCollapse } = useBookStore();
   const isExpanded = !collapsedChapters.includes(chapter.id);
   const [openedEditModal, { open: openEditModal, close: closeEditModal }] = useDisclosure(false);
   const [openedDeleteModal, { open: openDeleteModal, close: closeDeleteModal }] = useDisclosure(false);
-  const { deleteChapter, updateChapter } = useChapters();
-  const { deleteScene } = useScenes();
+  const { deleteChapter, updateChapter } = useChapters(chapters);
+  const { deleteScene } = useScenes(scenes);
 
 
   const handleDeleteChapter = async () => {

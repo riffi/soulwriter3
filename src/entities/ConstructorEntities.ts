@@ -86,6 +86,7 @@ export interface IBlock {
   titleForms?: IBlockTitleForms
   sceneLinkAllowed: number; // Разрешено ли создавать связи со сценами
   icon?: string
+  showInSceneList: number; // Отображать ли в списке сцен
 }
 
 export interface IBlockParameterGroup{

@@ -1,5 +1,5 @@
 // src/components/scenes/SceneManager/SceneRow.tsx
-import {ActionIcon, Box, Text, Table, Stack} from "@mantine/core";
+import {ActionIcon, Box, Text, Table, Stack, Badge, Group} from "@mantine/core";
 import {
   IconTrash,
   IconArrowRightCircle,
@@ -12,22 +12,30 @@ import { DeleteConfirmationModal } from "../modals/DeleteConfirmationModal";
 import { MoveSceneModal } from "../modals/MoveSceneModal";
 import { useScenes } from "../useScenes";
 import {notifications} from "@mantine/notifications";
-import {IScene} from "@/entities/BookEntities";
+import {
+  IChapter,
+  IScene,
+  ISceneWithInstances,
+  ISceneWithInstancesBlock
+} from "@/entities/BookEntities";
 import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
+import {IconViewer} from "@/components/shared/IconViewer/IconViewer";
 
 interface SceneRowProps {
-  scene: IScene;
+  scene: ISceneWithInstances;
   scenesInChapter: Array<{ id: number }>;
   openScene: (sceneId: number) => void;
+  scenes: ISceneWithInstances[];
+  chapters: IChapter[];
   selectedSceneId?: number;
   mode?: 'manager' | 'split';
 }
 
-export const SceneRow = ({ scene, scenesInChapter, openScene, selectedSceneId, mode }: SceneRowProps) => {
+export const SceneRow = ({ scene, scenesInChapter, openScene, selectedSceneId, scenes, chapters, mode }: SceneRowProps) => {
   const navigate = useNavigate();
   const [openedDeleteModal, { open: openDeleteModal, close: closeDeleteModal }] = useDisclosure(false);
   const [openedMoveModal, { open: openMoveModal, close: closeMoveModal }] = useDisclosure(false);
-  const { recalculateGlobalOrder, reorderScenes, deleteScene } = useScenes();
+  const { recalculateGlobalOrder, reorderScenes, deleteScene } = useScenes(scenes);
   const currentIndex = scenesInChapter.findIndex(s => s.id === scene.id);
   const { hovered, ref } = useHover();
   const { isMobile } = useMedia();
@@ -112,10 +120,42 @@ export const SceneRow = ({ scene, scenesInChapter, openScene, selectedSceneId, m
                 <Text style={{fontSize: 14, color: '#444'}}>
                   {scene.order ? `${scene.order}. ` : ''}{scene.title}
                 </Text>
-                {mode ==='manager' &&
-                <Text style={{fontSize: 11, color: '#999'}}>
-                  Символов: {scene.totalSymbolCountWithSpaces}
-                </Text>
+                {mode ==='manager' && <>
+                {scene?.blockInstances.map((sceneWithInstancesBlock) => (
+                    <Group gap={5}>
+                      <IconViewer
+                          iconName={sceneWithInstancesBlock.block.icon}
+                          size={14}
+                          color={"gray"}
+                          backgroundColor={"transparent"}
+                      />
+                      <Text style={{fontSize: 12, color: '#7a7a7a'}}>
+                        {sceneWithInstancesBlock.block.titleForms?.plural}:
+                      </Text>
+
+                        {sceneWithInstancesBlock.instances.map((instance) =>(
+                            <Text
+                              key={`instance-${instance.id}`}
+                              style={{
+                                fontSize: "10px",
+                                fontWeight: 'normal',
+                                backgroundColor: '#a4a4a4',
+                                padding: '0px 3px',
+                                borderRadius: '3px',
+                                margin: '0px',
+                                color: '#fff'
+                              }}
+                            >
+                              {instance.title}
+                            </Text>
+                        ))}
+                    </Group>
+                  ))}
+
+                  <Text style={{fontSize: 11, color: '#999'}}>
+                    Символов: {scene.totalSymbolCountWithSpaces}
+                  </Text>
+                </>
                 }
               </Stack>
               <Box

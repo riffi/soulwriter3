@@ -5,12 +5,14 @@ import { Box } from "@mantine/core";
 import {SceneEditor} from "@/components/scenes/SceneEditor/SceneEditor";
 import {SceneManager} from "@/components/scenes/SceneManager/SceneManager";
 import {useState} from "react";
+import {useSceneLayout} from "@/components/scenes/SceneLayout/hooks/useSceneLayout";
 
 export const SceneLayout = () => {
   const { isMobile } = useMedia();
   const navigate = useNavigate();
   const [sceneId, setSceneId] = useState<number | undefined>();
   const [mode, setMode] = useState<'manager' | 'split'>('split');
+  const {scenes, chapters} = useSceneLayout()
 
   const openScene = (sceneId: number) => {
     if (isMobile) {
@@ -26,7 +28,13 @@ export const SceneLayout = () => {
   };
 
   if (isMobile) {
-    return sceneId ? <SceneEditor sceneId={sceneId} /> : <SceneManager openScene={openScene}/>;
+    return sceneId ? <SceneEditor sceneId={sceneId} /> :
+        <SceneManager
+          openScene={openScene}
+          mode="manager"
+          scenes={scenes}
+          chapters={chapters}
+        />;
   }
 
   if (mode === 'manager') {
@@ -37,6 +45,8 @@ export const SceneLayout = () => {
               selectedSceneId={sceneId}
               mode={mode}
               onToggleMode={toggleMode}
+              scenes={scenes}
+              chapters={chapters}
           />
         </Box>
     );
@@ -58,6 +68,8 @@ export const SceneLayout = () => {
                 selectedSceneId={sceneId}
                 mode={mode}
                 onToggleMode={toggleMode}
+                scenes={scenes}
+                chapters={chapters}
             />
           </Box>
         </Box>

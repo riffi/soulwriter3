@@ -1,4 +1,4 @@
-import {BlockRelationType} from "@/entities/ConstructorEntities";
+import {BlockRelationType, IBlock} from "@/entities/ConstructorEntities";
 
 export interface IBook {
   id?: number;
@@ -22,6 +22,7 @@ export interface IBlockInstanceSceneLink{
   id?: number
   uuid?: string
   blockInstanceUuid: string
+  blockUuid: string
   sceneId: number
 }
 
@@ -42,6 +43,14 @@ export interface IScene{
   chapterId?: number;
   totalSymbolCountWithSpaces?: number;
   totalSymbolCountWoSpaces?: number;
+}
+
+export interface ISceneWithInstancesBlock{
+  block: IBlock,
+  instances: IBlockInstance[]
+}
+export interface ISceneWithInstances extends IScene{
+  blockInstances: ISceneWithInstancesBlock[]
 }
 
 
