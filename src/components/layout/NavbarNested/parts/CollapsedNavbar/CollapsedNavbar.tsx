@@ -11,7 +11,7 @@ import { useNavigate } from 'react-router-dom';
 import classes from './CollapsedNavbar.module.css';
 
 import {NavLinkGroup} from "@/components/layout/NavbarNested/NavbarNested";
-import {LogoCollapsed} from "@/components/layout/NavbarNested/LogoCollapsed";
+import {LogoCollapsed} from "@/components/layout/NavbarNested/parts/logo/LogoCollapsed";
 import {IconViewer} from "@/components/shared/IconViewer/IconViewer";
 
 export const CollapsedNavbar = ({

@@ -16,7 +16,7 @@ import {NavLinkGroup} from "@/components/layout/NavbarNested/NavbarNested";
 import {useNavigate} from "react-router-dom";
 import {useMemo, useState} from "react";
 import {IconViewer} from "@/components/shared/IconViewer/IconViewer";
-import {Logo} from "@/components/layout/NavbarNested/Logo";
+import {Logo} from "@/components/layout/NavbarNested/parts/logo/Logo";
 import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
 
 
