@@ -8,7 +8,7 @@
   border-right: 1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
 }
 
-.navbar-collapsed {
+.navbar-collapsed  {
   background-color: light-dark(var(--mantine-color-white), var(--mantine-color-dark-6));
   padding: var(--mantine-spacing-md);
   max-height: calc(100dvh - 100px);
@@ -18,84 +18,9 @@
   border-right: 1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
 }
 
-.header {
-  padding: var(--mantine-spacing-md);
-  padding-top: 0;
-  margin-left: calc(var(--mantine-spacing-md) * -1);
-  margin-right: calc(var(--mantine-spacing-md) * -1);
-  color: light-dark(var(--mantine-color-black), var(--mantine-color-white));
-  border-bottom: 1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
-}
-
-.links {
-  flex: 1;
-  margin-left: calc(var(--mantine-spacing-md) * -1);
-  margin-right: calc(var(--mantine-spacing-md) * -1);
-}
-
-.linksInner {
-}
-
-.footer {
-  margin-left: calc(var(--mantine-spacing-md) * -1);
-  margin-right: calc(var(--mantine-spacing-md) * -1);
-  border-top: 1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
-}
-
-.control {
-  font-weight: 500;
-  display: block;
-  width: 100%;
-  padding: var(--mantine-spacing-xs) var(--mantine-spacing-md);
-  color: var(--mantine-color-text);
-  font-size: var(--mantine-font-size-sm);
-
-  @mixin hover {
-    background-color: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-7));
-    color: light-dark(var(--mantine-color-black), var(--mantine-color-dark-0));
-  }
-}
-
-.link {
-  display: block;
-  font-weight: 500;
-  text-decoration: none;
-  text-transform: Capitalize;
-  padding: var(--mantine-spacing-xs) var(--mantine-spacing-md);
-  padding-left: var(--mantine-spacing-md);
-  margin-left: var(--mantine-spacing-xl);
-  font-size: var(--mantine-font-size-sm);
-  color: light-dark(var(--mantine-color-gray-7), var(--mantine-color-dark-0));
-  border-left: 1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
-
-  @mixin hover {
-    background-color: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-7));
-    color: light-dark(var(--mantine-color-black), var(--mantine-color-dark-0));
-  }
-}
-
-.chevron {
-  transition: transform 200ms ease;
-}
-
-.baseControl {
-  --button-hover: var(--mantine-color-blue-0);
-
-  display: block;
-  width: 100%;
-  padding: var(--mantine-spacing-xs) var(--mantine-spacing-md);
-  color: var(--mantine-color-blue-7);
-  font-size: var(--mantine-font-size-sm);
-  border-left: 2px solid var(--mantine-color-blue-5);
-
-  &:hover {
-    background-color: var(--button-hover);
-  }
-}
-/* Добавляем стили из DoubleNavbar */
 .wrapper {
   height: 100%;
-  overflow: visible; /* Отключаем обрезку содержимого */
+  overflow: visible;
 }
 
 .aside {
@@ -106,7 +31,7 @@
   align-items: center;
   border-right: 1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-7));
   height: 100%;
-  overflow-y: auto; /* Добавляем прокрутку если нужно */
+  overflow-y: auto;
 }
 
 .main {
@@ -143,26 +68,23 @@
   margin-top: 10px;
 }
 
-.popoverLink{
+.popoverLink {
   cursor: pointer;
   padding: 5px;
+
   &:hover {
     background-color: light-dark(var(--mantine-color-gray-1), var(--mantine-color-dark-5));
     color: light-dark(var(--mantine-color-dark), var(--mantine-color-light));
   }
 }
 
-.popoverLinkText{
+.popoverLinkText {
   display: block;
   text-decoration: none;
   text-transform: Capitalize;
-
   color: light-dark(var(--mantine-color-gray-7), var(--mantine-color-dark-0));
-
   font-size: var(--mantine-font-size-sm);
   font-weight: 500;
-
-
 }
 
 .menuItemContainer {
@@ -182,4 +104,3 @@
   border-top-right-radius: var(--mantine-radius-md);
   border-bottom-right-radius: var(--mantine-radius-md);
 }
-

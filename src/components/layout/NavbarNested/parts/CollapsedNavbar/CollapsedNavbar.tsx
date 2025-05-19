@@ -1,20 +1,6 @@
-// CollapsedNavbar.tsx
+
 import {
-  IconBooks,
-  IconBrandDatabricks,
-  IconGauge,
-  IconNotes,
-  IconChevronRight,
-  IconSettings,
-  IconCell,
-  IconBox,
-  IconDatabaseCog,
-  IconDashboard
-} from '@tabler/icons-react';
-import {
-  Box,
   Group,
-  Text,
   UnstyledButton,
   Burger,
   Title,
@@ -22,8 +8,8 @@ import {
 } from '@mantine/core';
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import classes from '../NavbarNested.module.css';
-import {Logo} from "@/components/layout/NavbarNested/Logo";
+import classes from './CollapsedNavbar.module.css';
+
 import {NavLinkGroup} from "@/components/layout/NavbarNested/NavbarNested";
 import {LogoCollapsed} from "@/components/layout/NavbarNested/LogoCollapsed";
 import {IconViewer} from "@/components/shared/IconViewer/IconViewer";
@@ -135,18 +121,6 @@ export const CollapsedNavbar = ({
                                   {link.label}
                                 </div>
                               </Group>
-                              // <a
-                              //     className={classes.popoverLink}
-                              //     href={link.link}
-                              //     key={link.label}
-                              //     onClick={(e) => {
-                              //       e.preventDefault();
-                              //       e.stopPropagation();
-                              //       navigate(link.link);
-                              //     }}
-                              // >
-                              //   {link.label}
-                              // </a>
                           ))}
                         </div>
                     )}

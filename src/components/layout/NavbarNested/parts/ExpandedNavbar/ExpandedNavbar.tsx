@@ -9,8 +9,8 @@ import {
 } from '@mantine/core';
 import { useBookStore } from '@/stores/bookStore/bookStore';
 import {IconBooks, IconChevronRight} from '@tabler/icons-react';
-import classes from '../NavbarNested.module.css';
-import config from '../../../../../package.json';
+import classes from './ExpandedNavbar.module.css';
+import config from '../../../../../../package.json';
 import {UserButton} from "@/components/layout/UserButton/UserButton";
 import {NavLinkGroup} from "@/components/layout/NavbarNested/NavbarNested";
 import {useNavigate} from "react-router-dom";

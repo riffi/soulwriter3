@@ -10,8 +10,8 @@ import {
   IconDashboard, IconDatabaseCog,
   IconNotes
 } from "@tabler/icons-react";
-import {CollapsedNavbar} from "@/components/layout/NavbarNested/parts/CollapsedNavbar";
-import {ExpandedNavbar} from "@/components/layout/NavbarNested/parts/ExpandedNavbar";
+import {CollapsedNavbar} from "@/components/layout/NavbarNested/parts/CollapsedNavbar/CollapsedNavbar";
+import {ExpandedNavbar} from "@/components/layout/NavbarNested/parts/ExpandedNavbar/ExpandedNavbar";
 
 export interface NavLinkItem {
   label: string;
