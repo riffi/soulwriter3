@@ -36,7 +36,7 @@ const TOCItemComponent: React.FC<{
             leftSection={<IconLibrary size={16} color={isActive ? "#228be6" : "#495057"} />}
             className={isActive ? styles.activeItem : ''}
             fw={500}
-            styles={{ root: { padding: '4px 8px' } }}
+            styles={{ root: { padding: '8px 8px' } }}
         >
           <div className={styles.tocNestedItem}>
             {item.children?.map(child => (
@@ -63,7 +63,7 @@ const TOCItemComponent: React.FC<{
           size="sm"
           className={isActive ? styles.activeItem : ''}
           leftSection={<IconBookmark size={12} color={isActive ? "#228be6" : "#868e96"} />}
-          styles={{ root: { padding: '2px 8px' } }}
+          styles={{ root: { padding: '6px 8px' } }}
       />
   );
 };
