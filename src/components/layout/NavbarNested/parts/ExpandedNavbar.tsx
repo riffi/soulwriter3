@@ -17,6 +17,7 @@ import {useNavigate} from "react-router-dom";
 import {useMemo, useState} from "react";
 import {IconViewer} from "@/components/shared/IconViewer/IconViewer";
 import {Logo} from "@/components/layout/NavbarNested/Logo";
+import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
 
 
 interface NavLinkProps extends NavLinkGroup {
@@ -35,11 +36,15 @@ const NavLink = ({
   const navigate = useNavigate();
   const [opened, setOpened] = useState(initiallyOpened);
   const hasLinks = links && links.length > 0;
+  const {isMobile} = useMedia()
 
   const handleClick = () => {
     if (link) {
       navigate(link);
-      toggleNavbar?.();
+      if (isMobile){
+        toggleNavbar?.();
+      }
+
     } else if (hasLinks) {
       setOpened((prev) => !prev);
     }
@@ -57,7 +62,9 @@ const NavLink = ({
                 onClick={(e) => {
                   e.preventDefault();
                   navigate(item.link || '#');
-                  toggleNavbar?.();
+                  if (isMobile){
+                    toggleNavbar?.();
+                  }
                 }}
             >
               <Group justify="flex-start" gap={0}>
