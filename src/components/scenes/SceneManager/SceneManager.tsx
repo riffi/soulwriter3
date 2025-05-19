@@ -8,7 +8,13 @@ import {
   LoadingOverlay,
   Box
 } from "@mantine/core";
-import { IconPlus, IconFolderOff, IconFolderPlus } from "@tabler/icons-react";
+import {
+  IconPlus,
+  IconFolderOff,
+  IconFolderPlus,
+  IconMaximize,
+  IconMinimize
+} from "@tabler/icons-react";
 import { usePageTitle } from "@/providers/PageTitleProvider/PageTitleProvider";
 import { SceneTable } from "./table/SceneTable";
 import { useDisclosure } from "@mantine/hooks";
@@ -17,7 +23,7 @@ import { CreateChapterModal } from "./modals/CreateChapterModal";
 import { useNavigate } from "react-router-dom";
 import { useScenes } from "./useScenes";
 import { useChapters } from "./useChapters";
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
 import {useBookStore} from "@/stores/bookStore/bookStore";
 import {IScene} from "@/entities/BookEntities";
@@ -25,19 +31,22 @@ import {IScene} from "@/entities/BookEntities";
 export interface SceneManagerProps {
   openScene: (sceneId: number) => void;
   selectedSceneId?: number | undefined;
+  mode?: 'manager' | 'split';
+  onToggleMode?: () => void;
 }
 export const SceneManager = (props: SceneManagerProps) => {
   const { setPageTitle } = usePageTitle();
   const [openedCreateModal, { open: openCreateModal, close: closeCreateModal }] = useDisclosure(false);
   const [openedChapterModal, { open: openChapterModal, close: closeChapterModal }] = useDisclosure(false);
   const [chapterForNewScene, setChapterForNewScene] = useState<number | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
   const navigate = useNavigate();
   const { isMobile} = useMedia();
   const { collapsedChapters } = useBookStore();
-  const { chapters } = useChapters();
+  const { chapters, createChapter } = useChapters();
 
-  const { createScene, scenes } = useScenes();
-  const { createChapter } = useChapters();
+  const { createScene, scenes} = useScenes();
+
 
   setPageTitle('Сцены и главы');
 
@@ -92,15 +101,7 @@ export const SceneManager = (props: SceneManagerProps) => {
       store.toggleChapterCollapse(id);
     });
   };
-  if (!scenes || !chapters) return (
-      <LoadingOverlay
-          zIndex={1000}
-          visible={true}
-          overlayProps={{ radius: 'sm', blur: 2 }}
-          loaderProps={{ color: 'blue', type: 'bars' }}
-          style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0}}
-      />
-  );
+
   return (
       <Container
           fluid={isMobile}
@@ -112,6 +113,7 @@ export const SceneManager = (props: SceneManagerProps) => {
             paddingTop: '20px',
           }}
       >
+
         <Box
             style={{
               position: 'sticky',
@@ -173,6 +175,21 @@ export const SceneManager = (props: SceneManagerProps) => {
                   >
                     Новая сцена
                   </Button>
+                  {!isMobile && (
+                      <Tooltip label={props.mode === 'split' ? "Развернуть редактор" : "Свернуть редактор"}>
+                        <ActionIcon
+                            variant="subtle"
+                            onClick={props.onToggleMode}
+                            size="md"
+                        >
+                          {props.mode === 'manager' ? (
+                              <IconMaximize size={18} />
+                          ) : (
+                              <IconMinimize size={18} />
+                          )}
+                        </ActionIcon>
+                      </Tooltip>
+                  )}
                 </Group>
             )}
           </Group>

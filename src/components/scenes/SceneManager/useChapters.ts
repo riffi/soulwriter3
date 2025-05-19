@@ -7,10 +7,7 @@ import {IChapter} from "@/entities/BookEntities";
 
 
 export const useChapters = () => {
-  const chapters = useLiveQuery(async () => {
-    const chapters = await bookDb.chapters.toArray();
-    return chapters.sort((a, b) => (a.order || 0) - (b.order || 0));
-  }, []);
+  const chapters = useLiveQuery(() => bookDb.chapters.orderBy("order").toArray(), []);
 
   const createChapter = async (title: string) => {
     const lastChapterOrder = await bookDb.chapters.orderBy('order').last();

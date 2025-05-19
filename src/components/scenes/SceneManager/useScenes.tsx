@@ -6,10 +6,7 @@ import { notifications } from "@mantine/notifications";
 import {arrayMove} from "@dnd-kit/sortable";
 
 export const useScenes = () => {
-  const scenes = useLiveQuery(async () => {
-    const scenes = await bookDb.scenes.toArray();
-    return scenes.sort((a, b) => (a.order || 0) - (b.order || 0));
-  }, []);
+  const scenes = useLiveQuery(() => bookDb.scenes.orderBy("order").toArray(), []);
 
   const createScene = async (title: string, chapterId?: number) => {
     const newScene: IScene = {

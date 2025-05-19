@@ -1,9 +1,11 @@
-import { Table, Text, Paper, Center, Group } from "@mantine/core";
+import {Table, Text, Paper, Center, Group, LoadingOverlay} from "@mantine/core";
 import { IconPlus } from "@tabler/icons-react";
 import { useScenes } from "../useScenes";
 import { useChapters } from "../useChapters";
 import { ChapterRow } from "./ChapterRow";
 import { SceneRow } from "./SceneRow";
+import React from "react";
+import {IChapter, IScene} from "@/entities/BookEntities";
 
 interface SceneTableProps {
   openCreateModal: (chapterId: number) => void;
@@ -20,6 +22,16 @@ export const SceneTable = ({ openCreateModal, openScene, selectedSceneId }: Scen
         chapterId ? scene.chapterId === chapterId : ((scene.chapterId === null) || (scene.chapterId === undefined))
     ) || [];
   };
+
+  if (!scenes || !chapters)  return (
+      <LoadingOverlay
+          zIndex={1000}
+          visible={true}
+          overlayProps={{ radius: 'sm', blur: 2 }}
+          loaderProps={{ color: 'blue', type: 'bars' }}
+          style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0}}
+      />
+  )
 
   if (!scenes?.length && !chapters?.length) {
     return (

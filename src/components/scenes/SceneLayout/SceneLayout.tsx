@@ -10,29 +10,43 @@ export const SceneLayout = () => {
   const { isMobile } = useMedia();
   const navigate = useNavigate();
   const [sceneId, setSceneId] = useState<number | undefined>();
+  const [mode, setMode] = useState<'manager' | 'split'>('split');
 
   const openScene = (sceneId: number) => {
     if (isMobile) {
       navigate(`/scene/card?id=${sceneId}`);
     } else {
       setSceneId(sceneId);
+      setMode('split');
     }
-  }
+  };
+
+  const toggleMode = () => {
+    setMode(prev => prev === 'manager' ? 'split' : 'manager');
+  };
 
   if (isMobile) {
     return sceneId ? <SceneEditor sceneId={sceneId} /> : <SceneManager openScene={openScene}/>;
   }
 
-
+  if (mode === 'manager') {
+    return (
+        <Box>
+          <SceneManager
+              openScene={openScene}
+              selectedSceneId={sceneId}
+              mode={mode}
+              onToggleMode={toggleMode}
+          />
+        </Box>
+    );
+  }
 
   return (
-      <Box display="flex" style={{
-      }}>
+      <Box display="flex">
         <Box style={{
           width: "500px",
           flexShrink: 0,
-
-
         }}>
           <Box style={{
             maxHeight: "calc(100vh - 50px)",
@@ -42,6 +56,8 @@ export const SceneLayout = () => {
             <SceneManager
                 openScene={openScene}
                 selectedSceneId={sceneId}
+                mode={mode}
+                onToggleMode={toggleMode}
             />
           </Box>
         </Box>

@@ -3,7 +3,7 @@ import {
   IBlockInstance,
   IBlockInstanceRelation, IBlockInstanceSceneLink,
   IBlockParameterInstance,
-  IBook,
+  IBook, IChapter,
   IScene
 } from "@/entities/BookEntities";
 import {baseSchema, BlockAbstractDb} from "@/entities/BlockAbstractDb";
@@ -23,7 +23,7 @@ const bookSchema={
 export class BookDB extends BlockAbstractDb{
   scenes!: Dexie.Table<IScene, number>;
   books!: Dexie.Table<IBook, number>;
-  chapters!: Dexie.Table<IScene, number>;
+  chapters!: Dexie.Table<IChapter, number>;
 
   blockInstanceRelations!: Dexie.Table<IBlockInstanceRelation, number>;
   blockInstances!: Dexie.Table<IBlockInstance, number>;
