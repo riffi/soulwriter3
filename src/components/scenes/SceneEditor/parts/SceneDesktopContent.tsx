@@ -1,15 +1,15 @@
-import {Box, Button, Container, Flex, Group, Paper, Text} from "@mantine/core";
+import {ActionIcon, Box, Button, Container, Flex, Group, Paper, Text} from "@mantine/core";
 import { RichEditor } from "@/components/shared/RichEditor/RichEditor";
 import { WarningsPanel } from "@/components/scenes/SceneEditor/parts/WarningsPanel/WarningsPanel";
 import { SceneStatusPanel } from "@/components/scenes/SceneEditor/parts/SceneStatusPanel";
 import type { IWarningGroup } from "@/components/shared/RichEditor/types";
 import {IScene} from "@/entities/BookEntities";
 import {useHeaderVisibility} from "@/components/scenes/SceneEditor/hooks/useHeaderVisibility";
-import {IconArrowLeft, IconLink, IconEdit, IconEye} from "@tabler/icons-react";
+import {IconArrowLeft, IconLink, IconEdit, IconEye, IconArrowUp} from "@tabler/icons-react";
 import {InlineEdit} from "@/components/shared/InlineEdit/InlineEdit";
 import {SceneLinkManager} from "@/components/scenes/SceneEditor/parts/SceneLinkManager";
-import {useDisclosure} from "@mantine/hooks";
-import {useState} from "react";
+import {useDisclosure, useWindowScroll} from "@mantine/hooks";
+import {useEffect, useState} from "react";
 
 interface SceneDesktopContentProps {
   scene: IScene;
@@ -38,6 +38,17 @@ export const SceneDesktopContent = ({
   const { isHeaderVisible, handleEditorScroll } = useHeaderVisibility();
   const [linkManagerOpened, { open: openLinkManager, close: closeLinkManager }] = useDisclosure(false);
   const [readOnly, setReadOnly] = useState(true);
+  const [scroll, scrollTo] = useWindowScroll();
+  const [showScrollButton, setShowScrollButton] = useState(false);
+
+  useEffect(() => {
+    const showButton = scroll.y > 300;
+    setShowScrollButton(showButton);
+  }, [scroll.y]);
+
+  const scrollToTop = () => {
+    scrollTo({ y: 0, x: 0 });
+  };
 
   return (
     <Container size="xl" p="0" fluid >
@@ -153,6 +164,29 @@ export const SceneDesktopContent = ({
           opened={linkManagerOpened}
           onClose={closeLinkManager}
       />
+      {showScrollButton && (
+          <ActionIcon
+              onClick={scrollToTop}
+              variant="filled"
+              color="blue"
+              radius="xl"
+              size="xl"
+              aria-label="Scroll to top"
+              style={{
+                position: 'fixed',
+                bottom: 40,
+                right: 20,
+                opacity: 0.5,
+                transition: 'opacity 0.3s ease-in-out',
+                ':hover': {
+                  opacity: 1,
+                  backgroundColor: '#1e73be',
+                }
+              }}
+          >
+            <IconArrowUp size={20} />
+          </ActionIcon>
+      )}
     </Container>
 )}
 
