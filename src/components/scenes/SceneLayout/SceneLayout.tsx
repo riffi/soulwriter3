@@ -4,21 +4,33 @@ import {useLocation, useNavigate} from "react-router-dom";
 import {Box, LoadingOverlay, ActionIcon} from "@mantine/core";
 import {SceneEditor} from "@/components/scenes/SceneEditor/SceneEditor";
 import {SceneManager} from "@/components/scenes/SceneManager/SceneManager";
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import {useSceneLayout} from "@/components/scenes/SceneLayout/hooks/useSceneLayout";
 import {
   IconChevronRight,
-  IconLayoutSidebarLeftCollapse,
-  IconLayoutSidebarRightCollapse
 } from "@tabler/icons-react";
+import {useLiveQuery} from "dexie-react-hooks";
 
 export const SceneLayout = () => {
   const { isMobile } = useMedia();
   const navigate = useNavigate();
   const [sceneId, setSceneId] = useState<number | undefined>();
   const [mode, setMode] = useState<'manager' | 'split'>('split');
-  const {scenes, chapters} = useSceneLayout()
-  const loading = !scenes || !chapters
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const {scenes, chapters, getScenesWithBlockInstances} = useSceneLayout()
+
+  // Добавляем к сценам привязки к экземплярам блоков
+  const scenesWithBlockInstances = useLiveQuery(() =>
+          getScenesWithBlockInstances(scenes),
+      [scenes]
+  );
+
+  useEffect(() => {
+    const isLoading = !scenes || !scenesWithBlockInstances || !chapters
+    setIsLoading(isLoading)
+  }, [scenes, scenesWithBlockInstances, chapters])
+
+
 
   const openScene = (sceneId: number) => {
     if (isMobile) {
@@ -38,7 +50,7 @@ export const SceneLayout = () => {
         <SceneManager
             openScene={openScene}
             mode="manager"
-            scenes={scenes}
+            scenes={scenesWithBlockInstances}
             chapters={chapters}
         />;
   }
@@ -51,7 +63,7 @@ export const SceneLayout = () => {
               selectedSceneId={sceneId}
               mode={mode}
               onToggleMode={toggleMode}
-              scenes={scenes}
+              scenes={scenesWithBlockInstances}
               chapters={chapters}
           />
         </Box>
@@ -61,7 +73,7 @@ export const SceneLayout = () => {
   return (
       <Box display="flex">
         <LoadingOverlay
-            visible={loading}
+            visible={isLoading}
             zIndex={1000}
             overlayProps={{ radius: 'sm', blur: 2 }}
             loaderProps={{ color: 'blue', type: 'bars' }}
@@ -82,7 +94,7 @@ export const SceneLayout = () => {
                 selectedSceneId={sceneId}
                 mode={mode}
                 onToggleMode={toggleMode}
-                scenes={scenes}
+                scenes={scenesWithBlockInstances}
                 chapters={chapters}
             />
           </Box>

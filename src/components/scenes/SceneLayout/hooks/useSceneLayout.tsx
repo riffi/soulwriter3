@@ -1,12 +1,61 @@
 import {useLiveQuery} from "dexie-react-hooks";
 import {bookDb} from "@/entities/bookDb";
+import {IBlock} from "@/entities/ConstructorEntities";
+import {IScene, ISceneWithInstances} from "@/entities/BookEntities";
 
 export const useSceneLayout = () => {
   const scenes = useLiveQuery(() => bookDb.scenes.orderBy("order").toArray(), [])
   const chapters = useLiveQuery(() => bookDb.chapters.orderBy("order").toArray(), [])
 
+  const getLinkedBlockInstances = async (sceneId: number) => {
+    const links = await bookDb.blockInstanceSceneLinks
+    .where('sceneId')
+    .equals(sceneId)
+    .toArray();
+
+    const blockUuids = Array.from(new Set(links.map(l => l.blockUuid)));
+    const instanceUuids = links.map(l => l.blockInstanceUuid);
+
+    const [blocks, instances] = await Promise.all([
+      Promise.all(blockUuids.map(uuid =>
+          bookDb.blocks.where('uuid').equals(uuid).first()
+      )),
+      Promise.all(instanceUuids.map(uuid =>
+          bookDb.blockInstances.where('uuid').equals(uuid).toArray()
+      )).then(arr => arr.flat())
+    ]);
+
+    // Фильтруем блоки по showInSceneList === 1
+    const filteredBlocks = blocks.filter((b): b is IBlock =>
+        !!b && b.showInSceneList === 1
+    );
+
+    const result = filteredBlocks.map(block => ({
+      block,
+      instances: instances.filter(instance =>
+          links.some(l =>
+              l.blockUuid === block.uuid &&
+              l.blockInstanceUuid === instance.uuid
+          )
+      )
+    }));
+
+    return result.filter(group => group.instances.length > 0);
+  };
+
+  const getScenesWithBlockInstances = async (scenesToShow?: IScene[]): Promise<ISceneWithInstances[]> => {
+    if (!scenesToShow) return [];
+    return Promise.all(
+        scenesToShow?.map(async (scene) => ({
+          ...scene,
+          blockInstances: await getLinkedBlockInstances(scene.id!),
+        }))
+    );
+  };
+
   return {
     scenes,
-    chapters
+    chapters,
+    getScenesWithBlockInstances
   }
 }

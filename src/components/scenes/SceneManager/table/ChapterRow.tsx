@@ -119,6 +119,8 @@ export const ChapterRow = ({ chapter, scenes, onAddScene, openScene, selectedSce
                         openScene={openScene}
                         selectedSceneId={selectedSceneId}
                         mode={mode}
+                        chapters={chapters}
+                        scenes={scenes}
                     />
                 ))}
                 </Table.Tbody>
