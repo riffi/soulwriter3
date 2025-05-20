@@ -16,6 +16,7 @@ import {NavigationHistory} from "@/pages/tech/DbViewer/parts/NavigationHistory";
 import {DataTable} from "@/pages/tech/DbViewer/parts/DataTable/DataTable";
 import {TableList} from "@/pages/tech/DbViewer/parts/TableList";
 import {HistoryEntry, relations, TableData} from "@/pages/tech/DbViewer/types";
+import {useLiveQuery} from "dexie-react-hooks";
 
 type TableName = keyof typeof bookDb | keyof typeof configDatabase;
 export type Filters = Record<string, string>;
@@ -23,8 +24,6 @@ export type Filters = Record<string, string>;
 
 export const DbViewer = () => {
   const [activeTab, setActiveTab] = useState<'book' | 'config'>('book');
-  const [bookTables, setBookTables] = useState<TableData[]>([]);
-  const [configTables, setConfigTables] = useState<TableData[]>([]);
   const [selectedTable, setSelectedTable] = useState<TableData | null>(null);
   const [loading, setLoading] = useState(false);
   const [history, setHistory] = useState<HistoryEntry[]>([]);
@@ -45,10 +44,6 @@ export const DbViewer = () => {
     setFilters({});
   };
 
-  useEffect(() => {
-    loadTableList('book');
-    loadTableList('config');
-  }, []);
 
   const handleTabChange = (tab: 'book' | 'config') => {
     setActiveTab(tab);
@@ -57,22 +52,22 @@ export const DbViewer = () => {
     setCurrentFilter(null);
   };
 
-  const loadTableList = async (dbType: 'book' | 'config') => {
-    setLoading(true);
-    try {
-      const db = dbType === 'book' ? bookDb : configDatabase;
-      const tables = await Promise.all(
-          db.tables.map(async (table) => ({
-            name: table.name,
-            data: await table.toArray()
-          }))
-      );
-
-      dbType === 'book' ? setBookTables(tables) : setConfigTables(tables);
-    } finally {
-      setLoading(false);
-    }
+  const loadTables = async (db: typeof bookDb | typeof configDatabase) => {
+    return Promise.all(
+        db.tables.map(async (table) => ({
+          name: table.name,
+          data: await table.orderBy(':id').toArray() // Добавляем сортировку для триггера реактивности
+        }))
+    );
   };
+
+  const bookTables = useLiveQuery(async () => {
+    return loadTables(bookDb);
+  }, [activeTab]) || [];
+
+  const configTables = useLiveQuery(async () => {
+    return loadTables(configDatabase);
+  }, [activeTab]) || [];
 
   const handleTableClick = (table: TableData) => {
     setHistory([{ table }]);
@@ -145,8 +140,7 @@ export const DbViewer = () => {
     try {
       const db = activeTab === 'book' ? bookDb : configDatabase;
       await db[tableName].delete(id);
-      // Обновляем список таблиц
-      await loadTableList(activeTab);
+      await db[tableName].toArray();
     } finally {
       setLoading(false);
     }
@@ -158,7 +152,7 @@ export const DbViewer = () => {
       const db = activeTab === 'book' ? bookDb : configDatabase;
       // Предполагаем, что у таблиц есть метод update
       await db[tableName].update(id, { [field]: newValue });
-      await loadTableList(activeTab);
+      await db[tableName].toArray();
     } finally {
       setLoading(false);
     }

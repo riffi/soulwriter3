@@ -41,33 +41,27 @@ export const DataTable = ({
                           }: DataTableProps) => {
   const [showFilters, setShowFilters] = useState(false);
 
-  const allKeys = useMemo(() => {
-    const keys = Array.from(new Set(table.data.flatMap(Object.keys)));
-    return keys.sort((a, b) => {
-      const aIndex = PRIORITY_FIELDS.indexOf(a);
-      const bIndex = PRIORITY_FIELDS.indexOf(b);
+  const allKeys = Array.from(new Set(table.data.flatMap(Object.keys))).sort((a, b) => {
+    const aIndex = PRIORITY_FIELDS.indexOf(a);
+    const bIndex = PRIORITY_FIELDS.indexOf(b);
 
-      if (aIndex === -1 && bIndex === -1) return a.localeCompare(b);
-      if (aIndex === -1) return 1;
-      if (bIndex === -1) return -1;
-      return aIndex - bIndex;
-    });
-  }, [table.data]);
+    if (aIndex === -1 && bIndex === -1) return a.localeCompare(b);
+    if (aIndex === -1) return 1;
+    if (bIndex === -1) return -1;
+    return aIndex - bIndex;
+  });
 
-  const filteredData = useMemo(() => {
-    return table.data.filter(item =>
-        Object.entries(filters).every(([field, value]) =>
-            String(item[field]).toLowerCase().includes(value.toLowerCase())
-        )
-    );
-  }, [table.data, filters]);
+  // Заменяем useMemo на прямой расчет для filteredData
+  const filteredData = table.data.filter(item =>
+      Object.entries(filters).every(([field, value]) =>
+          String(item[field]).toLowerCase().includes(value.toLowerCase())
+      ));
 
-  const filterOptions = useMemo(() => {
-    return allKeys.reduce((acc, key) => {
-      acc[key] = Array.from(new Set(table.data.map(item => String(item[key])))).sort();
-      return acc;
-    }, {} as Record<string, string[]>);
-  }, [table.data, allKeys]);
+  // Обновляем filterOptions без мемоизации
+  const filterOptions = allKeys.reduce((acc, key) => {
+    acc[key] = [...new Set(table.data.map(item => String(item[key])))].sort();
+    return acc;
+  }, {} as Record<string, string[]>);
 
   return (
       <Box mb="xl" p="lg" bg="white">
