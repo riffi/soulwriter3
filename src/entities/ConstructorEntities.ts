@@ -47,44 +47,44 @@ export enum IBlockDisplayKindTitle{
 export interface IBookConfiguration{
   id?: number
   uuid?: string; // Автогенерация UUID
-  title: string;
-  description: string;
+  title: string; // Название конфигурации
+  description: string; // Описание конфигурации
 }
 
 
 export interface IBlockTitleForms{
-  nominative : string;
-  genitive: string;
-  dative: string;
-  accusative: string;
-  instrumental: string;
-  prepositional: string;
-  plural: string;
+  nominative : string; // Именительный
+  genitive: string; // Родительный
+  dative: string; // Дательный
+  accusative: string; // Винительный
+  instrumental: string; // Творительный
+  prepositional: string; // Предложный
+  plural: string; // Множественное число
 }
 
 // Строительный блок
 export interface IBlock {
   id?: number
   uuid?: string; // Автогенерация UUID
-  title: string;
-  configurationUuid: string;
-  description: string;
+  title: string; // Название блока
+  configurationUuid: string; // Ссылка на конфигурацию
+  description: string; // Описание блока
   useTabs: number; // Использовать вкладки
   structureKind: string // Вид структуры
   displayKind: string // Вид отображения
   parentBlockUuid?: string; // Ссылка на родительский блок
-  titleForms?: IBlockTitleForms
+  titleForms?: IBlockTitleForms // Формы названия
   sceneLinkAllowed: number; // Разрешено ли создавать связи со сценами
-  icon?: string
+  icon?: string  // Название иконки Game Icons
   showInSceneList: number; // Отображать ли в списке сцен
 }
 
 export interface IBlockParameterGroup{
   id?: number
   uuid?: string; // Автогенерация UUID
-  title: string;
-  blockUuid: string;
-  description: string;
+  title: string; // Название группы параметров
+  blockUuid: string; // Ссылка на блок
+  description: string; // Описание группы
   orderNumber: number; // Порядковый номер
 }
 
@@ -92,10 +92,10 @@ export interface IBlockParameterGroup{
 export interface IBlockParameter {
   id?: number
   uuid?: string; // Автогенерация UUID
-  title: string;
-  groupUuid: string;
-  blockUuid: string;
-  description: string;
+  title: string; // Название параметра
+  groupUuid: string; // Ссылка на группу параметров
+  blockUuid: string; // Ссылка на блок
+  description: string; // Описание
   dataType: string// Вид данных
   linkedBlockUuid?: string; // Ссылка на другой строительный блок через UUID
   linkedParameterUuid?: string; // Ссылка на параметр строительного блока через UUID
@@ -145,7 +145,7 @@ export interface IBlockTab{
   tabKind: string; // Вид вкладки
   relationUuid?: string; // Ссылка на связь
   childBlockUuid?: string; // Ссылка на дочерний блок
-  isDefault: number; // Является ли вкладка по умолчанию
+  isDefault: number; // Является ли вкладка вкладкой по умолчанию
 }
 
 

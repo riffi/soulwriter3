@@ -1,48 +1,48 @@
-import {BlockRelationType, IBlock} from "@/entities/ConstructorEntities";
+import {IBlock} from "@/entities/ConstructorEntities";
 
 export interface IBook {
   id?: number;
   uuid: string;
-  title: string;
-  author: string;
-  kind: string;
-  configurationUuid: string;
-  configurationTitle: string;
+  title: string; // Название книги
+  author: string; // Автор книги
+  kind: string; // Жанр книги
+  configurationUuid: string; // Ссылка на конфигурацию
+  configurationTitle: string; // Название конфигурации
 }
 
 export interface IBlockInstance{
   id?: number;
   uuid?: string;
-  blockUuid: string;
-  title: string;
-  parentInstanceUuid?: string;
+  blockUuid: string; // Ссылка на блок, экземпляр которого мы создаем
+  title: string; // Название экземпляра блока
+  parentInstanceUuid?: string; // Ссылка на родительский экземпляр блока
 }
 
 export interface IBlockInstanceSceneLink{
   id?: number
   uuid?: string
-  blockInstanceUuid: string
-  blockUuid: string
-  sceneId: number
+  blockInstanceUuid: string // Ссылка на экземпляр блока, который мы хотим связать с сценой
+  blockUuid: string // Ссылка на блок, который будет связан с сценой
+  sceneId: number // Ссылка на сцену
 }
 
 export interface IBlockParameterInstance{
   id?: number;
   uuid?: string;
-  blockInstanceUuid: string
-  blockParameterUuid: string
-  blockParameterGroupUuid: string;
-  value: string | number;
+  blockInstanceUuid: string // Ссылка на экземпляр блока, к которому привязан параметр
+  blockParameterUuid: string // Ссылка на параметр блока
+  blockParameterGroupUuid: string; // Ссылка на группу параметров блока, к которой принадлежит параметр
+  value: string | number; // Значение параметра
 }
 
 export interface IScene{
   id?: number;
-  title: string;
-  body: string;
-  order?: number;
-  chapterId?: number;
-  totalSymbolCountWithSpaces?: number;
-  totalSymbolCountWoSpaces?: number;
+  title: string; // Название сцены
+  body: string; // Тело сцены
+  order?: number; // Порядковый номер сцены
+  chapterId?: number; // Ссылка на главу, к которой привязана сцена
+  totalSymbolCountWithSpaces?: number; // Символов в сцене с пробелами
+  totalSymbolCountWoSpaces?: number; // Символов в сцене без пробелов
 }
 
 export interface ISceneWithInstancesBlock{
