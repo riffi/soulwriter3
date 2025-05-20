@@ -59,6 +59,7 @@ const NavLink = ({
                 href={item.link}
                 key={item.label}
                 className={classes.link}
+                style={item.link === (location.pathname+location.search) ? { backgroundColor: 'var(--mantine-color-blue-0)' } :{}}
                 onClick={(e) => {
                   e.preventDefault();
                   navigate(item.link || '#');
@@ -67,12 +68,15 @@ const NavLink = ({
                   }
                 }}
             >
-              <Group justify="flex-start" gap={0}>
-                <IconViewer
+              <Group
+                  justify="flex-start"
+                  gap={0}
+              >
+                 <IconViewer
                     iconName={item.icon}
                     size={20}
+                    backgroundColor={"transparent"}
                     color="var(--mantine-color-blue-7)"
-
                 />
                 <div style={{marginLeft: "10px"}}>
                   {item.label}
@@ -81,7 +85,7 @@ const NavLink = ({
             </Text>
           </>
       )) : null
-  ), [hasLinks, links, navigate, toggleNavbar]);
+  ), [hasLinks, links, navigate, toggleNavbar, location.pathname, location.search]);
 
   return (
       <>
@@ -89,8 +93,12 @@ const NavLink = ({
             onClick={handleClick}
             className={isBaseItem ? classes.baseControl : classes.control} // Разные стили
             aria-expanded={hasLinks ? opened : undefined}
+            style={link === (location.pathname+location.search) ? { backgroundColor:  'var(--mantine-color-blue-0)' } :{}}
         >
-          <Group justify="space-between" gap={0}>
+          <Group
+              justify="space-between"
+              gap={0}
+          >
             <Box style={{ display: 'flex', alignItems: 'center' }}>
               <ThemeIcon
                   variant={isBaseItem ? 'filled' : 'light'} // Разные варианты иконок
@@ -110,7 +118,7 @@ const NavLink = ({
                     size={16}
                     style={{
                       transform: opened ? 'rotate(-90deg)' : 'none',
-                      transition: 'transform 200ms ease'
+                      transition: 'transform 200ms ease',
                     }}
                 />
             )}

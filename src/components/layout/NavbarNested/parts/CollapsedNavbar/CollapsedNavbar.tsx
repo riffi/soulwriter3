@@ -79,6 +79,7 @@ export const CollapsedNavbar = ({
                         setHoveredItem(item.label);
                       }}
                       onMouseLeave={handleMouseLeave}
+                      style={item.link ===  (location.pathname+location.search) ? { backgroundColor: 'var(--mantine-color-blue-0)' } :{}}
                   >
                     <UnstyledButton
                         className={classes.mainLink}
