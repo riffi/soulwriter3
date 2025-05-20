@@ -143,12 +143,12 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
             </ActionIcon>
             <Group gap="0">
               <IconViewer
-                  size={24}
+                  size={18}
                   iconName={block?.icon}
-                  color={"#777"}
+                  color={"#999"}
               />
               <Text
-                  color="#777"
+                  color="dimmed"
               >
                 {block?.title}{block?.structureKind !== IBlockStructureKind.single ? ":" : ""}
               </Text>
