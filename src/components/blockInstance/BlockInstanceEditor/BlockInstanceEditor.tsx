@@ -6,8 +6,9 @@ import {
   ActionIcon,
   Box,
   Container,
-  Group,
+  Group, ScrollArea,
   SegmentedControl,
+  Text, Title
 } from "@mantine/core";
 import {IconArrowLeft} from "@tabler/icons-react";
 import classes from "./BlockInstanceEditor.module.css";
@@ -26,6 +27,10 @@ import {
   InstanceParameterEditor
 } from "@/components/blockInstance/BlockInstanceEditor/parts/InstanceParameterEditor/InstanceParameterEditor";
 import {relationUtils} from "@/utils/relationUtils";
+import {IconViewer} from "@/components/shared/IconViewer/IconViewer";
+import {IBlockStructureKind} from "@/entities/ConstructorEntities";
+import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
+import {usePageTitle} from "@/providers/PageTitleProvider/PageTitleProvider";
 
 export interface IBlockInstanceEditorProps {
   blockInstanceUuid: string;
@@ -39,6 +44,9 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
   // Состояния для вкладок и активной вкладки
   const [tabs, setTabs] = useState<Array<{ label: string; value: string }>>([]);
   const [activeTab, setActiveTab] = useState<string | null>(null);
+  const navigate = useNavigate();
+  const {isMobile} = useMedia();
+  const {setTitleElement} = usePageTitle()
 
   const {
     blockInstance,
@@ -51,9 +59,33 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
     blockTabs
   } = useBlockInstanceEditor(props.blockInstanceUuid);
 
-  const navigate = useNavigate();
 
+  const header =( <Group>
+    <IconViewer
+        iconName={block?.icon}
+        size={isMobile? 20 : 28}
+        style={{
+          color: 'white',
+          boxShadow: '0px 0px 5px rgba(0,0,0,0.2)',
+          backgroundColor: "var(--mantine-color-blue-5)"
+        }}
+    />
+    <Title
+        order={isMobile? 4 : 2}
+        style={{
+          textTransform: "capitalize",
+          color: "var(--mantine-color-blue-5)"
+        }}
+    >
+      {blockInstance?.title || ''}
+    </Title>
+  </Group>)
 
+  useEffect(() =>{
+    if (block) {
+      setTitleElement(header);
+    }
+  }, [block])
   const getTabs = () => {
     if (!blockTabs) return [{ label: 'Параметры', value: 'params' }];
 
@@ -109,22 +141,44 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
             >
               <IconArrowLeft size={20}/>
             </ActionIcon>
-            <InlineEdit
-                value={blockInstance?.title || ''}
-                placeholder="Instance title"
-                size="md"
-                className={classes.titleInput}
-                onChange={(val) => updateBlockInstanceTitle(val)}
-            />
+            <Group gap="0">
+              <IconViewer
+                  size={24}
+                  iconName={block?.icon}
+                  color={"#777"}
+              />
+              <Text
+                  color="#777"
+              >
+                {block?.title}{block?.structureKind !== IBlockStructureKind.single ? ":" : ""}
+              </Text>
+            </Group>
+            {block?.structureKind !== IBlockStructureKind.single &&
+              <InlineEdit
+                  value={blockInstance?.title || ''}
+                  placeholder="Instance title"
+                  size="md"
+                  className={classes.titleInput}
+                  onChange={(val) => updateBlockInstanceTitle(val)}
+              />
+            }
           </Group>
           <section>
-            <SegmentedControl
-                value={activeTab || ''}
-                onChange={setActiveTab}
-                data={tabs}
-                style={{textTransform: 'Capitalize', display: tabs.length <= 1 ? 'none' : ''}}
-                mb="md"
-            />
+            <ScrollArea
+                type="hover"
+                offsetScrollbars
+                styles={{
+                  viewport: { scrollBehavior: 'smooth' },
+                  root: { flex: 1 }
+                }}
+            >
+              <SegmentedControl
+                  value={activeTab || ''}
+                  onChange={setActiveTab}
+                  data={tabs}
+                  style={{textTransform: 'Capitalize', display: tabs.length <= 1 ? 'none' : ''}}
+              />
+            </ScrollArea>
             {blockTabs?.map(tab => {
               const tabValue = tab.tabKind === 'relation'
                   ? `related-${tab.relationUuid}`
