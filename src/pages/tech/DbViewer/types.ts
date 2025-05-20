@@ -59,7 +59,8 @@ export const relations: Record<TableName, Record<string, { table: TableName; fie
   blockTabs:{
     blockUuid: { table: 'blocks', field: 'uuid' },
     childBlockUuid: { table: 'blocks', field: 'uuid'},
-    relationUuid: { table: 'blocksRelations', field: 'uuid'}
+    relationUuid: { table: 'blocksRelations', field: 'uuid'},
+    referencingParamUuid: { table: 'blockParameters', field: 'uuid'}
   },
   scenes:{
     chaperId: { table: 'chapters', field: 'id'}

@@ -19,6 +19,7 @@ interface DataTableProps {
   onRemoveFilter: (field: string) => void;
   onClearAllFilters: () => void;
   onDeleteRecord: (tableName: string, id: number) => void;
+  onUpdateRecord: (tableName: string, id: number, field: string, newValue: string) => void;
 }
 
 const PRIORITY_FIELDS = ['id', 'uuid', 'title'];
@@ -35,7 +36,8 @@ export const DataTable = ({
                             onAddFilter,
                             onRemoveFilter,
                             onClearAllFilters,
-                            onDeleteRecord
+                            onDeleteRecord,
+                            onUpdateRecord
                           }: DataTableProps) => {
   const [showFilters, setShowFilters] = useState(false);
 
@@ -105,6 +107,7 @@ export const DataTable = ({
                       showFilters={showFilters}
                       onAddFilter={onAddFilter}
                       onDeleteRecord={onDeleteRecord}
+                      onUpdateRecord={onUpdateRecord}
                   />
               ))}
             </Table.Tbody>

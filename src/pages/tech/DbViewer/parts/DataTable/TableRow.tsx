@@ -1,9 +1,10 @@
-import { Table, Text, Group, Stack, Box, ActionIcon } from '@mantine/core';
+import {Table, Text, Group, Stack, Box, ActionIcon, TextInput} from '@mantine/core';
 import { RelationPopup } from './RelationPopup';
 import { DatabaseType, relations, TableData, TableName } from "@/pages/tech/DbViewer/types";
 import { getReverseRelations } from "./utils";
 import {useMemo, useState} from 'react';
 import {IconFilter, IconLink, IconTrash} from "@tabler/icons-react";
+import {useDisclosure} from "@mantine/hooks";
 
 interface TableRowProps {
   item: Record<string, unknown>;
@@ -18,6 +19,7 @@ interface TableRowProps {
   showFilters: boolean;
   onAddFilter: (field: string, value: string) => void;
   onDeleteRecord: (tableName: string, id: number) => void;
+  onUpdateRecord: (tableName: string, id: number, field: string, newValue: string) => void;
 }
 
 const cellStyle = {
@@ -37,7 +39,9 @@ const TableCellContent = ({
                             targetTables,
                             onClick,
                             showFilters,
-                            onAddFilter
+                            onAddFilter,
+                            onUpdateRecord,
+                            item,
                           }: {
   value: unknown;
   isPriority: boolean;
@@ -49,10 +53,21 @@ const TableCellContent = ({
   onAddFilter: (field: string, value: string) => void;
 }) => {
   const [isHovered, setIsHovered] = useState(false);
+
+  const [editing, { open: startEditing, close: stopEditing }] = useDisclosure(false);
+  const [newValue, setNewValue] = useState(String(value));
+
   const relatedEntry = useMemo(() =>
           getRelatedEntry(tableName, fieldKey, value, targetTables),
       [tableName, fieldKey, value, targetTables]
   );
+
+  const handleSave = () => {
+    if (item.id && newValue !== String(value)) {
+      onUpdateRecord(tableName, Number(item.id), fieldKey, newValue);
+    }
+    stopEditing();
+  };
 
   return (
       <Stack p={0} gap={0}>
@@ -62,6 +77,16 @@ const TableCellContent = ({
             onMouseLeave={() => setIsHovered(false)}
             style={{ position: 'relative' }}
         >
+          {editing ? (
+              <TextInput
+                  value={newValue}
+                  onChange={(e) => setNewValue(e.currentTarget.value)}
+                  onBlur={handleSave}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSave()}
+                  autoFocus
+                  size="xs"
+              />
+          ) : (
           <Text
               span
               style={{
@@ -70,6 +95,7 @@ const TableCellContent = ({
                 fontWeight: isPriority ? 600 : 400,
               }}
               onClick={onClick}
+              onDoubleClick={startEditing}
           >
             {value === undefined
                 ? '—'
@@ -79,6 +105,7 @@ const TableCellContent = ({
                         ? JSON.stringify(value)
                         : String(value)}
           </Text>
+          )}
           {relatedEntry && <RelationPopup relatedEntry={relatedEntry} />}
           {showFilters && isHovered && (
               <ActionIcon
@@ -138,7 +165,8 @@ export const TableRow = ({
                            onReverseRelationClick,
                            showFilters,
                            onAddFilter,
-                           onDeleteRecord
+                           onDeleteRecord,
+                           onUpdateRecord,
                          }: TableRowProps) => {
   const tableName = table.name as TableName;
   const targetTables = activeTab === 'book' ? bookTables : configTables;
@@ -175,6 +203,8 @@ export const TableRow = ({
                     onClick={() => onValueClick(key, String(item[key]))}
                     showFilters={showFilters}
                     onAddFilter={onAddFilter}
+                    onUpdateRecord={onUpdateRecord}
+                    item={item}
                 />
               </Table.Td>
           ))}

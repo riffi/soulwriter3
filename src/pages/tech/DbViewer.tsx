@@ -152,6 +152,18 @@ export const DbViewer = () => {
     }
   };
 
+  const handleUpdateRecord = async (tableName: TableName, id: number, field: string, newValue: string) => {
+    setLoading(true);
+    try {
+      const db = activeTab === 'book' ? bookDb : configDatabase;
+      // Предполагаем, что у таблиц есть метод update
+      await db[tableName].update(id, { [field]: newValue });
+      await loadTableList(activeTab);
+    } finally {
+      setLoading(false);
+    }
+  };
+
 
   return (
   <Box p="md">
@@ -187,6 +199,7 @@ export const DbViewer = () => {
                   onRemoveFilter={handleRemoveFilter}
                   onClearAllFilters={handleClearAllFilters}
                   onDeleteRecord={handleDeleteRecord}
+                  onUpdateRecord={handleUpdateRecord}
               />
             </>
         ) : (

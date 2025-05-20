@@ -23,6 +23,7 @@ const save = async (db: BlockAbstractDb, relation: IBlockRelation) => {
   }
 }
 const remove = async (db: BlockAbstractDb, blockRelationUuid: string) => {
+  debugger
   const relation = await db.blocksRelations.where({ uuid: blockRelationUuid }).first();
   if (!relation) return;
 
