@@ -169,6 +169,7 @@ export const ExpandedNavbar = ({
                     {...item}
                     key={item.label}
                     isBaseItem
+                    toggleNavbar={toggleNavbar}
                 />
             ))}
             <Divider my="sm" />

@@ -24,6 +24,7 @@ interface InstanceParameterEditorProps {
   blockInstanceUuid: string;
   blockUseTabs: boolean;
   relatedBlocks?: IBlock[];
+  allBlocks?: IBlock[];
 }
 
 const ParameterGroupsTabs = ({ groups, currentGroup, onChange, children }) => (
@@ -66,6 +67,7 @@ export const InstanceParameterEditor = ({
                                           blockInstanceUuid,
                                           blockUseTabs,
                                           relatedBlocks,
+                                          allBlocks,
                                         }: InstanceParameterEditorProps) => {
   const [currentParamGroup, setCurrentParamGroup] = useState<IBlockParameterGroup | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -144,6 +146,7 @@ export const InstanceParameterEditor = ({
                   onDelete={handleDeleteParameter}
                   possibleValuesMap={possibleValuesMap}
                   relatedBlocks={relatedBlocks}
+                  allBlocks={allBlocks}
               />
             </ParameterGroupsTabs>
         ) : (
@@ -155,6 +158,7 @@ export const InstanceParameterEditor = ({
                 onDelete={handleDeleteParameter}
                 possibleValuesMap={possibleValuesMap}
                 relatedBlocks={relatedBlocks}
+                allBlocks={allBlocks}
             />
         )}
 

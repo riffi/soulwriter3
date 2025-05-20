@@ -56,6 +56,7 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
     block,
     updateBlockInstanceTitle,
     relatedBlocks,
+    allBlocks,
     blockRelations,
     childBlocks,
     childInstancesMap,
@@ -208,6 +209,7 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
                                   blockInstanceUuid={props.blockInstanceUuid}
                                   blockUseTabs={block?.useTabs === 1}
                                   relatedBlocks={relatedBlocks}
+                                  allBlocks={allBlocks}
                                   relations={blockRelations}
                               />
                           </>

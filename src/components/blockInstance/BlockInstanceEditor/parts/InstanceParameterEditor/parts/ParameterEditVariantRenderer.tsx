@@ -23,6 +23,7 @@ export interface ParameterRendererProps {
   parameter: IBlockParameter;
   parameterInstance: IBlockParameterInstance;
   relatedBlocks?: IBlock[];
+  allBlocks?: IBlock[];
  }
 
 export const ParameterEditVariantRenderer = ({
@@ -31,6 +32,7 @@ export const ParameterEditVariantRenderer = ({
                              possibleValues,
                              onValueChange,
                              relatedBlocks,
+                             allBlocks,
                              parameter
                            }: ParameterRendererProps) => {
 
@@ -98,7 +100,7 @@ export const ParameterEditVariantRenderer = ({
   }
 
   if (dataType === IBlockParameterDataType.blockLink) {
-    const relatedBlock = relatedBlocks?.find((b: IBlock) => b.uuid === parameter.relatedBlockUuid)
+    const relatedBlock = allBlocks?.find((b: IBlock) => b.uuid === parameter.relatedBlockUuid)
     const instances = useLiveQuery(() => BlockInstanceRepository.getBlockInstances(bookDb, relatedBlock?.uuid))
     return (
         <Select

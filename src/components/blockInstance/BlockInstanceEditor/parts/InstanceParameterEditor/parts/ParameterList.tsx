@@ -30,6 +30,7 @@ interface ParameterListProps {
   onDelete?: (instanceId: number) => void;
   possibleValuesMap?: Record<string, IBlockParameterPossibleValue[]>;
   relatedBlocks?: IBlock[];
+  allBlocks?: IBlock[];
 }
 
 function CheckBoxParameterInstanceViewer(props: {
@@ -61,6 +62,7 @@ export const ParameterList = ({
                                 onDelete,
                                 possibleValuesMap,
                                 relatedBlocks,
+                                allBlocks,
                               }: ParameterListProps) => {
   // Состояние для редактирования параметра
   const [editingParam, setEditingParam] = useState<string | null>(null);
@@ -176,6 +178,7 @@ export const ParameterList = ({
                   possibleValues={possibleValuesMap?.[parameter?.uuid || '']}
                   onValueChange={setEditValue}
                   relatedBlocks={relatedBlocks}
+                  allBlocks={allBlocks}
               />
             )
           }
