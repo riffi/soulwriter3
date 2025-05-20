@@ -102,7 +102,7 @@ export const ParameterEditVariantRenderer = ({
     const instances = useLiveQuery(() => BlockInstanceRepository.getBlockInstances(bookDb, relatedBlock?.uuid))
     return (
         <Select
-            placeholder="Выберите связанный блок"
+            placeholder={`Выберите ${relatedBlock?.titleForms.accusative}`}
             data={
               instances?.map(i => ({value: i.uuid, label: i.title}))
             }

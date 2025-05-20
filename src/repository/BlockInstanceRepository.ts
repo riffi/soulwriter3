@@ -101,6 +101,8 @@ const remove = async (db: BookDB, instance: IBlockInstance)=> {
     db.blockInstanceRelations.where('targetInstanceUuid').equals(instance.uuid).delete(),
     db.blockParameterInstances.where('blockInstanceUuid').equals(instance.uuid).delete(),
     db.blockInstanceSceneLinks.where('blockInstanceUuid').equals(instance.uuid).delete(),
+    // @todo сейчас удаляются все инстансы параметров, где value === uuid экземпляра, что не очень верно
+    db.blockParameterInstances.where('value').equals(instance.uuid).delete(),
     db.blockInstances.delete(instance.id)
   ])
 }

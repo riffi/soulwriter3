@@ -115,17 +115,19 @@ export const ParameterList = ({
               return (
                   <Group className={classes.contentWrapper}>
                     <Text component="div" >
-                      {instance?.title}
+                      {instance?.title ?? 'Не указано'}
                     </Text>
-                    <ActionIcon
-                        size="18"
-                        variant="subtle"
-                        onClick={() => {
-                          navigate('/block-instance/card?uuid=' + instance?.uuid)
-                        }}
-                    >
-                      <IconLink />
-                    </ActionIcon>
+                    {instance &&
+                      <ActionIcon
+                          size="18"
+                          variant="subtle"
+                          onClick={() => {
+                            navigate('/block-instance/card?uuid=' + instance?.uuid)
+                          }}
+                      >
+                        <IconLink />
+                      </ActionIcon>
+                    }
 
                   </Group>
               )
