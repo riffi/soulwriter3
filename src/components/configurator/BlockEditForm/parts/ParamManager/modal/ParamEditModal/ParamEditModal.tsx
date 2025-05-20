@@ -1,7 +1,8 @@
 import {Button, Checkbox, Group, Modal, Select, TextInput, Stack, ActionIcon, Text} from "@mantine/core";
 import { useForm } from '@mantine/form';
 import {
-  IBlockParameter, IBlockParameterDataType, IBlockParameterDataTypeTitle,
+  IBlock,
+  IBlockParameter, IBlockParameterDataType, IBlockParameterDataTypeTitle, IBlockRelation,
   IBlockStructureKind,
   IBlockStructureKindTitle
 } from "@/entities/ConstructorEntities";
@@ -10,6 +11,7 @@ import {createOptionsFromEnums} from "@/utils/enumUtils";
 import {IconTrash} from "@tabler/icons-react";
 import {useBlockEditForm} from "@/components/configurator/BlockEditForm/useBlockEditForm";
 import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
+import {relationUtils} from "@/utils/relationUtils";
 
 interface IBlockEditModalProps {
   isOpen: boolean
@@ -18,6 +20,7 @@ interface IBlockEditModalProps {
   blockUuid?: string
   bookUuid?: string
   initialData?: IBlockParameter,
+  otherBlocks: IBlock[]
 }
 
 export const ParamEditModal  = (props: IBlockEditModalProps) => {
@@ -54,6 +57,14 @@ export const ParamEditModal  = (props: IBlockEditModalProps) => {
       IBlockParameterDataType,
       IBlockParameterDataTypeTitle
   );
+
+  const relatedBlocksOptions =  props.otherBlocks.map(b => {
+        return {
+          value: b.uuid!,
+          label: `${b?.title}`
+        };
+    });
+
 
   const handleAddValue = () => {
     if (newValue.trim()) {
@@ -103,7 +114,15 @@ export const ParamEditModal  = (props: IBlockEditModalProps) => {
                 {...form.getInputProps('dataType')}
             />
 
-            {form.values.dataType === 'dropdown' && (
+            {form.values.dataType === IBlockParameterDataType.blockLink && (
+                <Select
+                    label="Связанный блок"
+                    data={relatedBlocksOptions}
+                    {...form.getInputProps('relatedBlockUuid')}
+                />
+            )}
+
+            {form.values.dataType === IBlockParameterDataType.dropdown && (
                 <div>
                   <Text size="sm" fw={500} mb={3}>Возможные значения</Text>
                   <Stack gap="xs">

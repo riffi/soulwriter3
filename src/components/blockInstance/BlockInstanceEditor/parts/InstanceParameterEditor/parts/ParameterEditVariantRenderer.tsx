@@ -1,25 +1,37 @@
 import {
+  IBlock, IBlockParameter,
   IBlockParameterDataType,
-  IBlockParameterPossibleValue
+  IBlockParameterPossibleValue, IBlockRelation
 } from "@/entities/ConstructorEntities";
 import {RichEditor} from "@/components/shared/RichEditor/RichEditor";
 import {Checkbox, ColorPicker, Select, TextInput, useMantineTheme} from "@mantine/core";
 import { DatePicker } from '@mantine/dates';
 import '@mantine/dates/styles.css';
 import 'dayjs/locale/ru';
+import {relationUtils} from "@/utils/relationUtils";
+import {BlockRepository} from "@/repository/BlockRepository";
+import {BlockInstanceRepository} from "@/repository/BlockInstanceRepository";
+import {bookDb} from "@/entities/bookDb";
+import {useLiveQuery} from "dexie-react-hooks";
+import {IBlockParameterInstance} from "@/entities/BookEntities";
 
 export interface ParameterRendererProps {
   dataType: string;
   value: string;
   possibleValues?: IBlockParameterPossibleValue[];
   onValueChange: (value: string) => void;
-}
+  parameter: IBlockParameter;
+  parameterInstance: IBlockParameterInstance;
+  relatedBlocks?: IBlock[];
+ }
 
 export const ParameterEditVariantRenderer = ({
                              dataType,
                              value,
                              possibleValues,
-                             onValueChange
+                             onValueChange,
+                             relatedBlocks,
+                             parameter
                            }: ParameterRendererProps) => {
 
   const theme = useMantineTheme();
@@ -83,6 +95,21 @@ export const ParameterEditVariantRenderer = ({
             swatches={['#2e2e2e', '#868e96', '#fa5252', '#e64980', '#be4bdb', '#7950f2', '#4c6ef5', '#228be6', '#15aabf', '#12b886', '#40c057', '#82c91e', '#fab005', '#fd7e14']}
         />
     );
+  }
+
+  if (dataType === IBlockParameterDataType.blockLink) {
+    const relatedBlock = relatedBlocks?.find((b: IBlock) => b.uuid === parameter.relatedBlockUuid)
+    const instances = useLiveQuery(() => BlockInstanceRepository.getBlockInstances(bookDb, relatedBlock?.uuid))
+    return (
+        <Select
+            placeholder="Выберите связанный блок"
+            data={
+              instances?.map(i => ({value: i.uuid, label: i.title}))
+            }
+            value={value}
+            onChange={(value) => onValueChange(value || '')}
+        />
+    )
   }
 
   return (

@@ -8,7 +8,7 @@ import {
   Button, Tabs
 } from "@mantine/core";
 import { IconPlus } from "@tabler/icons-react";
-import { IBlockParameterGroup } from "@/entities/ConstructorEntities";
+import {IBlock, IBlockParameterGroup, IBlockRelation} from "@/entities/ConstructorEntities";
 import { IBlockParameterInstance } from "@/entities/BookEntities";
 import { bookDb } from "@/entities/bookDb";
 import classes from "../../BlockInstanceEditor.module.css";
@@ -23,6 +23,7 @@ import {FullParam} from "@/components/blockInstance/BlockInstanceEditor/types";
 interface InstanceParameterEditorProps {
   blockInstanceUuid: string;
   blockUseTabs: boolean;
+  relatedBlocks?: IBlock[];
 }
 
 const ParameterGroupsTabs = ({ groups, currentGroup, onChange, children }) => (
@@ -63,7 +64,8 @@ const ParameterGroupContent = ({ availableParameters, fullParams, onAdd, ...prop
 
 export const InstanceParameterEditor = ({
                                           blockInstanceUuid,
-                                          blockUseTabs
+                                          blockUseTabs,
+                                          relatedBlocks,
                                         }: InstanceParameterEditorProps) => {
   const [currentParamGroup, setCurrentParamGroup] = useState<IBlockParameterGroup | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -141,6 +143,7 @@ export const InstanceParameterEditor = ({
                   onSaveEdit={handleUpdateParameterValue}
                   onDelete={handleDeleteParameter}
                   possibleValuesMap={possibleValuesMap}
+                  relatedBlocks={relatedBlocks}
               />
             </ParameterGroupsTabs>
         ) : (
@@ -151,6 +154,7 @@ export const InstanceParameterEditor = ({
                 onSaveEdit={handleUpdateParameterValue}
                 onDelete={handleDeleteParameter}
                 possibleValuesMap={possibleValuesMap}
+                relatedBlocks={relatedBlocks}
             />
         )}
 

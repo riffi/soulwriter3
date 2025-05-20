@@ -12,6 +12,10 @@ const getByUuid = async (db: BookDB, blockInstanceUuid: string) => {
   return db.blockInstances.where('uuid').equals(blockInstanceUuid).first();
 }
 
+const getByUuidList = async (db: BookDB, blockInstanceUuidList: string[]) => {
+  return db.blockInstances.where('uuid').anyOf(blockInstanceUuidList).toArray();
+}
+
 const getBlockInstances = async (db: BookDB, blockUuid: string) => {
   return  db.blockInstances
     .where('blockUuid')
@@ -136,6 +140,7 @@ const removeByBlock = async (db: BookDB, blockUuid: string) => {
 
 export const BlockInstanceRepository = {
   getByUuid,
+  getByUuidList,
   getBlockInstances,
   getInstanceParams,
   appendDefaultParams,

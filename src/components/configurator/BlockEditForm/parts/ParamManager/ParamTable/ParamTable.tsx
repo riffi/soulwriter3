@@ -1,5 +1,10 @@
 import {Button, Group, Space, Table, Text, ActionIcon, Box, Badge} from "@mantine/core";
-import {IBlockParameter, IBlockParameterDataTypeTitle} from "@/entities/ConstructorEntities";
+import {
+  IBlock,
+  IBlockParameter, IBlockParameterDataType,
+  IBlockParameterDataTypeTitle,
+  IBlockRelation
+} from "@/entities/ConstructorEntities";
 import { IconEdit, IconPlus, IconTrash } from "@tabler/icons-react";
 import React from "react";
 import { useDialog } from "@/providers/DialogProvider/DialogProvider";
@@ -11,6 +16,7 @@ interface IParamTableProps {
   onAddParam: () => void;
   onEditParam: (param: IBlockParameter) => void;
   onDeleteParam: (paramId: number) => void;
+  otherBlocks: IBlock[]
 }
 
 export const ParamTable = ({
@@ -19,8 +25,10 @@ export const ParamTable = ({
                              onAddParam,
                              onEditParam,
                              onDeleteParam,
+                             otherBlocks
                            }: IParamTableProps) => {
   const { showDialog } = useDialog();
+
 
   return (
       <Box className={classes.container}>
@@ -48,9 +56,17 @@ export const ParamTable = ({
                 {params?.map((param) => (
                     <Table.Tr key={param.uuid}>
                       <Table.Td>
-                        <div>
+                        <Text>
                           {param.title}
-                        </div>
+                        </Text>
+                        {param.dataType === IBlockParameterDataType.blockLink && (
+                            <Text
+                                c="dimmed"
+                                size="xs"
+                            >
+                              Блок: {otherBlocks?.find((b) => b.uuid === param?.relatedBlockUuid)?.title}
+                            </Text>
+                        )}
                         <Space h={5} />
                         <Group gap={4}>
                           {param.displayInCard? <Badge size="xs" color="green" variant="filled">В карточке</Badge> : ''}

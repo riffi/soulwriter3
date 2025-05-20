@@ -5,8 +5,7 @@ export enum IBlockParameterDataType {
   datePicker = 'datePicker',
   colorPicker = 'colorPicker',
   dropdown = 'dropdown',
-  blockReference = 'blockReference',
-  blockParamReference = 'blockParamReference',
+  blockLink = 'blockLink',
 }
 
 export enum IBlockParameterDataTypeTitle{
@@ -16,8 +15,7 @@ export enum IBlockParameterDataTypeTitle{
   datePicker = 'Дата',
   colorPicker = 'Цвет',
   dropdown = 'Выпадающий список',
-  blockReference = 'Ссылка на блок',
-  blockParamReference = 'Ссылка на параметр блока',
+  blockLink = 'Связь c блоком',
 }
 
 
@@ -102,6 +100,7 @@ export interface IBlockParameter {
   isDefault?: number; // Добавлять параметр по умолчанию
   displayInCard: number; // Отображать ли параметр в карточке
   orderNumber: number; // Порядковый номер
+  relatedBlockUuid?: string; // Ссылка на связь блоков
 }
 
 

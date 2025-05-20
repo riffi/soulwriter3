@@ -1,32 +1,35 @@
-import {
-  Box,
-  Group,
-  Button,
-  Text,
-  Stack, Checkbox, ActionIcon
-} from "@mantine/core";
+import {ActionIcon, Box, Button, Checkbox, Group, Stack, Text} from "@mantine/core";
 
 import classes from "../../../BlockInstanceEditor.module.css";
-import { IBlockParameterInstance } from "@/entities/BookEntities";
-import { FullParam } from "../../../types";
+import {IBlockParameterInstance} from "@/entities/BookEntities";
+import {FullParam} from "../../../types";
 import {
+  IBlock,
   IBlockParameterDataType,
-  IBlockParameterPossibleValue
+  IBlockParameterPossibleValue,
+  IBlockRelation
 } from "@/entities/ConstructorEntities";
 import {
   ParameterActions
 } from "@/components/blockInstance/BlockInstanceEditor/parts/InstanceParameterEditor/parts/ParameterActionsProps";
 
-import {ParameterEditVariantRenderer} from "@/components/blockInstance/BlockInstanceEditor/parts/InstanceParameterEditor/parts/ParameterEditVariantRenderer";
+import {
+  ParameterEditVariantRenderer
+} from "@/components/blockInstance/BlockInstanceEditor/parts/InstanceParameterEditor/parts/ParameterEditVariantRenderer";
 import {useState} from "react";
 import {useDialog} from "@/providers/DialogProvider/DialogProvider";
-import {IconTrash} from "@tabler/icons-react";
+import {IconEdit, IconLink, IconNavigation, IconTrash} from "@tabler/icons-react";
+import {useLiveQuery} from "dexie-react-hooks";
+import {BlockInstanceRepository} from "@/repository/BlockInstanceRepository";
+import {bookDb} from "@/entities/bookDb";
+import {useNavigate} from "react-router-dom";
 
 interface ParameterListProps {
   fullParams: FullParam[];
   onSaveEdit: (instance: IBlockParameterInstance, newValue: string | number ) => void;
   onDelete?: (instanceId: number) => void;
   possibleValuesMap?: Record<string, IBlockParameterPossibleValue[]>;
+  relatedBlocks?: IBlock[];
 }
 
 function CheckBoxParameterInstanceViewer(props: {
@@ -56,12 +59,30 @@ export const ParameterList = ({
                                 fullParams,
                                 onSaveEdit,
                                 onDelete,
-                                possibleValuesMap
+                                possibleValuesMap,
+                                relatedBlocks,
                               }: ParameterListProps) => {
   // Состояние для редактирования параметра
   const [editingParam, setEditingParam] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
   const {showDialog} = useDialog()
+  const navigate = useNavigate()
+
+  // Связанные инстансы для параметров типа relation
+  const relatedInstances = useLiveQuery(async () => {
+    if (!fullParams || !fullParams.length) {
+      return []
+    }
+    const instanceUuids = fullParams
+    .filter(param =>
+        param.parameter !== undefined
+        && param.parameter?.dataType === IBlockParameterDataType.blockLink
+        && param.instance.value !== null
+        && param.instance.value !== undefined
+    )
+    .map(param => String(param.instance.value))
+    return BlockInstanceRepository.getByUuidList(bookDb, instanceUuids)
+  }, [fullParams])
 
   // Состояние для сворачивания длинного текста
   const [expandedParams, setExpandedParams] = useState<Record<string, boolean>>({});
@@ -89,6 +110,26 @@ export const ParameterList = ({
           const needsTruncation = fullParam.instance.value?.length > 500;
 
           function renderViewMode() {
+            if (parameter?.dataType === IBlockParameterDataType.blockLink) {
+              const instance = relatedInstances?.find(i => i.uuid === String(fullParam.instance.value))
+              return (
+                  <Group className={classes.contentWrapper}>
+                    <Text component="div" >
+                      {instance?.title}
+                    </Text>
+                    <ActionIcon
+                        size="18"
+                        variant="subtle"
+                        onClick={() => {
+                          navigate('/block-instance/card?uuid=' + instance?.uuid)
+                        }}
+                    >
+                      <IconLink />
+                    </ActionIcon>
+
+                  </Group>
+              )
+            }
             if (parameter?.dataType === IBlockParameterDataType.colorPicker) {
               return (
                   <Box style={{
@@ -128,8 +169,11 @@ export const ParameterList = ({
               <ParameterEditVariantRenderer
                   dataType={parameter?.dataType || 'text'}
                   value={editValue}
+                  parameter={parameter}
+                  parameterInstance={fullParam.instance}
                   possibleValues={possibleValuesMap?.[parameter?.uuid || '']}
                   onValueChange={setEditValue}
+                  relatedBlocks={relatedBlocks}
               />
             )
           }

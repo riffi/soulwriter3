@@ -5,37 +5,27 @@ import {
 import {
   ActionIcon,
   Box,
-  Button,
   Container,
   Group,
   SegmentedControl,
-  Tabs,
-  Title,
 } from "@mantine/core";
-import {IconArrowLeft, IconPlus} from "@tabler/icons-react";
+import {IconArrowLeft} from "@tabler/icons-react";
 import classes from "./BlockInstanceEditor.module.css";
 import React, {useEffect, useState} from "react";
-import {IBlockParameterGroup} from "@/entities/ConstructorEntities";
-import {IBlockParameterInstance} from "@/entities/BookEntities";
-import {bookDb} from "@/entities/bookDb";
-import {
-  ParameterList
-} from "@/components/blockInstance/BlockInstanceEditor/parts/InstanceParameterEditor/parts/ParameterList";
-import {FullParam} from "@/components/blockInstance/BlockInstanceEditor/types";
+
 import {InlineEdit} from "@/components/shared/InlineEdit/InlineEdit";
 import {
   InstanceRelationsEditor
 } from "@/components/blockInstance/BlockInstanceEditor/parts/InstanceRelationsEditor/InstanceRelationsEditor";
-import {
-  AddParameterModal
-} from "@/components/blockInstance/BlockInstanceEditor/parts/InstanceParameterEditor/modal/AddParameterModal";
+
 import {
   ChildInstancesTable
 } from "@/components/blockInstance/BlockInstanceEditor/parts/InstanceChildrenEditor/ChildInstancesTable";
-import {IconViewer} from "@/components/shared/IconViewer/IconViewer";
+
 import {
   InstanceParameterEditor
 } from "@/components/blockInstance/BlockInstanceEditor/parts/InstanceParameterEditor/InstanceParameterEditor";
+import {relationUtils} from "@/utils/relationUtils";
 
 export interface IBlockInstanceEditorProps {
   blockInstanceUuid: string;
@@ -102,13 +92,7 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
 
 
   const getRelatedBlockByRelationUuid = (relationUuid: string) => {
-    const relation = blockRelations?.find(r =>
-        r.uuid === relationUuid
-    )
-    return relatedBlocks?.find(block =>
-        (block.uuid === relation.sourceBlockUuid)
-        || (block.uuid === relation.targetBlockUuid)
-    );
+    return relationUtils.getRelatedBlockByRelationUuid(blockRelations, relatedBlocks, relationUuid);
   }
 
 
@@ -157,6 +141,8 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
                               <InstanceParameterEditor
                                   blockInstanceUuid={props.blockInstanceUuid}
                                   blockUseTabs={block?.useTabs === 1}
+                                  relatedBlocks={relatedBlocks}
+                                  relations={blockRelations}
                               />
                           </>
                         }

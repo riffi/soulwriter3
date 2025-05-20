@@ -116,6 +116,7 @@ export const BlockEditForm = ({ blockUuid, bookUuid }: IBlockEditFormProps) => {
                   useTabs={block?.useTabs}
                   paramList={paramList}
                   paramGroupList={paramGroupList}
+                  otherBlocks={otherBlocks}
               />
             </>
         }

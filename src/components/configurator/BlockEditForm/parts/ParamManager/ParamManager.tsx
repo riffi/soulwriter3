@@ -1,11 +1,11 @@
 // components/configurator/BlockEditForm/parts/ParamManager/ParamManager.tsx
 import { Tabs, ActionIcon } from "@mantine/core";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { ParamTable } from "@/components/configurator/BlockEditForm/parts/ParamManager/ParamTable/ParamTable";
 import { GroupsModal } from "@/components/configurator/BlockEditForm/parts/ParamManager/modal/GroupsModal/GroupsModal";
 import { ParamEditModal } from "@/components/configurator/BlockEditForm/parts/ParamManager/modal/ParamEditModal/ParamEditModal";
 import { useBlockEditForm } from "@/components/configurator/BlockEditForm/useBlockEditForm";
-import { IBlockParameter } from "@/entities/ConstructorEntities";
+import {IBlock, IBlockParameter, IBlockRelation} from "@/entities/ConstructorEntities";
 import { notifications } from "@mantine/notifications";
 import {IconSettings} from "@tabler/icons-react";
 
@@ -13,12 +13,14 @@ interface ParamManagerProps {
   blockUuid: string;
   bookUuid?: string;
   useTabs?: number;
+  otherBlocks: IBlock[]
 }
 
 export const ParamManager = ({
                                blockUuid,
                                bookUuid,
                                useTabs,
+                               otherBlocks
                              }: ParamManagerProps) => {
   const [currentGroupUuid, setCurrentGroupUuid] = useState<string>();
   const [isParamModalOpened, setIsParamModalOpened] = useState(false);
@@ -92,6 +94,7 @@ export const ParamManager = ({
             <Tabs.Panel value={group.uuid} key={group.uuid}>
               <ParamTable
                   params={paramList?.filter((param) => param.groupUuid === group.uuid) || []}
+                  otherBlocks={otherBlocks}
                   onAddParam={() => handleParamModalOpen(getInitialParamData())}
                   onEditParam={handleParamModalOpen}
                   onDeleteParam={deleteParam}
@@ -111,6 +114,7 @@ export const ParamManager = ({
                 onAddParam={() => handleParamModalOpen(getInitialParamData())}
                 onEditParam={handleParamModalOpen}
                 onDeleteParam={deleteParam}
+                otherBlocks={otherBlocks}
             />
         )}
 
@@ -128,6 +132,7 @@ export const ParamManager = ({
             initialData={currentParam}
             blockUuid={blockUuid}
             bookUuid={bookUuid}
+            otherBlocks={otherBlocks}
           />
         }
 
