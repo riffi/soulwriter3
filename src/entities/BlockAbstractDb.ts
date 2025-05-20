@@ -3,22 +3,20 @@ import {
   IBlock,
   IBlockParameter,
   IBlockParameterGroup, IBlockParameterPossibleValue, IBlockRelation, IBlockTab,
-  IBookConfiguration, IBookConfigurationVersion
+  IBookConfiguration,
 } from "@/entities/ConstructorEntities";
 
 export const baseSchema={
   bookConfigurations: '++id, &uuid, title',
-  configurationVersions: '++id, &uuid, configurationUuid, versionNumber, isDraft',
-  blocks: '++id, &uuid, configurationVersionUuid, parentBlockUuid, title, sceneLinkAllowed, showInSceneList',
+  blocks: '++id, &uuid, configurationUuid, parentBlockUuid, title, sceneLinkAllowed, showInSceneList',
   blockParameterGroups: '++id, &uuid, blockUuid, title',
   blockParameters: '++id, &uuid, groupUuid, blockUuid, dataType, linkedBlockUuid, linkedParameterUuid, isDefault, displayInCard',
   blockParameterPossibleValues: '++id, &uuid, parameterUuid, value',
-  blocksRelations: '++id, &uuid, sourceBlockUuid, targetBlockUuid, configurationVersionUuid',
+  blocksRelations: '++id, &uuid, sourceBlockUuid, targetBlockUuid, configurationUuid',
   blockTabs: '++id, &uuid, blockUuid, title, relationUuid',
 }
 
 export class BlockAbstractDb extends Dexie{
-  public configurationVersions!: Dexie.Table<IBookConfigurationVersion, number>;
   bookConfigurations!: Dexie.Table<IBookConfiguration, number>;
   blocks!: Dexie.Table<IBlock, number>;
   blockParameterGroups!: Dexie.Table<IBlockParameterGroup, number>;
@@ -29,7 +27,7 @@ export class BlockAbstractDb extends Dexie{
 
   constructor(dbName:string) {
     super(dbName);
-    this.version(1).stores(baseSchema);
+    this.version(2).stores(baseSchema);
   }
 }
 

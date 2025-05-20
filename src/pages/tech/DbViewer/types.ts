@@ -19,16 +19,13 @@ export interface HistoryEntry {
 export type DatabaseType = 'book' | 'config';
 
 export const relations: Record<TableName, Record<string, { table: TableName; field: string}>> = {
-  configurationVersions: {
-    configurationUuid: { table: 'bookConfigurations', field: 'uuid'},
-  },
   blockInstances: {
     blockUuid: { table: 'blocks', field: 'uuid'},
     parentInstanceUuid: { table: 'blockInstances', field: 'uuid'}
   },
   blocks: {
     parentBlockUuid: { table: 'blocks', field: 'uuid'},
-    configurationVersionUuid: { table: 'configurationVersions', field: 'uuid' }
+    configurationUuid: { table: 'bookConfigurations', field: 'uuid' }
   },
   blockParameterGroups:{
     blockUuid: { table: 'blocks', field: 'uuid'}
@@ -46,7 +43,7 @@ export const relations: Record<TableName, Record<string, { table: TableName; fie
   blocksRelations: {
     sourceBlockUuid: { table: 'blocks', field: 'uuid' },
     targetBlockUuid: { table: 'blocks', field: 'uuid' },
-    configurationVersionUuid: { table: 'configurationVersions', field: 'uuid' }
+    configurationUuid: { table: 'bookConfigurations', field: 'uuid' }
   },
   blockInstanceRelations:{
     blockRelationUuid: { table: 'blocksRelations', field: 'uuid'},
@@ -69,5 +66,8 @@ export const relations: Record<TableName, Record<string, { table: TableName; fie
   },
   notes:{
     noteGroupUuid: { table: 'notesGroups', field: 'uuid'},
-  }
+  },
+  books:{
+    configurationUuid: { table: 'bookConfigurations', field: 'uuid'}
+  },
 };

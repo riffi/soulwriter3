@@ -31,7 +31,7 @@ export class BookDB extends BlockAbstractDb{
   blockInstanceSceneLinks!: Dexie.Table<IBlockInstanceSceneLink, number>;
   constructor(dbName:string) {
     super(dbName);
-    this.version(2).stores(bookSchema);
+    this.version(3).stores(bookSchema);
   }
 }
 

@@ -25,11 +25,32 @@ export const useBookManager = () => {
   //  Создание Базы данных для книги
   async function initBookDb(book: IBook) {
     await connectToBookDatabase(book.uuid);
-    const configuration = await getBookConfiguration(book.configurationUuid);
+    let configuration: IBookConfiguration | undefined;
 
-    if (!configuration) return;
+    const isNew = !book.configurationUuid;
+    if (book.configurationUuid){
+      configuration = await getBookConfiguration(book.configurationUuid)
+      if (!configuration) {
+        notifications.show({
+          title: "Ошибка",
+          message: "Конфигурация не найдена",
+          color: "red",
+        });
+        return
+      }
+    }
+    else{
+      configuration = {
+        uuid: "",
+        title: book.title,
+        description:"",
+      }
+    }
+
+    const configurationUuid = await copyConfigurationToBookDb(configuration, isNew);
+    book.configurationUuid = configurationUuid;
+
     await bookDb.books.add(book);
-    await copyConfigurationToBookDb(configuration, book.configurationVersionNumber);
   }
 
   // Получение конфигурации по UUID
@@ -41,30 +62,26 @@ export const useBookManager = () => {
   }
 
   // Копирование конфигурации в базу данных книги
-  async function copyConfigurationToBookDb(configuration: IBookConfiguration, currentVersion?: number) {
-    await bookDb.bookConfigurations.add(configuration);
-    await copyConfigurationVersion(configuration.uuid, currentVersion);
+  async function copyConfigurationToBookDb(configuration: IBookConfiguration, isNew: boolean = false) {
+    const newConfigurationUuid = generateUUID()
+    await bookDb.bookConfigurations.add({...configuration, uuid: newConfigurationUuid});
+    if (!isNew) {
+      await copyBlocks(configuration.uuid, newConfigurationUuid);
+      await copyBlockRelations(configuration.uuid, newConfigurationUuid);
+    }
+    return newConfigurationUuid
   }
 
-  // Копирование версий конфигурации в базу данных книги
-  async function copyConfigurationVersion(configurationUuid: string, versionNumber?: number) {
-    const version = await configDatabase.configurationVersions
-      .where({ configurationUuid })
-      .and(version => !versionNumber || version.versionNumber === versionNumber)
-      .first();
-
-    if (!version) return;
-
-    await bookDb.configurationVersions.add(version);
-
-    await copyVersionBlocks(version.uuid)
-    await copyBlockRelations(version.uuid)
-  }
 
   // Копирование связей блоков в базу данных книги
-  async function copyBlockRelations(configurationVersionUuid: string) {
+  async function copyBlockRelations(oldConfigurationUuid: string, newConfigurationUuid: string) {
     const relations = await configDatabase.blocksRelations
-      .where({ configurationVersionUuid }).toArray();
+      .where({ configurationUuid: oldConfigurationUuid }).toArray();
+
+    relations.forEach(relation => {
+      relation.configurationUuid = newConfigurationUuid;
+    })
+
     await bookDb.blocksRelations.bulkAdd(relations);
   }
 
@@ -76,10 +93,14 @@ export const useBookManager = () => {
   }
 
   // Копирование блоков версии конфигурации в базу данных книги
-  async function copyVersionBlocks(versionUuid: string) {
+  async function copyBlocks(oldConfigurationUuid: string, newConfigurationUuid: string) {
     const blocks = await configDatabase.blocks
-    .where({ configurationVersionUuid: versionUuid })
+    .where({ configurationUuid: oldConfigurationUuid })
     .toArray();
+
+    blocks.forEach(block => {
+      block.configurationUuid = newConfigurationUuid;
+    })
 
     await bookDb.blocks.bulkAdd(blocks);
 
@@ -148,16 +169,8 @@ export const useBookManager = () => {
         await configDatabase.books.update(book.id, book);
       } else {
         book.uuid = generateUUID();
-        const version = await configDatabase
-        .configurationVersions
-          .where('configurationUuid')
-          .equals(book.configurationUuid)
-          .and(version => version.isDraft === 1)
-          .sortBy('versionNumber')
-          .then(versions => versions[versions.length - 1]);
-        book.configurationVersionNumber = version?.versionNumber || 0;
-        await configDatabase.books.add(book);
         await initBookDb(book);
+        await configDatabase.books.add(book);
       }
       notifications.show({
         title: "Книга",

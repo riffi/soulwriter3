@@ -1,24 +1,20 @@
 import {useLiveQuery} from 'dexie-react-hooks';
 import {
-  IBlock, IBlockParameter, IBlockParameterDataType,
-  IBlockParameterGroup, IBlockParameterPossibleValue,
+  IBlock,
+  IBlockParameterGroup,
   IBookConfiguration,
-  IBookConfigurationVersion
 } from "@/entities/ConstructorEntities";
 import {configDatabase} from "@/entities/configuratorDb";
 
 
 import {useDialog} from "@/providers/DialogProvider/DialogProvider";
-import {
-  usePublishVersion
-} from "@/components/configurator/BookConfigurationEditForm/usePublishVersion";
 import {bookDb} from "@/entities/bookDb";
 import {BlockRepository} from "@/repository/BlockRepository";
 import {BlockInstanceRepository} from "@/repository/BlockInstanceRepository";
+import {generateUUID} from "@/utils/UUIDUtils";
 
 export const useBookConfigurationEditForm = (configurationUuid: string,
                                              bookUuid?: string,
-                                             currentVersion?: IBookConfigurationVersion,
                                              currentBlock?: IBlock) => {
 
   const {showDialog} = useDialog();
@@ -31,27 +27,22 @@ export const useBookConfigurationEditForm = (configurationUuid: string,
     return db.bookConfigurations.where("uuid").equals(configurationUuid).first();
   }, [configurationUuid]);
 
-  const versionList = useLiveQuery(async () => {
-    return db.configurationVersions.where("configurationUuid").equals(configurationUuid).toArray()
-  }, [configurationUuid, configuration])
 
   // Список строительных блоков конфигурации
   const blockList = useLiveQuery<IBlock[]>(() => {
-    if (!currentVersion) {
+    if (!configurationUuid) {
       return []
     }
-    return db.blocks.where('configurationVersionUuid').equals(currentVersion?.uuid).toArray();
-  }, [currentVersion])
+    return db.blocks.where('configurationUuid').equals(configurationUuid).toArray();
+  }, [configurationUuid])
 
   // Список групп параметров для строительного блока
   const paramGroupList = useLiveQuery<IBlockParameterGroup[]>(() => {
-    if (!currentVersion || !currentBlock || !currentBlock?.uuid) {
+    if (!configurationUuid || !currentBlock || !currentBlock?.uuid) {
       return []
     }
     return db.blockParameterGroups.where('blockUuid').equals(currentBlock?.uuid).toArray();
   }, [currentBlock])
-
-  const {publishVersion} = usePublishVersion(configurationUuid, configuration, currentVersion, versionList)
 
 
   // Cохранение блока
@@ -69,13 +60,20 @@ export const useBookConfigurationEditForm = (configurationUuid: string,
     await BlockRepository.remove(db, block)
   };
 
+  const updateConfiguration = async (configuration: IBookConfiguration) => {
+    // Если конфигурация уже существует, обновляем ее
+    if (configuration.uuid){
+      await db.bookConfigurations.update(configuration.id, configuration)
+      return
+    }
+  }
+
   return {
     configuration,
-    publishVersion,
-    versionList,
     blockList,
     paramGroupList,
     saveBlock,
-    removeBlock
+    removeBlock,
+    updateConfiguration
   }
 }

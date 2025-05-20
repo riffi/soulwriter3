@@ -28,7 +28,7 @@ export const RelationEditModal = ({
       sourceBlockUuid: blockUuid,
       targetBlockUuid: '',
       relationType: BlockRelationType.ONE_TO_ONE,
-      configurationVersionUuid: ''
+      configurationUuid: ''
     }
   });
 

@@ -7,7 +7,7 @@ export interface IBook {
   author: string;
   kind: string;
   configurationUuid: string;
-  configurationVersionNumber?: number;
+  configurationTitle: string;
 }
 
 export interface IBlockInstance{

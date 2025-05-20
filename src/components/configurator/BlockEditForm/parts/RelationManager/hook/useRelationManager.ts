@@ -25,7 +25,7 @@ export const useRelationManager = (block: IBlock, bookUuid?: string, otherBlocks
       sourceBlockUuid: blockUuid,
       targetBlockUuid: '',
       relationType: BlockRelationType.ONE_TO_ONE,
-      configurationVersionUuid: block.configurationVersionUuid || '',
+      configurationUuid: block.configurationUuid || '',
     });
     setIsModalOpen(true);
   };

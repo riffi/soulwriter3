@@ -61,14 +61,8 @@ export const BookManager = () => {
       </Anchor>
   ));
 
-  const getConfigurationTitle = (uuid: string, version: number) => {
-    const configuration = configurations?.find((c) => c.uuid === uuid);
-    if (!configuration) {
-      return `${configuration?.title} (${version})`
-    }
-
-    return "Не выбрана";
-
+  const getConfigurationTitle = (book: IBook) => {
+    return  book?.configurationTitle
   };
 
   function onSelectBook(book: IBook) {
@@ -141,7 +135,7 @@ export const BookManager = () => {
                     Тип: {getKindLabel(book.kind)}
                   </Text>
                   <Text size="sm" c="dimmed">
-                    Конфигурация: {getConfigurationTitle(book.configurationUuid)}
+                    Конфигурация: {getConfigurationTitle(book)}
                   </Text>
                   <Group mt="md" grow>
                     <Button

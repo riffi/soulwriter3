@@ -42,15 +42,11 @@ export const useBlockEditForm = (blockUuid: string, bookUuid?: string, currentGr
     return db.blockParameters.where({groupUuid : currentGroupUuid }).toArray();
   }, [currentGroupUuid]);
 
-  const configurationVersion = useLiveQuery(() => {
-    if (!block) return undefined
-    return ConfigurationRepository.getVersion(db,block?.configurationVersionUuid)
-  }, [block?.uuid])
 
   const configuration = useLiveQuery(() => {
     if (!block) return undefined
-    return ConfigurationRepository.getByUuid(db, configurationVersion?.configurationUuid)
-  }, [configurationVersion?.uuid])
+    return ConfigurationRepository.getByUuid(db, block.configurationUuid)
+  }, [block?.uuid])
 
   const blockRelations = useLiveQuery<IBlockRelation[]>(() => {
     return BlockRelationRepository.getBlockRelations(db, blockUuid);
@@ -279,7 +275,6 @@ export const useBlockEditForm = (blockUuid: string, bookUuid?: string, currentGr
     paramGroupList,
     saveParamGroup,
     configuration,
-    configurationVersion,
     paramList,
     saveParam,
     deleteParam,

@@ -43,9 +43,6 @@ export enum IBlockDisplayKindTitle{
   timeLine = 'Временная линия'
 }
 
-enum IBlockKind{
-  ConstructionBlock = 'construction-block',
-}
 
 export interface IBookConfiguration{
   id?: number
@@ -54,13 +51,6 @@ export interface IBookConfiguration{
   description: string;
 }
 
-export interface IBookConfigurationVersion {
-  id?: number;
-  uuid?: string;
-  configurationUuid: string; // Ссылка на основную конфигурацию
-  versionNumber: number; // Номер версии
-  isDraft: number; // Является ли черновиком
-}
 
 export interface IBlockTitleForms{
   nominative : string;
@@ -77,7 +67,7 @@ export interface IBlock {
   id?: number
   uuid?: string; // Автогенерация UUID
   title: string;
-  configurationVersionUuid: string;
+  configurationUuid: string;
   description: string;
   useTabs: number; // Использовать вкладки
   structureKind: string // Вид структуры
@@ -138,7 +128,7 @@ export interface IBlockRelation {
   sourceBlockUuid: string;       // UUID исходного блока
   targetBlockUuid: string;       // UUID целевого блока
   relationType: BlockRelationType; // Тип связи
-  configurationVersionUuid: string; // Версия конфигурации
+  configurationUuid: string; // Версия конфигурации
 }
 
 export enum IBlockTabKind{

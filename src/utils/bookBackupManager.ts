@@ -11,7 +11,6 @@ export interface BackupData {
   blockParameterInstances: any[];
   blockInstanceRelations: any[];
   bookConfigurations: any[];
-  configurationVersions: any[];
   blocks: any[];
   blockParameterGroups: any[];
   blockParameters: any[];
@@ -38,7 +37,6 @@ export const exportBook = async (bookUuid: string) => {
       blockParameterInstances: await db.blockParameterInstances.toArray(),
       blockInstanceRelations: await db.blockInstanceRelations.toArray(),
       bookConfigurations: await db.bookConfigurations.toArray(),
-      configurationVersions: await db.configurationVersions.toArray(),
       blocks: await db.blocks.toArray(),
       blockParameterGroups: await db.blockParameterGroups.toArray(),
       blockParameters: await db.blockParameters.toArray(),
@@ -90,13 +88,13 @@ export const importBookBackup = async (file: File) => {
 
           // Импорт данных
           await Promise.all([
+            db.books.add(data.book),
             db.scenes.bulkAdd(data.scenes || []),
             db.chapters.bulkAdd(data.chapters || []),
             db.blockInstances.bulkAdd(data.blockInstances || []),
             db.blockParameterInstances.bulkAdd(data.blockParameterInstances || []),
             db.blockInstanceRelations.bulkAdd(data.blockInstanceRelations || []),
             db.bookConfigurations.bulkAdd(data.bookConfigurations || []),
-            db.configurationVersions.bulkAdd(data.configurationVersions || []),
             db.blocks.bulkAdd(data.blocks || []),
             db.blockParameterGroups.bulkAdd(data.blockParameterGroups || []),
             db.blockParameters.bulkAdd(data.blockParameters || []),

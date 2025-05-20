@@ -18,18 +18,14 @@ import {
   useBookConfigurationEditForm
 } from "@/components/configurator/BookConfigurationEditForm/useBookConfigurationEditForm";
 import {
-  IconCheck,
+  IconDownload,
   IconEdit,
-  IconFilePencil,
   IconPlus,
-  IconRocket,
-  IconTrash, IconWorldUpload
+  IconTrash
 } from "@tabler/icons-react";
-import {notifications} from "@mantine/notifications";
 import {
   IBlock, IBlockDisplayKind, IBlockStructureKind, IBlockStructureKindTitle,
   IBookConfiguration,
-  IBookConfigurationVersion
 } from "@/entities/ConstructorEntities";
 import {
   BlockEditModal
@@ -37,19 +33,23 @@ import {
 import {useNavigate} from "react-router-dom";
 import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
 import {useDialog} from "@/providers/DialogProvider/DialogProvider";
+import {exportConfiguration} from "@/utils/configurationBackupManager";
+import {bookDb} from "@/entities/bookDb";
+import {InlineEdit} from "@/components/shared/InlineEdit/InlineEdit";
 
 export interface IBookConfigurationEditFormProps{
   bookConfigurationUuid: string
   bookUuid?: string
 }
 
+
 export const BookConfigurationEditForm = (props: IBookConfigurationEditFormProps) => {
-  const [currentVersion, setCurrentVersion] = useState<IBookConfigurationVersion>()
+
   const navigate = useNavigate()
 
   const getBlackBlock = (): IBlock => {
     return {
-      configurationVersionUuid: currentVersion?.uuid,
+      configurationUuid: props.bookConfigurationUuid,
       uuid: undefined,
       title: '',
       description: '',
@@ -68,13 +68,12 @@ export const BookConfigurationEditForm = (props: IBookConfigurationEditFormProps
 
   const {
     configuration,
-    versionList,
-    publishVersion,
     blockList,
     saveBlock,
     paramGroupList,
-    removeBlock
-  } = useBookConfigurationEditForm(props.bookConfigurationUuid, props.bookUuid, currentVersion, currentBlock)
+    removeBlock,
+    updateConfiguration
+  } = useBookConfigurationEditForm(props.bookConfigurationUuid, props.bookUuid, currentBlock)
 
   const breadCrumbs = [
     { title: 'Конфигуратор', href: '/configurator' },
@@ -85,24 +84,6 @@ export const BookConfigurationEditForm = (props: IBookConfigurationEditFormProps
       </Anchor>
   ));
 
-  const handleVersionPublication = async () => {
-    const result = await showDialog(
-        'Опубликовать версию',
-        'Вы действительно хотите опубликовать версию?'
-    );
-    if (!result) {
-      return;
-    }
-    const newVersion = await publishVersion();
-    if (newVersion) {
-      setCurrentVersion(newVersion);
-    }
-  };
-
-  useEffect(() => {
-    setCurrentVersion(versionList?.[versionList?.length - 1])
-  }, [versionList])
-
 
   function handleOpenBlockPage(c: IBlock) {
     let path = `/block/edit?uuid=${c.uuid}`;
@@ -111,6 +92,10 @@ export const BookConfigurationEditForm = (props: IBookConfigurationEditFormProps
     }
     return () => navigate(path);
   }
+
+  const handleExport = async (uuid: string) => {
+    await exportConfiguration(bookDb, uuid);
+  };
 
   return (
       <>
@@ -123,89 +108,51 @@ export const BookConfigurationEditForm = (props: IBookConfigurationEditFormProps
             <Space h={20}/>
           </>
           }
-          {!isBookConfiguration && versionList && versionList.length > 0 && (
-              <>
-                <SegmentedControl
-                    value={currentVersion?.uuid || versionList[0].uuid}
-                    orientation={isMobile ? "vertical" : "horizontal"}
-                    onChange={(value) => {
-                      setCurrentVersion(versionList?.find((v) => v.uuid === value));
-                    }}
-                    styles={{
-                      root: {
-                        "--sc-font-size": "12px",
-                        "--sc-padding": "0px",
-                        backgroundColor: "transparent",
-                        gap: "4px",
-                      },
-                      indicator: {
-                        border: "1px solid #dee2e6",
-                        backgroundColor: "white",
-                        "&:hover": {
-                          backgroundColor: "#f8f9fa",
-                        },
-                      },
-                      label: {
-                        padding: "6px 10px",
-                      },
-                    }}
-                    data={versionList.map(version => ({
-                      value: version.uuid,
-                      label: (
-                          <div style={{display: 'flex', alignItems: 'center', gap: 8}}>
-                            {version.isDraft === 1 ? (
-                                <IconFilePencil size={24}/>
-                            ) : (
-                                <IconCheck size={24} color="green"/>
-                            )}
-                            <span>
-                              Версия {version.versionNumber}
-                              {version.isDraft === 1 && ' (черновик)'}
-                            </span>
-                          </div>
-                      ),
-                    }))}
-                />
-                <Space h="sm"/>
-              </>
-          )}
+          <Group>
+            <Button
+                variant="outline"
+                leftSection={<IconDownload size={16}/>}
+                onClick={() => handleExport(configuration?.uuid!)}
+            >
+              Экспорт
+            </Button>
+          </Group>
+          <Space h={10}/>
+          <Stack wrap="nowrap">
+            <InlineEdit
+                onChange={(v) => updateConfiguration({...configuration, title: v})}
+                value={configuration?.title}
+                placeholder={'Введите название'}/>
+            <InlineEdit
+                onChange={(v) => updateConfiguration({...configuration, description: v})}
+                value={configuration?.description}
+                placeholder={'Введите описание'}/>
+          </Stack>
+          <Space h={20}/>
 
-          {!isBookConfiguration && (currentVersion?.isDraft === 1) && (
-              <>
-                <Button
-                    variant={"subtle"}
-                    onClick={handleVersionPublication}
-                    leftSection={<IconWorldUpload size={16}/>}
-                >
-                  Опубликовать версию
-                </Button>
-              </>)}
           <Title order={4}>Блоки</Title>
           <SimpleGrid cols={{base: 1, sm: 2, lg: 3, xl: 4}} spacing="md">
-            {/* Новая карточка для добавления */}
-            {(isBookConfiguration || (currentVersion?.isDraft === 1)) && (
-                <Card
-                    shadow="xs"
-                    padding="lg"
-                    radius="md"
-                    withBorder
-                    style={{
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center'
-                    }}
-                    onClick={() => {
-                      setCurrentBlock(getBlackBlock());
-                      setIsModalOpened(true);
-                    }}
-                >
-                  <Stack align="center" gap="xs">
-                    <IconPlus size={32} stroke={1.5}/>
-                    <Text fw={500}>Добавить блок</Text>
-                  </Stack>
-                </Card>
-            )}
+              <Card
+                  shadow="xs"
+                  padding="lg"
+                  radius="md"
+                  withBorder
+                  style={{
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                  onClick={() => {
+                    setCurrentBlock(getBlackBlock());
+                    setIsModalOpened(true);
+                  }}
+              >
+                <Stack align="center" gap="xs">
+                  <IconPlus size={32} stroke={1.5}/>
+                  <Text fw={500}>Добавить блок</Text>
+                </Stack>
+              </Card>
             {blockList?.map((c) =>
                 <Card key={c.uuid} shadow="xs" padding="lg" radius="md" withBorder>
                   <Stack gap="sm">

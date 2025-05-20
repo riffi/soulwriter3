@@ -29,6 +29,7 @@ export const BookEditModal = ({
       author: "",
       kind: "novel",
       configurationUuid: "",
+      configurationTitle: ""
     },
     validate: {
       title: (value) => (value ? null : "Название обязательно"),
@@ -36,7 +37,13 @@ export const BookEditModal = ({
   });
 
   const handleSubmit = (values: typeof form.values) => {
-    onSave(values);
+    const valuesWithConfiguration = {
+      ...values,
+      configurationTitle: configurations.find(
+          (config) => config.uuid === values.configurationUuid
+      )?.title || "",
+    };
+    onSave(valuesWithConfiguration);
     onClose();
   };
 

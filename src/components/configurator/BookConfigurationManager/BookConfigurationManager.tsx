@@ -19,6 +19,8 @@ import {IBookConfiguration} from "@/entities/ConstructorEntities";
 import { notifications } from '@mantine/notifications';
 import {useNavigate} from "react-router-dom";
 import {usePageTitle} from "@/providers/PageTitleProvider/PageTitleProvider";
+import {configDatabase} from "@/entities/configuratorDb";
+import {exportConfiguration} from "@/utils/configurationBackupManager";
 
 const getBlackConfiguration = (): IBookConfiguration => {
   return {
@@ -33,7 +35,6 @@ export const BookConfigurationManager = () =>{
     configurationList,
     saveConfiguration,
     removeConfiguration,
-    exportConfiguration,
     importConfiguration,
   } = useConfigurationManager()
 
@@ -57,16 +58,7 @@ export const BookConfigurationManager = () =>{
 
   // Обработчик экспорта
   const handleExport = async (configUuid: string) => {
-    const data = await exportConfiguration(configUuid);
-    if (!data) return;
-
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${data.configuration.title}_config.json`;
-    a.click();
-    URL.revokeObjectURL(url);
+    await exportConfiguration(configDatabase, configUuid);
   };
 
   // Обработчик импорта
@@ -157,18 +149,6 @@ export const BookConfigurationManager = () =>{
                         onClick={() => handleExport(c.uuid!)}
                     >
                       Экспорт
-                    </Button>
-                    <Button
-                        color="blue"
-                        radius="md"
-                        variant={"outline"}
-                        leftSection={<IconEdit/>}
-                        onClick={() => {
-                          setCurrentBookConfiguration(c)
-                          setIsModalOpened(true)
-                        }}
-                    >
-                      Параметры
                     </Button>
                     <Button
                       radius="md"

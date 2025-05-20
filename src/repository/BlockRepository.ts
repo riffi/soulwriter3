@@ -19,7 +19,7 @@ const getByUuid = async (db: BlockAbstractDb, blockUuid: string) => {
 const getSiblings = async (db: BlockAbstractDb, block: IBlock) => {
   return db.blocks.where(
       {
-        configurationVersionUuid: block.configurationVersionUuid
+        configurationUuid: block.configurationUuid
       })
     .filter(b => b.uuid !== block.uuid)
     .toArray()
@@ -76,7 +76,7 @@ const getRelatedBlocks = async (db: BlockAbstractDb, block: IBlock, blockRelatio
     relations.push(...blockRelations)
   }
   return db.blocks.where({
-    configurationVersionUuid: block?.configurationVersionUuid
+    configurationUuid: block?.configurationUuid
   })
   .filter(b => b.uuid !== block.uuid)
   .filter(b => relations.some(r => r.sourceBlockUuid === b.uuid || r.targetBlockUuid === b.uuid))
