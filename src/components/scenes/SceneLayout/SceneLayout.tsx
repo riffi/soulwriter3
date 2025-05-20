@@ -1,11 +1,16 @@
 // SceneLayout.tsx
 import { useMedia } from "@/providers/MediaQueryProvider/MediaQueryProvider";
 import {useLocation, useNavigate} from "react-router-dom";
-import {Box, LoadingOverlay} from "@mantine/core";
+import {Box, LoadingOverlay, ActionIcon} from "@mantine/core";
 import {SceneEditor} from "@/components/scenes/SceneEditor/SceneEditor";
 import {SceneManager} from "@/components/scenes/SceneManager/SceneManager";
 import React, {useState} from "react";
 import {useSceneLayout} from "@/components/scenes/SceneLayout/hooks/useSceneLayout";
+import {
+  IconChevronRight,
+  IconLayoutSidebarLeftCollapse,
+  IconLayoutSidebarRightCollapse
+} from "@tabler/icons-react";
 
 export const SceneLayout = () => {
   const { isMobile } = useMedia();
@@ -31,16 +36,16 @@ export const SceneLayout = () => {
   if (isMobile) {
     return sceneId ? <SceneEditor sceneId={sceneId} /> :
         <SceneManager
-          openScene={openScene}
-          mode="manager"
-          scenes={scenes}
-          chapters={chapters}
+            openScene={openScene}
+            mode="manager"
+            scenes={scenes}
+            chapters={chapters}
         />;
   }
 
   if (mode === 'manager') {
     return (
-        <Box>
+        <Box pos="relative">
           <SceneManager
               openScene={openScene}
               selectedSceneId={sceneId}
@@ -65,6 +70,7 @@ export const SceneLayout = () => {
         <Box style={{
           width: "500px",
           flexShrink: 0,
+          position: 'relative',
         }}>
           <Box style={{
             maxHeight: "calc(100vh - 50px)",
@@ -80,6 +86,25 @@ export const SceneLayout = () => {
                 chapters={chapters}
             />
           </Box>
+          <ActionIcon
+              onClick={toggleMode}
+              variant="transparent"
+              style={{
+                position: 'absolute',
+                right: -30,
+                top: 0,
+                transform: 'none', // Убираем вертикальное выравнивание
+                color: '#999', // Цвет иконки
+                backgroundColor: '#fff', // Цвет фона
+                borderBottomRightRadius: '4px', // Радиус нижнего правого угла
+                borderTopRightRadius: '4px', // Радиус верхнего правого угла
+              }}
+          >
+            <IconChevronRight
+                size={30}
+                strokeWidth={1}
+            />
+          </ActionIcon>
         </Box>
         <Box style={{ flexGrow: 1 }}>
           {sceneId ? <SceneEditor sceneId={sceneId} /> : <Placeholder />}

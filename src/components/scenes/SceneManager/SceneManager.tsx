@@ -15,7 +15,13 @@ import {
   IconArrowsMinimize,
   IconFilter,
   IconX,
-  IconSearch, IconFolderOpen, IconFolder, IconFolderUp, IconNote,
+  IconSearch,
+  IconFolderOpen,
+  IconFolder,
+  IconFolderUp,
+  IconNote,
+  IconLayoutSidebarRightCollapse,
+  IconLayoutSidebarLeftCollapse, IconChevronLeft,
 } from "@tabler/icons-react";
 import { usePageTitle } from "@/providers/PageTitleProvider/PageTitleProvider";
 import { SceneTable } from "./table/SceneTable";
@@ -151,46 +157,46 @@ export const SceneManager = (props: SceneManagerProps) => {
           fluid={isMobile}
           p={isMobile ? '0' : 'lg'}
           style={{
+            position: 'relative', // Добавляем для корректного позиционирования иконки
             backgroundColor: '#FFFFFF',
             borderRadius: '5px',
             boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
             paddingTop: '20px',
-            maxWidth: isMobile || props.mode === 'manager' ? undefined : '600px',
+            maxWidth: isMobile || props.mode === 'manager' ? 'var(--container-size-md)' : '600px',
+            width: props.mode === 'manager' ? 'var(--container-size-md)' : undefined,
           }}
       >
         <Box
             style={{
               position: 'sticky',
-              top: 0,
+              top: isMobile ? 50 : 0,
               zIndex: 100,
               backgroundColor: '#FFFFFF',
               paddingTop: '20px',
               borderBottom: '1px solid #E0E0E0',
             }}
         >
-          {!isMobile && (
-              <Tooltip
-                  label={props.mode === 'split' ? "Развернуть редактор" : "Свернуть редактор"}
-              >
-                <ActionIcon
-                    variant="subtle"
-                    onClick={props.onToggleMode}
-                    size="md"
-                    style={{
-                      position: 'absolute',
-                      right: '-10px',
-                      top: '-15px',
-                      color: 'grey',
-                    }}
-                >
-                  {props.mode === 'split' ? (
-                      <IconArrowsMaximize size={18} />
-                  ) : (
-                      <IconArrowsMinimize size={18} />
-                  )}
-                </ActionIcon>
-              </Tooltip>
-          )}
+          {props.mode === 'manager' && <ActionIcon
+              onClick={props.onToggleMode}
+              variant="transparent"
+              style={{
+                position: 'absolute',
+                left: -45,
+                top: -20,
+                zIndex: 100,
+                color: '#999',
+                backgroundColor: '#fff', // Цвет фона
+                borderBottomLeftRadius: '4px', // Радиус нижнего правого угла
+                borderTopLeftRadius: '4px', // Радиус верхнего правого угла
+              }}
+          >
+            <IconChevronLeft
+                size={30}
+                strokeWidth={1}
+            />
+          </ActionIcon>
+          }
+
           <Group
               justify="space-between"
               mb="md"
