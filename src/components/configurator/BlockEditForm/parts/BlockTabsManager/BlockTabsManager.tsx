@@ -25,6 +25,7 @@ export const BlockTabsManager = ({ bookUuid,
   const {
     tabs,
     childBlocks,
+    referencingParams,
     saveTab,
     deleteTab,
     moveTabUp,
@@ -148,6 +149,7 @@ export const BlockTabsManager = ({ bookUuid,
                     (!editingTab || t.uuid !== editingTab.uuid)
                 )
             )}
+            referencingParams={referencingParams}
             currentBlockUuid={currentBlockUuid}
             otherBlocks={otherBlocks}
         />}

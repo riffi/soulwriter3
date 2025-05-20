@@ -103,6 +103,10 @@ export interface IBlockParameter {
   relatedBlockUuid?: string; // Ссылка на связь блоков
 }
 
+export interface IBlockParameterWithBlockTitle extends IBlockParameter{
+  blockTitle: string // Название блока
+}
+
 
 // Возможные значения параметра для типа "выбор из списка"
 export interface IBlockParameterPossibleValue {
@@ -134,6 +138,7 @@ export enum IBlockTabKind{
   parameters = 'parameters',
   relation = 'relation',
   childBlock = 'childBlock',
+  referencingParam = 'referencingParam'
 }
 export interface IBlockTab{
   id?: number;
@@ -144,6 +149,7 @@ export interface IBlockTab{
   tabKind: string; // Вид вкладки
   relationUuid?: string; // Ссылка на связь
   childBlockUuid?: string; // Ссылка на дочерний блок
+  referencingParamUuid?: string; // Ссылка на ссылающийся параметр
   isDefault: number; // Является ли вкладка вкладкой по умолчанию
 }
 

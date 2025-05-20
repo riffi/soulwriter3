@@ -10,7 +10,7 @@ export const baseSchema={
   bookConfigurations: '++id, &uuid, title',
   blocks: '++id, &uuid, configurationUuid, parentBlockUuid, title, sceneLinkAllowed, showInSceneList',
   blockParameterGroups: '++id, &uuid, blockUuid, title',
-  blockParameters: '++id, &uuid, groupUuid, blockUuid, dataType, linkedBlockUuid, linkedParameterUuid, isDefault, displayInCard',
+  blockParameters: '++id, &uuid, groupUuid, blockUuid, dataType, linkedBlockUuid, linkedParameterUuid, isDefault, displayInCard, relatedBlockUuid ',
   blockParameterPossibleValues: '++id, &uuid, parameterUuid, value',
   blocksRelations: '++id, &uuid, sourceBlockUuid, targetBlockUuid, configurationUuid',
   blockTabs: '++id, &uuid, blockUuid, title, relationUuid',

@@ -28,9 +28,12 @@ import {
 } from "@/components/blockInstance/BlockInstanceEditor/parts/InstanceParameterEditor/InstanceParameterEditor";
 import {relationUtils} from "@/utils/relationUtils";
 import {IconViewer} from "@/components/shared/IconViewer/IconViewer";
-import {IBlockStructureKind} from "@/entities/ConstructorEntities";
+import {IBlockStructureKind, IBlockTabKind} from "@/entities/ConstructorEntities";
 import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
 import {usePageTitle} from "@/providers/PageTitleProvider/PageTitleProvider";
+import {
+  ReferencedInstanceEditor
+} from "@/components/blockInstance/BlockInstanceEditor/parts/ReferencedInstanceEditor/ReferencedInstanceEditor";
 
 export interface IBlockInstanceEditorProps {
   blockInstanceUuid: string;
@@ -56,7 +59,8 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
     blockRelations,
     childBlocks,
     childInstancesMap,
-    blockTabs
+    blockTabs,
+    referencingParams
   } = useBlockInstanceEditor(props.blockInstanceUuid);
 
 
@@ -91,16 +95,22 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
 
     return blockTabs.map(tab => {
       switch (tab.tabKind) {
-        case 'relation':
+        case IBlockTabKind.relation:
           return {
             label: tab.title,
             value: `related-${tab.relationUuid}`,
           };
-        case 'childBlock':
+        case IBlockTabKind.childBlock:
           return {
             label: tab.title,
             value: `child-${tab.childBlockUuid}`,
           };
+        case IBlockTabKind.referencingParam:
+          return {
+            label: tab.title,
+            value: `referencing-param-${tab.referencingParamUuid}`,
+          };
+
         default: // parameters
           return {
             label: tab.title,
@@ -180,11 +190,13 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
               />
             </ScrollArea>
             {blockTabs?.map(tab => {
-              const tabValue = tab.tabKind === 'relation'
+              const tabValue = tab.tabKind === IBlockTabKind.relation
                   ? `related-${tab.relationUuid}`
-                  : tab.tabKind === 'childBlock'
+                  : tab.tabKind === IBlockTabKind.childBlock
                       ? `child-${tab.childBlockUuid}`
-                      : 'params';
+                      : tab.tabKind === IBlockTabKind.referencingParam
+                        ? `referencing-param-${tab.referencingParamUuid}`
+                          : 'params';
 
               return (
                   activeTab === tabValue && (
@@ -231,6 +243,19 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
                             ))
                         )}
                       </>
+                        <>
+                          {tab.tabKind === IBlockTabKind.referencingParam && (
+                              referencingParams?.map(param => (
+                                  activeTab === `referencing-param-${param.uuid}` && (
+                                      <ReferencedInstanceEditor
+                                          block={block}
+                                          referencingParam={param}
+                                          instance={blockInstance}
+                                      />
+                                  )
+                              ))
+                          )}
+                        </>
                   </Box>
                   ))
             })}

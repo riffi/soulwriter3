@@ -33,6 +33,11 @@ export const useBlockInstanceEditor = (blockInstanceUuid: string, currentParamGr
     return BlockRepository.getRelatedBlocks(bookDb, block, blockRelations)
   },[block, blockRelations])
 
+  const referencingParams = useLiveQuery<IBlockParameter[]>(() => {
+    if (!block || !blockRelations) return [];
+    return bookDb.blockParameters.where("relatedBlockUuid").equals(block.uuid).toArray()
+  }, [block, blockRelations])
+
 
 
   //группы параметров блока
@@ -131,6 +136,7 @@ export const useBlockInstanceEditor = (blockInstanceUuid: string, currentParamGr
     blockRelations,
     childBlocks,
     childInstancesMap,
-    blockTabs
+    blockTabs,
+    referencingParams
   }
 };

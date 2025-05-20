@@ -1,8 +1,15 @@
 import {Button, Group, Modal, Select, Stack, TextInput} from "@mantine/core";
 import {useForm} from "@mantine/form";
-import {IBlock, IBlockRelation, IBlockTab, IBlockTabKind} from "@/entities/ConstructorEntities";
+import {
+  IBlock,
+  IBlockParameter, IBlockParameterWithBlockTitle,
+  IBlockRelation,
+  IBlockTab,
+  IBlockTabKind
+} from "@/entities/ConstructorEntities";
 import {useEffect} from "react";
 import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
+import {useLiveQuery} from "dexie-react-hooks";
 
 interface BlockTabEditModalProps {
   isOpen: boolean;
@@ -12,6 +19,7 @@ interface BlockTabEditModalProps {
   relations: IBlockRelation[];
   childBlocks: IBlock[];
   otherBlocks: IBlock[];
+  referencingParams: IBlockParameterWithBlockTitle[];
   currentBlockUuid: string;
 }
 
@@ -23,7 +31,8 @@ export const BlockTabEditModal = ({
                                     relations,
                                     childBlocks,
                                     otherBlocks,
-                                    currentBlockUuid
+                                    currentBlockUuid,
+                                    referencingParams
                                   }: BlockTabEditModalProps) => {
   const {isMobile} = useMedia();
   const form = useForm<Omit<IBlockTab, 'id'>>({
@@ -78,6 +87,7 @@ export const BlockTabEditModal = ({
                 { value: IBlockTabKind.relation, label: 'Связи' },
                 { value: IBlockTabKind.childBlock, label: 'Дочерние блоки' },
                 { value: IBlockTabKind.parameters, label: 'Параметры' },
+                { value: IBlockTabKind.referencingParam, label: 'Ссылающийся параметр' },
               ]}
               {...form.getInputProps('tabKind')}
           />
@@ -105,6 +115,17 @@ export const BlockTabEditModal = ({
                     label: b.title
                   }))}
                   {...form.getInputProps('childBlockUuid')}
+              />
+          )}
+
+          {form.values.tabKind === IBlockTabKind.referencingParam && (
+              <Select
+                  label="Параметр"
+                  data={referencingParams.map(p => ({
+                    value: p.uuid!,
+                    label:`${p.blockTitle}: ${p.title}`
+                  }))}
+                  {...form.getInputProps('referencingParamUuid')}
               />
           )}
 
