@@ -74,6 +74,7 @@ export const SceneDesktopContent = ({
                     <Group p={10} justify="space-between" align="center" w="100%">
                       <InlineEdit
                           value={scene.title}
+                          size={"xl"}
                           textProps={{
                             style: { fontSize: '1.5rem' }
                           }}

@@ -46,8 +46,7 @@ export const SceneLayout = () => {
   };
 
   if (isMobile) {
-    return sceneId ? <SceneEditor sceneId={sceneId} /> :
-        <SceneManager
+    return <SceneManager
             openScene={openScene}
             mode="manager"
             scenes={scenesWithBlockInstances}

@@ -52,6 +52,7 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
   const [addingInstance, setAddingInstance] = useState(false);
   const [opened, { open, close }] = useDisclosure(false);
   const [newInstanceName, setNewInstanceName] = useState('');
+  const [newShortDescription, setNewShortDescription] = useState('');
 
   const [filtersVisible, { toggle: toggleFilters }] = useDisclosure(false);
   const [filters, setFilters] = useState<Record<string, string[]>>({});
@@ -90,6 +91,7 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
 
   const handleAddClick = () => {
     setNewInstanceName(`${block?.title}`);
+    setNewShortDescription('');
     open();
   };
 
@@ -103,8 +105,10 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
         blockUuid: props.blockUuid,
         uuid,
         title: newInstanceName.trim(),
+        shortDescription: newShortDescription.trim() ? newShortDescription.trim() : undefined,
       };
       await addBlockInstance(newInstance);
+      setNewShortDescription('');
       close();
       navigate(`/block-instance/card?uuid=${uuid}`);
     } finally {
@@ -275,6 +279,13 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
               value={newInstanceName}
               onChange={(e) => setNewInstanceName(e.currentTarget.value)}
               placeholder="Введите название"
+              mb="md"
+          />
+          <TextInput
+              label="Краткое описание"
+              value={newShortDescription}
+              onChange={(e) => setNewShortDescription(e.currentTarget.value)}
+              placeholder="Введите краткое описание (необязательно)"
               mb="md"
           />
           <Group justify="flex-end">

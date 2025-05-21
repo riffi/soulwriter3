@@ -8,20 +8,14 @@ import {
   Box, TextInput, Select, Collapse, Drawer, Stack, Text
 } from "@mantine/core";
 import {
-  IconPlus,
-  IconFolderOff,
   IconFolderPlus,
-  IconArrowsMaximize,
-  IconArrowsMinimize,
   IconFilter,
   IconX,
   IconSearch,
   IconFolderOpen,
-  IconFolder,
   IconFolderUp,
   IconNote,
-  IconLayoutSidebarRightCollapse,
-  IconLayoutSidebarLeftCollapse, IconChevronLeft,
+  IconChevronLeft,
 } from "@tabler/icons-react";
 import { usePageTitle } from "@/providers/PageTitleProvider/PageTitleProvider";
 import { SceneTable } from "./table/SceneTable";
@@ -36,12 +30,11 @@ import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
 import {useBookStore} from "@/stores/bookStore/bookStore";
 import {
   IChapter,
-  IScene,
   ISceneWithInstances,
-  ISceneWithInstancesBlock
 } from "@/entities/BookEntities";
-import {useLiveQuery} from "dexie-react-hooks";
+
 import {bookDb} from "@/entities/bookDb";
+import {IBlock} from "@/entities/ConstructorEntities";
 
 export interface SceneManagerProps {
   openScene: (sceneId: number) => void;
@@ -163,7 +156,7 @@ export const SceneManager = (props: SceneManagerProps) => {
             borderRadius: '5px',
             boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
             paddingTop: '20px',
-            maxWidth: isMobile || props.mode === 'manager' ? 'var(--container-size-md)' : '600px',
+            maxWidth: isMobile ? undefined : (props.mode === 'manager' ? 'var(--container-size-md)' : '600px'),
             width: props.mode === 'manager' ? 'var(--container-size-md)' : undefined,
           }}
       >

@@ -61,7 +61,8 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
     childBlocks,
     childInstancesMap,
     blockTabs,
-    referencingParams
+    referencingParams,
+    updateBlockInstanceShortDescription
   } = useBlockInstanceEditor(props.blockInstanceUuid);
 
 
@@ -174,6 +175,18 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
               />
             }
           </Group>
+          <Group>
+          {block?.structureKind !== IBlockStructureKind.single &&
+              <InlineEdit
+                  value={blockInstance?.shortDescription || ''}
+                  placeholder="Краткое описание..."
+                  label="Краткое описание"
+                  size="xs" // Slightly smaller size for description
+                  onChange={(val) => updateBlockInstanceShortDescription(val)}
+              />
+          }
+          </Group>
+
           <section>
             <ScrollArea
                 type="hover"

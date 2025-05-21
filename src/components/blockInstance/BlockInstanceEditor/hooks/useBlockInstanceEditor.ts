@@ -129,6 +129,11 @@ export const useBlockInstanceEditor = (blockInstanceUuid: string, currentParamGr
     await bookDb.blockInstances.update(blockInstance.id, {title: newTitle})
   }
 
+  const updateBlockInstanceShortDescription = async (newDescription: string) =>{
+    if (!blockInstance) return;
+    await bookDb.blockInstances.update(blockInstance.id, {shortDescription: newDescription});
+  }
+
   return {
     blockInstance,
     block,
@@ -144,6 +149,7 @@ export const useBlockInstanceEditor = (blockInstanceUuid: string, currentParamGr
     childBlocks,
     childInstancesMap,
     blockTabs,
-    referencingParams
+    referencingParams,
+    updateBlockInstanceShortDescription
   }
 };

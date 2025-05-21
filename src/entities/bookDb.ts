@@ -49,7 +49,9 @@ const connectToBookDatabase = (uuid:string): BookDB =>{
 }
 
 const closeDBConnection = (db)=>{
-  db.close();
+  if (db){
+    db.close();
+  }
 }
 
 const deleteBookDatabase = async (uuid: string): Promise<void> => {

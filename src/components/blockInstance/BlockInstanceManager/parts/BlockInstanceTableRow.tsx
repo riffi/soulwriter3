@@ -48,6 +48,11 @@ export const BlockInstanceTableRow = ({
             >
               {instance.title}
             </Text>
+              {instance.shortDescription && (
+                  <Text size="xs" c="dimmed" mt={2}>
+                      {instance.shortDescription}
+                  </Text>
+              )}
             <Group gap="xs" mt={4}>
               {displayedParameters?.map((param) => {
                 const paramInstance = instance.params?.find(
