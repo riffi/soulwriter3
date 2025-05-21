@@ -163,7 +163,7 @@ export const SceneManager = (props: SceneManagerProps) => {
             borderRadius: '5px',
             boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
             paddingTop: '20px',
-            maxWidth: isMobile || props.mode === 'manager' ? 'var(--container-size-md)' : '600px',
+            maxWidth: isMobile ? undefined : (props.mode === 'manager' ? 'var(--container-size-md)' : '600px'),
             width: props.mode === 'manager' ? 'var(--container-size-md)' : undefined,
           }}
       >
