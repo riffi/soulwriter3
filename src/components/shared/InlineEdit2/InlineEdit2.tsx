@@ -17,14 +17,14 @@ interface InlineEditProps {
 }
 
 export const InlineEdit2: React.FC<InlineEditProps> = ({
-                                                 value,
-                                                 onChange,
-                                                 placeholder = 'Введите текст...',
-                                                 disabled = false,
-                                                 size = 'sm',
-                                                 label,
-                                                 labelProps = {},
-                                               }) => {
+                                                         value,
+                                                         onChange,
+                                                         placeholder = 'Введите текст...',
+                                                         disabled = false,
+                                                         size = 'sm',
+                                                         label,
+                                                         labelProps = {},
+                                                       }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(value);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -161,22 +161,26 @@ export const InlineEdit2: React.FC<InlineEditProps> = ({
                 </ActionIcon>
               </>
           ) : (
-              <>
+              <Box
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    minHeight: sizeConfig.minHeight,
+                    maxWidth: '100%',
+                  }}
+              >
                 <Text
                     size={sizeConfig.fontSize}
                     color={value ? undefined : 'dimmed'}
                     onClick={startEditing}
                     style={{
-                      flex: 1,
                       wordBreak: 'break-word',
                       userSelect: 'none',
-                      width: '100%',
                       overflow: 'hidden',
                       cursor: disabled ? 'default' : 'pointer',
-                      marginRight: '32px',
-                      minHeight: sizeConfig.minHeight,
                       display: 'flex',
                       alignItems: 'center',
+                      minHeight: sizeConfig.minHeight,
                     }}
                 >
                   {displayValue}
@@ -188,10 +192,7 @@ export const InlineEdit2: React.FC<InlineEditProps> = ({
                         color="gray"
                         onClick={startEditing}
                         style={{
-                          position: 'absolute',
-                          right: 0,
-                          top: '50%',
-                          transform: 'translateY(-50%)',
+                          marginLeft: '8px',
                           opacity: 0.7,
                           flexShrink: 0,
                         }}
@@ -199,9 +200,9 @@ export const InlineEdit2: React.FC<InlineEditProps> = ({
                       <IconEdit size={sizeConfig.iconSize} />
                     </ActionIcon>
                 )}
-              </>
+              </Box>
           )}
         </Box>
       </Box>
-    );
+  );
 };

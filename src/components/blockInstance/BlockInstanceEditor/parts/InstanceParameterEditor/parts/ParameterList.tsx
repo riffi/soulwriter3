@@ -144,10 +144,13 @@ export const ParameterList = ({
                                 allBlocks={allBlocks}
                             />
                         ) : (
-                            <ParameterViewVariantRenderer
-                                dataType={parameter?.dataType || "text"}
-                                value={fullParam.instance.value || ""}
-                             />
+                            <Box ml={10} >
+                              <ParameterViewVariantRenderer
+                                  dataType={parameter?.dataType || "text"}
+                                  value={fullParam.instance.value || ""}
+                                  fontSize={16}
+                               />
+                            </Box>
                         )}
                       </Box>
                     </>

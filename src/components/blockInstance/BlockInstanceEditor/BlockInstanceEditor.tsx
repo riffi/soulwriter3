@@ -143,7 +143,7 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
 
   return (
       <>
-      <Container size="xl" p={'xs'} style={{backgroundColor: '#FFF', minHeight: 'calc(100vh - 100px)'}} >
+      <Container size="lg" p={'xs'} style={{backgroundColor: '#FFF', minHeight: 'calc(100vh - 100px)'}} >
         <Box className={classes.container} pos="relative">
           <Group mb="md" className={classes.header}>
             <ActionIcon

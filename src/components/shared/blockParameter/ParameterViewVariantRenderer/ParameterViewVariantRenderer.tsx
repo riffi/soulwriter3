@@ -63,7 +63,7 @@ export const ParameterViewVariantRenderer = ({
     return (
         <Box
             style={{
-              margin: "5px 2px",
+              margin: "10px 0px 0px 0px",
               borderRadius: 5,
               height: 20,
               width: 60,
@@ -76,7 +76,7 @@ export const ParameterViewVariantRenderer = ({
   return (
       <Text
           component="div"
-          style={{ fontSize }}
+          style={{ fontSize}}
       >
         <div
             dangerouslySetInnerHTML={{ __html: value || "Не указано" }}
