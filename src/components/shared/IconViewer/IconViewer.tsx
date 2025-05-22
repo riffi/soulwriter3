@@ -27,7 +27,7 @@ export const IconViewer = ({ iconName, customIconBase64, size = 24, color = 'bla
 
   const IconComponent = Gi[iconName as keyof typeof Gi];
 
-  if (customIconBase64) {
+  if (customIconBase64 && customIconBase64 !== '') {
     return (
         <Box>
           <MantineImage

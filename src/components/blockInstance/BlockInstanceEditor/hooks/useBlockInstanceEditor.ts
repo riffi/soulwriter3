@@ -103,10 +103,10 @@ export const useBlockInstanceEditor = (blockInstanceUuid: string, currentParamGr
   const childBlocks = useLiveQuery<IBlock[]>(() => {
     if (!block) return [];
     return bookDb
-      .blocks
-      .where("parentBlockUuid")
-      .equals(block.uuid)
-      .toArray();
+    .blocks
+    .where("parentBlockUuid")
+    .equals(block.uuid)
+    .toArray();
   }, [block]);
 
   const childInstancesMap = useLiveQuery<Record<string, IBlockInstance[]>>(async () => {
@@ -134,6 +134,16 @@ export const useBlockInstanceEditor = (blockInstanceUuid: string, currentParamGr
     await bookDb.blockInstances.update(blockInstance.id, {shortDescription: newDescription});
   }
 
+  const updateBlockInstanceIcon = async (iconName: string) => {
+    if (!blockInstance) return;
+    await bookDb.blockInstances.update(blockInstance.id, {icon: iconName});
+  }
+
+  const updateBlockInstanceCustomIcon = async (customIconBase64: string) => {
+    if (!blockInstance) return;
+    await bookDb.blockInstances.update(blockInstance.id, {customIconBase64: customIconBase64});
+  }
+
   return {
     blockInstance,
     block,
@@ -150,6 +160,8 @@ export const useBlockInstanceEditor = (blockInstanceUuid: string, currentParamGr
     childInstancesMap,
     blockTabs,
     referencingParams,
-    updateBlockInstanceShortDescription
+    updateBlockInstanceShortDescription,
+    updateBlockInstanceIcon,
+    updateBlockInstanceCustomIcon
   }
 };
