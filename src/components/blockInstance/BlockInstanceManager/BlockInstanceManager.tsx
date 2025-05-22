@@ -33,7 +33,7 @@ import {
 import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
 import {IconViewer} from "@/components/shared/IconViewer/IconViewer";
 import {usePageTitle} from "@/providers/PageTitleProvider/PageTitleProvider";
-import {IBlockStructureKind} from "@/entities/ConstructorEntities";
+import {IBlockParameterDataType, IBlockStructureKind} from "@/entities/ConstructorEntities";
 
 export interface IBlockInstanceManagerProps {
   blockUuid: string;
@@ -164,7 +164,7 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
 
       const displayedParam = displayedParameters?.find(p => p.uuid === paramUuid);
       let valueToCompare: string;
-      if (displayedParam?.dataType === 'blockLink') {
+      if (displayedParam?.dataType === IBlockParameterDataType.blockLink) {
         valueToCompare = param.value; // Сравниваем по UUID
       } else {
         valueToCompare = param.displayValue; // Уже очищенное значение
@@ -250,11 +250,6 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
             </div>
         )}
         <Table highlightOnHover className={classes.table}>
-          <Table.Thead>
-            <Table.Tr>
-              <Table.Th>Название</Table.Th>
-            </Table.Tr>
-          </Table.Thead>
           <>
           {filteredInstances?.length > 0 ? (
               <Table.Tbody>
@@ -262,6 +257,7 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
                     <BlockInstanceTableRow
                         key={instance.uuid}
                         instance={instance}
+                        block={block}
                         displayedParameters={displayedParameters}
                         onEdit={handleEditInstance}
                         onDelete={handleDeleteInstance}

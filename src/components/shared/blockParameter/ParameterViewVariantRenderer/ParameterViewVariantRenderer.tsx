@@ -47,7 +47,10 @@ export const ParameterViewVariantRenderer = ({
               <ActionIcon
                   size="18"
                   variant="subtle"
-                  onClick={() => navigate("/block-instance/card?uuid=" + blockInstance.uuid)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate("/block-instance/card?uuid=" + blockInstance.uuid)
+                  }}
               >
                 <IconLink />
               </ActionIcon>

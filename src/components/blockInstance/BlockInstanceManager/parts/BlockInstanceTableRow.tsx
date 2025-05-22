@@ -1,7 +1,7 @@
 import { Group, Badge, ActionIcon, Text, Table, Drawer, Button, Stack } from '@mantine/core';
 import { IconEdit, IconTrash, IconDots } from '@tabler/icons-react';
 import { IBlockInstance } from '@/entities/BookEntities';
-import {IBlockParameter} from "@/entities/ConstructorEntities";
+import {IBlock, IBlockParameter} from "@/entities/ConstructorEntities";
 import {
   IBlockInstanceWithParams
 } from "@/components/blockInstance/BlockInstanceManager/useBlockInstanceManager";
@@ -10,9 +10,11 @@ import { useState } from 'react';
 import {
   ParameterViewVariantRenderer
 } from "@/components/shared/blockParameter/ParameterViewVariantRenderer/ParameterViewVariantRenderer";
+import {IconViewer} from "@/components/shared/IconViewer/IconViewer";
 
 interface BlockInstanceTableRowProps {
   instance: IBlockInstanceWithParams;
+  block: IBlock;
   displayedParameters?: IBlockParameter[];
   onEdit: (uuid: string) => void;
   onDelete: (instance: IBlockInstance) => void;
@@ -20,6 +22,7 @@ interface BlockInstanceTableRowProps {
 
 export const BlockInstanceTableRow = ({
                                         instance,
+                                        block,
                                         displayedParameters,
                                         onEdit,
                                         onDelete,
@@ -41,46 +44,67 @@ export const BlockInstanceTableRow = ({
 
   return (
       <Table.Tr key={instance.uuid}>
-        <Table.Td>
-          <div>
-            <Text
-                fw={400}
-                onClick={() => onEdit(instance.uuid!)}
-                style={{cursor: 'pointer'}}
-            >
-              {instance.title}
-            </Text>
-              {instance.shortDescription && (
-                  <Text size="xs" c="dimmed" mt={2}>
-                      {instance.shortDescription}
-                  </Text>
-              )}
-            <Group gap="0" mt={4}>
-              {displayedParameters?.map((param) => {
-                const paramInstance = instance.params?.find(
-                    (p) => p.blockParameterUuid === param.uuid
-                );
-                return (
-                    <Badge
-                        key={param.uuid}
-                        variant="transparent"
-                        color="#999999"
-                        radius="sm"
-                        style={{fontSize: '0.8rem', textTransform: 'lowercase', fontWeight: 400}}
-                    >
-                      <Group gap={5}>
-                        <Text
-                          size={12}
-                        >
-                          {param.title}:{' '}
-                        </Text>
-                        <ParameterViewVariantRenderer dataType={param.dataType} value={paramInstance?.value || ''} />
-                      </Group>
-                    </Badge>
-                );
-              })}
-            </Group>
-          </div>
+        <Table.Td
+            onClick={() => onEdit(instance.uuid!)}
+            style={{cursor: 'pointer'}}
+        >
+          <Group gap="10">
+            <IconViewer
+                iconName={block?.icon}
+                size={30}
+                color="#FFF"
+                backgroundColor="#777"
+            />
+            <Stack gap={0}>
+              <Text
+                  fw={400}
+                  style={{cursor: 'pointer', fontSize: '0.8rem',}}
+              >
+                {instance.title}
+              </Text>
+                {instance.shortDescription && (
+                    <Text size="xs" c="dimmed" mt={2}>
+                        {instance.shortDescription}
+                    </Text>
+                )}
+            </Stack>
+          </Group>
+          <Group
+              gap="0"
+              mt={10}
+              style={{
+                  borderLeft: '3px solid rgb(182 206 233)',
+              }}
+          >
+            {displayedParameters?.map((param) => {
+              const paramInstance = instance.params?.find(
+                  (p) => p.blockParameterUuid === param.uuid
+              );
+              return (
+                  <Badge
+                      key={param.uuid}
+                      variant="transparent"
+                      color="#AAA"
+                      radius="sm"
+                      style={{
+                        fontSize: '0.8rem',
+                        textTransform: 'lowercase',
+                        fontWeight: 400,
+                        paddingLeft: '5px',
+                      }}
+                  >
+                    <Group gap={5}>
+                      <Text
+                        size={12}
+                      >
+                        {param.title}:{' '}
+                      </Text>
+                      <ParameterViewVariantRenderer dataType={param.dataType} value={paramInstance?.value || ''} />
+                    </Group>
+                  </Badge>
+              );
+            })}
+          </Group>
         </Table.Td>
         <Table.Td>
           <Group gap={4} justify="center">
