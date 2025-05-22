@@ -51,6 +51,7 @@ export const BlockInstanceTableRow = ({
           <Group gap="10">
             <IconViewer
                 iconName={block?.icon}
+                customIconBase64={block?.customIconBase64}
                 size={35}
                 color="rgb(102, 102, 102)"
                 backgroundColor="transparent"

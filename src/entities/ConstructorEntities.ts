@@ -74,6 +74,7 @@ export interface IBlock {
   titleForms?: IBlockTitleForms // Формы названия
   sceneLinkAllowed: number; // Разрешено ли создавать связи со сценами
   icon?: string  // Название иконки Game Icons
+  customIconBase64?: string // Кастомная иконка в формате base64
   showInSceneList: number; // Отображать ли в списке сцен
 }
 

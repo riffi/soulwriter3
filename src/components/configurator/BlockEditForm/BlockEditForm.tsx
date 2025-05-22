@@ -8,7 +8,6 @@ import {
 } from "@mantine/core";
 import { useBlockEditForm } from "@/components/configurator/BlockEditForm/useBlockEditForm";
 import React, {useState, useEffect} from "react";
-import { IBlock } from "@/entities/ConstructorEntities";
 import classes from "./BlockEditForm.module.css";
 import {RelationManager} from "@/components/configurator/BlockEditForm/parts/RelationManager/RelationManager";
 import {ChildBlocksManager} from "@/components/configurator/BlockEditForm/parts/ChildBlocksManager/ChildBlocksManager";
