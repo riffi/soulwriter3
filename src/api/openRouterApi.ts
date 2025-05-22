@@ -8,11 +8,11 @@ const fetchCompletions = async (prompt: string) => {
     const model = settings?.currentOpenRouterModel; // Используем выбранную модель
 
     if (!token) {
-      throw new Error("OpenRouter API key not configured");
+      throw new Error("Заполните OpenRouter API в настройках");
     }
 
     if (!model) {
-      throw new Error("OpenRouter model not selected");
+      throw new Error("Выберите модель OpenRouter API в настройках");
     }
 
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {

@@ -17,19 +17,15 @@ const mobileStyle={
 }
 
 const desktopStyle={
-  position: "fixed",
-  height: "30px",
-  bottom: "0px",
-  width: "100%",
-  left: "0",
   backgroundColor: "rgb(236,236,236)",
+  height: "30px",
   color: "black",
-  padding: "8px 16px",
+  padding: "8px 32px",
   display: "flex",
   justifyContent: "center",
   alignItems: "center",
   gap: "10px",
-  zIndex: "10000"
+  zIndex: "99"
 }
 
 export const SceneStatusPanel = (props: { scene: IScene }) => {
@@ -39,8 +35,7 @@ export const SceneStatusPanel = (props: { scene: IScene }) => {
         <Box
           style={isMobile ? mobileStyle : desktopStyle}
         >
-          <Text size="sm">ccп: {props.scene?.totalSymbolCountWithSpaces}</Text>
-          <Text size="sm">cбп: {props.scene?.totalSymbolCountWoSpaces}</Text>
+          <Text size="sm">Символов: {props.scene?.totalSymbolCountWithSpaces}</Text>
         </Box>
       </>
   )

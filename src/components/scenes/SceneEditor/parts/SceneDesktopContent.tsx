@@ -57,7 +57,6 @@ export const SceneDesktopContent = ({
           <Container
               size="xl"
               p="0"
-
           >
             <Paper
                 withBorder
@@ -66,6 +65,8 @@ export const SceneDesktopContent = ({
                 shadow="sm"
                 style={{
                   maxWidth: '900px',
+                  height: 'calc(100vh - 65px)',
+                  overflowY: 'auto',
                   flex: 1,
                 }}
             >
@@ -115,6 +116,10 @@ export const SceneDesktopContent = ({
                     selectedGroup={selectedGroup}
                     setSelectedGroup={setSelectedGroup}
                     onScroll={handleEditorScroll}
+                    desktopConstraints={{
+                      top: '-20px',
+                      bottom: '0',
+                    }}
                 />
               }
               <>
@@ -143,8 +148,8 @@ export const SceneDesktopContent = ({
                   </div>
               )}
               </>
-              <SceneStatusPanel scene={scene} />
             </Paper>
+            <SceneStatusPanel scene={scene} />
           </Container>
         </Box>
         <>
