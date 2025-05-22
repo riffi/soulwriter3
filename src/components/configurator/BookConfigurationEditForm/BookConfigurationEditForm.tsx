@@ -212,8 +212,10 @@ export const BookConfigurationEditForm = (props: IBookConfigurationEditFormProps
             isOpen={isModalOpened}
             configurationUuid={props.bookConfigurationUuid}
             onClose={() => setIsModalOpened(false)}
-            onSave={(c) => {
-              saveBlock(c)
+            onSave={async (blockData, titleForms) => {
+              // The saveBlock from the hook is already async and will propagate errors
+              // BlockEditModal will catch InkLuminApiError and handle the UI for manual input
+              await saveBlock(blockData, titleForms);
             }}
             initialData={currentBlock}
         />}

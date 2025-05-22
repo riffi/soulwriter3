@@ -6,13 +6,19 @@ import { generateUUID } from "@/utils/UUIDUtils";
 
 const BASE_API_URL = 'https://ml.inclumin.ru';
 
+export class InkLuminApiError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "InkLuminApiError";
+  }
+}
 const fetchWithAuth = async (url: string, body: object) => {
   try {
     const settings = await configDatabase.globalSettings.get(1);
     const apiKey = settings?.incLuminApiKey;
 
     if (!apiKey) {
-      throw new Error("Lumin API key not configured");
+      throw new InkLuminApiError("Lumin API key not configured");
     }
 
     const response = await fetch(`${BASE_API_URL}/${url}`, {
@@ -24,10 +30,13 @@ const fetchWithAuth = async (url: string, body: object) => {
       body: JSON.stringify(body)
     });
 
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    if (!response.ok) throw new InkLuminApiError(`HTTP error! status: ${response.status}`);
     return await response.json();
   } catch (error) {
-    throw error;
+    if (error instanceof InkLuminApiError) {
+      throw error;
+    }
+    throw new InkLuminApiError(error.message);
   }
 };
 
@@ -50,7 +59,7 @@ export const fetchAndPrepareTitleForms = async (phrase: string): Promise<IBlockT
       plural: formsData.plural_nomn || ''
     };
   } catch (error) {
-    throw new Error(error.message);
+    throw new InkLuminApiError(error.message);
   }
 };
 

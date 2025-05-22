@@ -3,10 +3,11 @@ import {
   IBlock,
   IBlockParameter,
   IBlockParameterGroup,
-  IBlockRelation, IBlockStructureKind
+  IBlockRelation, IBlockStructureKind, IBlockTitleForms
 } from "@/entities/ConstructorEntities";
 import {configDatabase} from "@/entities/configuratorDb";
 import {generateUUID} from "@/utils/UUIDUtils";
+import { InkLuminApiError } from "@/api/inkLuminApi";
 import {notifications} from "@mantine/notifications";
 import {BookDB, bookDb} from "@/entities/bookDb";
 import {BlockRelationRepository} from "@/repository/BlockRelationRepository";
@@ -53,9 +54,49 @@ export const useBlockEditForm = (blockUuid: string, bookUuid?: string, currentGr
   }, [blockUuid]);
 
 
-  const saveBlock = async (blockData: IBlock) => {
-    await BlockRepository.save(db, blockData, isBookDb)
+  const saveBlock = async (blockData: Partial<IBlock>, manualTitleForms?: IBlockTitleForms) => {
+    if (!blockData.uuid && !block?.uuid) { // If it's a new block (no UUID yet)
+      blockData.uuid = generateUUID(); // Assign a UUID if not already present
+    }
+
+    // Ensure we have a full block object to save, using existing block data as a base if partial data is provided
+    const blockToSave: IBlock = {
+      ...(block || {}), // Spread existing block data from the hook's state
+      ...blockData,     // Spread new/updated data
+    } as IBlock; // Type assertion might be needed if fields are truly partial
+
+    if (!blockToSave.uuid) {
+      // This case should ideally be handled by the check above, but as a safeguard:
+      throw new Error("Block UUID is missing for save operation.");
+    }
+    if (!blockToSave.configurationUuid && configuration?.uuid) {
+      blockToSave.configurationUuid = configuration.uuid;
+    }
+
+
+    try {
+      await BlockRepository.save(db, blockToSave, isBookDb, manualTitleForms);
+      notifications.show({
+        title: "Успешно",
+        message: "Блок сохранен",
+      });
+    } catch (error) {
+      if (error instanceof InkLuminApiError) {
+        console.error("API error during save:", error);
+        // This error will be handled by the dialog display logic (next step)
+        throw error; // Important to propagate for dialog trigger
+      } else {
+        notifications.show({
+          title: "Ошибка сохранения",
+          message: error instanceof Error ? error.message : "Не удалось сохранить блок",
+          color: "red",
+        });
+        // Optionally re-throw generic errors if needed elsewhere, or handle them fully here
+        // For now, we show a notification for non-API errors.
+      }
+    }
   }
+
 
   const saveParam = async (param: IBlockParameter) => {
     if (!param.id) {

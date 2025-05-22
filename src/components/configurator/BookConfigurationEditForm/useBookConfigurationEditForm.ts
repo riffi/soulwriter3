@@ -3,6 +3,7 @@ import {
   IBlock,
   IBlockParameterGroup,
   IBookConfiguration,
+  IBlockTitleForms,
 } from "@/entities/ConstructorEntities";
 import {configDatabase} from "@/entities/configuratorDb";
 
@@ -10,6 +11,7 @@ import {configDatabase} from "@/entities/configuratorDb";
 import {useDialog} from "@/providers/DialogProvider/DialogProvider";
 import {bookDb} from "@/entities/bookDb";
 import {BlockRepository} from "@/repository/BlockRepository";
+import { InkLuminApiError } from "@/api/inkLuminApi";
 import {BlockInstanceRepository} from "@/repository/BlockInstanceRepository";
 import {generateUUID} from "@/utils/UUIDUtils";
 
@@ -46,8 +48,18 @@ export const useBookConfigurationEditForm = (configurationUuid: string,
 
 
   // Cохранение блока
-  const saveBlock = async (blockData: IBlock) => {
-     await BlockRepository.save(db, blockData, isBookDb)
+  const saveBlock = async (blockData: IBlock, manualTitleForms?: IBlockTitleForms) => {
+    try {
+      await BlockRepository.save(db, blockData, isBookDb, manualTitleForms);
+    } catch (error) {
+      if (error instanceof InkLuminApiError) {
+        // Re-throw the specific error to be caught by the modal
+        throw error;
+      }
+      // For other errors, log them or handle as previously (e.g., general notifications if any)
+      console.error("Error in useBookConfigurationEditForm saveBlock:", error);
+      throw error; // Re-throw other errors too, or handle them with generic notifications
+    }
   }
 
   // Удаление блока и связанных с ним данных

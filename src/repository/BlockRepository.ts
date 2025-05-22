@@ -2,13 +2,13 @@ import {BlockAbstractDb} from "@/entities/BlockAbstractDb";
 import {
   IBlock,
   IBlockParameter,
-  IBlockParameterPossibleValue, IBlockRelation, IBlockStructureKind, IBlockTabKind
+  IBlockParameterPossibleValue, IBlockRelation, IBlockStructureKind, IBlockTabKind, IBlockTitleForms
 } from "@/entities/ConstructorEntities";
 import {generateUUID} from "@/utils/UUIDUtils";
 import {useLiveQuery} from "dexie-react-hooks";
 import {BookDB, bookDb} from "@/entities/bookDb";
 import {BlockRelationRepository} from "@/repository/BlockRelationRepository";
-import {InkLuminApi} from "@/api/inkLuminApi";
+import {InkLuminApi, InkLuminApiError} from "@/api/inkLuminApi";
 import {BlockInstanceRepository} from "@/repository/BlockInstanceRepository";
 import {notifications} from "@mantine/notifications";
 
@@ -156,27 +156,54 @@ const appendDefaultTab = async (db: BlockAbstractDb, blockData: IBlock) => {
 }
 
 // Создание блока
-const create = async (db: BlockAbstractDb, block: IBlock, isBookDb = false) => {
-    block.titleForms = await InkLuminApi.fetchAndPrepareTitleForms(block.title)
-    block.uuid = generateUUID()
-    const blockId = await db.blocks.add(block)
-    const persistedBlockData = await db.blocks.get(blockId)
-    await appendDefaultParamGroup(db, persistedBlockData)
-    await appendDefaultTab(db, persistedBlockData)
-
-    // Если это книжная БД, создаем инстанс блока
-    if (isBookDb && block.structureKind === 'single'){
-      await BlockInstanceRepository.createSingleInstance(db as BookDB, block)
+const create = async (db: BlockAbstractDb, block: IBlock, isBookDb = false, titleForms?: IBlockTitleForms) => {
+  if (titleForms) {
+    block.titleForms = titleForms;
+  } else {
+    try {
+      block.titleForms = await InkLuminApi.fetchAndPrepareTitleForms(block.title);
+    } catch (error) {
+      if (error instanceof InkLuminApiError) {
+        throw error; // Re-throw the specific API error
+      }
+      // Handle other potential errors or re-throw them as generic errors
+      throw new Error(`Failed to prepare title forms during block creation: ${error.message}`);
     }
-    return block.uuid
+  }
+  block.uuid = generateUUID()
+  const blockId = await db.blocks.add(block)
+  const persistedBlockData = await db.blocks.get(blockId)
+  await appendDefaultParamGroup(db, persistedBlockData)
+  await appendDefaultTab(db, persistedBlockData)
+
+  // Если это книжная БД, создаем инстанс блока
+  if (isBookDb && block.structureKind === 'single'){
+    await BlockInstanceRepository.createSingleInstance(db as BookDB, block)
+  }
+  return block.uuid
 }
 
 // Обновление данных блока
-const update = async (db: BlockAbstractDb, block: IBlock, isBookDb = false) => {
+const update = async (db: BlockAbstractDb, block: IBlock, isBookDb = false, titleForms?: IBlockTitleForms) => {
   const prevBlockData = await getByUuid(db,block.uuid);
   // Если название блока изменилось, то обновляем формы названия
   if (prevBlockData && prevBlockData.title !== block.title){
-    block.titleForms = await InkLuminApi.fetchAndPrepareTitleForms(block.title)
+    if (titleForms) {
+      block.titleForms = titleForms;
+    } else {
+      try {
+        block.titleForms = await InkLuminApi.fetchAndPrepareTitleForms(block.title);
+      } catch (error) {
+        if (error instanceof InkLuminApiError) {
+          throw error; // Re-throw the specific API error
+        }
+        // Handle other potential errors or re-throw them as generic errors
+        throw new Error(`Failed to prepare title forms during block update: ${error.message}`);
+      }
+    }
+  } else if (titleForms) {
+    // If title hasn't changed, but titleForms are explicitly provided, update them
+    block.titleForms = titleForms;
   }
   // Если блок стал одиночным, а был неодиночным, то создаем инстанс блока, если он не имеет инстансов
   if (isBookDb
@@ -192,15 +219,15 @@ const update = async (db: BlockAbstractDb, block: IBlock, isBookDb = false) => {
 }
 
 // Сохранение блока
-const save = async (db: BlockAbstractDb, block: IBlock, isBookDb = false) => {
+const save = async (db: BlockAbstractDb, block: IBlock, isBookDb = false, titleForms?: IBlockTitleForms) => {
   try {
     // Создание блока
     if (!block.uuid) {
-      await create(db, block, isBookDb)
+      await create(db, block, isBookDb, titleForms)
+    } else {
+      // Обновление блока
+      await update(db, block, isBookDb, titleForms)
     }
-
-    // Обновление блока
-    await update(db, block, isBookDb)
 
     notifications.show({
       title: "Успешно",
@@ -208,6 +235,9 @@ const save = async (db: BlockAbstractDb, block: IBlock, isBookDb = false) => {
     });
   }
   catch (error){
+    if (error instanceof InkLuminApiError) {
+      throw error; // Re-throw for UI to handle
+    }
       notifications.show({
         title: "Ошибка запроса",
         message: error instanceof Error ? error.message : "Ошибка",
