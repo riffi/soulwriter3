@@ -1,4 +1,4 @@
-import { Group, Badge, ActionIcon, Text, Table } from '@mantine/core';
+import { Group, Badge, ActionIcon, Text, Table, Drawer, Button, Stack } from '@mantine/core';
 import { IconEdit, IconTrash, IconDots } from '@tabler/icons-react';
 import { IBlockInstance } from '@/entities/BookEntities';
 import {IBlockParameter} from "@/entities/ConstructorEntities";
@@ -6,8 +6,10 @@ import {
   IBlockInstanceWithParams
 } from "@/components/blockInstance/BlockInstanceManager/useBlockInstanceManager";
 import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
-import { Drawer, Button, Stack } from '@mantine/core';
 import { useState } from 'react';
+import {
+  ParameterViewVariantRenderer
+} from "@/components/shared/blockParameter/ParameterViewVariantRenderer/ParameterViewVariantRenderer";
 
 interface BlockInstanceTableRowProps {
   instance: IBlockInstanceWithParams;
@@ -53,7 +55,7 @@ export const BlockInstanceTableRow = ({
                       {instance.shortDescription}
                   </Text>
               )}
-            <Group gap="xs" mt={4}>
+            <Group gap="0" mt={4}>
               {displayedParameters?.map((param) => {
                 const paramInstance = instance.params?.find(
                     (p) => p.blockParameterUuid === param.uuid
@@ -61,15 +63,19 @@ export const BlockInstanceTableRow = ({
                 return (
                     <Badge
                         key={param.uuid}
-                        variant="outline"
+                        variant="transparent"
                         color="#999999"
                         radius="sm"
                         style={{fontSize: '0.8rem', textTransform: 'lowercase', fontWeight: 400}}
                     >
-                      {param.title}:{' '}
-                      {param.dataType === 'text'
-                          ? paramInstance?.value?.replace(/<[^>]*>/g, '') || '—'
-                          : paramInstance?.value || '—'}
+                      <Group gap={5}>
+                        <Text
+                          size={12}
+                        >
+                          {param.title}:{' '}
+                        </Text>
+                        <ParameterViewVariantRenderer dataType={param.dataType} value={paramInstance?.value || ''} />
+                      </Group>
                     </Badge>
                 );
               })}

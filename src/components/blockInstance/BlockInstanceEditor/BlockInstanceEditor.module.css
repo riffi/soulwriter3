@@ -92,25 +92,13 @@
 
 }
 
-/* Контент */
-.contentWrapper {
-  width: 100%;
-  padding: 0px 8px;
-  overflow: hidden;
-}
 
 .textContent {
   width: 100%;
   margin-top: 0px;
 }
 
-.htmlContent {
-  width: 100%;
-  padding: 2px 0;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-  word-break: break-word;
-}
+
 
 /* Rich Text Editor */
 .ql-container {
@@ -144,33 +132,9 @@
     margin-top: 0px;
   }
 
-  .htmlContent {
-    max-width: 100%;
-  }
 }
 
-.clampedContent {
-  display: -webkit-box;
-  -webkit-line-clamp: 10;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  position: relative;
-}
 
-/* Добавляем градиент для визуального обозначения обрезки */
-.clampedContent::after {
-  content: "";
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 2em;
-  background: linear-gradient(
-      to bottom,
-      rgba(255, 255, 255, 0) 0%,
-      var(--mantine-color-body) 100%
-  );
-}
 
 /* Стиль кнопки */
 .toggleButton {
