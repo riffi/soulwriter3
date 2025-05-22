@@ -63,7 +63,7 @@ export const CheckClichesButton = ({ editor, onLoadingChange }: CheckClichesButt
           onClick={handleCheckCliches}
           icon={<IconClipboardCheck/>}
           title="Проверить штампы"
-          aria-pressed={isActive}
+          active={isActive}
           disabled={isLoading}
       >
           <IconHandStop

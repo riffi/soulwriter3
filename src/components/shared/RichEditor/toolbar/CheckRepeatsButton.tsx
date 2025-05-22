@@ -1,13 +1,10 @@
 import { RichTextEditor } from "@mantine/tiptap";
 import { useState } from "react";
-import { PluginKey } from "prosemirror-state";
 import {
-  RepeatHighlighterExtension, repeatHighlighterKey
+  repeatHighlighterKey
 } from "@/components/shared/RichEditor/plugins/RepeatHighlighterExtension";
-import {IconArrowsDoubleSwNe, IconBrandCampaignmonitor, IconHandStop} from "@tabler/icons-react";
-import {IWarningKind, IRepeatWarning, IWarningGroup} from "@/components/shared/RichEditor/types";
-import {generateUUID} from "@/utils/UUIDUtils";
-import {ActionIcon} from "@mantine/core";
+import {IconArrowsDoubleSwNe} from "@tabler/icons-react";
+import {IWarningGroup} from "@/components/shared/RichEditor/types";
 import {InkLuminApi} from "@/api/inkLuminApi";
 
 interface CheckRepeatsButtonProps {
@@ -59,7 +56,7 @@ export const CheckRepeatsButton = ({ editor, onLoadingChange }: CheckRepeatsButt
       <RichTextEditor.Control
           onClick={handleCheckRepeats}
           title="Проверить повторения"
-          aria-pressed={isActive}
+          active={isActive}
           disabled={isLoading}
       >
           <IconArrowsDoubleSwNe
