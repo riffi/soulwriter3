@@ -21,15 +21,15 @@ const getSiblings = async (db: BlockAbstractDb, block: IBlock) => {
       {
         configurationUuid: block.configurationUuid
       })
-    .filter(b => b.uuid !== block.uuid)
-    .toArray()
+  .filter(b => b.uuid !== block.uuid)
+  .toArray()
 }
 
 const getParameterGroups = async (db: BlockAbstractDb, blockUuid: string) => {
   return db.blockParameterGroups
-    .where('blockUuid')
-    .equals(blockUuid)
-    .sortBy('orderNumber');
+  .where('blockUuid')
+  .equals(blockUuid)
+  .sortBy('orderNumber');
 }
 
 const getGroupByUuid = async (db: BlockAbstractDb, groupUuid: string) => {
@@ -44,10 +44,10 @@ const getParamPossibleValues = async (db: BlockAbstractDb, parameterUuid: string
 };
 const getDisplayedParameters = async (db: BlockAbstractDb, blockUuid: string) => {
   return db.blockParameters
-    .where('blockUuid')
-    .equals(blockUuid)
-    .and(param => param.displayInCard === 1)
-    .toArray();
+  .where('blockUuid')
+  .equals(blockUuid)
+  .and(param => param.displayInCard === 1)
+  .toArray();
 }
 
 const getDefaultParameters = async (db: BlockAbstractDb, blockUuid: string) => {
@@ -62,9 +62,9 @@ const getDefaultParameters = async (db: BlockAbstractDb, blockUuid: string) => {
 
 const getParamsByGroup = async (db: BlockAbstractDb, groupUuid: string) => {
   return db.blockParameters
-    .where('groupUuid')
-    .equals(groupUuid)
-    .toArray();
+  .where('groupUuid')
+  .equals(groupUuid)
+  .toArray();
 }
 
 const getRelatedBlocks = async (db: BlockAbstractDb, block: IBlock, blockRelations?: IBlockRelation[]) => {
@@ -83,26 +83,25 @@ const getRelatedBlocks = async (db: BlockAbstractDb, block: IBlock, blockRelatio
   .toArray();
 }
 
-
 const deleteParameterGroup = async (db: BlockAbstractDb, blockUuid: string, groupUuid: string) => {
 
   // Удаляем все параметры, связанные с этой группой
   await db.blockParameters
-    .where('groupUuid')
-    .equals(groupUuid)
-    .delete();
+  .where('groupUuid')
+  .equals(groupUuid)
+  .delete();
 
   // Удаляем группу
   await db.blockParameterGroups
-    .where('uuid')
-    .equals(groupUuid)
-    .delete();
+  .where('uuid')
+  .equals(groupUuid)
+  .delete();
 
   // Обновляем порядковые номера для оставшихся групп
   const remainingGroups = await db.blockParameterGroups
-    .where('blockUuid')
-    .equals(blockUuid)
-    .sortBy('orderNumber');
+  .where('blockUuid')
+  .equals(blockUuid)
+  .sortBy('orderNumber');
 
   await Promise.all(
       remainingGroups.map((group, index) =>
@@ -112,7 +111,6 @@ const deleteParameterGroup = async (db: BlockAbstractDb, blockUuid: string, grou
       )
   );
 }
-
 
 const updateParamPossibleValues = async (db: BlockAbstractDb, parameterUuid: string, possibleValues: IBlockParameterPossibleValue[]) => {
   // Удаляем старые значения
@@ -185,26 +183,25 @@ const create = async (db: BlockAbstractDb, block: IBlock, isBookDb = false, titl
 
 // Обновление данных блока
 const update = async (db: BlockAbstractDb, block: IBlock, isBookDb = false, titleForms?: IBlockTitleForms) => {
-  const prevBlockData = await getByUuid(db,block.uuid);
-  // Если название блока изменилось, то обновляем формы названия
-  if (prevBlockData && prevBlockData.title !== block.title){
-    if (titleForms) {
-      block.titleForms = titleForms;
-    } else {
-      try {
-        block.titleForms = await InkLuminApi.fetchAndPrepareTitleForms(block.title);
-      } catch (error) {
-        if (error instanceof InkLuminApiError) {
-          throw error; // Re-throw the specific API error
-        }
-        // Handle other potential errors or re-throw them as generic errors
-        throw new Error(`Failed to prepare title forms during block update: ${error.message}`);
-      }
-    }
-  } else if (titleForms) {
-    // If title hasn't changed, but titleForms are explicitly provided, update them
+  const prevBlockData = await getByUuid(db, block.uuid);
+
+  // Если переданы titleForms, используем их
+  if (titleForms) {
     block.titleForms = titleForms;
   }
+  // Если название блока изменилось и titleForms не переданы, пытаемся получить их через API
+  else if (prevBlockData && prevBlockData.title !== block.title) {
+    try {
+      block.titleForms = await InkLuminApi.fetchAndPrepareTitleForms(block.title);
+    } catch (error) {
+      if (error instanceof InkLuminApiError) {
+        throw error; // Re-throw the specific API error
+      }
+      // Handle other potential errors or re-throw them as generic errors
+      throw new Error(`Failed to prepare title forms during block update: ${error.message}`);
+    }
+  }
+
   // Если блок стал одиночным, а был неодиночным, то создаем инстанс блока, если он не имеет инстансов
   if (isBookDb
       &&(prevBlockData?.structureKind !== IBlockStructureKind.single)
@@ -228,21 +225,16 @@ const save = async (db: BlockAbstractDb, block: IBlock, isBookDb = false, titleF
       // Обновление блока
       await update(db, block, isBookDb, titleForms)
     }
-
-    notifications.show({
-      title: "Успешно",
-      message: "Блок сохранен",
-    });
   }
   catch (error){
     if (error instanceof InkLuminApiError) {
       throw error; // Re-throw for UI to handle
     }
-      notifications.show({
-        title: "Ошибка запроса",
-        message: error instanceof Error ? error.message : "Ошибка",
-        color: "red",
-      });
+    notifications.show({
+      title: "Ошибка запроса",
+      message: error instanceof Error ? error.message : "Ошибка",
+      color: "red",
+    });
   }
 }
 
@@ -259,9 +251,9 @@ const remove = async (db: BlockAbstractDb, block: IBlock) => {
       async () => {
         // Получаем все группы параметров блока
         const groups = await db.blockParameterGroups
-          .where('blockUuid')
-          .equals(block.uuid)
-          .toArray();
+        .where('blockUuid')
+        .equals(block.uuid)
+        .toArray();
 
         // Для каждой группы получаем параметры
         for (const group of groups) {
@@ -291,9 +283,9 @@ const remove = async (db: BlockAbstractDb, block: IBlock) => {
 
         // Удаляем группы параметров блока
         await db.blockParameterGroups
-          .where('blockUuid')
-          .equals(block.uuid)
-          .delete();
+        .where('blockUuid')
+        .equals(block.uuid)
+        .delete();
 
         // Удаляем связи блока
         const [sourceRelations, targetRelations] = await Promise.all([
@@ -305,15 +297,14 @@ const remove = async (db: BlockAbstractDb, block: IBlock) => {
           await BlockRelationRepository.remove(db, relation.uuid);
         }
 
-
         //Удаляем вкладки блока
         await db.blockTabs.where('blockUuid').equals(block.uuid).delete();
 
         // Удаляем сам блок
         await db.blocks
-          .where('uuid')
-          .equals(block.uuid)
-          .delete();
+        .where('uuid')
+        .equals(block.uuid)
+        .delete();
       }
   );
 }

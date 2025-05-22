@@ -1,5 +1,5 @@
 // MainTabContent.tsx
-import {Group, Select, Checkbox, Button, Drawer, TextInput, SimpleGrid, Title} from "@mantine/core";
+import {Group, Select, Checkbox, Button, Drawer, SimpleGrid, Title} from "@mantine/core";
 import {
   IBlock,
   IBlockStructureKind,
@@ -8,14 +8,15 @@ import {
 } from "@/entities/ConstructorEntities";
 import { IconViewer } from "@/components/shared/IconViewer/IconViewer";
 import {GameIconSelector} from "@/components/shared/GameIconSelector/GameIconSelector";
-import React, {useState, useEffect} from "react";
+import React, {useState} from "react";
 import {InlineEdit2} from "@/components/shared/InlineEdit2/InlineEdit2";
+import {InkLuminApi, InkLuminApiError} from "@/api/inkLuminApi";
+import {notifications} from "@mantine/notifications";
+import {LoadingOverlayExtended} from "@/components/shared/overlay/LoadingOverlayExtended";
 
 interface MainTabContentProps {
   block: IBlock;
-  initialTitleForms?: IBlockTitleForms; // Pass initial forms from parent
-  onBlockChange: (blockData: Partial<IBlock>) => void; // For general block property changes
-  onTitleFormsChange: (titleForms: IBlockTitleForms) => void; // Specific for title forms
+  onSave: (blockData: IBlock, titleForms?: IBlockTitleForms) => Promise<void>;
 }
 
 const structureKindOptions = [
@@ -24,48 +25,81 @@ const structureKindOptions = [
   { value: IBlockStructureKind.tree, label: IBlockStructureKindTitle.tree },
 ];
 
-export const MainTabContent = ({ block, initialTitleForms, onBlockChange, onTitleFormsChange }: MainTabContentProps) => {
+export const MainTabContent = ({ block, onSave }: MainTabContentProps) => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [titleFormsLoading, setTitleFormsLoading] = useState(false);
 
-// Local state for title forms, initialized by prop
-  const [currentTitleForms, setCurrentTitleForms] = useState<IBlockTitleForms>(
-      initialTitleForms || block.titleForms || {
-        nominative: block.title, // Default nominative to block title if forms are empty
-        genitive: '', dative: '', accusative: '',
-        instrumental: '', prepositional: '', plural: ''
+  const handleBlockPropertyChange = async (changedProps: Partial<IBlock>) => {
+    const updatedBlock = { ...block, ...changedProps };
+    await onSave(updatedBlock);
+  };
+
+  const handleTitleChange = async (newTitle: string) => {
+    const updatedBlock = { ...block, title: newTitle };
+    setTitleFormsLoading(true);
+    try {
+      // Попытаемся получить формы названия от InkLuminApi
+      const titleForms = await InkLuminApi.fetchAndPrepareTitleForms(newTitle);
+      await onSave(updatedBlock, titleForms);
+    } catch (error) {
+      if (error instanceof InkLuminApiError) {
+        // Если API недоступен, просто сохраняем блок без обновления форм
+        notifications.show({
+          title: "Предупреждение",
+          message: `Не удалось получить формы названия: ${error.message}`,
+          color: "yellow",
+        });
+        await onSave(updatedBlock);
+      } else {
+        notifications.show({
+          title: "Ошибка",
+          message: "Не удалось сохранить изменения",
+          color: "red",
+        });
       }
-  );
+    }
+    finally {
+      setTitleFormsLoading(false);
+    }
+  };
 
-  useEffect(() => {
-    // If initialTitleForms from parent changes (e.g. after a save and re-fetch), update local state
-    const newInitial = initialTitleForms || block.titleForms || {
-      nominative: block.title, genitive: '', dative: '', accusative: '',
-      instrumental: '', prepositional: '', plural: ''
+  const handleTitleFormChange = async (field: keyof IBlockTitleForms, value: string) => {
+    const currentTitleForms = block.titleForms || {
+      nominative: block.title || '',
+      genitive: '',
+      dative: '',
+      accusative: '',
+      instrumental: '',
+      prepositional: '',
+      plural: ''
     };
-    setCurrentTitleForms(newInitial);
-  }, [initialTitleForms, block.titleForms, block.title]);
 
-  const handleTitleFormChange = (field: keyof IBlockTitleForms, value: string) => {
-    const updatedForms = {
+    const updatedTitleForms = {
       ...currentTitleForms,
       [field]: value,
     };
-    setCurrentTitleForms(updatedForms);
-    onTitleFormsChange(updatedForms); // Notify parent (BlockEditForm)
+
+    await onSave(block, updatedTitleForms);
   };
 
-  // Helper to call onBlockChange for general block properties
-  const handleBlockPropertyChange = (changedProps: Partial<IBlock>) => {
-    onBlockChange(changedProps);
+  const currentTitleForms = block.titleForms || {
+    nominative: block.title || '',
+    genitive: '',
+    dative: '',
+    accusative: '',
+    instrumental: '',
+    prepositional: '',
+    plural: ''
   };
 
   return (
       <>
+        <LoadingOverlayExtended visible={titleFormsLoading} message="Загрузка форм названия..."/>
         <Group align="flex-end" spacing="xl" mb="md">
           <Group w={"100%"}>
             <InlineEdit2
-                onChange={(value) => handleBlockPropertyChange({ title: value })}
+                onChange={handleTitleChange}
                 value={block?.title}
                 placeholder="введите название..."
                 label={"Название блока"}
@@ -149,50 +183,51 @@ export const MainTabContent = ({ block, initialTitleForms, onBlockChange, onTitl
               }}
           />
         </Drawer>
+
         <Title order={4} mt="xl" mb="sm">Формы названия</Title>
         <SimpleGrid cols={2} spacing="md">
-          <TextInput
+          <InlineEdit2
               label="Именительный (кто? что?)"
-              value={currentTitleForms.nominative} // No ?? block.title here, currentTitleForms is initialized with it
-              onChange={(e) => handleTitleFormChange('nominative', e.currentTarget.value)}
+              value={currentTitleForms.nominative}
+              onChange={(value) => handleTitleFormChange('nominative', value)}
               placeholder="Именительный падеж"
           />
-          <TextInput
+          <InlineEdit2
               label="Родительный (кого? чего?)"
               value={currentTitleForms.genitive}
-              onChange={(e) => handleTitleFormChange('genitive', e.currentTarget.value)}
+              onChange={(value) => handleTitleFormChange('genitive', value)}
               placeholder="Родительный падеж"
           />
-          <TextInput
+          <InlineEdit2
               label="Дательный (кому? чему?)"
               value={currentTitleForms.dative}
-              onChange={(e) => handleTitleFormChange('dative', e.currentTarget.value)}
+              onChange={(value) => handleTitleFormChange('dative', value)}
               placeholder="Дательный падеж"
           />
-          <TextInput
+          <InlineEdit2
               label="Винительный (кого? что?)"
               value={currentTitleForms.accusative}
-              onChange={(e) => handleTitleFormChange('accusative', e.currentTarget.value)}
+              onChange={(value) => handleTitleFormChange('accusative', value)}
               placeholder="Винительный падеж"
           />
-          <TextInput
+          <InlineEdit2
               label="Творительный (кем? чем?)"
               value={currentTitleForms.instrumental}
-              onChange={(e) => handleTitleFormChange('instrumental', e.currentTarget.value)}
+              onChange={(value) => handleTitleFormChange('instrumental', value)}
               placeholder="Творительный падеж"
           />
-          <TextInput
+          <InlineEdit2
               label="Предложный (о ком? о чём?)"
               value={currentTitleForms.prepositional}
-              onChange={(e) => handleTitleFormChange('prepositional', e.currentTarget.value)}
+              onChange={(value) => handleTitleFormChange('prepositional', value)}
               placeholder="Предложный падеж"
           />
-          <TextInput
+          <InlineEdit2
               label="Множественное число (Именительный)"
               value={currentTitleForms.plural}
-              onChange={(e) => handleTitleFormChange('plural', e.currentTarget.value)}
+              onChange={(value) => handleTitleFormChange('plural', value)}
               placeholder="Множественное число"
-              mt="sm" // Add some margin for the last item if it's alone in a row or to space it
+              style={{ gridColumn: '1 / -1' }}
           />
         </SimpleGrid>
       </>
