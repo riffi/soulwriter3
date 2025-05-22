@@ -7,9 +7,16 @@ import {BlockRepository} from "@/repository/BlockRepository";
 import {BlockInstanceRepository} from "@/repository/BlockInstanceRepository";
 import {useEffect} from "react";
 
-export interface IBlockInstanceWithParams extends IBlockInstance {
-  params: IBlockParameterInstance[];
+export interface IBlockParameterInstanceWithDisplayValue extends IBlockParameterInstance {
+  displayValue: string;
 }
+
+export interface IBlockInstanceWithParams extends IBlockInstance {
+  params: IBlockParameterInstanceWithDisplayValue[];
+}
+
+
+export type TParameterDisplayMode = 'inline' | 'drawer';
 
 export const useBlockInstanceManager = (blockUuid: string) => {
 
@@ -25,23 +32,69 @@ export const useBlockInstanceManager = (blockUuid: string) => {
     return BlockRepository.getDisplayedParameters(bookDb, blockUuid);
   }, [blockUuid]);
 
+// Измененный код формирования instancesWithParams
   const instancesWithParams = useLiveQuery<IBlockInstanceWithParams[]>(async () => {
     if (!instances || !displayedParameters) return [];
 
-    // Получаем UUID параметров, которые нужно отображать
     const displayParameterUuids = displayedParameters.map(p => p.uuid!);
 
-    return Promise.all(instances.map(async (instance) => {
-      // Фильтруем параметры инстанса по нужным UUID
+    // Получаем базовые данные
+    const instancesWithParams = await Promise.all(instances.map(async (instance) => {
       const params = await bookDb.blockParameterInstances
       .where('blockInstanceUuid')
       .equals(instance.uuid)
       .filter(p => displayParameterUuids.includes(p.blockParameterUuid))
       .toArray();
-
       return { ...instance, params };
     }));
-  }, [instances, displayedParameters]); // Добавляем зависимость от blockParameters
+
+    // Собираем UUID всех связанных блоков для blockLink параметров
+    const blockLinkUuids = new Set<string>();
+    displayedParameters.forEach(param => {
+      if (param.dataType === 'blockLink') {
+        instancesWithParams.forEach(instance => {
+          instance.params.forEach(p => {
+            if (p.blockParameterUuid === param.uuid && p.value) {
+              blockLinkUuids.add(p.value);
+            }
+          });
+        });
+      }
+    });
+
+    // Загружаем связанные блоки
+    const linkedBlocks = await Promise.all(
+        Array.from(blockLinkUuids).map(uuid =>
+            BlockInstanceRepository.getByUuid(bookDb, uuid)
+        )
+    );
+
+    // Создаем словарь UUID -> title
+    const uuidToTitle = new Map<string, string>();
+    linkedBlocks.forEach(block => {
+      if (block) {
+        uuidToTitle.set(block.uuid, block.title);
+      }
+    });
+
+    // Обогащаем параметры displayValue
+    return instancesWithParams.map(instance => ({
+      ...instance,
+      params: instance.params.map(param => {
+        const displayedParam = displayedParameters.find(p => p.uuid === param.blockParameterUuid);
+        let displayValue: string;
+        if (displayedParam?.dataType === 'blockLink') {
+          displayValue = uuidToTitle.get(param.value) || '—';
+        } else if (param.value instanceof Number) {
+            displayValue = `${param.value}`;
+          }
+          else{
+            displayValue = param.value?.replace(/<[^>]*>/g, '') || '—';
+          }
+        return { ...param, displayValue };
+      })
+    }));
+  }, [instances, displayedParameters]);
 
 
 
