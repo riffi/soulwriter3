@@ -54,15 +54,7 @@ export const useBlockEditForm = (blockUuid: string, bookUuid?: string, currentGr
 
 
   const saveBlock = async (blockData: IBlock) => {
-
-    if (!blockData.uuid) {
-      blockData.uuid = generateUUID()
-      const blockId = await db.blocks.add(blockData)
-      const persistedBlockData = await db.blocks.get(blockId)
-      await appendDefaultParamGroup(persistedBlockData)
-      return
-    }
-    db.blocks.update(blockData.id, blockData)
+    await BlockRepository.save(db, blockData, isBookDb)
   }
 
   const saveParam = async (param: IBlockParameter) => {

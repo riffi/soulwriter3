@@ -3,6 +3,7 @@ import {useState} from "react";
 import {OpenRouterApi} from "@/api/openRouterApi";
 import {RichTextEditor} from "@mantine/tiptap";
 import {IconBulb, IconIrregularPolyhedronOff} from "@tabler/icons-react";
+import {notifications} from "@mantine/notifications";
 
 interface CheckSimplifyButtonProps {
   editor: ReturnType<typeof useEditor>;
@@ -22,7 +23,10 @@ export const CheckSimplifyButton = ({
     const selectedText = editor.state.doc.textBetween(from, to, " ");
 
     if (!selectedText.trim()) {
-      alert("Выделите текст для упрощения");
+      notifications.show({
+        message: "Выделите текст для упрощения",
+        color: 'orange',
+      })
       return;
     }
 
@@ -32,7 +36,10 @@ export const CheckSimplifyButton = ({
       const simplifications = await OpenRouterApi.fetchSimplifications(selectedText);
       onSimplificationsFound(simplifications);
     } catch (error) {
-      console.error("Error fetching simplifications:", error);
+      notifications.show({
+        message: error.message,
+        color: 'red',
+      })
     } finally {
       setIsLoading(false);
       onLoadingChange(false);

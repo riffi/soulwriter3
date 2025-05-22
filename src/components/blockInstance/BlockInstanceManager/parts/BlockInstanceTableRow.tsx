@@ -1,16 +1,20 @@
-import { Group, Badge, ActionIcon, Text, Table } from '@mantine/core';
+import { Group, Badge, ActionIcon, Text, Table, Drawer, Button, Stack } from '@mantine/core';
 import { IconEdit, IconTrash, IconDots } from '@tabler/icons-react';
 import { IBlockInstance } from '@/entities/BookEntities';
-import {IBlockParameter} from "@/entities/ConstructorEntities";
+import {IBlock, IBlockParameter} from "@/entities/ConstructorEntities";
 import {
   IBlockInstanceWithParams
 } from "@/components/blockInstance/BlockInstanceManager/useBlockInstanceManager";
 import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
-import { Drawer, Button, Stack } from '@mantine/core';
 import { useState } from 'react';
+import {
+  ParameterViewVariantRenderer
+} from "@/components/shared/blockParameter/ParameterViewVariantRenderer/ParameterViewVariantRenderer";
+import {IconViewer} from "@/components/shared/IconViewer/IconViewer";
 
 interface BlockInstanceTableRowProps {
   instance: IBlockInstanceWithParams;
+  block: IBlock;
   displayedParameters?: IBlockParameter[];
   onEdit: (uuid: string) => void;
   onDelete: (instance: IBlockInstance) => void;
@@ -18,6 +22,7 @@ interface BlockInstanceTableRowProps {
 
 export const BlockInstanceTableRow = ({
                                         instance,
+                                        block,
                                         displayedParameters,
                                         onEdit,
                                         onDelete,
@@ -39,42 +44,72 @@ export const BlockInstanceTableRow = ({
 
   return (
       <Table.Tr key={instance.uuid}>
-        <Table.Td>
-          <div>
-            <Text
-                fw={400}
-                onClick={() => onEdit(instance.uuid!)}
-                style={{cursor: 'pointer'}}
-            >
-              {instance.title}
-            </Text>
+        <Table.Td
+            onClick={() => onEdit(instance.uuid!)}
+            style={{cursor: 'pointer', padding: '10px 0px 10px 20px'}}
+        >
+          <Group gap="10">
+            <IconViewer
+                iconName={block?.icon}
+                size={35}
+                color="rgb(102, 102, 102)"
+                backgroundColor="transparent"
+                style={{
+                  paddingLeft: 0
+                }}
+            />
+            <Stack gap={0}>
+              <Text
+                  style={{cursor: 'pointer', fontSize: '1.1rem', lineHeight: '1.5rem'}}
+              >
+                {instance.title}
+              </Text>
               {instance.shortDescription && (
-                  <Text size="xs" c="dimmed" mt={2}>
+                  <Text size="sm" c="dimmed" mt={0}>
                       {instance.shortDescription}
                   </Text>
               )}
-            <Group gap="xs" mt={4}>
-              {displayedParameters?.map((param) => {
-                const paramInstance = instance.params?.find(
-                    (p) => p.blockParameterUuid === param.uuid
-                );
-                return (
-                    <Badge
-                        key={param.uuid}
-                        variant="outline"
-                        color="#999999"
-                        radius="sm"
-                        style={{fontSize: '0.8rem', textTransform: 'lowercase', fontWeight: 400}}
-                    >
-                      {param.title}:{' '}
-                      {param.dataType === 'text'
-                          ? paramInstance?.value?.replace(/<[^>]*>/g, '') || '—'
-                          : paramInstance?.value || '—'}
-                    </Badge>
-                );
-              })}
-            </Group>
-          </div>
+            </Stack>
+          </Group>
+          <Group
+              gap="0"
+              style={{
+                  marginTop: '5px'
+              }}
+          >
+            {displayedParameters?.map((param, index) => {
+              const paramInstance = instance.params?.find(
+                  (p) => p.blockParameterUuid === param.uuid
+              );
+              return (
+                  <Badge
+                      key={param.uuid}
+                      variant="transparent"
+                      color="#BBB"
+                      style={{
+                        fontSize: '0.8rem',
+                        textTransform: 'lowercase',
+                        fontWeight: 400,
+                        paddingLeft: '0px',
+                        borderRadius: '0'
+                      }}
+                  >
+                    <Group gap={5} style={{
+                      borderRight: index < displayedParameters?.length - 1 ? '1px solid #EEE' : 'none',
+                      paddingRight: '10px',
+                    }}>
+                      <Text
+                        size={12}
+                      >
+                        {param.title}:{' '}
+                      </Text>
+
+                      <ParameterViewVariantRenderer dataType={param.dataType} value={paramInstance?.value || ''} />
+                    </Group>
+                  </Badge>
+              );
+            })}
+          </Group>
         </Table.Td>
         <Table.Td>
           <Group gap={4} justify="center">

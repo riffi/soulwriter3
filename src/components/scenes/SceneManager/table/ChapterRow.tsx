@@ -72,7 +72,7 @@ export const ChapterRow = ({ chapter, scenes, onAddScene, openScene, selectedSce
                 {isExpanded ? <IconChevronDown size={16} /> : <IconChevronRight size={16} />}
               </ActionIcon>
               {isExpanded ? <IconFolderOpen size={18} /> : <IconFolder size={18} />}
-              <span style={{ marginLeft: 8, fontWeight: 600, fontSize: 14 }}>
+              <span style={{ marginLeft: 8, fontWeight: 600, fontSize: '0.8rem' }}>
                 {chapter.order ? `${chapter.order}. ` : ''} {chapter.title}
               </span>
               <Box ml="auto" style={{ display: 'flex', gap: '8px' }}>

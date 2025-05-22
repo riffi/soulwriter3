@@ -10,6 +10,7 @@ import {IClicheWarning, IWarningGroup, IWarningKind} from "@/components/shared/R
 import {generateUUID} from "@/utils/UUIDUtils";
 import {ActionIcon} from "@mantine/core";
 import {InkLuminApi} from "@/api/inkLuminApi";
+import {notifications} from "@mantine/notifications";
 
 interface CheckClichesButtonProps {
   editor: any;
@@ -36,6 +37,10 @@ export const CheckClichesButton = ({ editor, onLoadingChange }: CheckClichesButt
       updateHighlights(cliches);
       setIsActive(true);
     } catch (error) {
+      notifications.show({
+        message: error.message,
+        color: 'red',
+      })
       console.error('Error checking cliches:', error);
     } finally {
       onLoadingChange(false);
@@ -63,7 +68,7 @@ export const CheckClichesButton = ({ editor, onLoadingChange }: CheckClichesButt
           onClick={handleCheckCliches}
           icon={<IconClipboardCheck/>}
           title="Проверить штампы"
-          aria-pressed={isActive}
+          active={isActive}
           disabled={isLoading}
       >
           <IconHandStop

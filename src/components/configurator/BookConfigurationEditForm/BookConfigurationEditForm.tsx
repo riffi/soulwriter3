@@ -154,14 +154,27 @@ export const BookConfigurationEditForm = (props: IBookConfigurationEditFormProps
                 </Stack>
               </Card>
             {blockList?.map((c) =>
-                <Card key={c.uuid} shadow="xs" padding="lg" radius="md" withBorder>
+                <Card
+                    key={c.uuid}
+                    shadow="xs"
+                    padding="lg"
+                    radius="md"
+                    style={{
+                      cursor: 'pointer',
+                    }}
+                    withBorder
+                    onClick={handleOpenBlockPage(c)}
+                >
                   <Stack gap="sm">
                     <Group justify="space-between" wrap="nowrap">
                       <Text fw={500} truncate="end">{c.title}</Text>
                       <ActionIcon
                           color="red"
                           variant="subtle"
-                          onClick={() => removeBlock(c)}
+                          onClick={(e) =>{
+                            e.stopPropagation()
+                            removeBlock(c)
+                          }}
                       >
                         <IconTrash size={18}/>
                       </ActionIcon>
@@ -189,28 +202,6 @@ export const BookConfigurationEditForm = (props: IBookConfigurationEditFormProps
                         </Text>
                     )}
 
-                    <Group mt="auto" justify="space-between">
-                      <Button
-                          variant="filled"
-                          color="blue"
-                          size="sm"
-                          onClick={handleOpenBlockPage(c)}
-                      >
-                        Открыть
-                      </Button>
-                      <Button
-                          variant="subtle"
-                          color="gray"
-                          size="sm"
-                          leftSection={<IconEdit size={16}/>}
-                          onClick={() => {
-                            setCurrentBlock(c)
-                            setIsModalOpened(true)
-                          }}
-                      >
-                        Изменить
-                      </Button>
-                    </Group>
                   </Stack>
                 </Card>
             )}

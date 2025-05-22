@@ -1,5 +1,5 @@
 // MainTabContent.tsx
-import {Group, Select, Checkbox, Button, Drawer} from "@mantine/core";
+import {Group, Select, Checkbox, Button, Drawer, Text} from "@mantine/core";
 import {
   IBlock,
   IBlockStructureKind,
@@ -8,6 +8,7 @@ import {
 import { IconViewer } from "@/components/shared/IconViewer/IconViewer";
 import {GameIconSelector} from "@/components/shared/GameIconSelector/GameIconSelector";
 import React, {useState} from "react";
+import {InlineEdit2} from "@/components/shared/InlineEdit2/InlineEdit2";
 
 interface MainTabContentProps {
   block: IBlock;
@@ -27,11 +28,28 @@ export const MainTabContent = ({ block, saveBlock }: MainTabContentProps) => {
   return (
       <>
         <Group align="flex-end" spacing="xl" mb="md">
+          <Group w={"100%"}>
+            <InlineEdit2
+                onChange={(value) => saveBlock({ ...block, title: value })}
+                value={block?.title}
+                placeholder="введите название..."
+                label={"Название блока"}
+            />
+          </Group>
+          <Group w={"100%"}>
+            <InlineEdit2
+                onChange={(value) => saveBlock({ ...block, description: value })}
+                value={block?.description}
+                placeholder="введите описание..."
+                label={"Описание"}
+            />
+          </Group>
           <Group>
             <Select
                 value={block?.structureKind || IBlockStructureKind.single}
                 onChange={(value) => saveBlock({ ...block, structureKind: value })}
                 data={structureKindOptions}
+                label="Тип структуры"
                 size="sm"
                 placeholder="Выберите тип структуры"
             />

@@ -4,6 +4,7 @@ import {useEditor} from "@tiptap/react";
 import {useState} from "react";
 import {OpenRouterApi} from "@/api/openRouterApi";
 import { RichTextEditor } from "@mantine/tiptap";
+import {notifications} from "@mantine/notifications";
 interface CheckSynonymsButtonProps {
   editor: ReturnType<typeof useEditor>;
   onLoadingChange: (isLoading: boolean, message?: string) => void;
@@ -23,7 +24,10 @@ export const CheckSynonymsButton = ({
     const selectedText = editor.state.doc.textBetween(from, to, " ");
 
     if (selectedText.trim().split(/\s+/).length > 1) {
-      alert("Выделите только одно слово");
+      notifications.show({
+        message: "Выделите только одно слово",
+        color: 'orange',
+      })
       return;
     }
 
@@ -33,7 +37,11 @@ export const CheckSynonymsButton = ({
       const synonyms = await OpenRouterApi.fetchSynonyms(selectedText);
       onSynonymsFound(synonyms);
     } catch (error) {
-      console.error("Error fetching synonyms:", error);
+      console.error("Error fetching synonyms:", error.message);
+      notifications.show({
+        message: error.message,
+        color: 'red',
+      })
     } finally {
       setIsLoading(false);
       onLoadingChange(false);

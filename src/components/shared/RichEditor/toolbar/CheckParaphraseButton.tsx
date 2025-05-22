@@ -4,6 +4,7 @@ import {useEditor} from "@tiptap/react";
 import {useState} from "react";
 import {OpenRouterApi} from "@/api/openRouterApi";
 import { RichTextEditor } from "@mantine/tiptap";
+import {notifications} from "@mantine/notifications";
 
 interface CheckParaphraseButtonProps {
   editor: ReturnType<typeof useEditor>;
@@ -24,7 +25,10 @@ export const CheckParaphraseButton = ({
     const selectedText = editor.state.doc.textBetween(from, to, " ");
 
     if (!selectedText.trim()) {
-      alert("Выделите текст для перефразирования");
+      notifications.show({
+        message: "Выделите текст для перефразирования",
+        color: 'orange',
+      })
       return;
     }
 
@@ -34,7 +38,10 @@ export const CheckParaphraseButton = ({
       const paraphrases = await OpenRouterApi.fetchParaphrases(selectedText);
       onParaphrasesFound(paraphrases);
     } catch (error) {
-      console.error("Error fetching paraphrases:", error);
+      notifications.show({
+        message: error.message,
+        color: 'red',
+      })
     } finally {
       setIsLoading(false);
       onLoadingChange(false);

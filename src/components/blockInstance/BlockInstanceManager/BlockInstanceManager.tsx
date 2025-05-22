@@ -33,7 +33,7 @@ import {
 import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
 import {IconViewer} from "@/components/shared/IconViewer/IconViewer";
 import {usePageTitle} from "@/providers/PageTitleProvider/PageTitleProvider";
-import {IBlockStructureKind} from "@/entities/ConstructorEntities";
+import {IBlockParameterDataType, IBlockStructureKind} from "@/entities/ConstructorEntities";
 
 export interface IBlockInstanceManagerProps {
   blockUuid: string;
@@ -54,7 +54,7 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
   const [newInstanceName, setNewInstanceName] = useState('');
   const [newShortDescription, setNewShortDescription] = useState('');
 
-  const [filtersVisible, { toggle: toggleFilters }] = useDisclosure(false);
+  const [filtersVisible, { toggle: toggleFilters, close: closeFilters }] = useDisclosure(false);
   const [filters, setFilters] = useState<Record<string, string[]>>({});
   const {isMobile} = useMedia();
 
@@ -90,7 +90,7 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
   }, [block])
 
   const handleAddClick = () => {
-    setNewInstanceName(`${block?.title}`);
+    setNewInstanceName('');
     setNewShortDescription('');
     open();
   };
@@ -131,20 +131,27 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
 // Функция для сбора уникальных значений параметров
   const getUniqueParamValues = (paramUuid: string) => {
     if (!instancesWithParams) return [];
-    const values = new Set<string>();
+    const values = new Map<string, string>(); // key: value, value: label
 
     instancesWithParams.forEach(instance => {
       instance.params.forEach(param => {
         if (param.blockParameterUuid === paramUuid) {
-          const displayValue = param.value?.replace(/<[^>]*>/g, '') || '—';
-          values.add(displayValue);
+          const displayedParam = displayedParameters?.find(p => p.uuid === paramUuid);
+          if (displayedParam?.dataType === 'blockLink') {
+            // Для blockLink сохраняем оригинальный value (UUID) и label (title)
+            values.set(param.value, param.displayValue || '—');
+          } else {
+            // Для остальных используем displayValue как value и label
+            const valueKey = param.displayValue;
+            values.set(valueKey, valueKey);
+          }
         }
       });
     });
 
-    return Array.from(values).map(value => ({
+    return Array.from(values.entries()).map(([value, label]) => ({
       value,
-      label: value
+      label
     }));
   };
 
@@ -153,8 +160,16 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
     return Object.entries(filters).every(([paramUuid, values]) => {
       if (values.length === 0) return true;
       const param = instance.params.find(p => p.blockParameterUuid === paramUuid);
-      const displayValue = param?.value?.replace(/<[^>]*>/g, '') || '—';
-      return values.includes(displayValue);
+      if (!param) return false;
+
+      const displayedParam = displayedParameters?.find(p => p.uuid === paramUuid);
+      let valueToCompare: string;
+      if (displayedParam?.dataType === IBlockParameterDataType.blockLink) {
+        valueToCompare = param.value; // Сравниваем по UUID
+      } else {
+        valueToCompare = param.displayValue; // Уже очищенное значение
+      }
+      return values.includes(valueToCompare);
     });
   }) || [];
 
@@ -170,7 +185,9 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
 
   const clearFilters = () => {
     setFilters({});
+    closeFilters()
   };
+
   if (block?.structureKind === 'single') {
     if (!instances || instances.length === 0) {
       return
@@ -235,11 +252,6 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
             </div>
         )}
         <Table highlightOnHover className={classes.table}>
-          <Table.Thead>
-            <Table.Tr>
-              <Table.Th>Название</Table.Th>
-            </Table.Tr>
-          </Table.Thead>
           <>
           {filteredInstances?.length > 0 ? (
               <Table.Tbody>
@@ -247,6 +259,7 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
                     <BlockInstanceTableRow
                         key={instance.uuid}
                         instance={instance}
+                        block={block}
                         displayedParameters={displayedParameters}
                         onEdit={handleEditInstance}
                         onDelete={handleDeleteInstance}
