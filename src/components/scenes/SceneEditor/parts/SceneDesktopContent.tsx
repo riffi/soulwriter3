@@ -10,6 +10,7 @@ import {InlineEdit} from "@/components/shared/InlineEdit/InlineEdit";
 import {SceneLinkManager} from "@/components/scenes/SceneEditor/parts/SceneLinkManager";
 import {useDisclosure, useWindowScroll} from "@mantine/hooks";
 import {useEffect, useState} from "react";
+import {InlineEdit2} from "@/components/shared/InlineEdit2/InlineEdit2";
 
 interface SceneDesktopContentProps {
   scene: IScene;
@@ -73,15 +74,14 @@ export const SceneDesktopContent = ({
                 <>
                 {isHeaderVisible && (
                     <Group p={10} justify="space-between" align="center" w="100%">
-                      <InlineEdit
-                          value={scene.title}
-                          size={"xl"}
-                          textProps={{
-                            style: { fontSize: '1.5rem' }
-                          }}
-                          onChange={(title) => saveScene({ ...scene, title })}
-                          label=""
-                      />
+                      <Box flex={1}>
+                        <InlineEdit2
+                            value={scene.title}
+                            size={"xl"}
+                            onChange={(title) => saveScene({ ...scene, title })}
+                        />
+                      </Box>
+
                       <Group  gap="sm">
                         <Button
                             variant="outline"

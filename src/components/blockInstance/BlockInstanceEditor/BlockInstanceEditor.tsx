@@ -34,6 +34,7 @@ import {usePageTitle} from "@/providers/PageTitleProvider/PageTitleProvider";
 import {
   ReferencedInstanceEditor
 } from "@/components/blockInstance/BlockInstanceEditor/parts/ReferencedInstanceEditor/ReferencedInstanceEditor";
+import {InlineEdit2} from "@/components/shared/InlineEdit2/InlineEdit2";
 
 export interface IBlockInstanceEditorProps {
   blockInstanceUuid: string;
@@ -166,24 +167,36 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
               </Text>
             </Group>
             {block?.structureKind !== IBlockStructureKind.single &&
-              <InlineEdit
-                  value={blockInstance?.title || ''}
-                  placeholder="Instance title"
-                  size="md"
-                  className={classes.titleInput}
-                  onChange={(val) => updateBlockInstanceTitle(val)}
-              />
+                <Box>
+                  <InlineEdit2 onChange={(val) => updateBlockInstanceTitle(val)} value={blockInstance?.title || ''}/>
+                </Box>
+              // <InlineEdit
+              //     value={blockInstance?.title || ''}
+              //     placeholder="Instance title"
+              //     size="md"
+              //     className={classes.titleInput}
+              //     onChange={(val) => updateBlockInstanceTitle(val)}
+              // />
             }
           </Group>
           <Group>
           {block?.structureKind !== IBlockStructureKind.single &&
-              <InlineEdit
-                  value={blockInstance?.shortDescription || ''}
-                  placeholder="Краткое описание..."
-                  label="Краткое описание"
-                  size="xs" // Slightly smaller size for description
-                  onChange={(val) => updateBlockInstanceShortDescription(val)}
-              />
+              <Box mb="lg" style={{flex: '1'}}>
+                <InlineEdit2
+                    label="Краткое описание"
+                    placeholder="Краткое описание..."
+                    onChange={(val) => updateBlockInstanceShortDescription(val)}
+                    value={blockInstance?.shortDescription || ''}
+                    size="sm"
+                />
+              </Box>
+              // <InlineEdit
+              //     value={blockInstance?.shortDescription || ''}
+              //     placeholder="Краткое описание..."
+              //     label="Краткое описание"
+              //     size="xs" // Slightly smaller size for description
+              //     onChange={(val) => updateBlockInstanceShortDescription(val)}
+              // />
           }
           </Group>
 

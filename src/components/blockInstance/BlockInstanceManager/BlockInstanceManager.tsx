@@ -54,7 +54,7 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
   const [newInstanceName, setNewInstanceName] = useState('');
   const [newShortDescription, setNewShortDescription] = useState('');
 
-  const [filtersVisible, { toggle: toggleFilters }] = useDisclosure(false);
+  const [filtersVisible, { toggle: toggleFilters, close: closeFilters }] = useDisclosure(false);
   const [filters, setFilters] = useState<Record<string, string[]>>({});
   const {isMobile} = useMedia();
 
@@ -90,7 +90,7 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
   }, [block])
 
   const handleAddClick = () => {
-    setNewInstanceName(`${block?.title}`);
+    setNewInstanceName('');
     setNewShortDescription('');
     open();
   };
@@ -185,7 +185,9 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
 
   const clearFilters = () => {
     setFilters({});
+    closeFilters()
   };
+
   if (block?.structureKind === 'single') {
     if (!instances || instances.length === 0) {
       return

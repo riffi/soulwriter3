@@ -11,6 +11,7 @@ import {useKeyboardHeight} from "@/components/scenes/SceneEditor/hooks/useKeyboa
 import {SceneLinkManager} from "@/components/scenes/SceneEditor/parts/SceneLinkManager";
 import {useDisclosure} from "@mantine/hooks";
 import {IconLink} from "@tabler/icons-react";
+import {InlineEdit2} from "@/components/shared/InlineEdit2/InlineEdit2";
 interface SceneMobileContentProps {
   sceneBody: string;
   handleContentChange: (contentHTML: string, contentText: string) => void;
@@ -40,15 +41,21 @@ export const SceneMobileContent = ({
   useEffect(() => {
     if (scene) {
       const headerElement = (
-          <Group>
-            <InlineEdit
-                value={scene.title}
-                onChange={(title) => saveScene({ ...scene, title })}
-                label=""
-            />
+          <Group display="flex" align="center" style={{flexGrow:1, paddingLeft:"10px"}} >
+            <Box flex={1} flexGrow={1}>
+              <InlineEdit2
+                  value={scene.title}
+                  onChange={(title) => saveScene({ ...scene, title })}
+                  label=""
+              />
+            </Box>
             <ActionIcon
                 variant="outline"
                 onClick={openLinkManager}
+                style={{
+                  display: 'flex',
+                  flexGrow:0
+                }}
             >
               <IconLink size={16} />
             </ActionIcon>
