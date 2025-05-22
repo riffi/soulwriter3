@@ -82,6 +82,8 @@ export const SceneLayout = () => {
           width: "500px",
           flexShrink: 0,
           position: 'relative',
+          flex: 'auto',
+          flexGrow: '0',
         }}>
           <Box style={{
             maxHeight: "calc(100vh - 50px)",
@@ -97,13 +99,17 @@ export const SceneLayout = () => {
                 chapters={chapters}
             />
           </Box>
+        </Box>
+        <Box  style={{
+          overflowY: "auto",
+          display: 'flex',
+         }}>
           <ActionIcon
               onClick={toggleMode}
               variant="transparent"
               style={{
-                position: 'absolute',
-                right: -30,
-                top: 0,
+                position: 'fixed',
+                top: 20,
                 transform: 'none', // Убираем вертикальное выравнивание
                 color: '#999', // Цвет иконки
                 backgroundColor: '#fff', // Цвет фона
@@ -117,7 +123,12 @@ export const SceneLayout = () => {
             />
           </ActionIcon>
         </Box>
-        <Box style={{ flexGrow: 1 }}>
+        <Box style={{
+          flexGrow: 1,
+          flex: 'auto',
+          display: "flex",
+          justifyContent: "center",
+        }}>
           {sceneId ? <SceneEditor sceneId={sceneId} /> : <Placeholder />}
         </Box>
       </Box>

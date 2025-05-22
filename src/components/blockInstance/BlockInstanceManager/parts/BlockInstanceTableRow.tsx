@@ -51,14 +51,13 @@ export const BlockInstanceTableRow = ({
           <Group gap="10">
             <IconViewer
                 iconName={block?.icon}
-                size={30}
-                color="#FFF"
-                backgroundColor="#777"
+                size={25}
+                color="rgb(102, 102, 102)"
+                backgroundColor="transparent"
             />
             <Stack gap={0}>
               <Text
-                  fw={400}
-                  style={{cursor: 'pointer', fontSize: '0.8rem',}}
+                  style={{cursor: 'pointer', fontSize: '0.9rem',}}
               >
                 {instance.title}
               </Text>
