@@ -1,16 +1,15 @@
-import { Group, Badge, ActionIcon, Text, Table, Drawer, Button, Stack } from '@mantine/core';
-import { IconEdit, IconTrash, IconDots } from '@tabler/icons-react';
+import { Group, Badge, Text, Table, Stack } from '@mantine/core';
+import { IconEdit, IconTrash } from '@tabler/icons-react';
 import { IBlockInstance } from '@/entities/BookEntities';
 import {IBlock, IBlockParameter} from "@/entities/ConstructorEntities";
 import {
   IBlockInstanceWithParams
 } from "@/components/blockInstance/BlockInstanceManager/useBlockInstanceManager";
-import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
-import { useState } from 'react';
 import {
   ParameterViewVariantRenderer
 } from "@/components/shared/blockParameter/ParameterViewVariantRenderer/ParameterViewVariantRenderer";
 import {IconViewer} from "@/components/shared/IconViewer/IconViewer";
+import {RowActionButtons, ActionItem} from "@/components/shared/RowActionButtons/RowActionButtons";
 
 interface BlockInstanceTableRowProps {
   instance: IBlockInstanceWithParams;
@@ -27,12 +26,24 @@ export const BlockInstanceTableRow = ({
                                         onEdit,
                                         onDelete,
                                       }: BlockInstanceTableRowProps) => {
-  const {isMobile} = useMedia();
-  const [openedDrawerId, setOpenedDrawerId] = useState<string | null>(null);
 
-  const handleDrawerActions = (action: 'edit' | 'delete') => {
-    setOpenedDrawerId(null);
-    switch(action) {
+  const actions: ActionItem[] = [
+    {
+      key: 'edit',
+      title: 'Редактировать',
+      icon: <IconEdit/>,
+      color: 'blue'
+    },
+    {
+      key: 'delete',
+      title: 'Удалить',
+      icon: <IconTrash/>,
+      color: 'red'
+    }
+  ];
+
+  const handleAction = (actionKey: string) => {
+    switch(actionKey) {
       case 'edit':
         onEdit(instance.uuid!);
         break;
@@ -48,12 +59,12 @@ export const BlockInstanceTableRow = ({
             onClick={() => onEdit(instance.uuid!)}
             style={{cursor: 'pointer', padding: '10px 0px 10px 20px'}}
         >
-          <Group gap="10">
+          <Group gap="10" wrap="nowrap">
             <IconViewer
                 iconName={instance?.icon && instance.icon !== '' ? instance.icon : block?.icon}
                 customIconBase64={
-                    instance?.icon && instance.icon !== '' ? '' :
-                        (instance.customIconBase64 && instance.customIconBase64 !== ''  ? instance.customIconBase64 : block?.customIconBase64)
+                  instance?.icon && instance.icon !== '' ? '' :
+                      (instance.customIconBase64 && instance.customIconBase64 !== ''  ? instance.customIconBase64 : block?.customIconBase64)
                 }
                 size={35}
                 color="rgb(102, 102, 102)"
@@ -70,7 +81,7 @@ export const BlockInstanceTableRow = ({
               </Text>
               {instance.shortDescription && (
                   <Text size="sm" c="dimmed" mt={0}>
-                      {instance.shortDescription}
+                    {instance.shortDescription}
                   </Text>
               )}
             </Stack>
@@ -78,7 +89,7 @@ export const BlockInstanceTableRow = ({
           <Group
               gap="0"
               style={{
-                  marginTop: '5px'
+                marginTop: '5px'
               }}
           >
             {displayedParameters?.map((param, index) => {
@@ -103,7 +114,7 @@ export const BlockInstanceTableRow = ({
                       paddingRight: '10px',
                     }}>
                       <Text
-                        size={12}
+                          size={12}
                       >
                         {param.title}:{' '}
                       </Text>
@@ -116,61 +127,12 @@ export const BlockInstanceTableRow = ({
           </Group>
         </Table.Td>
         <Table.Td>
-          <Group gap={4} justify="center">
-            {isMobile ? (
-                <>
-                  <ActionIcon
-                      variant="subtle"
-                      onClick={() => setOpenedDrawerId(instance.uuid!)}
-                  >
-                    <IconDots size={16} />
-                  </ActionIcon>
-
-                  <Drawer
-                      opened={openedDrawerId === instance.uuid}
-                      onClose={() => setOpenedDrawerId(null)}
-                      position="bottom"
-                      title="Действия"
-                      size="25%"
-                  >
-                    <Stack gap="sm">
-                      <Button
-                          variant="subtle"
-                          leftSection={<IconEdit size={16} />}
-                          onClick={() => handleDrawerActions('edit')}
-                      >
-                        Редактировать
-                      </Button>
-                      <Button
-                          color="red"
-                          variant="subtle"
-                          leftSection={<IconTrash size={16} />}
-                          onClick={() => handleDrawerActions('delete')}
-                      >
-                        Удалить
-                      </Button>
-                    </Stack>
-                  </Drawer>
-                </>
-            ) : (
-                <>
-                  <ActionIcon
-                      variant="subtle"
-                      color="blue"
-                      onClick={() => onEdit(instance.uuid!)}
-                  >
-                    <IconEdit size="1rem" />
-                  </ActionIcon>
-                  <ActionIcon
-                      variant="subtle"
-                      color="red"
-                      onClick={() => onDelete(instance)}
-                  >
-                    <IconTrash size="1rem" />
-                  </ActionIcon>
-                </>
-            )}
-          </Group>
+          <RowActionButtons
+              actions={actions}
+              onAction={handleAction}
+              entityId={instance.uuid}
+              drawerTitle="Действия"
+          />
         </Table.Td>
       </Table.Tr>
   );

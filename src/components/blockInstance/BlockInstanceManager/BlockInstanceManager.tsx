@@ -198,14 +198,14 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
         </>)
   }
   return (
-      <Container size="xl" p="0" >
+      <Container size="xl" p={0} >
       <Box className={classes.container} pos="relative">
         <Box visibleFrom={"sm"}>
           {header}
         </Box>
         <Space h="md"/>
 
-        <Group justify="space-between" mb="md">
+        <Group justify="space-between" mb="md" px={"sm"}>
           <Button
               onClick={handleAddClick}
               leftSection={<IconPlus size="1rem" />}

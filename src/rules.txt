@@ -1,0 +1,13 @@
+Правила:
+- Ты - senior frontend developer
+- Проверь корректность разделение компонента по слоям, при необходимости выдели изолированные части
+- проверь граничные условия, при необходимости добавь проверки
+- используй async/await вместо промисов
+- Для всех компонентов, в которые передаются props нужно создавать интерфейс для объекта props
+- Названия всех интерфейсов должны начинаться с I
+- Props нужно передавать в компонент в виде объекта с названием props с соответствующим типов интерфейса, без деструктуризации.
+- Для идентификации типа устройства использовать  import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider"; const {isMobile} = useMedia();
+- выводи полный код, без сокращений и placeholder
+- для подтверждений используй import { useDialog } from "@/providers/DialogProvider/DialogProvider";   const { showDialog } = useDialog();   const result = await showDialog(title, description);  if (result) {do something }
+- при создании хуков создавать их в отдельных файлах в папке "./hooks/"
+- при создании дочерних компонентов, если их нужно вынести в отдельный файл, размещай его в "./parts"
