@@ -59,6 +59,15 @@ export interface IBlockTitleForms{
   prepositional: string; // Предложный
   plural: string; // Множественное число
 }
+export enum IIconKind{
+  gameIcons = 'gameIcons',
+  custom = 'custom',
+}
+export interface IIcon{
+  iconKind: string // Тип иконки
+  iconName: string // Имя иконки из набора
+  iconBase64?: string // Кастомная иконка в формате base64
+}
 
 // Строительный блок
 export interface IBlock {
@@ -73,7 +82,7 @@ export interface IBlock {
   parentBlockUuid?: string; // Ссылка на родительский блок
   titleForms?: IBlockTitleForms // Формы названия
   sceneLinkAllowed: number; // Разрешено ли создавать связи со сценами
-  icon?: string  // Название иконки Game Icons
+  icon?: IIcon; // Иконка
   customIconBase64?: string // Кастомная иконка в формате base64
   showInSceneList: number; // Отображать ли в списке сцен
 }

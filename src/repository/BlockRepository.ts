@@ -146,7 +146,7 @@ const appendDefaultTab = async (db: BlockAbstractDb, blockData: IBlock) => {
   await db.blockTabs.add({
     uuid: generateUUID(),
     blockUuid: blockData.uuid,
-    title: 'Параметры',
+    title: 'Основное',
     orderNumber: 0,
     tabKind: IBlockTabKind.parameters,
     isDefault: 1

@@ -64,7 +64,7 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
 
   const header =( <Group>
     <IconViewer
-        iconName={block?.icon}
+        icon={block?.icon}
         size={isMobile? 20 : 28}
         style={{
           color: 'white',
@@ -86,6 +86,7 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
   useEffect(() =>{
     if (block) {
       setTitleElement(header);
+      setPageTitle(block?.titleForms?.plural || '')
     }
   }, [block])
 

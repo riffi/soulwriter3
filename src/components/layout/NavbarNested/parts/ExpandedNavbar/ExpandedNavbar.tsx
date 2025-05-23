@@ -73,7 +73,7 @@ const NavLink = ({
                   gap={0}
               >
                  <IconViewer
-                    iconName={item.icon}
+                    icon={item.icon}
                     size={20}
                     backgroundColor={"transparent"}
                     color="var(--mantine-color-blue-7)"

@@ -56,7 +56,7 @@ const ParameterGroupContent = ({ availableParameters, fullParams, onAdd, ...prop
               mb="md"
               className={classes.addButton}
           >
-            Добавить параметр
+            свойство
           </Button>
       )}
       <ParameterList fullParams={fullParams} {...props} />

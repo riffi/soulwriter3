@@ -8,7 +8,7 @@ export const AddParameterModal = ({ opened, onClose, parameters, onSave }) => {
     <Modal
         opened={opened}
         onClose={onClose}
-        title="Добавить параметр"
+        title="Добавить свойство"
         centered
         fullScreen={isMobile}
     >

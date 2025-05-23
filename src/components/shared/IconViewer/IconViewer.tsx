@@ -1,8 +1,10 @@
 import React from 'react';
 import * as Gi from 'react-icons/gi';
 import { Box, Text, Image as MantineImage } from '@mantine/core';
+import {IIcon, IIconKind} from "@/entities/ConstructorEntities";
 
 interface IconViewerProps {
+  icon?: IIcon;
   iconName?: string;
   customIconBase64?: string;
   size?: number;
@@ -11,8 +13,8 @@ interface IconViewerProps {
   style?: React.CSSProperties; // Добавляем пропс для стилей
 }
 
-export const IconViewer = ({ iconName, customIconBase64, size = 24, color = 'black', backgroundColor='#fff', style }: IconViewerProps) => {
-  if (!iconName && !customIconBase64) return null;
+export const IconViewer = ({ iconName, icon, customIconBase64, size = 24, color = 'black', backgroundColor='#fff', style }: IconViewerProps) => {
+  if (!iconName && !customIconBase64 && !icon) return null;
 
   const combinedStyle = {
     color,
@@ -25,13 +27,17 @@ export const IconViewer = ({ iconName, customIconBase64, size = 24, color = 'bla
     ...style, // Переданные стили перезаписывают базовые
   };
 
-  const IconComponent = Gi[iconName as keyof typeof Gi];
+  const IconComponent = icon
+      ? icon.iconKind === 'gameIcons'
+          ? Gi[icon.iconName]
+          : null
+      : Gi[iconName];
 
-  if (customIconBase64 && customIconBase64 !== '') {
+  if (icon?.iconKind === IIconKind.custom) {
     return (
         <Box>
           <MantineImage
-              src={customIconBase64}
+              src={icon?.iconBase64}
               alt="Пользовательская иконка"
               style={{
                 width: `${size+10}px`,

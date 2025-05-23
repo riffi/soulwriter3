@@ -1,4 +1,4 @@
-import {IBlock} from "@/entities/ConstructorEntities";
+import {IBlock, IIcon} from "@/entities/ConstructorEntities";
 
 export interface IBook {
   id?: number;
@@ -17,8 +17,7 @@ export interface IBlockInstance{
   title: string; // Название экземпляра блока
   parentInstanceUuid?: string; // Ссылка на родительский экземпляр блока
   shortDescription?: string; // Краткое описание экземпляра блока
-  icon?: string  // Название иконки Game Icons
-  customIconBase64?: string // Кастомная иконка в формате base64
+  icon?: IIcon
 }
 
 export interface IBlockInstanceSceneLink{

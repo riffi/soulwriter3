@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useBookStore } from '@/stores/bookStore/bookStore';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { bookDb } from '@/entities/bookDb';
-import { IBlock, IBlockStructureKind } from '@/entities/ConstructorEntities';
+import {IBlock, IBlockStructureKind, IIcon} from '@/entities/ConstructorEntities';
 import {
   IconBooks,
   IconBox,
@@ -16,7 +16,7 @@ import {ExpandedNavbar} from "@/components/layout/NavbarNested/parts/ExpandedNav
 export interface NavLinkItem {
   label: string;
   link?: string;
-  icon?: string;
+  icon?: IIcon;
 }
 
 export interface NavLinkGroup {

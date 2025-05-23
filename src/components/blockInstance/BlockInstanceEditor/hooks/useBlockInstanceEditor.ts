@@ -4,7 +4,7 @@ import {IBlockInstance, IBlockParameterInstance} from "@/entities/BookEntities";
 import {
   IBlockParameterGroup,
   IBlockParameter,
-  IBlockParameterPossibleValue, IBlock, IBlockRelation, IBlockTab
+  IBlockParameterPossibleValue, IBlock, IBlockRelation, IBlockTab, IIcon
 } from "@/entities/ConstructorEntities";
 import {BlockRepository} from "@/repository/BlockRepository";
 import {BlockRelationRepository} from "@/repository/BlockRelationRepository";
@@ -134,15 +134,11 @@ export const useBlockInstanceEditor = (blockInstanceUuid: string, currentParamGr
     await bookDb.blockInstances.update(blockInstance.id, {shortDescription: newDescription});
   }
 
-  const updateBlockInstanceIcon = async (iconName: string) => {
+  const updateBlockInstanceIcon = async (icon: IIcon) => {
     if (!blockInstance) return;
-    await bookDb.blockInstances.update(blockInstance.id, {icon: iconName});
+    await bookDb.blockInstances.update(blockInstance.id, {icon: icon});
   }
 
-  const updateBlockInstanceCustomIcon = async (customIconBase64: string) => {
-    if (!blockInstance) return;
-    await bookDb.blockInstances.update(blockInstance.id, {customIconBase64: customIconBase64});
-  }
 
   return {
     blockInstance,
@@ -162,6 +158,5 @@ export const useBlockInstanceEditor = (blockInstanceUuid: string, currentParamGr
     referencingParams,
     updateBlockInstanceShortDescription,
     updateBlockInstanceIcon,
-    updateBlockInstanceCustomIcon
   }
 };

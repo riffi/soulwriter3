@@ -39,6 +39,7 @@ export const BlockEditForm = ({ blockUuid, bookUuid }: IBlockEditFormProps) => {
     blockRelations,
   } = useBlockEditForm(blockUuid, bookUuid);
 
+
   const breadCrumbs = [
     { title: "Конфигуратор", href: "/configurator" },
     {
