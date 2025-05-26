@@ -11,6 +11,8 @@ import {
   Text,
   Image,
   Space,
+  Menu,
+  LoadingOverlay,
 } from "@mantine/core";
 import {
   IconCheck,
@@ -18,7 +20,10 @@ import {
   IconEdit,
   IconPlus,
   IconTrash,
-  IconUpload
+  IconUpload,
+  IconCloud,
+  IconCloudDown,
+  IconDots,
 } from "@tabler/icons-react";
 import React, { useState } from "react";
 import { BookEditModal } from "./BookEditModal/BookEditModal";
@@ -28,7 +33,13 @@ import {useBookManager} from "@/components/books/BookManager/useBookManager";
 import { useBookStore } from '@/stores/bookStore/bookStore';
 import {notifications} from "@mantine/notifications";
 import {connectToBookDatabase} from "@/entities/bookDb";
-import {exportBook, handleFileImport} from "@/utils/bookBackupManager";
+import {
+  exportBook,
+  handleFileImport,
+  saveBookToServer,
+  loadBookFromServer
+} from "@/utils/bookBackupManager";
+import {useAuth} from "@/providers/AuthProvider/AuthProvider";
 
 const getBlankBook = (): IBook => ({
   uuid: "",
@@ -41,16 +52,21 @@ const getBlankBook = (): IBook => ({
 export const BookManager = () => {
   const [isModalOpened, setIsModalOpened] = useState(false);
   const [currentBook, setCurrentBook] = useState<IBook>(getBlankBook());
+  const [loading, setLoading] = useState(false);
+  const [loadingBookId, setLoadingBookId] = useState<string | null>(null);
 
   const { selectedBook, selectBook, clearSelectedBook } = useBookStore();
+  const { user } = useAuth();
+  const token = user?.token;
   const navigate = useNavigate();
 
- const {
-   books,
-   configurations,
-   saveBook,
-   deleteBook
- } = useBookManager()
+  const {
+    books,
+    configurations,
+    saveBook,
+    deleteBook,
+    refreshBooks
+  } = useBookManager()
 
 
   const breadCrumbs = [
@@ -78,9 +94,57 @@ export const BookManager = () => {
     }
   }
 
+  const handleSaveToServer = async (bookUuid: string) => {
+    if (!token) {
+      notifications.show({
+        message: "Для сохранения на сервер необходимо войти в систему",
+        color: 'red'
+      });
+      return;
+    }
+
+    setLoadingBookId(bookUuid);
+    const success = await saveBookToServer(bookUuid, token);
+    setLoadingBookId(null);
+  };
+
+  const handleLoadFromServer = async (bookUuid: string) => {
+    if (!token) {
+      notifications.show({
+        message: "Для загрузки с сервера необходимо войти в систему",
+        color: 'red'
+      });
+      return;
+    }
+
+    setLoadingBookId(bookUuid);
+    const success = await loadBookFromServer(bookUuid, token);
+    if (success && refreshBooks) {
+      await refreshBooks(); // Обновляем список локальных книг
+    }
+    setLoadingBookId(null);
+  };
+
+  const handleExportBook = async (bookUuid: string) => {
+    setLoadingBookId(bookUuid);
+    await exportBook(bookUuid);
+    setLoadingBookId(null);
+  };
+
+  const handleFileImportWithRefresh = async () => {
+    setLoading(true);
+    const success = await handleFileImport();
+    if (success && refreshBooks) {
+      await refreshBooks(); // Обновляем список локальных книг
+    }
+    setLoading(false);
+  };
+
   return (
       <>
-        <Container fluid>
+        <Container fluid style={{ position: 'relative' }}>
+          <LoadingOverlay visible={loading} zIndex={1000} overlayBlur={2} />
+
           <h1>Управление книгами</h1>
           <Breadcrumbs separator="→" separatorMargin="md" mt="xs">
             {breadCrumbs}
@@ -99,18 +163,23 @@ export const BookManager = () => {
 
             <Button
                 leftSection={<IconUpload size={20} />}
-                onClick={async () => {
-                  await handleFileImport();
-                }}
+                onClick={handleFileImportWithRefresh}
                 variant="outline"
             >
-              Загрузить
+              Загрузить из файла
             </Button>
           </Group>
           <Space h={20} />
           <SimpleGrid cols={{ base: 1, sm: 2, lg: 2, xl: 4 }}>
             {books?.map((book) => (
-                <Card key={book.uuid} shadow="sm" padding="lg" radius="md" withBorder>
+                <Card key={book.uuid} shadow="sm" padding="lg" radius="md" withBorder style={{ position: 'relative' }}>
+                  <LoadingOverlay
+                      visible={loadingBookId === book.uuid}
+                      zIndex={100}
+                      overlayBlur={1}
+                      loaderProps={{ size: 'sm' }}
+                  />
+
                   <Card.Section>
                     <Image
                         src="https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/images/bg-8.png"
@@ -152,27 +221,55 @@ export const BookManager = () => {
                     >
                       {selectedBook?.uuid === book.uuid ? 'Выбрана' : 'Выбрать'}
                     </Button>
-                    <Button
-                        fullWidth
-                        variant="outline"
-                        leftSection={<IconDownload size={18} />}
-                        onClick={async () => await exportBook(book.uuid)}
-                    >
-                      Выгрузить
-                    </Button>
-                  </Group>
-                  <Group mt="md">
-                    <Button
-                        fullWidth
-                        variant="outline"
-                        leftSection={<IconEdit size={18} />}
-                        onClick={() => {
-                          setCurrentBook(book);
-                          setIsModalOpened(true);
-                        }}
-                    >
-                      Редактировать
-                    </Button>
+
+                    <Menu shadow="md" width={200}>
+                      <Menu.Target>
+                        <Button
+                            variant="outline"
+                            leftSection={<IconDots size={18} />}
+                        >
+                          Действия
+                        </Button>
+                      </Menu.Target>
+
+                      <Menu.Dropdown>
+                        <Menu.Item
+                            leftSection={<IconDownload size={14} />}
+                            onClick={() => handleExportBook(book.uuid)}
+                        >
+                          Экспорт в файл
+                        </Menu.Item>
+
+                        {token && (
+                            <>
+                              <Menu.Item
+                                  leftSection={<IconCloud size={14} />}
+                                  onClick={() => handleSaveToServer(book.uuid)}
+                              >
+                                Сохранить на сервер
+                              </Menu.Item>
+                              <Menu.Item
+                                  leftSection={<IconCloudDown size={14} />}
+                                  onClick={() => handleLoadFromServer(book.uuid)}
+                              >
+                                Загрузить с сервера
+                              </Menu.Item>
+                            </>
+                        )}
+
+                        <Menu.Divider />
+
+                        <Menu.Item
+                            leftSection={<IconEdit size={14} />}
+                            onClick={() => {
+                              setCurrentBook(book);
+                              setIsModalOpened(true);
+                            }}
+                        >
+                          Редактировать
+                        </Menu.Item>
+                      </Menu.Dropdown>
+                    </Menu>
                   </Group>
                 </Card>
             ))}
@@ -202,5 +299,3 @@ const getKindLabel = (kind: string) => {
   };
   return kindList[kind as keyof typeof kindList] || kind;
 };
-
-
