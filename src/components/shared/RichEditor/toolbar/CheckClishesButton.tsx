@@ -9,7 +9,7 @@ import {
 import {IClicheWarning, IWarningGroup, IWarningKind} from "@/components/shared/RichEditor/types";
 import {generateUUID} from "@/utils/UUIDUtils";
 import {ActionIcon} from "@mantine/core";
-import {InkLuminApi} from "@/api/inkLuminApi";
+import {InkLuminMlApi} from "@/api/inkLuminMlApi";
 import {notifications} from "@mantine/notifications";
 
 interface CheckClichesButtonProps {
@@ -32,7 +32,7 @@ export const CheckClichesButton = ({ editor, onLoadingChange }: CheckClichesButt
     setIsLoading(true);
     try {
       const text = editor.getText();
-      const cliches = await InkLuminApi.fetchCliches(text);
+      const cliches = await InkLuminMlApi.fetchCliches(text);
       console.log(cliches)
       updateHighlights(cliches);
       setIsActive(true);

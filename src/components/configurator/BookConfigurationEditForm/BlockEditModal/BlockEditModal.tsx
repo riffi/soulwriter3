@@ -9,7 +9,7 @@ import {
 } from "@/entities/ConstructorEntities";
 import {createOptionsFromEnums} from "@/utils/enumUtils";
 import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
-import { InkLuminApiError } from "@/api/inkLuminApi";
+import { InkLuminApiError } from "@/api/inkLuminMlApi";
 
 interface IBlockEditModalProps {
   configurationUuid: string;

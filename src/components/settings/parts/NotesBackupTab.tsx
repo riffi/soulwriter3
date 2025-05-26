@@ -1,15 +1,18 @@
 // components/settings/parts/NotesBackupTab.tsx
 import { useState } from 'react';
-import { Button, Group, LoadingOverlay, Text } from '@mantine/core';
-import { IconDownload, IconUpload } from '@tabler/icons-react';
+import { Button, Group, LoadingOverlay, Text, Stack, Divider } from '@mantine/core';
+import { IconDownload, IconUpload, IconCloud, IconCloudDownload } from '@tabler/icons-react';
 import { configDatabase } from '@/entities/configuratorDb';
 import { useDialog } from '@/providers/DialogProvider/DialogProvider';
 import { INote, INoteGroup } from '@/entities/BookEntities';
-import {notifications} from "@mantine/notifications";
+import { exportDB, importDB } from 'dexie-export-import';
+import { notifications } from "@mantine/notifications";
+import {useAuth} from "@/providers/AuthProvider/AuthProvider";
 
 export const NotesBackupTab = () => {
   const [loading, setLoading] = useState(false);
   const { showDialog } = useDialog();
+  const { user, saveConfigToServer, getConfigFromServer } = useAuth();
 
   const handleExport = async () => {
     setLoading(true);
@@ -30,6 +33,11 @@ export const NotesBackupTab = () => {
       a.download = `notes-backup-${Date.now()}.json`;
       a.click();
       URL.revokeObjectURL(url);
+
+      notifications.show({
+        message: "Данные экспортированы в файл",
+        color: "green"
+      });
     } finally {
       setLoading(false);
     }
@@ -68,8 +76,9 @@ export const NotesBackupTab = () => {
           });
 
           notifications.show({
-            message: "Данные импортированы",
-          })
+            message: "Данные импортированы из файла",
+            color: "green"
+          });
         };
         reader.readAsText(file);
       } catch (error) {
@@ -82,32 +91,184 @@ export const NotesBackupTab = () => {
     input.click();
   };
 
+  const handleSaveToServer = async () => {
+    if (!user) {
+      notifications.show({
+        message: "Необходимо войти в систему",
+        color: "red"
+      });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // Экспорт всей базы данных
+      const blob = await exportDB(configDatabase, {
+        prettyJson: true,
+        numRowsPerChunk: 2000
+      });
+
+      // Конвертация Blob в ArrayBuffer
+      const buffer = await blob.arrayBuffer();
+      const uintArray = new Uint8Array(buffer);
+
+      const base64Data = btoa(String.fromCharCode(...uintArray));
+
+      const result = await saveConfigToServer({ data: base64Data });
+
+      if (result.success) {
+        notifications.show({
+          message: "Данные сохранены на сервер",
+          color: "green"
+        });
+      } else {
+        notifications.show({
+          message: result.message || "Ошибка сохранения на сервер",
+          color: "red"
+        });
+      }
+    } catch (error) {
+      notifications.show({
+        message: "Ошибка при сохранении данных",
+        color: "red"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLoadFromServer = async () => {
+    if (!user) {
+      notifications.show({
+        message: "Необходимо войти в систему",
+        color: "red"
+      });
+      return;
+    }
+
+    const confirmed = await showDialog(
+        'Подтверждение загрузки',
+        'Все локальные данные будут заменены данными с сервера. Продолжить?'
+    );
+
+    if (!confirmed) return;
+
+    setLoading(true);
+    try {
+      const result = await getConfigFromServer();
+
+      if (result.success && result.data.data) {
+        // Декодирование Base64 через бинарные операции
+        const binaryString = atob(result.data.data);
+        const buffer = new ArrayBuffer(binaryString.length);
+        const view = new Uint8Array(buffer);
+
+        for (let i = 0; i < binaryString.length; i++) {
+          view[i] = binaryString.charCodeAt(i);
+        }
+
+        const blob = new Blob([buffer], { type: 'application/json' });
+
+        await importDB(blob, {
+          clearTablesBeforeImport: true,
+          acceptVersionDiff: true
+        });
+
+        notifications.show({
+          message: "Данные загружены с сервера",
+          color: "green"
+        });
+      } else {
+        notifications.show({
+          message: result.message || "Ошибка загрузки с сервера",
+          color: "red"
+        });
+      }
+    } catch (error) {
+      notifications.show({
+        message: "Ошибка при загрузке данных: " + error,
+        color: "red"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
       <div style={{ position: 'relative' }}>
         <LoadingOverlay visible={loading} zIndex={1000} overlayBlur={2} />
 
-        <Text size="sm" mb="xl">
-          Экспорт и импорт всех заметок и групп заметок. При импорте текущие данные будут полностью заменены.
-        </Text>
+        <Stack gap="xl">
+          {/* Локальный бэкап */}
+          <div>
+            <Text size="lg" fw={500} mb="sm">
+              Локальный бэкап
+            </Text>
+            <Text size="sm" mb="md" c="dimmed">
+              Экспорт и импорт данных в виде файла. При импорте текущие данные будут полностью заменены.
+            </Text>
 
-        <Group>
-          <Button
-              leftSection={<IconDownload size={20} />}
-              onClick={handleExport}
-              variant="filled"
-          >
-            Экспортировать все данные
-          </Button>
+            <Group>
+              <Button
+                  leftSection={<IconDownload size={20} />}
+                  onClick={handleExport}
+                  variant="filled"
+              >
+                Экспортировать в файл
+              </Button>
 
-          <Button
-              leftSection={<IconUpload size={20} />}
-              onClick={handleImport}
-              variant="outline"
-              color="red"
-          >
-            Импортировать данные
-          </Button>
-        </Group>
+              <Button
+                  leftSection={<IconUpload size={20} />}
+                  onClick={handleImport}
+                  variant="outline"
+                  color="red"
+              >
+                Импортировать из файла
+              </Button>
+            </Group>
+          </div>
+
+          <Divider />
+
+          {/* Облачный бэкап */}
+          <div>
+            <Text size="lg" fw={500} mb="sm">
+              Облачная синхронизация
+            </Text>
+            <Text size="sm" mb="md" c="dimmed">
+              Сохранение и восстановление данных на сервере.
+              {!user && ' Требуется авторизация.'}
+            </Text>
+
+            <Group>
+              <Button
+                  leftSection={<IconCloud size={20} />}
+                  onClick={handleSaveToServer}
+                  variant="filled"
+                  color="blue"
+                  disabled={!user}
+              >
+                Сохранить на сервер
+              </Button>
+
+              <Button
+                  leftSection={<IconCloudDownload size={20} />}
+                  onClick={handleLoadFromServer}
+                  variant="outline"
+                  color="orange"
+                  disabled={!user}
+              >
+                Загрузить с сервера
+              </Button>
+            </Group>
+
+            {!user && (
+                <Text size="xs" c="red" mt="xs">
+                  Войдите в систему для использования облачной синхронизации
+                </Text>
+            )}
+          </div>
+        </Stack>
       </div>
   );
 };

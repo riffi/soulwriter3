@@ -24,7 +24,7 @@ import { IconViewer } from "@/components/shared/IconViewer/IconViewer";
 
 import React, {useState, useRef, useCallback} from "react";
 import {InlineEdit2} from "@/components/shared/InlineEdit2/InlineEdit2";
-import {InkLuminApi, InkLuminApiError} from "@/api/inkLuminApi";
+import {InkLuminMlApi, InkLuminApiError} from "@/api/inkLuminMlApi";
 import {notifications} from "@mantine/notifications";
 import {LoadingOverlayExtended} from "@/components/shared/overlay/LoadingOverlayExtended";
 import {IconPhoto, IconTrash} from "@tabler/icons-react";
@@ -102,7 +102,7 @@ export const MainTabContent = ({ block, onSave }: MainTabContentProps) => {
     setTitleFormsLoading(true);
     try {
       // Попытаемся получить формы названия от InkLuminApi
-      const titleForms = await InkLuminApi.fetchAndPrepareTitleForms(newTitle);
+      const titleForms = await InkLuminMlApi.fetchAndPrepareTitleForms(newTitle);
       await onSave(updatedBlock, titleForms);
     } catch (error) {
       if (error instanceof InkLuminApiError) {

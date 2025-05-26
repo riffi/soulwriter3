@@ -7,7 +7,7 @@ import {
 } from "@/entities/ConstructorEntities";
 import {configDatabase} from "@/entities/configuratorDb";
 import {generateUUID} from "@/utils/UUIDUtils";
-import { InkLuminApiError } from "@/api/inkLuminApi";
+import { InkLuminApiError } from "@/api/inkLuminMlApi";
 import {notifications} from "@mantine/notifications";
 import {BookDB, bookDb} from "@/entities/bookDb";
 import {BlockRelationRepository} from "@/repository/BlockRelationRepository";

@@ -11,7 +11,7 @@ import {configDatabase} from "@/entities/configuratorDb";
 import {useDialog} from "@/providers/DialogProvider/DialogProvider";
 import {bookDb} from "@/entities/bookDb";
 import {BlockRepository} from "@/repository/BlockRepository";
-import { InkLuminApiError } from "@/api/inkLuminApi";
+import { InkLuminApiError } from "@/api/inkLuminMlApi";
 import {BlockInstanceRepository} from "@/repository/BlockInstanceRepository";
 import {generateUUID} from "@/utils/UUIDUtils";
 

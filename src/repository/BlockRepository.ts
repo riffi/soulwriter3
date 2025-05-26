@@ -8,7 +8,7 @@ import {generateUUID} from "@/utils/UUIDUtils";
 import {useLiveQuery} from "dexie-react-hooks";
 import {BookDB, bookDb} from "@/entities/bookDb";
 import {BlockRelationRepository} from "@/repository/BlockRelationRepository";
-import {InkLuminApi, InkLuminApiError} from "@/api/inkLuminApi";
+import {InkLuminMlApi, InkLuminApiError} from "@/api/inkLuminMlApi";
 import {BlockInstanceRepository} from "@/repository/BlockInstanceRepository";
 import {notifications} from "@mantine/notifications";
 
@@ -159,7 +159,7 @@ const create = async (db: BlockAbstractDb, block: IBlock, isBookDb = false, titl
     block.titleForms = titleForms;
   } else {
     try {
-      block.titleForms = await InkLuminApi.fetchAndPrepareTitleForms(block.title);
+      block.titleForms = await InkLuminMlApi.fetchAndPrepareTitleForms(block.title);
     } catch (error) {
       if (error instanceof InkLuminApiError) {
         throw error; // Re-throw the specific API error
@@ -192,7 +192,7 @@ const update = async (db: BlockAbstractDb, block: IBlock, isBookDb = false, titl
   // Если название блока изменилось и titleForms не переданы, пытаемся получить их через API
   else if (prevBlockData && prevBlockData.title !== block.title) {
     try {
-      block.titleForms = await InkLuminApi.fetchAndPrepareTitleForms(block.title);
+      block.titleForms = await InkLuminMlApi.fetchAndPrepareTitleForms(block.title);
     } catch (error) {
       if (error instanceof InkLuminApiError) {
         throw error; // Re-throw the specific API error

@@ -1,11 +1,11 @@
 import {notifications} from "@mantine/notifications";
-import {configDatabase} from "@/entities/configuratorDb";
+import {getOpenRouterKey, useApiSettingsStore} from "@/stores/apiSettingsStore/apiSettingsStore";
+
 
 const fetchCompletions = async (prompt: string) => {
   try {
-    const settings = await configDatabase.globalSettings.get(1);
-    const token = settings?.openRouterKey;
-    const model = settings?.currentOpenRouterModel; // Используем выбранную модель
+    const token = getOpenRouterKey();
+    const model = useApiSettingsStore.getState().currentOpenRouterModel;
 
     if (!token) {
       throw new Error("Заполните OpenRouter API в настройках");

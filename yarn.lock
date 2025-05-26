@@ -4334,6 +4334,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"dexie-export-import@npm:^4.1.4":
+  version: 4.1.4
+  resolution: "dexie-export-import@npm:4.1.4"
+  peerDependencies:
+    dexie: ^2.0.4 || ^3.0.0 || ^4.0.1
+  checksum: 10c0/530ca5644d75f72d20cc8fce2d4872926dd30b477645a34bcafc1a1a2c8dedac2fd5e72019142de2687f0349c7d010810d9743f8e7579eade5d9609803017c5c
+  languageName: node
+  linkType: hard
+
 "dexie-react-hooks@npm:^1.1.7":
   version: 1.1.7
   resolution: "dexie-react-hooks@npm:1.1.7"
@@ -5814,6 +5823,13 @@ __metadata:
   dependencies:
     css-in-js-utils: "npm:^3.1.0"
   checksum: 10c0/15da5a396b7f286b5b6742efe315218cd577bc96b43de08aeb76af7697d9f1ab3bfc66cf19fad2173957dd5d617a790240b9d51898bdcf4c2efb40d3f8bcb370
+  languageName: node
+  linkType: hard
+
+"install@npm:^0.13.0":
+  version: 0.13.0
+  resolution: "install@npm:0.13.0"
+  checksum: 10c0/364d7d1e9404ff7ae3015dee7266b4ffb0e2aae348474b7ffd3e42fcbb78b37e29848e18ca94f93166f6ddb248be0f775fbed87cc92dafb018c289a86d010cf1
   languageName: node
   linkType: hard
 
@@ -8702,12 +8718,14 @@ __metadata:
     az: "npm:^0.2.3"
     dayjs: "npm:^1.11.13"
     dexie: "npm:^4.0.11"
+    dexie-export-import: "npm:^4.1.4"
     dexie-react-hooks: "npm:^1.1.7"
     eslint: "npm:^9.23.0"
     eslint-config-mantine: "npm:^4.0.3"
     eslint-plugin-jsx-a11y: "npm:^6.10.2"
     eslint-plugin-react: "npm:^7.37.4"
     identity-obj-proxy: "npm:^3.0.0"
+    install: "npm:^0.13.0"
     jsdom: "npm:^26.0.0"
     lodash: "npm:^4.17.21"
     moment: "npm:^2.30.1"

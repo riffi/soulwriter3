@@ -5,7 +5,7 @@ import {
 } from "@/components/shared/RichEditor/plugins/RepeatHighlighterExtension";
 import {IconArrowsDoubleSwNe} from "@tabler/icons-react";
 import {IWarningGroup} from "@/components/shared/RichEditor/types";
-import {InkLuminApi} from "@/api/inkLuminApi";
+import {InkLuminMlApi} from "@/api/inkLuminMlApi";
 
 interface CheckRepeatsButtonProps {
   editor: any;
@@ -27,7 +27,7 @@ export const CheckRepeatsButton = ({ editor, onLoadingChange }: CheckRepeatsButt
     setIsLoading(true);
     try {
       const text = editor.getText();
-      const warningGroups = await InkLuminApi.fetchRepeats(text);
+      const warningGroups = await InkLuminMlApi.fetchRepeats(text);
       updateHighlights(warningGroups);
       setIsActive(true);
     } catch (error) {

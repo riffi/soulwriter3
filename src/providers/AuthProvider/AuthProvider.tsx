@@ -1,5 +1,5 @@
 import React, { useState, useEffect, createContext, useContext } from 'react';
-
+import { inkLuminAPI } from '@/api/inkLuminApi';
 // Контекст для аутентификации
 const AuthContext = createContext();
 
@@ -10,42 +10,6 @@ export const useAuth = () => {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
-};
-
-// API функции
-const API_BASE = 'http://localhost:8080/api';
-
-const authAPI = {
-  register: async (userData) => {
-    const response = await fetch(`${API_BASE}/auth/register`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(userData),
-    });
-    return response.json();
-  },
-
-  login: async (credentials) => {
-    const response = await fetch(`${API_BASE}/auth/login`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(credentials),
-    });
-    return response.json();
-  },
-
-  validateToken: async (token) => {
-    const response = await fetch(`${API_BASE}/auth/validate`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-    return response.json();
-  }
 };
 
 // Провайдер аутентификации
@@ -65,7 +29,7 @@ export function AuthProvider({ children }) {
 
   const validateStoredToken = async (token) => {
     try {
-      const response = await authAPI.validateToken(token);
+      const response = await inkLuminAPI.validateToken(token);
       if (response.success) {
         setUser({
           token: token,
@@ -86,7 +50,7 @@ export function AuthProvider({ children }) {
 
   const login = async (credentials) => {
     try {
-      const response = await authAPI.login(credentials);
+      const response = await inkLuminAPI.login(credentials);
       if (response.success) {
         const userData = {
           token: response.data.token,
@@ -107,7 +71,7 @@ export function AuthProvider({ children }) {
 
   const register = async (userData) => {
     try {
-      const response = await authAPI.register(userData);
+      const response = await inkLuminAPI.register(userData);
       if (response.success) {
         const userInfo = {
           token: response.data.token,
@@ -131,12 +95,49 @@ export function AuthProvider({ children }) {
     localStorage.removeItem('authToken');
   };
 
+  const saveConfigToServer = async (configData) => {
+    if (!user?.token) {
+      return { success: false, message: 'Пользователь не авторизован' };
+    }
+
+    try {
+      const response = await inkLuminAPI.saveConfigData(user.token, configData);
+      if (response.success) {
+        return { success: true };
+      } else {
+        return { success: false, message: response.message };
+      }
+    } catch (error) {
+      return { success: false, message: 'Ошибка соединения с сервером' };
+    }
+  };
+
+  const getConfigFromServer = async () => {
+    if (!user?.token) {
+      return { success: false, message: 'Пользователь не авторизован' };
+    }
+
+    try {
+      const response = await inkLuminAPI.getConfigData(user.token);
+      if (response.success) {
+        const configData = JSON.parse(response.data.configData);
+        return { success: true, data: configData };
+      } else {
+        return { success: false, message: response.message };
+      }
+    } catch (error) {
+      return { success: false, message: 'Ошибка соединения с сервером' };
+    }
+  };
+
   const value = {
     user,
     login,
     register,
     logout,
-    loading
+    loading,
+    saveConfigToServer,
+    getConfigFromServer
   };
 
   return (
