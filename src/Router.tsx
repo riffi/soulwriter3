@@ -41,7 +41,7 @@ const router = createBrowserRouter([
         element: <BlockCard/> as ReactNode
       },
       {
-        path: '/books',
+        index: true,
         element: <BooksPage/> as ReactNode
       },
       {

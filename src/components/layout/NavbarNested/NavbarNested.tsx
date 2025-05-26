@@ -42,7 +42,7 @@ const BASE_MENU_ITEMS: NavLinkGroup[] = [
       },
       {
         label: 'Книги',
-        link: '/books',
+        link: '/',
       },
       {
         label: 'Настройки',
