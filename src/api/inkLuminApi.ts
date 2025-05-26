@@ -1,5 +1,6 @@
 // api/authAPI.ts
-const API_BASE = 'https://api.inclumin.ru/api';
+//const API_BASE = 'https://api.inclumin.ru/api';
+const API_BASE = 'http://localhost:8080/api';
 
 export const inkLuminAPI = {
   register: async (userData: any) => {
@@ -52,5 +53,34 @@ export const inkLuminAPI = {
       },
     });
     return response.json();
-  }
+  },
+  saveBookData: async (token: string, bookData: any) => {
+    const response = await fetch(`${API_BASE}/books`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(bookData),
+    });
+    return response.json();
+  },
+
+  getBooksList: async (token: string) => {
+    const response = await fetch(`${API_BASE}/books`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+    return response.json();
+  },
+
+  getBookData: async (token: string, uuid: string) => {
+    const response = await fetch(`${API_BASE}/books/${uuid}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+    return response.json();
+  },
 };
