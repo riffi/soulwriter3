@@ -1,12 +1,10 @@
-// components/settings/ApiSettingsTab.tsx
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
   Box,
   Title,
   Select,
   TextInput,
   Button,
-  List,
   ActionIcon,
   Group,
   LoadingOverlay,
@@ -14,51 +12,30 @@ import {
 } from '@mantine/core';
 import { IconPlus, IconTrash } from '@tabler/icons-react';
 import { InlineEdit } from '@/components/shared/InlineEdit/InlineEdit';
-import { configDatabase } from '@/entities/configuratorDb';
-import { IGlobalSettings } from '@/entities/ConstructorEntities';
 import { useDialog } from '@/providers/DialogProvider/DialogProvider';
-
-interface Model {
-  modelName: string;
-}
+import {useApiSettingsStore} from "@/stores/apiSettingsStore/apiSettingsStore";
 
 export const ApiSettingsTab = () => {
-  const [globalSettings, setGlobalSettings] = useState<IGlobalSettings | null>(null);
-  const [settingsLoading, setSettingsLoading] = useState(true);
-  const [openRouterModels, setOpenRouterModels] = useState<Model[]>([]);
   const [newModelName, setNewModelName] = useState('');
   const { showDialog } = useDialog();
 
-  const loadGlobalSettings = async () => {
-    try {
-      setSettingsLoading(true);
-      const settings = await configDatabase.globalSettings.get(1);
-      setGlobalSettings(settings || {
-        openRouterKey: '',
-        incLuminApiKey: '',
-        currentOpenRouterModel: ''
-      });
-    } finally {
-      setSettingsLoading(false);
-    }
-  };
+  const {
+    openRouterKey,
+    incLuminApiKey,
+    currentOpenRouterModel,
+    openRouterModels,
+    isLoading,
+    setOpenRouterKey,
+    setIncLuminApiKey,
+    setCurrentOpenRouterModel,
+    addModel,
+    deleteModel,
+  } = useApiSettingsStore();
 
-  const loadModels = async () => {
-    const models = await configDatabase.openRouterModels.toArray();
-    setOpenRouterModels(models);
-  };
-
-  const handleSaveSettings = async (field: keyof IGlobalSettings, value: string) => {
-    const updatedSettings = { ...globalSettings, [field]: value } as IGlobalSettings;
-    await configDatabase.globalSettings.put(updatedSettings, 1);
-    setGlobalSettings(updatedSettings);
-  };
-
-  const handleAddModel = async () => {
+  const handleAddModel = () => {
     if (newModelName.trim()) {
-      await configDatabase.openRouterModels.add({ modelName: newModelName.trim() });
+      addModel(newModelName.trim());
       setNewModelName('');
-      await loadModels();
     }
   };
 
@@ -68,86 +45,78 @@ export const ApiSettingsTab = () => {
         `Вы уверены, что хотите удалить модель "${modelName}"?`
     );
     if (confirmed) {
-      await configDatabase.openRouterModels.where('modelName').equals(modelName).delete();
-      if (globalSettings?.currentOpenRouterModel === modelName) {
-        await handleSaveSettings('currentOpenRouterModel', '');
-      }
-      await loadModels();
+      deleteModel(modelName);
     }
   };
-
-  useEffect(() => {
-    loadGlobalSettings();
-    loadModels();
-  }, []);
 
   return (
       <Box>
         <Title order={4} mb="md" fw={500}>API Ключи</Title>
-        <LoadingOverlay visible={settingsLoading} zIndex={1000} overlayBlur={2} />
-        {globalSettings && (
-            <>
-              <InlineEdit
-                  label="Open Router Key"
-                  value={globalSettings.openRouterKey}
-                  onChange={(v) => handleSaveSettings('openRouterKey', v)}
-                  inputProps={{ variant: 'filled' }}
-                  mb="md"
-              />
-              <InlineEdit
-                  label="Inc Lumin API Key"
-                  value={globalSettings.incLuminApiKey}
-                  onChange={(v) => handleSaveSettings('incLuminApiKey', v)}
-                  inputProps={{ variant: 'filled' }}
-              />
+        <LoadingOverlay visible={isLoading} zIndex={1000} overlayBlur={2} />
 
-              <Title order={4} my="xl" fw={500}>Модели OpenRouter</Title>
-              <Select
-                  label="Текущая модель"
-                  value={globalSettings.currentOpenRouterModel}
-                  onChange={(value) => handleSaveSettings('currentOpenRouterModel', value || '')}
-                  data={openRouterModels.map(m => m.modelName)}
-                  placeholder="Выберите модель"
-                  mb="xl"
-              />
+        <InlineEdit
+            label="Open Router Key"
+            value={openRouterKey}
+            onChange={setOpenRouterKey}
+            inputProps={{ variant: 'filled' }}
+            mb="md"
+        />
 
-              <Group align="flex-end" grow mt="md">
-                <TextInput
-                    label="Добавить новую модель"
-                    placeholder="Введите название модели"
-                    value={newModelName}
-                    onChange={(e) => setNewModelName(e.currentTarget.value)}
-                />
-                <Button
-                    leftSection={<IconPlus size={20} />}
-                    onClick={handleAddModel}
+        <InlineEdit
+            label="Inc Lumin API Key"
+            value={incLuminApiKey}
+            onChange={setIncLuminApiKey}
+            inputProps={{ variant: 'filled' }}
+        />
+
+        <Title order={4} my="xl" fw={500}>Модели OpenRouter</Title>
+
+        <Select
+            label="Текущая модель"
+            value={currentOpenRouterModel}
+            onChange={(value) => setCurrentOpenRouterModel(value || '')}
+            data={openRouterModels.map(m => m.modelName)}
+            placeholder="Выберите модель"
+            mb="xl"
+        />
+
+        <Group align="flex-end" grow mt="md">
+          <TextInput
+              label="Добавить новую модель"
+              placeholder="Введите название модели"
+              value={newModelName}
+              onChange={(e) => setNewModelName(e.currentTarget.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleAddModel()}
+          />
+          <Button
+              leftSection={<IconPlus size={20} />}
+              onClick={handleAddModel}
+          >
+            Добавить
+          </Button>
+        </Group>
+
+        <Box mt="md">
+          {openRouterModels.map(model => (
+              <Group
+                  key={model.modelName}
+                  justify="space-between"
+                  align="center"
+                  p="sm"
+                  className="p-2 bg-gray-50 rounded mb-2"
+              >
+                <Text>{model.modelName}</Text>
+                <ActionIcon
+                    color="red"
+                    onClick={() => handleDeleteModel(model.modelName)}
+                    variant="light"
+                    radius="md"
                 >
-                  Добавить
-                </Button>
+                  <IconTrash size={16} />
+                </ActionIcon>
               </Group>
-              <Box mt="md">
-                {openRouterModels.map(model => (
-                    <Group
-                        key={model.modelName}
-                        justify="space-between"
-                        align="center"
-                        p={"sm"}
-                        className="p-2 bg-gray-50 rounded mb-2"
-                    >
-                      <Text>{model.modelName}</Text>
-                      <ActionIcon
-                          color="red"
-                          onClick={() => handleDeleteModel(model.modelName)}
-                          variant="light"
-                          radius="md"
-                         >
-                        <IconTrash size={16} />
-                      </ActionIcon>
-                    </Group>
-                ))}
-              </Box>
-            </>
-        )}
+          ))}
+        </Box>
       </Box>
   );
 };

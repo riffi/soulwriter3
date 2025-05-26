@@ -9,18 +9,22 @@ import {DialogProvider} from "@/providers/DialogProvider/DialogProvider";
 import {PageTitleProvider} from "@/providers/PageTitleProvider/PageTitleProvider";
 import React from "react";
 import {MediaQueryProvider} from "@/providers/MediaQueryProvider/MediaQueryProvider";
+import {AuthProvider, useAuth} from "@/providers/AuthProvider/AuthProvider";
 
 export default function App() {
+
   return (
     <MantineProvider defaultColorScheme={"light"} datesLocale="ru">
-      <DialogProvider>
-        <PageTitleProvider>
-          <MediaQueryProvider>
-            <Notifications />
-            <Router />
-          </MediaQueryProvider>
-        </PageTitleProvider>
-      </DialogProvider>
+      <AuthProvider>
+        <DialogProvider>
+          <PageTitleProvider>
+            <MediaQueryProvider>
+              <Notifications />
+              <Router />
+            </MediaQueryProvider>
+          </PageTitleProvider>
+        </DialogProvider>
+      </AuthProvider>
     </MantineProvider>
   );
 }

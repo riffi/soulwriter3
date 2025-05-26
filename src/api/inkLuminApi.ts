@@ -1,8 +1,8 @@
 import { IBlockTitleForms } from "@/entities/ConstructorEntities";
 import { notifications } from "@mantine/notifications";
-import { configDatabase } from "@/entities/configuratorDb";
 import { IWarningGroup, IWarningKind } from "@/components/shared/RichEditor/types";
 import { generateUUID } from "@/utils/UUIDUtils";
+import {getIncLuminApiKey} from "@/stores/apiSettingsStore/apiSettingsStore";
 
 const BASE_API_URL = 'https://ml.inclumin.ru';
 
@@ -12,10 +12,10 @@ export class InkLuminApiError extends Error {
     this.name = "InkLuminApiError";
   }
 }
+
 const fetchWithAuth = async (url: string, body: object) => {
   try {
-    const settings = await configDatabase.globalSettings.get(1);
-    const apiKey = settings?.incLuminApiKey;
+    const apiKey = getIncLuminApiKey();
 
     if (!apiKey) {
       throw new InkLuminApiError("Lumin API key not configured");
