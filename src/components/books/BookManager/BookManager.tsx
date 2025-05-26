@@ -12,7 +12,7 @@ import {
   Image,
   Space,
   Menu,
-  LoadingOverlay,
+  LoadingOverlay, Modal,
 } from "@mantine/core";
 import {
   IconCheck,
@@ -33,6 +33,7 @@ import {useBookManager} from "@/components/books/BookManager/useBookManager";
 import { useBookStore } from '@/stores/bookStore/bookStore';
 import {notifications} from "@mantine/notifications";
 import {connectToBookDatabase} from "@/entities/bookDb";
+import { inkLuminAPI } from "@/api/inkLuminApi"; // Убедитесь в правильности пути
 import {
   exportBook,
   handleFileImport,
@@ -54,6 +55,9 @@ export const BookManager = () => {
   const [currentBook, setCurrentBook] = useState<IBook>(getBlankBook());
   const [loading, setLoading] = useState(false);
   const [loadingBookId, setLoadingBookId] = useState<string | null>(null);
+  const [isServerBooksModalOpened, setIsServerBooksModalOpened] = useState(false);
+  const [serverBooks, setServerBooks] = useState<any[]>([]);
+  const [loadingServerBooks, setLoadingServerBooks] = useState(false);
 
   const { selectedBook, selectBook, clearSelectedBook } = useBookStore();
   const { user } = useAuth();
@@ -140,6 +144,33 @@ export const BookManager = () => {
     setLoading(false);
   };
 
+  // Функция для загрузки списка книг с сервера
+  const fetchServerBooks = async () => {
+    if (!token) {
+      notifications.show({
+        message: "Для загрузки списка книг необходимо войти в систему",
+        color: 'red'
+      });
+      return;
+    }
+
+    setLoadingServerBooks(true);
+    try {
+      const response = await inkLuminAPI.getBooksList(token);
+      if (response.data) {
+        setServerBooks(response.data);
+      }
+    } catch (error) {
+      notifications.show({
+        message: "Ошибка при загрузке списка книг",
+        color: 'red'
+      });
+    } finally {
+      setLoadingServerBooks(false);
+    }
+  };
+
+
   return (
       <>
         <Container fluid style={{ position: 'relative' }}>
@@ -168,7 +199,18 @@ export const BookManager = () => {
             >
               Загрузить из файла
             </Button>
+            <Button
+                leftSection={<IconCloudDown size={20} />}
+                onClick={() => {
+                  setIsServerBooksModalOpened(true);
+                  fetchServerBooks();
+                }}
+                variant="outline"
+            >
+              Загрузить с сервера
+            </Button>
           </Group>
+
           <Space h={20} />
           <SimpleGrid cols={{ base: 1, sm: 2, lg: 2, xl: 4 }}>
             {books?.map((book) => (
@@ -284,6 +326,41 @@ export const BookManager = () => {
             initialData={currentBook}
             configurations={configurations || []}
         />}
+
+        {/* Модальное окно выбора книг с сервера */}
+        <Modal
+            opened={isServerBooksModalOpened}
+            onClose={() => setIsServerBooksModalOpened(false)}
+            title="Выберите книгу для загрузки"
+            size="lg"
+        >
+          <LoadingOverlay visible={loadingServerBooks} />
+
+          {serverBooks.length === 0 && !loadingServerBooks && (
+              <Text>На сервере нет доступных книг</Text>
+          )}
+
+          <SimpleGrid cols={1} spacing="md">
+            {serverBooks.map((book) => (
+                <Card key={book.uuid} padding="sm" withBorder>
+                  <Group justify="space-between">
+                    <div>
+                      <Text fw={500}>{book.bookTitle}</Text>
+                    </div>
+                    <Button
+                        onClick={async () => {
+                          await handleLoadFromServer(book.uuid);
+                          setIsServerBooksModalOpened(false);
+                        }}
+                        loading={loadingBookId === book.uuid}
+                    >
+                      Загрузить
+                    </Button>
+                  </Group>
+                </Card>
+            ))}
+          </SimpleGrid>
+        </Modal>
       </>
   );
 };
