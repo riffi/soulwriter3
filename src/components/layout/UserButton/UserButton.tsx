@@ -15,7 +15,7 @@ export function UserButton() {
   if (!user) {
     return (
         <>
-          <Box style={{ display: 'flex', gap: '8px' }}>
+          <Box style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
             <Button
                 variant="subtle"
                 leftSection={<IconLogin size={16} />}

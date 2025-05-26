@@ -199,7 +199,7 @@ export const BookManager = () => {
             >
               Загрузить из файла
             </Button>
-            <Button
+            {token && (<Button
                 leftSection={<IconCloudDown size={20} />}
                 onClick={() => {
                   setIsServerBooksModalOpened(true);
@@ -209,6 +209,7 @@ export const BookManager = () => {
             >
               Загрузить с сервера
             </Button>
+            )}
           </Group>
 
           <Space h={20} />
