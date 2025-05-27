@@ -87,7 +87,6 @@ export const SceneLayout = () => {
         }}>
           <Box style={{
             maxHeight: "calc(100vh - 50px)",
-            position: "fixed",
             overflowY: "auto",
           }}>
             <SceneManager

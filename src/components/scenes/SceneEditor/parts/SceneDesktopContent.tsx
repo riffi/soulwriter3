@@ -52,11 +52,10 @@ export const SceneDesktopContent = ({
   };
 
   return (
-    <Container size="xl" p="0" fluid >
+    <Container p="0" fluid >
       <Flex gap="md" justify="space-between" align="flex-start" wrap="wrap">
         <Box flex={10}>
           <Container
-              size="xl"
               p="0"
           >
             <Paper
