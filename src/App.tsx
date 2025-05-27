@@ -10,6 +10,7 @@ import {PageTitleProvider} from "@/providers/PageTitleProvider/PageTitleProvider
 import React from "react";
 import {MediaQueryProvider} from "@/providers/MediaQueryProvider/MediaQueryProvider";
 import {AuthProvider, useAuth} from "@/providers/AuthProvider/AuthProvider";
+import {ReactFlowProvider} from "reactflow";
 
 export default function App() {
 
@@ -18,10 +19,12 @@ export default function App() {
       <AuthProvider>
         <DialogProvider>
           <PageTitleProvider>
-            <MediaQueryProvider>
-              <Notifications />
-              <Router />
-            </MediaQueryProvider>
+            <ReactFlowProvider>
+              <MediaQueryProvider>
+                <Notifications />
+                <Router />
+              </MediaQueryProvider>
+            </ReactFlowProvider>
           </PageTitleProvider>
         </DialogProvider>
       </AuthProvider>
