@@ -1,6 +1,7 @@
 // src/pages/MindMapPage.tsx
 import { useEffect, useState, useCallback } from 'react';
 import { ReactFlow, Background, Controls, useNodesState, useEdgesState, useReactFlow } from 'reactflow';
+import { CustomNode } from './CustomNode';
 import 'reactflow/dist/style.css';
 
 import {IBlock, IBlockParameter, IBlockRelation} from '@/entities/ConstructorEntities';
@@ -14,78 +15,35 @@ interface FlowNode {
   style?: React.CSSProperties;
 }
 
-interface FlowEdge {
-  id: string;
-  source: string;
-  target: string;
-  type?: string;
+interface FlowEdge extends IBlockRelation {
+  sourceHandle?: string;
+  targetHandle?: string;
 }
 
-// Алгоритм Force-Directed Layout (упрощенная версия)
-const forceDirectedLayout = (nodes: FlowNode[], edges: FlowEdge[], iterations = 100) => {
-  const nodeMap = new Map(nodes.map(n => [n.id, { ...n }]));
-  const nodeArray = Array.from(nodeMap.values());
+const nodeTypes = {
+  custom: CustomNode,
+};
 
-  // Параметры симуляции
-  const repulsionForce = 1000;
-  const attractionForce = 0.1;
-  const damping = 0.9;
+const getClosestHandles = (sourceNode: FlowNode, targetNode: FlowNode) => {
+  const dx = targetNode.position.x - sourceNode.position.x;
+  const dy = targetNode.position.y - sourceNode.position.y;
+  const absDx = Math.abs(dx);
+  const absDy = Math.abs(dy);
 
-  for (let i = 0; i < iterations; i++) {
-    const forces = new Map(nodeArray.map(n => [n.id, { x: 0, y: 0 }]));
+  let sourceHandle = 'right';
+  let targetHandle = 'left';
 
-    // Силы отталкивания между всеми узлами
-    for (let j = 0; j < nodeArray.length; j++) {
-      for (let k = j + 1; k < nodeArray.length; k++) {
-        const node1 = nodeArray[j];
-        const node2 = nodeArray[k];
-
-        const dx = node2.position.x - node1.position.x;
-        const dy = node2.position.y - node1.position.y;
-        const distance = Math.sqrt(dx * dx + dy * dy) || 1;
-
-        const force = repulsionForce / (distance * distance);
-        const fx = (dx / distance) * force;
-        const fy = (dy / distance) * force;
-
-        forces.get(node1.id)!.x -= fx;
-        forces.get(node1.id)!.y -= fy;
-        forces.get(node2.id)!.x += fx;
-        forces.get(node2.id)!.y += fy;
-      }
-    }
-
-    // Силы притяжения между связанными узлами
-    edges.forEach(edge => {
-      const source = nodeMap.get(edge.source);
-      const target = nodeMap.get(edge.target);
-
-      if (source && target) {
-        const dx = target.position.x - source.position.x;
-        const dy = target.position.y - source.position.y;
-        const distance = Math.sqrt(dx * dx + dy * dy) || 1;
-
-        const force = attractionForce * distance;
-        const fx = (dx / distance) * force;
-        const fy = (dy / distance) * force;
-
-        forces.get(source.id)!.x += fx;
-        forces.get(source.id)!.y += fy;
-        forces.get(target.id)!.x -= fx;
-        forces.get(target.id)!.y -= fy;
-      }
-    });
-
-    // Применяем силы
-    nodeArray.forEach(node => {
-      const force = forces.get(node.id)!;
-      node.position.x += force.x * damping;
-      node.position.y += force.y * damping;
-    });
+  if (absDy > absDx) {
+    sourceHandle = dy > 0 ? 'bottom' : 'top';
+    targetHandle = dy > 0 ? 'top' : 'bottom';
+  } else if (dx < 0) {
+    sourceHandle = 'left';
+    targetHandle = 'right';
   }
 
-  return nodeArray;
+  return { sourceHandle, targetHandle };
 };
+
 
 // Иерархический layout (дерево)
 const hierarchicalLayout = (nodes: FlowNode[], edges: FlowEdge[]) => {
@@ -215,9 +173,6 @@ export const MindMapPage = () => {
         let layoutNodes: FlowNode[];
 
         switch (layoutType) {
-          case 'force':
-            layoutNodes = forceDirectedLayout([...originalNodes], originalEdges);
-            break;
           case 'hierarchical':
             layoutNodes = hierarchicalLayout([...originalNodes], originalEdges);
             break;
@@ -232,8 +187,23 @@ export const MindMapPage = () => {
         }
 
         setNodes(layoutNodes);
+        const updatedEdges = originalEdges.map(edge => {
+          const source = layoutNodes.find(n => n.id === edge.source);
+          const target = layoutNodes.find(n => n.id === edge.target);
+
+          if (!source || !target) return edge;
+
+          const { sourceHandle, targetHandle } = getClosestHandles(source, target);
+          return {
+            ...edge,
+            sourceHandle,
+            targetHandle,
+          };
+        });
+
+        setEdges(updatedEdges);
       },
-      [originalNodes, originalEdges, setNodes]
+      [originalNodes, originalEdges, setNodes, setEdges]
   );
 
   useEffect(() => {
@@ -266,18 +236,21 @@ export const MindMapPage = () => {
         // Преобразование блоков в узлы (начальные позиции будут перезаписаны)
         const initialNodes: FlowNode[] = blocks?.map((block: IBlock) => ({
           id: block.uuid,
-          position: { x: 0, y: 0 }, // Временные координаты
-          data: { label: block.title },
-          style: {
-            background: '#f0f0ff',
-            border: '1px solid #228be6',
-            borderRadius: '8px',
-            padding: '10px',
+          type: 'custom', // Добавляем тип узла
+          position: { x: 0, y: 0 },
+          data: {
+            label: block.title,
+            style: {
+              background: '#f0f0ff',
+              border: '1px solid #228be6',
+              borderRadius: '8px',
+              padding: '10px',
+            }
           },
         }));
 
         // Применяем force-directed layout по умолчанию
-        const layoutNodes = forceDirectedLayout(initialNodes, allEdges);
+        const layoutNodes = hierarchicalLayout(initialNodes, allEdges);
 
         setOriginalNodes(initialNodes);
         setOriginalEdges(allEdges);
@@ -320,9 +293,6 @@ export const MindMapPage = () => {
           </Title>
 
           <Group spacing="xs">
-            <Button size="xs" onClick={() => applyLayout('force')}>
-              Force-Directed
-            </Button>
             <Button size="xs" onClick={() => applyLayout('hierarchical')}>
               Иерархический
             </Button>
@@ -338,6 +308,7 @@ export const MindMapPage = () => {
         <ReactFlow
             nodes={nodes}
             edges={edges}
+            nodeTypes={nodeTypes}
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
             fitView
