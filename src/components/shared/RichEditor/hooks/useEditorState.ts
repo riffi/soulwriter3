@@ -43,6 +43,26 @@ export const useEditorState = (
   const createEditorConfig = (content: string, onUpdate: (editor: Editor) => void) => ({
     extensions: getEditorExtensions(),
     content,
+    editorProps: {
+      handleDOMEvents: {
+        copy: (view, event) => {
+          const { state } = view;
+          const { from, to } = state.selection;
+
+          // Получаем выделенный текст без HTML разметки
+          const selectedText = state.doc.textBetween(from, to, '\n');
+
+          // Устанавливаем чистый текст в буфер обмена
+          if (event.clipboardData) {
+            event.clipboardData.setData('text/plain', selectedText);
+            event.preventDefault();
+            return true;
+          }
+
+          return false;
+        }
+      }
+    },
     onUpdate: ({ editor }) => onUpdate(editor),
     onBlur: ({ editor }) => {
       editor.setEditable(false)
