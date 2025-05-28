@@ -10,7 +10,7 @@ import {
   SegmentedControl,
   Text, Title, Button, Drawer, FileInput, Modal, Stack, Image as MantineImage, Space
 } from "@mantine/core";
-import {IconArrowLeft, IconUpload, IconPhoto, IconTrash} from "@tabler/icons-react";
+import {IconArrowLeft, IconUpload, IconPhoto, IconTrash, IconList, IconChartDots3Filled} from "@tabler/icons-react";
 import classes from "./BlockInstanceEditor.module.css";
 import React, {useEffect, useState, useCallback} from "react";
 
@@ -35,11 +35,9 @@ import {
   ReferencedInstanceEditor
 } from "@/components/blockInstance/BlockInstanceEditor/parts/ReferencedInstanceEditor/ReferencedInstanceEditor";
 import {InlineEdit2} from "@/components/shared/InlineEdit2/InlineEdit2";
-import {GameIconSelector} from "@/components/shared/GameIconSelector/GameIconSelector";
+
 import {notifications} from "@mantine/notifications";
-import Cropper from 'react-easy-crop';
-import { Point, Area } from 'react-easy-crop/types';
-import {IBlockInstance} from "@/entities/BookEntities";
+
 import {IconSelector} from "@/components/shared/IconSelector/IconSelector";
 import {InstanceMindMap} from "@/components/mindMap/BlocksMindMap/InstanceMindMap";
 
@@ -54,6 +52,7 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
   const [iconDrawerOpen, setIconDrawerOpen] = useState(false);
   const navigate = useNavigate();
   const {isMobile} = useMedia();
+  const [viewMode, setViewMode] = useState<'data' | 'diagram'>('diagram');
   const {setTitleElement} = usePageTitle()
 
   const {
@@ -168,157 +167,171 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
               >
                 <IconArrowLeft size={20}/>
               </ActionIcon>
-            </Group>
-            <InstanceMindMap blockInstance={blockInstance} />
-            {/* Раздел выбора иконок для экземпляра блока */}
-            {block?.structureKind !== IBlockStructureKind.single && (
-                <Box p="sm">
-                  <Group>
-                    <Box
-                        onClick={() => setIconDrawerOpen(true)}
-                        style={{
-                          cursor: 'pointer',
-                          borderRadius: '10px',
-                          backgroundColor: '#ffffff',
-                          display: 'flex',
-                          width: '120px',
-                          height: '120px',
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                          border: '2px dashed var(--mantine-color-blue-filled)'
-                    }}
-                    >
-                      <IconViewer
-                          icon={blockInstance?.icon ?? block?.icon }
-                          size={120}
-                          backgroundColor={"transparent"}
-                          color="var(--mantine-color-blue-filled)"
-                      />
-                    </Box>
-                    <Box mb="lg" style={{flex: '1'}}>
-                      <InlineEdit2
-                          label={block?.title || ''}
-                          onChange={(val) => updateBlockInstanceTitle(val)}
-                          value={blockInstance?.title || ''}/>
-                      <Space h="md"/>
-                      <InlineEdit2
-                          label="Краткое описание"
-                          placeholder="Краткое описание..."
-                          onChange={(val) => updateBlockInstanceShortDescription(val)}
-                          value={blockInstance?.shortDescription || ''}
-                          size="sm"
-                      />
-                    </Box>
-                  </Group>
-                  <Button
-                      onClick={handleRemoveIcon}
-                      variant="subtle"
-                      color="red"
-                      size="xs"
-                      leftSection={<IconTrash size={14} />}
-                  >
-                    Удалить
-                  </Button>
-                </Box>
-
-            )}
-
-
-            <section>
-              <ScrollArea
-                  type="hover"
-                  offsetScrollbars
-                  styles={{
-                    viewport: { scrollBehavior: 'smooth' },
-                    root: {
-                      flex: 1,
-                      display: tabs.length <= 1 ? 'none' : '',
-                    },
-                  }}
+              <ActionIcon
+                onClick={() => setViewMode('diagram')}
+                variant = {viewMode === 'diagram'? 'filled' : 'light'}
               >
-                <SegmentedControl
-                    value={activeTab || ''}
-                    onChange={setActiveTab}
-                    data={tabs}
-                    style={{
-                      textTransform: 'Capitalize',
-                      minWidth: '100%',
-                      display: tabs.length <= 1 ? 'none' : ''
-                }}
-                />
-              </ScrollArea>
-              {blockTabs?.map(tab => {
-                const tabValue = tab.tabKind === IBlockTabKind.relation
-                    ? `related-${tab.relationUuid}`
-                    : tab.tabKind === IBlockTabKind.childBlock
-                        ? `child-${tab.childBlockUuid}`
-                        : tab.tabKind === IBlockTabKind.referencingParam
-                            ? `referencing-param-${tab.referencingParamUuid}`
-                            : 'params';
+                <IconChartDots3Filled size={20}/>
+              </ActionIcon>
+              <ActionIcon
+                variant = {viewMode === 'data'? 'filled' : 'light'}
+                onClick={() => setViewMode('data')}
+              >
+                <IconList size={20}/>
+              </ActionIcon>
+            </Group>
+            {viewMode === 'diagram' &&<InstanceMindMap blockInstance={blockInstance} />}
+            {viewMode === 'data' && <Box>
+              {/* Раздел выбора иконок для экземпляра блока */}
+              {block?.structureKind !== IBlockStructureKind.single && (
+                  <Box p="sm">
+                    <Group>
+                      <Box
+                          onClick={() => setIconDrawerOpen(true)}
+                          style={{
+                            cursor: 'pointer',
+                            borderRadius: '10px',
+                            backgroundColor: '#ffffff',
+                            display: 'flex',
+                            width: '120px',
+                            height: '120px',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            border: '2px dashed var(--mantine-color-blue-filled)'
+                      }}
+                      >
+                        <IconViewer
+                            icon={blockInstance?.icon ?? block?.icon }
+                            size={120}
+                            backgroundColor={"transparent"}
+                            color="var(--mantine-color-blue-filled)"
+                        />
+                      </Box>
+                      <Box mb="lg" style={{flex: '1'}}>
+                        <InlineEdit2
+                            label={block?.title || ''}
+                            onChange={(val) => updateBlockInstanceTitle(val)}
+                            value={blockInstance?.title || ''}/>
+                        <Space h="md"/>
+                        <InlineEdit2
+                            label="Краткое описание"
+                            placeholder="Краткое описание..."
+                            onChange={(val) => updateBlockInstanceShortDescription(val)}
+                            value={blockInstance?.shortDescription || ''}
+                            size="sm"
+                        />
+                      </Box>
+                    </Group>
+                    <Button
+                        onClick={handleRemoveIcon}
+                        variant="subtle"
+                        color="red"
+                        size="xs"
+                        leftSection={<IconTrash size={14} />}
+                    >
+                      Удалить
+                    </Button>
+                  </Box>
 
-                return (
-                    activeTab === tabValue && (
-                        <Box key={tab.uuid}>
-                          <>
-                            {tab.tabKind === 'parameters' &&
-                                <>
-                                  <InstanceParameterEditor
-                                      blockInstanceUuid={props.blockInstanceUuid}
-                                      blockUseTabs={block?.useTabs === 1}
-                                      relatedBlocks={relatedBlocks}
-                                      allBlocks={allBlocks}
-                                      relations={blockRelations}
-                                  />
-                                </>
-                            }
-                          </>
-                          <>
-                            {tab.tabKind === 'relation' && (() => {
-                              const relatedBlock = getRelatedBlockByRelationUuid(tab.relationUuid);
-                              return relatedBlock && (
-                                  <InstanceRelationsEditor
-                                      key={tab.uuid}
-                                      blockInstanceUuid={props.blockInstanceUuid}
-                                      blockUuid={block?.uuid}
-                                      relatedBlock={relatedBlock}
-                                      blockRelation={blockRelations?.find(r => r.uuid === tab.relationUuid)}
-                                  />
-                              );
-                            })()}
-                          </>
-                          <>
-                            {tab.tabKind === 'childBlock' && (
-                                childBlocks?.map(childBlock => (
-                                    activeTab === `child-${childBlock.uuid}` && (
-                                        <ChildInstancesTable
-                                            key={childBlock.uuid}
-                                            blockUuid={childBlock.uuid}
-                                            blockInstanceUuid={props.blockInstanceUuid}
-                                            instances={childInstancesMap?.[childBlock.uuid] || []}
-                                            structureKind={childBlock.structureKind}
-                                            relatedBlock={childBlock}
-                                        />
-                                    )
-                                ))
-                            )}
-                          </>
-                          <>
-                            {tab.tabKind === IBlockTabKind.referencingParam && (
-                                referencingParams?.map(param => (
-                                    activeTab === `referencing-param-${param.uuid}` && (
-                                        <ReferencedInstanceEditor
-                                            block={block}
-                                            referencingParam={param}
-                                            instance={blockInstance}
-                                        />
-                                    )
-                                ))
-                            )}
-                          </>
-                        </Box>
-                    ))
-              })}
-            </section>
+              )}
+
+
+              <section>
+                <ScrollArea
+                    type="hover"
+                    offsetScrollbars
+                    styles={{
+                      viewport: { scrollBehavior: 'smooth' },
+                      root: {
+                        flex: 1,
+                        display: tabs.length <= 1 ? 'none' : '',
+                      },
+                    }}
+                >
+                  <SegmentedControl
+                      value={activeTab || ''}
+                      onChange={setActiveTab}
+                      data={tabs}
+                      style={{
+                        textTransform: 'Capitalize',
+                        minWidth: '100%',
+                        display: tabs.length <= 1 ? 'none' : ''
+                  }}
+                  />
+                </ScrollArea>
+                {blockTabs?.map(tab => {
+                  const tabValue = tab.tabKind === IBlockTabKind.relation
+                      ? `related-${tab.relationUuid}`
+                      : tab.tabKind === IBlockTabKind.childBlock
+                          ? `child-${tab.childBlockUuid}`
+                          : tab.tabKind === IBlockTabKind.referencingParam
+                              ? `referencing-param-${tab.referencingParamUuid}`
+                              : 'params';
+
+                  return (
+                      activeTab === tabValue && (
+                          <Box key={tab.uuid}>
+                            <>
+                              {tab.tabKind === 'parameters' &&
+                                  <>
+                                    <InstanceParameterEditor
+                                        blockInstanceUuid={props.blockInstanceUuid}
+                                        blockUseTabs={block?.useTabs === 1}
+                                        relatedBlocks={relatedBlocks}
+                                        allBlocks={allBlocks}
+                                        relations={blockRelations}
+                                    />
+                                  </>
+                              }
+                            </>
+                            <>
+                              {tab.tabKind === 'relation' && (() => {
+                                const relatedBlock = getRelatedBlockByRelationUuid(tab.relationUuid);
+                                return relatedBlock && (
+                                    <InstanceRelationsEditor
+                                        key={tab.uuid}
+                                        blockInstanceUuid={props.blockInstanceUuid}
+                                        blockUuid={block?.uuid}
+                                        relatedBlock={relatedBlock}
+                                        blockRelation={blockRelations?.find(r => r.uuid === tab.relationUuid)}
+                                    />
+                                );
+                              })()}
+                            </>
+                            <>
+                              {tab.tabKind === 'childBlock' && (
+                                  childBlocks?.map(childBlock => (
+                                      activeTab === `child-${childBlock.uuid}` && (
+                                          <ChildInstancesTable
+                                              key={childBlock.uuid}
+                                              blockUuid={childBlock.uuid}
+                                              blockInstanceUuid={props.blockInstanceUuid}
+                                              instances={childInstancesMap?.[childBlock.uuid] || []}
+                                              structureKind={childBlock.structureKind}
+                                              relatedBlock={childBlock}
+                                          />
+                                      )
+                                  ))
+                              )}
+                            </>
+                            <>
+                              {tab.tabKind === IBlockTabKind.referencingParam && (
+                                  referencingParams?.map(param => (
+                                      activeTab === `referencing-param-${param.uuid}` && (
+                                          <ReferencedInstanceEditor
+                                              block={block}
+                                              referencingParam={param}
+                                              instance={blockInstance}
+                                          />
+                                      )
+                                  ))
+                              )}
+                            </>
+                          </Box>
+                      ))
+                })}
+              </section>
+            </Box>}
           </Box>
         </Container>
 
