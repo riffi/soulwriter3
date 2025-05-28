@@ -102,21 +102,20 @@ export const BlocksMindMap = () => {
   );
 
   return (
-      <div className="h-screen w-full" style={{ height: '90dvh' }}>
-        <div className="bg-gray-100 p-4">
-          <Title order={2} mb="md">MindMap блоков</Title>
-          <Group spacing="xs">
-            {['hierarchical', 'circular', 'grid'].map(layout => (
-                <Button key={layout} size="xs" onClick={() => applyLayout(layout)}>
-                  {{
-                    hierarchical: 'Иерархический',
-                    circular: 'Круговой',
-                    grid: 'Сетка'
-                  }[layout]}
-                </Button>
-            ))}
-          </Group>
-        </div>
+      <div style={{ height: '800px' }}>
+
+        <Group spacing="xs">
+          {['hierarchical', 'circular', 'grid'].map(layout => (
+              <Button key={layout} size="xs" onClick={() => applyLayout(layout)}>
+                {{
+                  hierarchical: 'Иерархический',
+                  circular: 'Круговой',
+                  grid: 'Сетка'
+                }[layout]}
+              </Button>
+          ))}
+        </Group>
+
 
         <ReactFlow
             nodes={nodes}
@@ -126,7 +125,9 @@ export const BlocksMindMap = () => {
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
             fitView
-            fitViewOptions={{ padding: 0.2 }}
+            fitViewOptions={
+              { padding: 0.2 }
+            }
         >
           <Background />
           <Controls />

@@ -11,7 +11,9 @@ import {
   SimpleGrid,
   Space,
   Text,
-  Stack, Title
+  Stack,
+  Title,
+  Tabs // Добавлен импорт Tabs
 } from "@mantine/core";
 import React, {useEffect, useState} from "react";
 import {
@@ -36,6 +38,7 @@ import {useDialog} from "@/providers/DialogProvider/DialogProvider";
 import {exportConfiguration} from "@/utils/configurationBackupManager";
 import {bookDb} from "@/entities/bookDb";
 import {InlineEdit} from "@/components/shared/InlineEdit/InlineEdit";
+import {BlocksMindMap} from "@/components/mindMap/BlocksMindMap/BlocksMindMap";
 
 export interface IBookConfigurationEditFormProps{
   bookConfigurationUuid: string
@@ -46,6 +49,7 @@ export interface IBookConfigurationEditFormProps{
 export const BookConfigurationEditForm = (props: IBookConfigurationEditFormProps) => {
 
   const navigate = useNavigate()
+  const [activeTab, setActiveTab] = useState<string | null>('blocks'); // Состояние активной вкладки
 
   const getBlackBlock = (): IBlock => {
     return {
@@ -97,6 +101,107 @@ export const BookConfigurationEditForm = (props: IBookConfigurationEditFormProps
     await exportConfiguration(bookDb, uuid);
   };
 
+  // Рендер контента вкладки "Блоки"
+  const renderBlocksTab = () => (
+      <>
+        <Group>
+          <Button
+              variant="outline"
+              leftSection={<IconDownload size={16}/>}
+              onClick={() => handleExport(configuration?.uuid!)}
+          >
+            Экспорт
+          </Button>
+        </Group>
+        <Space h={10}/>
+        <Stack wrap="nowrap">
+          <InlineEdit
+              onChange={(v) => updateConfiguration({...configuration, title: v})}
+              value={configuration?.title}
+              placeholder={'Введите название'}/>
+          <InlineEdit
+              onChange={(v) => updateConfiguration({...configuration, description: v})}
+              value={configuration?.description}
+              placeholder={'Введите описание'}/>
+        </Stack>
+        <SimpleGrid cols={{base: 1, sm: 2, lg: 3, xl: 4}} spacing="md">
+          <Card
+              shadow="xs"
+              padding="lg"
+              radius="md"
+              withBorder
+              style={{
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+              onClick={() => {
+                setCurrentBlock(getBlackBlock());
+                setIsModalOpened(true);
+              }}
+          >
+            <Stack align="center" gap="xs">
+              <IconPlus size={32} stroke={1.5}/>
+              <Text fw={500}>Добавить блок</Text>
+            </Stack>
+          </Card>
+          {blockList?.map((c) =>
+              <Card
+                  key={c.uuid}
+                  shadow="xs"
+                  padding="lg"
+                  radius="md"
+                  style={{
+                    cursor: 'pointer',
+                  }}
+                  withBorder
+                  onClick={handleOpenBlockPage(c)}
+              >
+                <Stack gap="sm">
+                  <Group justify="space-between" wrap="nowrap">
+                    <Text fw={500} truncate="end">{c.title}</Text>
+                    <ActionIcon
+                        color="red"
+                        variant="subtle"
+                        onClick={(e) =>{
+                          e.stopPropagation()
+                          removeBlock(c)
+                        }}
+                    >
+                      <IconTrash size={18}/>
+                    </ActionIcon>
+                  </Group>
+
+                  <Group gap="xs">
+                    <Badge variant="light" color="grey">
+                      {IBlockStructureKindTitle[c.structureKind]}
+                    </Badge>
+                    {c.useTabs === 1 && (
+                        <Badge variant="light" color="grey">
+                          Со вкладками
+                        </Badge>
+                    )}
+                    {!!c.parentBlockUuid && (
+                        <Badge variant="light" color="grey">
+                          Дочерний
+                        </Badge>
+                    )}
+                  </Group>
+
+                  {c.description && (
+                      <Text size="sm" c="dimmed" lineClamp={3}>
+                        {c.description}
+                      </Text>
+                  )}
+
+                </Stack>
+              </Card>
+          )}
+        </SimpleGrid>
+      </>
+  );
+
   return (
       <>
         <Container fluid style={{backgroundColor: 'white', padding: '20px'}}>
@@ -108,104 +213,27 @@ export const BookConfigurationEditForm = (props: IBookConfigurationEditFormProps
             <Space h={20}/>
           </>
           }
-          <Group>
-            <Button
-                variant="outline"
-                leftSection={<IconDownload size={16}/>}
-                onClick={() => handleExport(configuration?.uuid!)}
-            >
-              Экспорт
-            </Button>
-          </Group>
-          <Space h={10}/>
-          <Stack wrap="nowrap">
-            <InlineEdit
-                onChange={(v) => updateConfiguration({...configuration, title: v})}
-                value={configuration?.title}
-                placeholder={'Введите название'}/>
-            <InlineEdit
-                onChange={(v) => updateConfiguration({...configuration, description: v})}
-                value={configuration?.description}
-                placeholder={'Введите описание'}/>
-          </Stack>
-          <Space h={20}/>
 
-          <Title order={4}>Блоки</Title>
-          <SimpleGrid cols={{base: 1, sm: 2, lg: 3, xl: 4}} spacing="md">
-              <Card
-                  shadow="xs"
-                  padding="lg"
-                  radius="md"
-                  withBorder
-                  style={{
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}
-                  onClick={() => {
-                    setCurrentBlock(getBlackBlock());
-                    setIsModalOpened(true);
-                  }}
-              >
-                <Stack align="center" gap="xs">
-                  <IconPlus size={32} stroke={1.5}/>
-                  <Text fw={500}>Добавить блок</Text>
-                </Stack>
-              </Card>
-            {blockList?.map((c) =>
-                <Card
-                    key={c.uuid}
-                    shadow="xs"
-                    padding="lg"
-                    radius="md"
-                    style={{
-                      cursor: 'pointer',
-                    }}
-                    withBorder
-                    onClick={handleOpenBlockPage(c)}
-                >
-                  <Stack gap="sm">
-                    <Group justify="space-between" wrap="nowrap">
-                      <Text fw={500} truncate="end">{c.title}</Text>
-                      <ActionIcon
-                          color="red"
-                          variant="subtle"
-                          onClick={(e) =>{
-                            e.stopPropagation()
-                            removeBlock(c)
-                          }}
-                      >
-                        <IconTrash size={18}/>
-                      </ActionIcon>
-                    </Group>
+          {isBookConfiguration ? (
+              // Рендер с вкладками для книжной конфигурации
+              <Tabs value={activeTab} onChange={setActiveTab}>
+                <Tabs.List>
+                  <Tabs.Tab value="blocks">Блоки</Tabs.Tab>
+                  <Tabs.Tab value="diagram">Диаграмма</Tabs.Tab>
+                </Tabs.List>
 
-                    <Group gap="xs">
-                      <Badge variant="light" color="grey">
-                        {IBlockStructureKindTitle[c.structureKind]}
-                      </Badge>
-                      {c.useTabs === 1 && (
-                          <Badge variant="light" color="grey">
-                            Со вкладками
-                          </Badge>
-                      )}
-                      {!!c.parentBlockUuid && (
-                          <Badge variant="light" color="grey">
-                            Дочерний
-                          </Badge>
-                      )}
-                    </Group>
+                <Tabs.Panel value="blocks" pt="xs">
+                  {renderBlocksTab()}
+                </Tabs.Panel>
 
-                    {c.description && (
-                        <Text size="sm" c="dimmed" lineClamp={3}>
-                          {c.description}
-                        </Text>
-                    )}
-
-                  </Stack>
-                </Card>
-            )}
-          </SimpleGrid>
+                <Tabs.Panel value="diagram" pt="xs">
+                  {activeTab === 'diagram' &&<BlocksMindMap />}
+                </Tabs.Panel>
+              </Tabs>
+          ) : (
+              // Стандартный рендер без вкладок
+              renderBlocksTab()
+          )}
         </Container>
 
         {isModalOpened && <BlockEditModal
@@ -213,8 +241,6 @@ export const BookConfigurationEditForm = (props: IBookConfigurationEditFormProps
             configurationUuid={props.bookConfigurationUuid}
             onClose={() => setIsModalOpened(false)}
             onSave={async (blockData, titleForms) => {
-              // The saveBlock from the hook is already async and will propagate errors
-              // BlockEditModal will catch InkLuminApiError and handle the UI for manual input
               await saveBlock(blockData, titleForms);
             }}
             initialData={currentBlock}
