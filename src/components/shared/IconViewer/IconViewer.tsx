@@ -41,6 +41,7 @@ export const IconViewer = ({ iconName, icon, customIconBase64, size = 24, color 
               alt="Пользовательская иконка"
               style={{
                 width: `${size+10}px`,
+                marginRight: '5px'
               }}
               radius="sm"
           />
