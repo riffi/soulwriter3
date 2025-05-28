@@ -85,10 +85,6 @@ const router = createBrowserRouter([
         path: '/book/reader',
         element: <BookReaderPage /> as ReactNode,
       },
-      {
-        path: '/mindmap',
-        element: <BlocksMindMap /> as ReactNode,
-      }
     ]
   },
 ]);

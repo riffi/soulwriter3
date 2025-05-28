@@ -92,11 +92,7 @@ export const NavbarNested = ({ toggleNavbar, opened }: { toggleNavbar?: () => vo
             icon: IconDatabaseCog,
             link: `/configuration/edit/?uuid=${selectedBook.configurationUuid}&bookUuid=${selectedBook.uuid}`
           },
-          {
-            label: 'Mайнд карта',
-            icon: IconGraph,
-            link: `/mindmap`
-          }
+
 
       );
     }
