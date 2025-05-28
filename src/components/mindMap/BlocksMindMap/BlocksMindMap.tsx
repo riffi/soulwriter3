@@ -44,6 +44,12 @@ export const BlocksMindMap = () => {
           id: `param-${p.uuid}`,
           source: p.blockUuid,
           target: p.relatedBlockUuid!,
+          label: p.title,
+          labelStyle: {
+            fontSize: '5px',
+            color: '#bdbdbd',
+            padding: '2px 2px',
+          },
         }));
 
         const allEdges = [

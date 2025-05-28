@@ -12,4 +12,5 @@ export interface FlowEdge {
   type?: string;
   sourceHandle?: string;
   targetHandle?: string;
+  label?: string
 }
