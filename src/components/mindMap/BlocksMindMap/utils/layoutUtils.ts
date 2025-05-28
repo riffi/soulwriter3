@@ -34,12 +34,12 @@ export const updateEdgeHandles = (edges: FlowEdge[], nodes: FlowNode[]) => {
       targetHandle,
       markerEnd: {
         type: MarkerType.Arrow,
-        color: '#b1b1b7',
+        color: '#4d97de',
         width: 15,
         height: 15,
       },
       style: {
-        stroke: '#b7b1b1',
+        stroke: 'rgba(77,151,222,0.42)',
         strokeWidth: 0.5,
       }
     };

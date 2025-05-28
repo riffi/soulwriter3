@@ -65,11 +65,12 @@ export const BlocksMindMap = () => {
           data: {
             label: block.title,
             style: {
-              background: '#f0f0ff',
-              border: '1px solid #228be6',
+              background: '#4d97de',
+              border: '1px solid #f0f0ff',
               borderRadius: '8px',
               padding: '5px 10px',
               fontSize: '10px',
+              color: '#FFF',
             }
           }
         }));
