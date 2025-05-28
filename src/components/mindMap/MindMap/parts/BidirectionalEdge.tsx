@@ -27,10 +27,10 @@ export const BidirectionalEdge: React.FC<EdgeProps> = ({
     const perpY = dx / length * offset;
 
     // Позиции для двух параллельных линий
-    const line1Start = { x: sourceX + perpX, y: sourceY + perpY };
-    const line1End = { x: targetX + perpX, y: targetY + perpY };
-    const line2Start = { x: sourceX - perpX, y: sourceY - perpY };
-    const line2End = { x: targetX - perpX, y: targetY - perpY };
+    const line1Start = { x: sourceX, y: sourceY + perpY };
+    const line1End = { x: targetX , y: targetY + perpY };
+    const line2Start = { x: sourceX , y: sourceY - perpY };
+    const line2End = { x: targetX , y: targetY - perpY };
 
     // Создаем пути для обеих линий
     const [path1] = getBezierPath({
@@ -61,8 +61,8 @@ export const BidirectionalEdge: React.FC<EdgeProps> = ({
                 <marker
                     id={`bidirectional-arrow-${id}`}
                     viewBox="-10 -10 20 20"
-                    markerWidth={8}
-                    markerHeight={8}
+                    markerWidth={15}
+                    markerHeight={15}
                     orient="auto"
                     refX={0}
                     refY={0}
@@ -71,7 +71,7 @@ export const BidirectionalEdge: React.FC<EdgeProps> = ({
                         d="M -6,-4 L 0,0 L -6,4"
                         fill="none"
                         stroke={style.stroke || '#b1b1b7'}
-                        strokeWidth={2}
+                        strokeWidth={1}
                     />
                 </marker>
             </defs>
