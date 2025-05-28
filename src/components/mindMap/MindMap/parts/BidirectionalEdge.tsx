@@ -58,8 +58,9 @@ export const BidirectionalEdge: React.FC<EdgeProps> = ({
     return (
         <>
             <defs>
+                {/* Стрелка для прямого направления */}
                 <marker
-                    id={`bidirectional-arrow-${id}`}
+                    id={`bidirectional-arrow-forward-${id}`}
                     viewBox="-10 -10 20 20"
                     markerWidth={15}
                     markerHeight={15}
@@ -74,6 +75,24 @@ export const BidirectionalEdge: React.FC<EdgeProps> = ({
                         strokeWidth={1}
                     />
                 </marker>
+
+                {/* Стрелка для обратного направления (повернута на 180 градусов) */}
+                <marker
+                    id={`bidirectional-arrow-backward-${id}`}
+                    viewBox="-10 -10 20 20"
+                    markerWidth={15}
+                    markerHeight={15}
+                    orient="auto"
+                    refX={0}
+                    refY={0}
+                >
+                    <path
+                        d="M 6,-4 L 0,0 L 6,4"
+                        fill="none"
+                        stroke={style.stroke || '#b1b1b7'}
+                        strokeWidth={1}
+                    />
+                </marker>
             </defs>
 
             {/* Первая линия (прямое направление) */}
@@ -83,7 +102,7 @@ export const BidirectionalEdge: React.FC<EdgeProps> = ({
                     ...style,
                     strokeWidth: 0.5,
                 }}
-                markerEnd={`url(#bidirectional-arrow-${id})`}
+                markerEnd={`url(#bidirectional-arrow-forward-${id})`}
             />
 
             {/* Вторая линия (обратное направление) */}
@@ -93,7 +112,7 @@ export const BidirectionalEdge: React.FC<EdgeProps> = ({
                     ...style,
                     strokeWidth: 0.5,
                 }}
-                markerStart={`url(#bidirectional-arrow-${id})`}
+                markerStart={`url(#bidirectional-arrow-backward-${id})`}
             />
 
             {/* Лейблы для обеих связей */}
