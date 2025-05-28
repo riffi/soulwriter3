@@ -121,8 +121,8 @@ export const BlocksMindMap = () => {
                   variant={selectedLayout === layout ? 'light' : 'outline'}
                   onClick={() => applyLayout(layout)}>
                 {{
-                  hierarchical: 'Иерархический',
-                  circular: 'Круговой',
+                  hierarchical: 'Иерархическая',
+                  circular: 'Круговая',
                   grid: 'Сетка'
                 }[layout]}
               </Button>
