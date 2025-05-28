@@ -23,5 +23,10 @@ export interface FlowEdge {
   label?: string;
   markerStart?: EdgeMarkerType;
   markerEnd?: EdgeMarkerType;
-  style: CSSProperties
+  style?: CSSProperties;
+  data?: {
+    label?: string;
+    forwardEdge?: FlowEdge;
+    backwardEdge?: FlowEdge;
+  };
 }

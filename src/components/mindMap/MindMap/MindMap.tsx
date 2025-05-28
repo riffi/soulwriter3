@@ -5,9 +5,12 @@ import { hierarchicalLayout, circularLayout, gridLayout } from './layouts';
 import { updateEdgeHandles } from './utils/layoutUtils';
 import { FlowNode, FlowEdge } from './types';
 import { CustomNode } from './parts/CustomNode';
+import { BidirectionalEdge } from './parts/BidirectionalEdge';
 import 'reactflow/dist/style.css';
 import './react-flow-override.css'
+
 const nodeTypes = { custom: CustomNode };
+const edgeTypes = { bidirectional: BidirectionalEdge };
 
 interface MindMapProps {
     initialNodes: FlowNode[];
@@ -15,8 +18,6 @@ interface MindMapProps {
     defaultLayout?: 'hierarchical' | 'circular' | 'grid';
     hideButtons?: boolean;
 }
-
-
 
 export const MindMap = ({ initialNodes, initialEdges, defaultLayout, hideButtons}: MindMapProps) => {
     const [nodes, setNodes, onNodesChange] = useNodesState<FlowNode>([]);
@@ -91,6 +92,7 @@ export const MindMap = ({ initialNodes, initialEdges, defaultLayout, hideButtons
                 nodes={nodes}
                 edges={edges}
                 nodeTypes={nodeTypes}
+                edgeTypes={edgeTypes}
                 maxZoom={3}
                 onNodesChange={onNodesChange}
                 onEdgesChange={onEdgesChange}
