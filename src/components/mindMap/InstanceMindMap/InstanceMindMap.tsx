@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Loader } from '@mantine/core';
 import { bookDb } from '@/entities/bookDb';
-import { MindMap } from './MindMap';
-import { FlowNode, FlowEdge } from './types';
+import { MindMap } from '../MindMap/MindMap';
+import { FlowNode, FlowEdge } from '../MindMap/types';
 import { MarkerType } from 'reactflow';
 import { IBlockInstance } from '@/entities/BookEntities';
 import {IBlockParameterDataType} from "@/entities/ConstructorEntities";

@@ -39,7 +39,7 @@ import {InlineEdit2} from "@/components/shared/InlineEdit2/InlineEdit2";
 import {notifications} from "@mantine/notifications";
 
 import {IconSelector} from "@/components/shared/IconSelector/IconSelector";
-import {InstanceMindMap} from "@/components/mindMap/BlocksMindMap/InstanceMindMap";
+import {InstanceMindMap} from "@/components/mindMap/InstanceMindMap/InstanceMindMap";
 import { useUiSettingsStore } from "@/stores/uiSettingsStore/uiSettingsStore";
 export interface IBlockInstanceEditorProps {
   blockInstanceUuid: string;
