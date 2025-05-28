@@ -1,4 +1,5 @@
 import { FlowNode, FlowEdge } from "../types";
+import {MarkerType} from "reactflow";
 
 export const getClosestHandles = (sourceNode: FlowNode, targetNode: FlowNode) => {
   const dx = targetNode.position.x - sourceNode.position.x;
@@ -28,6 +29,19 @@ export const updateEdgeHandles = (edges: FlowEdge[], nodes: FlowNode[]) => {
     if (!source || !target) return edge;
 
     const { sourceHandle, targetHandle } = getClosestHandles(source, target);
-    return { ...edge, sourceHandle, targetHandle };
+    return { ...edge,
+      sourceHandle,
+      targetHandle,
+      markerEnd: {
+        type: MarkerType.Arrow,
+        color: '#b1b1b7',
+        width: 10,
+        height: 10,
+      },
+      style: {
+        stroke: '#b7b1b1',
+        strokeWidth: 0.5,
+      }
+    };
   });
 };

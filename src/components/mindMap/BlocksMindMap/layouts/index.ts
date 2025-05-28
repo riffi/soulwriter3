@@ -1,10 +1,10 @@
 import { FlowNode, FlowEdge } from "../types";
 
-const LEVEL_HEIGHT = 100;
-const NODE_WIDTH = 250;
-const CIRCLE_RADIUS_MULTIPLIER = 30;
-const GRID_CELL_WIDTH = 250;
-const GRID_CELL_HEIGHT = 150;
+const LEVEL_HEIGHT = 50;
+const NODE_WIDTH = 200;
+const CIRCLE_RADIUS_MULTIPLIER = 10;
+const GRID_CELL_WIDTH = 150;
+const GRID_CELL_HEIGHT = 100;
 
 export const hierarchicalLayout = (nodes: FlowNode[], edges: FlowEdge[]) => {
   const nodeMap = new Map(nodes.map(n => [n.id, { ...n, level: 0, children: [] as string[] }]));

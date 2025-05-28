@@ -44,11 +44,10 @@ export const BlocksMindMap = () => {
           id: `param-${p.uuid}`,
           source: p.blockUuid,
           target: p.relatedBlockUuid!,
-          type: 'parameter'
         }));
 
         const allEdges = [
-          ...relations.map(r => ({ id: r.uuid, source: r.sourceBlockUuid, target: r.targetBlockUuid, type: 'relation' })),
+          ...relations.map(r => ({ id: r.uuid, source: r.sourceBlockUuid, target: r.targetBlockUuid})),
           ...parameterRelations
         ];
 
@@ -62,7 +61,8 @@ export const BlocksMindMap = () => {
               background: '#f0f0ff',
               border: '1px solid #228be6',
               borderRadius: '8px',
-              padding: '10px'
+              padding: '5px 10px',
+              fontSize: '10px',
             }
           }
         }));
@@ -122,6 +122,7 @@ export const BlocksMindMap = () => {
             nodes={nodes}
             edges={edges}
             nodeTypes={nodeTypes}
+            maxZoom={3}
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
             fitView
