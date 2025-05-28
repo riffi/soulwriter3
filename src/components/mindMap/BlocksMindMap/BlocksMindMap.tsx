@@ -54,7 +54,7 @@ export const BlocksMindMap = () => {
           },
         }));
 
-        const allEdges = [
+        const initialEdges = [
           ...relations.map(r => ({ id: r.uuid, source: r.sourceBlockUuid, target: r.targetBlockUuid})),
           ...parameterRelations
         ];
@@ -77,9 +77,9 @@ export const BlocksMindMap = () => {
           }
         }));
 
-        const layoutNodes = hierarchicalLayout(initialNodes, allEdges);
+        const layoutNodes = hierarchicalLayout(initialNodes, initialEdges);
         setSelectedLayout('hierarchical');
-        const updatedEdges = updateEdgeHandles(allEdges, layoutNodes);
+        const updatedEdges = updateEdgeHandles(initialEdges, layoutNodes);
 
         setOriginalNodes(initialNodes);
         setOriginalEdges(updatedEdges);
