@@ -1,6 +1,7 @@
 import { Handle, Position } from 'reactflow';
 import {Group} from "@mantine/core";
 import {IconViewer} from "@/components/shared/IconViewer/IconViewer";
+import {useNavigate} from "react-router-dom";
 
 const handlePositions = [Position.Top, Position.Right, Position.Bottom, Position.Left];
 
@@ -10,7 +11,8 @@ const handleStyle = {
     height: '10',
 }
 
-export const CustomNode = ({ data }) => (
+export const CustomNode = ({ data }) => {
+    return (
     <div style={data.style}>
       {handlePositions.map(pos => (
           <Handle
@@ -21,7 +23,10 @@ export const CustomNode = ({ data }) => (
               style={handleStyle}
           />
       ))}
-      <Group gap={0} position="center">
+      <Group
+          gap={0}
+          position="center"
+      >
           <IconViewer
               icon={data.icon}
               size={10}
@@ -40,4 +45,4 @@ export const CustomNode = ({ data }) => (
           />
       ))}
     </div>
-);
+)};
