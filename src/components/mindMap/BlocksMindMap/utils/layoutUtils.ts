@@ -32,16 +32,6 @@ export const updateEdgeHandles = (edges: FlowEdge[], nodes: FlowNode[]) => {
     return { ...edge,
       sourceHandle,
       targetHandle,
-      markerEnd: {
-        type: MarkerType.Arrow,
-        color: '#4d97de',
-        width: 15,
-        height: 15,
-      },
-      style: {
-        stroke: 'rgba(77,151,222,0.42)',
-        strokeWidth: 0.5,
-      }
     };
   });
 };

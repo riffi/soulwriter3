@@ -4,6 +4,7 @@ import { bookDb } from '@/entities/bookDb';
 import { IBlockStructureKind } from "@/entities/ConstructorEntities";
 import { MindMap } from './MindMap';
 import { FlowNode, FlowEdge } from './types';
+import {MarkerType} from "reactflow";
 
 export const BlocksMindMap = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -28,13 +29,33 @@ export const BlocksMindMap = () => {
                 fill: '#797979',
                 padding: '2px 2px',
               },
+              markerEnd: {
+                type: MarkerType.Arrow,
+                color: '#4d97de',
+                width: 15,
+                height: 15,
+              },
+              style: {
+                stroke: 'rgba(77,151,222,0.42)',
+                strokeWidth: 0.5,
+              }
             }));
 
         const edges = [
           ...relations.map(r => ({
             id: r.uuid,
             source: r.sourceBlockUuid,
-            target: r.targetBlockUuid
+            target: r.targetBlockUuid,
+            markerEnd: {
+              type: MarkerType.Arrow,
+              color: '#4d97de',
+              width: 15,
+              height: 15,
+            },
+            style: {
+              stroke: 'rgba(77,151,222,0.42)',
+              strokeWidth: 0.5,
+            }
           })),
           ...parameterRelations
         ];
