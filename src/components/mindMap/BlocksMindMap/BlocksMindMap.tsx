@@ -1,7 +1,7 @@
 // src/pages/MindMapPage.tsx
 import { useEffect, useState, useCallback } from 'react';
 import { ReactFlow, Background, Controls, useNodesState, useEdgesState, useReactFlow } from 'reactflow';
-import { CustomNode } from './CustomNode';
+import { CustomNode } from './parts/CustomNode';
 import 'reactflow/dist/style.css';
 
 import {IBlock, IBlockParameter, IBlockRelation} from '@/entities/ConstructorEntities';
@@ -15,7 +15,11 @@ interface FlowNode {
   style?: React.CSSProperties;
 }
 
-interface FlowEdge extends IBlockRelation {
+interface FlowEdge {
+  id: string;
+  source: string;
+  target: string;
+  type?: string;
   sourceHandle?: string;
   targetHandle?: string;
 }
@@ -160,7 +164,7 @@ const gridLayout = (nodes: FlowNode[]) => {
   });
 };
 
-export const MindMapPage = () => {
+export const BlocksMindMap = () => {
   const [nodes, setNodes, onNodesChange] = useNodesState<FlowNode>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<FlowEdge>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -233,7 +237,6 @@ export const MindMapPage = () => {
           ...parameterRelations
         ];
 
-        // Преобразование блоков в узлы (начальные позиции будут перезаписаны)
         const initialNodes: FlowNode[] = blocks?.map((block: IBlock) => ({
           id: block.uuid,
           type: 'custom', // Добавляем тип узла
@@ -249,13 +252,28 @@ export const MindMapPage = () => {
           },
         }));
 
-        // Применяем force-directed layout по умолчанию
         const layoutNodes = hierarchicalLayout(initialNodes, allEdges);
 
+
         setOriginalNodes(initialNodes);
-        setOriginalEdges(allEdges);
+        const updatedEdges = allEdges.map(edge => {
+          const source = layoutNodes.find(n => n.id === edge.source);
+          const target = layoutNodes.find(n => n.id === edge.target);
+
+          if (!source || !target) return edge;
+
+          const { sourceHandle, targetHandle } = getClosestHandles(source, target);
+          return {
+            ...edge,
+            sourceHandle,
+            targetHandle,
+          };
+        });
+
+        setOriginalEdges(updatedEdges); // Сохраняем обновлённые рёбра
         setNodes(layoutNodes);
-        setEdges(allEdges);
+        setEdges(updatedEdges); // Устанавливаем рёбра с ручками
+
       } catch (error) {
         console.error('Ошибка загрузки данных:', error);
       } finally {

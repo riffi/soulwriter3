@@ -17,7 +17,7 @@ import {BookDashboardPage} from "@/pages/books/BookDashboardPage";
 import {DbViewer} from "@/pages/tech/DbViewer";
 import {BookReaderPage} from "@/pages/books/BookReaderPage";
 import {SceneLayout} from "@/components/scenes/SceneLayout/SceneLayout";
-import {MindMapPage} from "@/pages/visual/MindMapPage";
+import {BlocksMindMap} from "@/components/mindMap/BlocksMindMap/BlocksMindMap";
 
 
 const router = createBrowserRouter([
@@ -87,7 +87,7 @@ const router = createBrowserRouter([
       },
       {
         path: '/mindmap',
-        element: <MindMapPage /> as ReactNode,
+        element: <BlocksMindMap /> as ReactNode,
       }
     ]
   },
