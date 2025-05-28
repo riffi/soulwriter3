@@ -41,6 +41,7 @@ import Cropper from 'react-easy-crop';
 import { Point, Area } from 'react-easy-crop/types';
 import {IBlockInstance} from "@/entities/BookEntities";
 import {IconSelector} from "@/components/shared/IconSelector/IconSelector";
+import {InstanceMindMap} from "@/components/mindMap/BlocksMindMap/InstanceMindMap";
 
 export interface IBlockInstanceEditorProps {
   blockInstanceUuid: string;
@@ -168,7 +169,7 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
                 <IconArrowLeft size={20}/>
               </ActionIcon>
             </Group>
-
+            <InstanceMindMap blockInstance={blockInstance} />
             {/* Раздел выбора иконок для экземпляра блока */}
             {block?.structureKind !== IBlockStructureKind.single && (
                 <Box p="sm">

@@ -12,14 +12,17 @@ const nodeTypes = { custom: CustomNode };
 interface MindMapProps {
     initialNodes: FlowNode[];
     initialEdges: FlowEdge[];
+    defaultLayout?: 'hierarchical' | 'circular' | 'grid';
 }
 
-export const MindMap = ({ initialNodes, initialEdges }: MindMapProps) => {
+
+
+export const MindMap = ({ initialNodes, initialEdges, defaultLayout}: MindMapProps) => {
     const [nodes, setNodes, onNodesChange] = useNodesState<FlowNode>([]);
     const [edges, setEdges, onEdgesChange] = useEdgesState<FlowEdge>([]);
     const [originalNodes, setOriginalNodes] = useState<FlowNode[]>(initialNodes);
     const [originalEdges, setOriginalEdges] = useState<FlowEdge[]>(initialEdges);
-    const [selectedLayout, setSelectedLayout] = useState('hierarchical');
+    const [selectedLayout, setSelectedLayout] = useState<'hierarchical' | 'circular' | 'grid'>(defaultLayout ?? 'hierarchical');
     const { fitView } = useReactFlow();
 
     useEffect(() => {
@@ -27,7 +30,7 @@ export const MindMap = ({ initialNodes, initialEdges }: MindMapProps) => {
         setOriginalEdges(initialEdges);
     }, [initialNodes, initialEdges]);
 
-    const applyLayout = useCallback((layoutType: string) => {
+    const applyLayout = useCallback((layoutType: 'hierarchical' | 'circular' | 'grid') => {
         let layoutNodes = [...originalNodes];
         setSelectedLayout(layoutType);
 

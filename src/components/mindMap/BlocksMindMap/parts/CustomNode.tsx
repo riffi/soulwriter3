@@ -1,5 +1,5 @@
 import { Handle, Position } from 'reactflow';
-import {Group} from "@mantine/core";
+import {Group, Stack, Text} from "@mantine/core";
 import {IconViewer} from "@/components/shared/IconViewer/IconViewer";
 import {useNavigate} from "react-router-dom";
 
@@ -26,6 +26,14 @@ export const CustomNode = ({ data }) => {
       <Group
           gap={0}
           position="center"
+          style={data.onClick ?{
+              cursor: 'pointer',
+          }:{}}
+          onClick={() =>{
+            if (data.onClick) {
+                data.onClick();
+            }
+          }}
       >
           <IconViewer
               icon={data.icon}
@@ -33,7 +41,19 @@ export const CustomNode = ({ data }) => {
               color={"white"}
               backgroundColor={"transparent"}
           />
-          <div>{data.label}</div>
+          <Stack gap={0}>
+              <Text style={{
+                  fontSize: "10px",
+                  lineHeight: "1"
+                }}
+              >{data.label}</Text>
+              <Text
+                  color={"#dadada"}
+                  style={{
+                      fontSize: "6px",
+                  }}
+              >{data.description}</Text>
+          </Stack>
       </Group>
       {handlePositions.map(pos => (
           <Handle
