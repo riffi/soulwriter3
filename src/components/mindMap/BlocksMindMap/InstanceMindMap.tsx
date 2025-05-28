@@ -233,5 +233,6 @@ export const InstanceMindMap = ({ blockInstance }: InstanceMindMapProps) => {
         initialNodes={initialNodes}
         initialEdges={initialEdges}
         defaultLayout={"circular"}
+        hideButtons={true}
     />;
 };

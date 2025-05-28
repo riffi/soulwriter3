@@ -40,7 +40,7 @@ import {notifications} from "@mantine/notifications";
 
 import {IconSelector} from "@/components/shared/IconSelector/IconSelector";
 import {InstanceMindMap} from "@/components/mindMap/BlocksMindMap/InstanceMindMap";
-
+import { useUiSettingsStore } from "@/stores/uiSettingsStore/uiSettingsStore";
 export interface IBlockInstanceEditorProps {
   blockInstanceUuid: string;
 }
@@ -52,7 +52,11 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
   const [iconDrawerOpen, setIconDrawerOpen] = useState(false);
   const navigate = useNavigate();
   const {isMobile} = useMedia();
-  const [viewMode, setViewMode] = useState<'data' | 'diagram'>('diagram');
+  const {
+    blockInstanceViewMode,
+    setBlockInstanceViewMode
+  } = useUiSettingsStore();
+
   const {setTitleElement} = usePageTitle()
 
   const {
@@ -161,27 +165,27 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
             <Group className={classes.header}>
               <ActionIcon
                   onClick={() => navigate(-1)}
-                  variant="light"
+                  variant="subtle"
                   size="lg"
                   aria-label="Back to list"
               >
                 <IconArrowLeft size={20}/>
               </ActionIcon>
               <ActionIcon
-                onClick={() => setViewMode('diagram')}
-                variant = {viewMode === 'diagram'? 'filled' : 'light'}
-              >
-                <IconChartDots3Filled size={20}/>
-              </ActionIcon>
-              <ActionIcon
-                variant = {viewMode === 'data'? 'filled' : 'light'}
-                onClick={() => setViewMode('data')}
+                  variant={blockInstanceViewMode === 'data'? 'filled' : 'light'}
+                  onClick={() => setBlockInstanceViewMode('data')}
               >
                 <IconList size={20}/>
               </ActionIcon>
+              <ActionIcon
+                  onClick={() => setBlockInstanceViewMode('diagram')}
+                  variant={blockInstanceViewMode === 'diagram'? 'filled' : 'light'}
+              >
+                <IconChartDots3Filled size={20}/>
+              </ActionIcon>
             </Group>
-            {viewMode === 'diagram' &&<InstanceMindMap blockInstance={blockInstance} />}
-            {viewMode === 'data' && <Box>
+            {blockInstanceViewMode  === 'diagram' &&<InstanceMindMap blockInstance={blockInstance} />}
+            {blockInstanceViewMode  === 'data' && <Box>
               {/* Раздел выбора иконок для экземпляра блока */}
               {block?.structureKind !== IBlockStructureKind.single && (
                   <Box p="sm">

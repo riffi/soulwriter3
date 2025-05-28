@@ -2,11 +2,14 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 interface UiSettingsStore {
-  noteManagerMode: 'folders' | 'list';
-  setNoteManagerMode: (mode: 'folders' | 'list') => void;
+    noteManagerMode: 'folders' | 'list';
+    setNoteManagerMode: (mode: 'folders' | 'list') => void;
 
-  notesSortType: 'date' | 'title';
-  setNotesSortType: (sortType: 'date' | 'title') => void;
+    notesSortType: 'date' | 'title';
+    setNotesSortType: (sortType: 'date' | 'title') => void;
+
+    blockInstanceViewMode: 'data' | 'diagram';
+    setBlockInstanceViewMode: (mode: 'data' | 'diagram') => void;
 }
 
 export const useUiSettingsStore = create<UiSettingsStore>()(
@@ -17,6 +20,9 @@ export const useUiSettingsStore = create<UiSettingsStore>()(
 
           notesSortType: 'date',
           setNotesSortType: (sortType) => set({ notesSortType: sortType }),
+
+          blockInstanceViewMode: 'diagram',
+          setBlockInstanceViewMode: (mode) => set({ blockInstanceViewMode: mode }),
         }),
         {
           name: 'ui-settings-storage',

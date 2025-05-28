@@ -13,11 +13,12 @@ interface MindMapProps {
     initialNodes: FlowNode[];
     initialEdges: FlowEdge[];
     defaultLayout?: 'hierarchical' | 'circular' | 'grid';
+    hideButtons?: boolean;
 }
 
 
 
-export const MindMap = ({ initialNodes, initialEdges, defaultLayout}: MindMapProps) => {
+export const MindMap = ({ initialNodes, initialEdges, defaultLayout, hideButtons}: MindMapProps) => {
     const [nodes, setNodes, onNodesChange] = useNodesState<FlowNode>([]);
     const [edges, setEdges, onEdgesChange] = useEdgesState<FlowEdge>([]);
     const [originalNodes, setOriginalNodes] = useState<FlowNode[]>(initialNodes);
@@ -68,7 +69,7 @@ export const MindMap = ({ initialNodes, initialEdges, defaultLayout}: MindMapPro
 
     return (
         <div style={{ height: '800px' }}>
-            <Group spacing="xs">
+            {!hideButtons && <Group spacing="xs">
                 {['hierarchical', 'circular', 'grid'].map(layout => (
                     <Button
                         key={layout}
@@ -84,6 +85,7 @@ export const MindMap = ({ initialNodes, initialEdges, defaultLayout}: MindMapPro
                     </Button>
                 ))}
             </Group>
+            }
 
             <ReactFlow
                 nodes={nodes}
