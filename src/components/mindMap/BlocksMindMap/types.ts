@@ -1,4 +1,6 @@
 import {IIcon} from "@/entities/ConstructorEntities";
+import {EdgeMarkerType} from "@reactflow/core/dist/esm/types/edges";
+import type {CSSProperties} from "react";
 
 export interface FlowNode {
   id: string;
@@ -18,5 +20,8 @@ export interface FlowEdge {
   type?: string;
   sourceHandle?: string;
   targetHandle?: string;
-  label?: string
+  label?: string;
+  markerStart?: EdgeMarkerType;
+  markerEnd?: EdgeMarkerType;
+  style: CSSProperties
 }
