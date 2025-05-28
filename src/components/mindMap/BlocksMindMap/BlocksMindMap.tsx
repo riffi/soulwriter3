@@ -16,11 +16,12 @@ export const BlocksMindMap = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [originalNodes, setOriginalNodes] = useState<FlowNode[]>([]);
   const [originalEdges, setOriginalEdges] = useState<FlowEdge[]>([]);
+  const [selectedLayout, setSelectedLayout] = useState('hierarchical');
   const { fitView } = useReactFlow();
 
   const applyLayout = useCallback((layoutType: string) => {
     let layoutNodes = [...originalNodes];
-
+    setSelectedLayout(layoutType);
     switch(layoutType) {
       case 'hierarchical': layoutNodes = hierarchicalLayout(originalNodes, originalEdges); break;
       case 'circular': layoutNodes = circularLayout(originalNodes); break;
@@ -44,10 +45,9 @@ export const BlocksMindMap = () => {
           id: `param-${p.uuid}`,
           source: p.blockUuid,
           target: p.relatedBlockUuid!,
-          label: p.title,
           labelStyle: {
             fontSize: '5px',
-            color: '#bdbdbd',
+            fill: '#797979',
             padding: '2px 2px',
           },
         }));
@@ -74,6 +74,7 @@ export const BlocksMindMap = () => {
         }));
 
         const layoutNodes = hierarchicalLayout(initialNodes, allEdges);
+        setSelectedLayout('hierarchical');
         const updatedEdges = updateEdgeHandles(allEdges, layoutNodes);
 
         setOriginalNodes(initialNodes);
@@ -112,7 +113,11 @@ export const BlocksMindMap = () => {
 
         <Group spacing="xs">
           {['hierarchical', 'circular', 'grid'].map(layout => (
-              <Button key={layout} size="xs" onClick={() => applyLayout(layout)}>
+              <Button
+                  key={layout}
+                  size="xs"
+                  variant={selectedLayout === layout ? 'light' : 'outline'}
+                  onClick={() => applyLayout(layout)}>
                 {{
                   hierarchical: 'Иерархический',
                   circular: 'Круговой',

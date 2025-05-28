@@ -37,13 +37,14 @@ import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
 import {useDialog} from "@/providers/DialogProvider/DialogProvider";
 import {exportConfiguration} from "@/utils/configurationBackupManager";
 import {bookDb} from "@/entities/bookDb";
-import {InlineEdit} from "@/components/shared/InlineEdit/InlineEdit";
 import {BlocksMindMap} from "@/components/mindMap/BlocksMindMap/BlocksMindMap";
+import {InlineEdit2} from "@/components/shared/InlineEdit2/InlineEdit2";
 
 export interface IBookConfigurationEditFormProps{
   bookConfigurationUuid: string
   bookUuid?: string
 }
+
 
 
 export const BookConfigurationEditForm = (props: IBookConfigurationEditFormProps) => {
@@ -114,14 +115,16 @@ export const BookConfigurationEditForm = (props: IBookConfigurationEditFormProps
           </Button>
         </Group>
         <Space h={10}/>
-        <Stack wrap="nowrap">
-          <InlineEdit
+        <Stack wrap="nowrap" gap="xs">
+          <InlineEdit2
               onChange={(v) => updateConfiguration({...configuration, title: v})}
               value={configuration?.title}
+              label={'Название'}
               placeholder={'Введите название'}/>
-          <InlineEdit
+          <InlineEdit2
               onChange={(v) => updateConfiguration({...configuration, description: v})}
               value={configuration?.description}
+              label={'Описание'}
               placeholder={'Введите описание'}/>
         </Stack>
         <SimpleGrid cols={{base: 1, sm: 2, lg: 3, xl: 4}} spacing="md">
