@@ -1,7 +1,7 @@
 import { FlowNode, FlowEdge } from "../types";
 
 const LEVEL_HEIGHT = 50;
-const NODE_WIDTH = 200;
+const NODE_WIDTH = 280;
 const CIRCLE_RADIUS_MULTIPLIER = 5;
 const GRID_CELL_WIDTH = 150;
 const GRID_CELL_HEIGHT = 100;

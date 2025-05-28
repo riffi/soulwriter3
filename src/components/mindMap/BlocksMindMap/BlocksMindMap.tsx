@@ -8,6 +8,7 @@ import { FlowNode, FlowEdge } from './types';
 import { CustomNode } from './parts/CustomNode';
 import 'reactflow/dist/style.css';
 import './react-flow-override.css'
+import {IBlockStructureKind} from "@/entities/ConstructorEntities";
 
 const nodeTypes = { custom: CustomNode };
 
@@ -63,12 +64,13 @@ export const BlocksMindMap = () => {
           type: 'custom',
           position: { x: 0, y: 0 },
           data: {
-            label: block.title,
+            label: block?.structureKind === IBlockStructureKind.multiple ? block.titleForms?.plural : block.title,
+            icon: block.icon,
             style: {
               background: '#4d97de',
               border: '1px solid #f0f0ff',
               borderRadius: '8px',
-              padding: '5px 10px',
+              padding: '5px 5px',
               fontSize: '10px',
               color: '#FFF',
             }

@@ -1,4 +1,6 @@
 import { Handle, Position } from 'reactflow';
+import {Group} from "@mantine/core";
+import {IconViewer} from "@/components/shared/IconViewer/IconViewer";
 
 const handlePositions = [Position.Top, Position.Right, Position.Bottom, Position.Left];
 
@@ -19,7 +21,15 @@ export const CustomNode = ({ data }) => (
               style={handleStyle}
           />
       ))}
-      <div>{data.label}</div>
+      <Group gap={0} position="center">
+          <IconViewer
+              icon={data.icon}
+              size={10}
+              color={"white"}
+              backgroundColor={"transparent"}
+          />
+          <div>{data.label}</div>
+      </Group>
       {handlePositions.map(pos => (
           <Handle
               key={`target-${pos}`}
