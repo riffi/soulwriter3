@@ -2,7 +2,7 @@ import { FlowNode, FlowEdge } from "../types";
 
 const LEVEL_HEIGHT = 50;
 const NODE_WIDTH = 200;
-const CIRCLE_RADIUS_MULTIPLIER = 10;
+const CIRCLE_RADIUS_MULTIPLIER = 5;
 const GRID_CELL_WIDTH = 150;
 const GRID_CELL_HEIGHT = 100;
 
@@ -54,7 +54,7 @@ export const hierarchicalLayout = (nodes: FlowNode[], edges: FlowEdge[]) => {
 };
 
 export const circularLayout = (nodes: FlowNode[]) => {
-  const radius = Math.max(200, nodes.length * CIRCLE_RADIUS_MULTIPLIER);
+  const radius = Math.max(150, nodes.length * CIRCLE_RADIUS_MULTIPLIER);
   return nodes.map((node, index) => ({
     ...node,
     position: {

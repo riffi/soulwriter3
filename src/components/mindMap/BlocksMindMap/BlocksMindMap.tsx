@@ -7,6 +7,7 @@ import { updateEdgeHandles } from './utils/layoutUtils';
 import { FlowNode, FlowEdge } from './types';
 import { CustomNode } from './parts/CustomNode';
 import 'reactflow/dist/style.css';
+import './react-flow-override.css'
 
 const nodeTypes = { custom: CustomNode };
 

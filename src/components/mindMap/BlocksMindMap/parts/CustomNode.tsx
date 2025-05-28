@@ -4,8 +4,8 @@ const handlePositions = [Position.Top, Position.Right, Position.Bottom, Position
 
 const handleStyle = {
     backgroundColor: '#cbcbcb',
-    width: '5px',
-    height: '5px',
+    width: '10',
+    height: '10',
 }
 
 export const CustomNode = ({ data }) => (
