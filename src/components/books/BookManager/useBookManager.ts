@@ -7,7 +7,7 @@ import {IBlock, IBlockStructureKind, IBookConfiguration} from "@/entities/Constr
 import {useDialog} from "@/providers/DialogProvider/DialogProvider";
 import {bookDb, connectToBookDatabase, deleteBookDatabase} from "@/entities/bookDb";
 import {BlockInstanceRepository} from "@/repository/BlockInstance/BlockInstanceRepository";
-import {BlockRepository} from "@/repository/Block/BlockRepository";
+// import {BlockRepository} from "@/repository/Block/BlockRepository"; // Unused
 import {useBookStore} from "@/stores/bookStore/bookStore";
 import {BlockParameterInstanceRepository} from "@/repository/BlockInstance/BlockParameterInstanceRepository";
 
@@ -57,9 +57,9 @@ export const useBookManager = () => {
   // Получение конфигурации по UUID
   async function getBookConfiguration(configurationUuid: string) {
     return configDatabase
-    .bookConfigurations
-    .where({ uuid: configurationUuid })
-    .first();
+        .bookConfigurations
+        .where({ uuid: configurationUuid })
+        .first();
   }
 
   // Копирование конфигурации в базу данных книги
@@ -77,7 +77,7 @@ export const useBookManager = () => {
   // Копирование связей блоков в базу данных книги
   async function copyBlockRelations(oldConfigurationUuid: string, newConfigurationUuid: string) {
     const relations = await configDatabase.blocksRelations
-      .where({ configurationUuid: oldConfigurationUuid }).toArray();
+        .where({ configurationUuid: oldConfigurationUuid }).toArray();
 
     relations.forEach(relation => {
       relation.configurationUuid = newConfigurationUuid;
@@ -96,8 +96,8 @@ export const useBookManager = () => {
   // Копирование блоков версии конфигурации в базу данных книги
   async function copyBlocks(oldConfigurationUuid: string, newConfigurationUuid: string) {
     const blocks = await configDatabase.blocks
-    .where({ configurationUuid: oldConfigurationUuid })
-    .toArray();
+        .where({ configurationUuid: oldConfigurationUuid })
+        .toArray();
 
     blocks.forEach(block => {
       block.configurationUuid = newConfigurationUuid;
@@ -123,8 +123,8 @@ export const useBookManager = () => {
   // Копирование вкладок блока в базу данных книги
   async function copyBlockTabs(blockUuid: string) {
     const tabs = await configDatabase.blockTabs
-      .where({ blockUuid })
-      .toArray();
+        .where({ blockUuid })
+        .toArray();
 
     await bookDb.blockTabs.bulkAdd(tabs);
   }
@@ -132,8 +132,8 @@ export const useBookManager = () => {
   // Копирование групп параметров блока в базу данных книги
   async function copyBlockParameterGroups(blockUuid: string) {
     const parameterGroups = await configDatabase.blockParameterGroups
-    .where({ blockUuid })
-    .toArray();
+        .where({ blockUuid })
+        .toArray();
 
     await bookDb.blockParameterGroups.bulkAdd(parameterGroups);
 
@@ -145,8 +145,8 @@ export const useBookManager = () => {
   // Копирование параметров группы в базу данных книги
   async function copyBlockParameters(groupUuid: string) {
     const parameters = await configDatabase.blockParameters
-    .where({ groupUuid })
-    .toArray();
+        .where({ groupUuid })
+        .toArray();
 
     await bookDb.blockParameters.bulkAdd(parameters);
 
@@ -158,8 +158,8 @@ export const useBookManager = () => {
   // Копирование вариантов параметра в базу данных книги
   async function copyParameterPossibleValues(parameterUuid: string) {
     const possibleValues = await configDatabase.blockParameterPossibleValues
-    .where({ parameterUuid })
-    .toArray();
+        .where({ parameterUuid })
+        .toArray();
 
     await bookDb.blockParameterPossibleValues.bulkAdd(possibleValues);
   }

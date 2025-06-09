@@ -51,17 +51,21 @@ const getCroppedImg = async (imageSrc: string, pixelCrop: Area, targetSize = 128
   return canvas.toDataURL('image/png');
 };
 
-export const IconSelector = ({ opened,
-                               onSelect,
-                               onClose,
-                               initialIcon
-                             }: {
+interface IconSelectorProps {
+  opened: boolean;
   onSelect: (icon: IIcon) => void;
   onClose: () => void;
   initialIcon?: IIcon;
-}) => {
+}
+
+export const IconSelector = ({
+                               opened,
+                               onSelect,
+                               onClose,
+                               initialIcon
+                             }: IconSelectorProps) => {
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [activeTab, setActiveTab] = useState<'game'|'custom'>('game');
+  const [activeTab, setActiveTab] = useState<'game' | 'custom'>('game');
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [crop, setCrop] = useState<Point>({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);

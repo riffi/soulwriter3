@@ -1,7 +1,22 @@
 // BlockTabRepository.ts
 import {BlockAbstractDb} from "@/entities/BlockAbstractDb";
-import {IBlockTab} from "@/entities/ConstructorEntities";
+import {IBlockTab, IBlockTabKind, IBlock} from "@/entities/ConstructorEntities";
 import {generateUUID} from "@/utils/UUIDUtils";
+
+const deleteTabsForBlock = async (db: BlockAbstractDb, blockUuid: string) => {
+  await db.blockTabs.where('blockUuid').equals(blockUuid).delete();
+}
+
+const appendDefaultTab = async (db: BlockAbstractDb, blockData: IBlock) => {
+  await db.blockTabs.add({
+    uuid: generateUUID(),
+    blockUuid: blockData.uuid!, // Added non-null assertion
+    title: 'Основное',
+    orderNumber: 0,
+    tabKind: IBlockTabKind.parameters,
+    isDefault: 1
+  })
+}
 
 const getBlockTabs = async (db: BlockAbstractDb, blockUuid: string) => {
   return db.blockTabs.where('blockUuid').equals(blockUuid).sortBy('orderNumber');
@@ -42,8 +57,10 @@ const moveTab = async (db: BlockAbstractDb, blockUuid: string, uuid: string, dir
 };
 
 export const BlockTabRepository = {
+  appendDefaultTab, // Added
   getBlockTabs,
   saveTab,
   deleteTab,
-  moveTab
+  moveTab,
+  deleteTabsForBlock // Added
 };

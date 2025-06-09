@@ -3,6 +3,7 @@ import {useLiveQuery} from "dexie-react-hooks";
 import {IBlockInstance, IBlockParameterInstance} from "@/entities/BookEntities";
 import {IBlock, IBlockParameter} from "@/entities/ConstructorEntities";
 import {BlockRepository} from "@/repository/Block/BlockRepository";
+import {BlockParameterRepository} from "@/repository/Block/BlockParameterRepository"; // Added
 import {BlockInstanceRepository} from "@/repository/BlockInstance/BlockInstanceRepository";
 import {BlockParameterInstanceRepository} from "@/repository/BlockInstance/BlockParameterInstanceRepository";
 
@@ -28,7 +29,7 @@ export const useBlockInstanceManager = (blockUuid: string) => {
   }, [blockUuid]);
 
   const displayedParameters = useLiveQuery<IBlockParameter[]>(() => {
-    return BlockRepository.getDisplayedParameters(bookDb, blockUuid);
+    return BlockParameterRepository.getDisplayedParameters(bookDb, blockUuid); // Changed to BlockParameterRepository
   }, [blockUuid]);
 
 // Измененный код формирования instancesWithParams
@@ -40,10 +41,10 @@ export const useBlockInstanceManager = (blockUuid: string) => {
     // Получаем базовые данные
     const instancesWithParams = await Promise.all(instances.map(async (instance) => {
       const params = await bookDb.blockParameterInstances
-      .where('blockInstanceUuid')
-      .equals(instance.uuid)
-      .filter(p => displayParameterUuids.includes(p.blockParameterUuid))
-      .toArray();
+          .where('blockInstanceUuid')
+          .equals(instance.uuid)
+          .filter(p => displayParameterUuids.includes(p.blockParameterUuid))
+          .toArray();
       return { ...instance, params };
     }));
 
@@ -85,11 +86,11 @@ export const useBlockInstanceManager = (blockUuid: string) => {
         if (displayedParam?.dataType === 'blockLink') {
           displayValue = uuidToTitle.get(param.value) || '—';
         } else if (param.value instanceof Number) {
-            displayValue = `${param.value}`;
-          }
-          else{
-            displayValue = param.value?.replace(/<[^>]*>/g, '') || '—';
-          }
+          displayValue = `${param.value}`;
+        }
+        else{
+          displayValue = param.value?.replace(/<[^>]*>/g, '') || '—';
+        }
         return { ...param, displayValue };
       })
     }));

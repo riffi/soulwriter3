@@ -8,6 +8,7 @@ import {
 } from "@/entities/ConstructorEntities";
 import {BlockRepository} from "@/repository/Block/BlockRepository";
 import {BlockRelationRepository} from "@/repository/Block/BlockRelationRepository";
+import {BlockParameterRepository} from "@/repository/Block/BlockParameterRepository"; // Added
 import {BlockInstanceRepository} from "@/repository/BlockInstance/BlockInstanceRepository";
 import {BlockTabRepository} from "@/repository/Block/BlockTabRepository";
 
@@ -31,7 +32,7 @@ export const useBlockInstanceEditor = (blockInstanceUuid: string, currentParamGr
 
   const relatedBlocks = useLiveQuery<IBlock[]>(() => {
     if (!block || !blockRelations) return []
-    return BlockRepository.getRelatedBlocks(bookDb, block, blockRelations)
+    return BlockRelationRepository.getRelatedBlocks(bookDb, block, blockRelations) // Changed to BlockRelationRepository
   },[block, blockRelations])
 
   const allBlocks = useLiveQuery<IBlock[]>(async () => {
@@ -50,7 +51,7 @@ export const useBlockInstanceEditor = (blockInstanceUuid: string, currentParamGr
   //группы параметров блока
   const parameterGroups = useLiveQuery<IBlockParameterGroup[]>(() => {
     if (!blockInstance) return [];
-    return BlockRepository.getParameterGroups(bookDb, blockInstance?.blockUuid);
+    return BlockParameterRepository.getParameterGroups(bookDb, blockInstance?.blockUuid); // Changed to BlockParameterRepository
   }, [blockInstance]);
 
   const blockTabs = useLiveQuery<IBlockTab[]>(() => {
@@ -70,24 +71,24 @@ export const useBlockInstanceEditor = (blockInstanceUuid: string, currentParamGr
   //все доступные параметры в группе параметров блока
   const availableParameters = useLiveQuery<IBlockParameter[]>(() => {
     if (!blockInstance || !currentParamGroup) return [];
-    return BlockRepository.getParamsByGroup(bookDb, currentParamGroup?.uuid);
+    return BlockParameterRepository.getParamsByGroup(bookDb, currentParamGroup?.uuid); // Changed to BlockParameterRepository
   }, [currentParamGroup]);
 
   const possibleValuesMap = useLiveQuery<Record<string, IBlockParameterPossibleValue[]>>(() => {
     if (!availableParameters) return {};
     const paramUuids = availableParameters.map(p => p.uuid || '');
     return bookDb.blockParameterPossibleValues
-    .where('parameterUuid')
-    .anyOf(paramUuids)
-    .toArray()
-    .then(values => {
-      return values.reduce((acc, value) => {
-        const key = value.parameterUuid;
-        if (!acc[key]) acc[key] = [];
-        acc[key].push(value);
-        return acc;
-      }, {} as Record<string, IBlockParameterPossibleValue[]>);
-    });
+        .where('parameterUuid')
+        .anyOf(paramUuids)
+        .toArray()
+        .then(values => {
+          return values.reduce((acc, value) => {
+            const key = value.parameterUuid;
+            if (!acc[key]) acc[key] = [];
+            acc[key].push(value);
+            return acc;
+          }, {} as Record<string, IBlockParameterPossibleValue[]>);
+        });
   }, [availableParameters]);
 
   //параметры, которые еще не используются в данном блоке
@@ -128,7 +129,7 @@ export const useBlockInstanceEditor = (blockInstanceUuid: string, currentParamGr
     await BlockInstanceRepository.updateByInstanceUuid(bookDb, blockInstance.uuid, {shortDescription: newDescription})
   }
 
-  const updateBlockInstanceIcon = async (icon: IIcon) => {
+  const updateBlockInstanceIcon = async (icon: IIcon | undefined) => { // Changed to IIcon | undefined
     if (!blockInstance) return;
     await BlockInstanceRepository.updateByInstanceUuid(bookDb, blockInstance.uuid, {icon: icon})
   }

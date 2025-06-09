@@ -13,6 +13,7 @@ import {BookDB, bookDb} from "@/entities/bookDb";
 import {BlockRelationRepository} from "@/repository/Block/BlockRelationRepository";
 import {ConfigurationRepository} from "@/repository/ConfigurationRepository";
 import {BlockRepository} from "@/repository/Block/BlockRepository";
+import {BlockParameterRepository} from "@/repository/Block/BlockParameterRepository"; // Added
 import {BlockInstanceRepository} from "@/repository/BlockInstance/BlockInstanceRepository";
 import {BlockParameterInstanceRepository} from "@/repository/BlockInstance/BlockParameterInstanceRepository";
 
@@ -139,9 +140,9 @@ export const useBlockEditForm = (blockUuid: string, bookUuid?: string, currentGr
       // Update order numbers for remaining parameters in the same group
       if (currentGroupUuid) {
         const remainingParams = await db.blockParameters
-        .where('groupUuid')
-        .equals(currentGroupUuid)
-        .sortBy('orderNumber');
+            .where('groupUuid')
+            .equals(currentGroupUuid)
+            .sortBy('orderNumber');
 
         await Promise.all(
             remainingParams.map((param, index) =>
@@ -186,8 +187,8 @@ export const useBlockEditForm = (blockUuid: string, bookUuid?: string, currentGr
   }
 
   const moveGroupUp = async (groupUuid: string) => {
-    const groups = await BlockRepository
-      .getParameterGroups(db, blockUuid);
+    const groups = await BlockParameterRepository // Changed
+        .getParameterGroups(db, blockUuid);
 
     const currentIndex = groups.findIndex(g => g.uuid === groupUuid);
     if (currentIndex <= 0) return;
@@ -205,9 +206,9 @@ export const useBlockEditForm = (blockUuid: string, bookUuid?: string, currentGr
 
   const moveGroupDown = async (groupUuid: string) => {
     const groups = await db.blockParameterGroups
-    .where("blockUuid")
-    .equals(blockUuid)
-    .sortBy("orderNumber");
+        .where("blockUuid")
+        .equals(blockUuid)
+        .sortBy("orderNumber");
 
     const currentIndex = groups.findIndex(g => g.uuid === groupUuid);
     if (currentIndex === -1 || currentIndex >= groups.length - 1) return;
@@ -225,7 +226,7 @@ export const useBlockEditForm = (blockUuid: string, bookUuid?: string, currentGr
 
   const updateGroupTitle = async (groupUuid: string, newTitle: string) => {
     try {
-      const group = await BlockRepository.getGroupByUuid(db, groupUuid)
+      const group = await BlockParameterRepository.getGroupByUuid(db, groupUuid) // Changed
 
       if (group) {
         await db.blockParameterGroups.update(group.id!, {
@@ -247,7 +248,7 @@ export const useBlockEditForm = (blockUuid: string, bookUuid?: string, currentGr
 
   const deleteGroup = async (groupUuid: string) => {
     try {
-      await BlockRepository.deleteParameterGroup(db, blockUuid, groupUuid);
+      await BlockParameterRepository.deleteParameterGroup(db, blockUuid, groupUuid); // Changed
 
       notifications.show({
         title: "Успешно",
@@ -279,12 +280,12 @@ export const useBlockEditForm = (blockUuid: string, bookUuid?: string, currentGr
 
 
   const loadPossibleValues = async (parameterUuid: string) => {
-    return BlockRepository.getParamPossibleValues(db, parameterUuid)
+    return BlockParameterRepository.getParamPossibleValues(db, parameterUuid) // Changed
   };
 
   const savePossibleValues = async (parameterUuid: string, values: string[]) => {
     try {
-      await BlockRepository.updateParamPossibleValues(db, parameterUuid, values);
+      await BlockParameterRepository.updateParamPossibleValues(db, parameterUuid, values); // Changed
 
       notifications.show({
         title: "Успешно",

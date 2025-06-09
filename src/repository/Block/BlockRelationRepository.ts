@@ -1,6 +1,6 @@
 import {BlockAbstractDb} from "@/entities/BlockAbstractDb";
 import {generateUUID} from "@/utils/UUIDUtils";
-import {IBlockRelation} from "@/entities/ConstructorEntities";
+import {IBlockRelation, IBlock} from "@/entities/ConstructorEntities"; // Added IBlock
 
 const getBlockRelations = async (db: BlockAbstractDb, blockUuid: string) => {
   const [targetRelations, sourceRelations] = await Promise.all([
@@ -37,10 +37,27 @@ const remove = async (db: BlockAbstractDb, blockRelationUuid: string) => {
 }
 
 
+const getRelatedBlocks = async (db: BlockAbstractDb, block: IBlock, blockRelations?: IBlockRelation[]) => {
+  const relations: IBlockRelation[] = []
+  if (!blockRelations){
+    relations.push(...await getBlockRelations(db, block.uuid)); // Changed to direct call
+  }
+  else{
+    relations.push(...blockRelations)
+  }
+  return db.blocks.where({ // This accesses db.blocks table
+    configurationUuid: block?.configurationUuid
+  })
+      .filter(b => b.uuid !== block.uuid)
+      .filter(b => relations.some(r => r.sourceBlockUuid === b.uuid || r.targetBlockUuid === b.uuid))
+      .toArray();
+}
+
 export const BlockRelationRepository = {
   getBlockRelations,
   remove,
-  save
+  save,
+  getRelatedBlocks, // Added
 }
 
 

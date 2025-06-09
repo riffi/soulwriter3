@@ -202,7 +202,7 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
                             justifyContent: 'center',
                             alignItems: 'center',
                             border: '2px dashed var(--mantine-color-blue-filled)'
-                      }}
+                          }}
                       >
                         <IconViewer
                             icon={blockInstance?.icon ?? block?.icon }
@@ -257,10 +257,10 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
                       onChange={setActiveTab}
                       data={tabs}
                       style={{
-                        textTransform: 'Capitalize',
+                        textTransform: 'capitalize',
                         minWidth: '100%',
                         display: tabs.length <= 1 ? 'none' : ''
-                  }}
+                      }}
                   />
                 </ScrollArea>
                 {blockTabs?.map(tab => {
