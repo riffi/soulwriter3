@@ -14,9 +14,10 @@ import config from '../../../../../../package.json';
 import {UserButton} from "@/components/layout/UserButton/UserButton";
 import {NavLinkGroup} from "@/components/layout/NavbarNested/NavbarNested";
 import {useNavigate} from "react-router-dom";
-import {useMemo, useState} from "react";
+import {useMemo} from "react";
 import {IconViewer} from "@/components/shared/IconViewer/IconViewer";
 import {Logo} from "@/components/layout/NavbarNested/parts/logo/Logo";
+import { useUiSettingsStore } from '@/stores/uiSettingsStore/uiSettingsStore';
 import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
 
 
@@ -35,7 +36,8 @@ const NavLink = ({
                      isBaseItem = false // Значение по умолчанию
                  }: NavLinkProps) => {
     const navigate = useNavigate();
-    const [opened, setOpened] = useState(initiallyOpened);
+    const { navbarLinkStates, setNavbarLinkState } = useUiSettingsStore();
+    const opened = navbarLinkStates[label] ?? initiallyOpened;
     const hasLinks = links && links.length > 0;
     const {isMobile} = useMedia()
 
@@ -61,7 +63,7 @@ const NavLink = ({
             }
 
         } else if (hasLinks) {
-            setOpened((prev) => !prev);
+            setNavbarLinkState(label, !opened);
         }
     };
 

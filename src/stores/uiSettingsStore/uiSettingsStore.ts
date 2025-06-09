@@ -15,6 +15,9 @@ interface UiSettingsState {
 
     blockInstanceSortType: BlockInstanceSortType;
     setBlockInstanceSortType: (mode: BlockInstanceSortType) => void;
+
+    navbarLinkStates: Record<string, boolean>;
+    setNavbarLinkState: (label: string, isOpen: boolean) => void;
 }
 
 export const useUiSettingsStore = create<UiSettingsState>()(
@@ -31,6 +34,10 @@ export const useUiSettingsStore = create<UiSettingsState>()(
 
             blockInstanceSortType: 'date',
             setBlockInstanceSortType: (type) => set({ blockInstanceSortType: type }),
+
+            navbarLinkStates: {},
+            setNavbarLinkState: (label, isOpen) =>
+                set((state) => ({ navbarLinkStates: { ...state.navbarLinkStates, [label]: isOpen } })),
         }),
         {
             name: 'ui-settings-storage',
