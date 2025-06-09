@@ -19,6 +19,7 @@ import {
   AddParameterModal
 } from "@/components/blockInstance/BlockInstanceEditor/parts/InstanceParameterEditor/modal/AddParameterModal";
 import {FullParam} from "@/components/blockInstance/BlockInstanceEditor/types";
+import {BlockInstanceRepository} from "@/repository/BlockInstanceRepository";
 
 interface InstanceParameterEditorProps {
   blockInstanceUuid: string;
@@ -104,7 +105,7 @@ export const InstanceParameterEditor = ({
     };
 
     try {
-      await bookDb.blockParameterInstances.add(newInstance);
+        await BlockInstanceRepository.addParameterInstance(newInstance);
       setIsAddModalOpen(false);
     } catch (error) {
       console.error("Error saving parameter instance:", error);
@@ -113,7 +114,7 @@ export const InstanceParameterEditor = ({
 
   const handleDeleteParameter = async (instanceId: number) => {
     try {
-      await bookDb.blockParameterInstances.delete(instanceId);
+      await BlockInstanceRepository.deleteParameterInstance(instanceId);
     } catch (error) {
       console.error("Error deleting parameter instance:", error);
     }
@@ -121,10 +122,9 @@ export const InstanceParameterEditor = ({
 
   const handleUpdateParameterValue = async (instance: IBlockParameterInstance, newValue: string | number) => {
     try {
-      await bookDb.blockParameterInstances.update(instance.id, {
-        ...instance,
-        value: newValue
-      });
+        await BlockInstanceRepository.updateParameterInstance(instance.id, {
+            value: newValue
+        });
     } catch (error) {
       console.error("Error updating parameter instance:", error);
     }

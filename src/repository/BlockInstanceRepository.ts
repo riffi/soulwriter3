@@ -242,6 +242,57 @@ const removeByBlock = async (db: BookDB, blockUuid: string) => {
   }
 }
 
+const addParameterInstance = async (instance: IBlockParameterInstance): Promise<void> => {
+  try {
+    await bookDb.blockParameterInstances.add(instance);
+    // Обновляем родительский инстанс блока
+    const blockInstance = await getByUuid(bookDb, instance.blockInstanceUuid);
+    if (blockInstance) {
+      await update(bookDb, blockInstance);
+    }
+  } catch (error) {
+    console.error("Error adding parameter instance:", error);
+    throw error;
+  }
+};
+
+const updateParameterInstance = async (
+    id: number,
+    changes: Partial<IBlockParameterInstance>
+): Promise<void> => {
+  try {
+    await bookDb.blockParameterInstances.update(id, changes);
+    // Обновляем родительский инстанс блока
+    const paramInstance = await bookDb.blockParameterInstances.get(id);
+    if (paramInstance) {
+      const blockInstance = await getByUuid(bookDb, paramInstance.blockInstanceUuid);
+      if (blockInstance) {
+        await update(bookDb, blockInstance);
+      }
+    }
+  } catch (error) {
+    console.error("Error updating parameter instance:", error);
+    throw error;
+  }
+};
+
+const deleteParameterInstance = async (id: number): Promise<void> => {
+  try {
+    const paramInstance = await bookDb.blockParameterInstances.get(id);
+    if (paramInstance) {
+      await bookDb.blockParameterInstances.delete(id);
+      // Обновляем родительский инстанс блока
+      const blockInstance = await getByUuid(bookDb, paramInstance.blockInstanceUuid);
+      if (blockInstance) {
+        await update(bookDb, blockInstance);
+      }
+    }
+  } catch (error) {
+    console.error("Error deleting parameter instance:", error);
+    throw error;
+  }
+};
+
 export const BlockInstanceRepository = {
   getByUuid,
   getByUuidList,
@@ -259,4 +310,7 @@ export const BlockInstanceRepository = {
   createRelation,
   removeRelation,
   removeByBlock,
+  addParameterInstance,
+  updateParameterInstance,
+  deleteParameterInstance,
 }
