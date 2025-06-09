@@ -2,7 +2,7 @@ import {Table, ActionIcon, Button, Group, TextInput, Timeline} from "@mantine/co
 import { IconEdit, IconTrash, IconPlus } from "@tabler/icons-react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { bookDb } from "@/entities/bookDb";
-import { BlockInstanceRepository } from "@/repository/BlockInstanceRepository";
+import { BlockInstanceRepository } from "@/repository/BlockInstance/BlockInstanceRepository";
 import { useState } from "react";
 import { CreateChildInstanceModal } from "./modal/CreateChildInstanceModal";
 import {IBlockInstance} from "@/entities/BookEntities";

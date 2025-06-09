@@ -2,7 +2,7 @@ import { useLiveQuery } from "dexie-react-hooks";
 import {BlockRelationType, IBlock, IBlockRelation} from "@/entities/ConstructorEntities";
 import { configDatabase } from "@/entities/configuratorDb";
 import { BookDB, bookDb } from "@/entities/bookDb";
-import { BlockRelationRepository } from "@/repository/BlockRelationRepository";
+import { BlockRelationRepository } from "@/repository/Block/BlockRelationRepository";
 import { notifications } from "@mantine/notifications";
 import { generateUUID } from "@/utils/UUIDUtils";
 import { useState } from "react";

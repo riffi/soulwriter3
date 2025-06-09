@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Table, Button, Group, Modal} from '@mantine/core';
 import { bookDb } from '@/entities/bookDb';
 import { IBlock, IBlockRelation } from '@/entities/ConstructorEntities';
-import { BlockInstanceRepository } from "@/repository/BlockInstanceRepository";
+import { BlockInstanceRepository } from "@/repository/BlockInstance/BlockInstanceRepository";
 import { IBlockInstanceRelation } from "@/entities/BookEntities";
 import {
   RelationRow
@@ -18,6 +18,7 @@ import {
 } from "@/components/blockInstance/BlockInstanceEditor/parts/InstanceRelationsEditor/hook/useBlockRelationsEditor";
 import {useDialog} from "@/providers/DialogProvider/DialogProvider";
 import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
+import {BlockInstanceRelationRepository} from "@/repository/BlockInstance/BlockInstanceRelationRepository";
 
 interface BlockRelationsEditorProps {
   blockUuid: string;
@@ -70,7 +71,7 @@ export const InstanceRelationsEditor = ({
   const deleteRelation = async (relation: IBlockInstanceRelation) =>{
     const result = await showDialog('Внимание', 'Вы действительно хотите удалить связь?')
     if (!result) return
-    await BlockInstanceRepository.removeRelation(bookDb, relation);
+    await BlockInstanceRelationRepository.removeRelation(bookDb, relation);
   }
 
 

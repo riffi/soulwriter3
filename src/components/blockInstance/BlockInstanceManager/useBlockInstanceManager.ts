@@ -2,8 +2,9 @@ import {bookDb} from "@/entities/bookDb";
 import {useLiveQuery} from "dexie-react-hooks";
 import {IBlockInstance, IBlockParameterInstance} from "@/entities/BookEntities";
 import {IBlock, IBlockParameter} from "@/entities/ConstructorEntities";
-import {BlockRepository} from "@/repository/BlockRepository";
-import {BlockInstanceRepository} from "@/repository/BlockInstanceRepository";
+import {BlockRepository} from "@/repository/Block/BlockRepository";
+import {BlockInstanceRepository} from "@/repository/BlockInstance/BlockInstanceRepository";
+import {BlockParameterInstanceRepository} from "@/repository/BlockInstance/BlockParameterInstanceRepository";
 
 export interface IBlockParameterInstanceWithDisplayValue extends IBlockParameterInstance {
   displayValue: string;
@@ -99,7 +100,7 @@ export const useBlockInstanceManager = (blockUuid: string) => {
 
   const addBlockInstance = async (data: IBlockInstance) => {
     const instanceId =  await bookDb.blockInstances.add(data);
-    await BlockInstanceRepository.appendDefaultParams(bookDb, data);
+    await BlockParameterInstanceRepository.appendDefaultParams(bookDb, data);
   }
 
 

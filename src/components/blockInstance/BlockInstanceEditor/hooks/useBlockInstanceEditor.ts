@@ -6,10 +6,10 @@ import {
   IBlockParameter,
   IBlockParameterPossibleValue, IBlock, IBlockRelation, IBlockTab, IIcon
 } from "@/entities/ConstructorEntities";
-import {BlockRepository} from "@/repository/BlockRepository";
-import {BlockRelationRepository} from "@/repository/BlockRelationRepository";
-import {BlockInstanceRepository} from "@/repository/BlockInstanceRepository";
-import {BlockTabRepository} from "@/repository/BlockTabRepository";
+import {BlockRepository} from "@/repository/Block/BlockRepository";
+import {BlockRelationRepository} from "@/repository/Block/BlockRelationRepository";
+import {BlockInstanceRepository} from "@/repository/BlockInstance/BlockInstanceRepository";
+import {BlockTabRepository} from "@/repository/Block/BlockTabRepository";
 
 export const useBlockInstanceEditor = (blockInstanceUuid: string, currentParamGroup: IBlockParameterGroup | null) => {
 

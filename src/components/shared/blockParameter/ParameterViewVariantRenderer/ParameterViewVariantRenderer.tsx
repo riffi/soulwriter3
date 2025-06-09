@@ -2,7 +2,7 @@ import {ActionIcon, Box, Button, Group, Text} from "@mantine/core";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { BlockInstanceRepository } from "@/repository/BlockInstanceRepository";
+import { BlockInstanceRepository } from "@/repository/BlockInstance/BlockInstanceRepository";
 import { bookDb } from "@/entities/bookDb";
 import {IBlockParameter, IBlockParameterDataType} from "@/entities/ConstructorEntities";
 import { IBlockParameterInstance } from "@/entities/BookEntities";

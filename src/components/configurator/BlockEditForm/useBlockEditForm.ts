@@ -10,10 +10,11 @@ import {generateUUID} from "@/utils/UUIDUtils";
 import { InkLuminApiError } from "@/api/inkLuminMlApi";
 import {notifications} from "@mantine/notifications";
 import {BookDB, bookDb} from "@/entities/bookDb";
-import {BlockRelationRepository} from "@/repository/BlockRelationRepository";
+import {BlockRelationRepository} from "@/repository/Block/BlockRelationRepository";
 import {ConfigurationRepository} from "@/repository/ConfigurationRepository";
-import {BlockRepository} from "@/repository/BlockRepository";
-import {BlockInstanceRepository} from "@/repository/BlockInstanceRepository";
+import {BlockRepository} from "@/repository/Block/BlockRepository";
+import {BlockInstanceRepository} from "@/repository/BlockInstance/BlockInstanceRepository";
+import {BlockParameterInstanceRepository} from "@/repository/BlockInstance/BlockParameterInstanceRepository";
 
 export const useBlockEditForm = (blockUuid: string, bookUuid?: string, currentGroupUuid?: string) => {
 
@@ -119,7 +120,7 @@ export const useBlockEditForm = (blockUuid: string, bookUuid?: string, currentGr
         if (block?.structureKind === IBlockStructureKind.single) {
           const instances = await BlockInstanceRepository.getBlockInstances(db as BookDB, blockUuid)
           for (const instance of instances) {
-            await BlockInstanceRepository.appendDefaultParam(db as BookDB, instance, param)
+            await BlockParameterInstanceRepository.appendDefaultParam(db as BookDB, instance, param)
           }
         }
       }

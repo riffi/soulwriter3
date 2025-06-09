@@ -7,7 +7,7 @@ import {
 } from "@mantine/core";
 import { useLiveQuery } from "dexie-react-hooks";
 import { bookDb } from "@/entities/bookDb";
-import { BlockRepository } from "@/repository/BlockRepository";
+import { BlockRepository } from "@/repository/Block/BlockRepository";
 import {DashboardBlockCard} from "@/components/books/BookDashboard/parts/DashboardBlockCard";
 import {usePageTitle} from "@/providers/PageTitleProvider/PageTitleProvider";
 import {useEffect} from "react";

@@ -9,11 +9,13 @@ import {
 import { useLiveQuery } from "dexie-react-hooks";
 import { bookDb } from "@/entities/bookDb";
 import { useNavigate } from "react-router-dom";
-import { BlockInstanceRepository } from "@/repository/BlockInstanceRepository";
+import { BlockInstanceRepository } from "@/repository/BlockInstance/BlockInstanceRepository";
 import { IBlock, IBlockStructureKind } from "@/entities/ConstructorEntities";
 import {IconArrowRight} from "@tabler/icons-react";
 import {IconViewer} from "@/components/shared/IconViewer/IconViewer";
 import React from "react";
+import {BlockInstanceRelationRepository} from "@/repository/BlockInstance/BlockInstanceRelationRepository";
+import {BlockParameterInstanceRepository} from "@/repository/BlockInstance/BlockParameterInstanceRepository";
 
 interface BlockCardProps {
   block: IBlock;
@@ -31,7 +33,7 @@ export const DashboardBlockCard = ({ block }: BlockCardProps) => {
   const instanceUuid = instances?.[0]?.uuid;
   const parameters = useLiveQuery(async () => {
     if (!instanceUuid) return [];
-    return BlockInstanceRepository.getInstanceParams(bookDb, instanceUuid)
+    return BlockParameterInstanceRepository.getInstanceParams(bookDb, instanceUuid)
   }, [instanceUuid]);
 
   const allParametersEmpty =

@@ -6,9 +6,10 @@ import {useLiveQuery} from "dexie-react-hooks";
 import {IBlock, IBlockStructureKind, IBookConfiguration} from "@/entities/ConstructorEntities";
 import {useDialog} from "@/providers/DialogProvider/DialogProvider";
 import {bookDb, connectToBookDatabase, deleteBookDatabase} from "@/entities/bookDb";
-import {BlockInstanceRepository} from "@/repository/BlockInstanceRepository";
-import {BlockRepository} from "@/repository/BlockRepository";
+import {BlockInstanceRepository} from "@/repository/BlockInstance/BlockInstanceRepository";
+import {BlockRepository} from "@/repository/Block/BlockRepository";
 import {useBookStore} from "@/stores/bookStore/bookStore";
+import {BlockParameterInstanceRepository} from "@/repository/BlockInstance/BlockParameterInstanceRepository";
 
 export const useBookManager = () => {
 
@@ -88,7 +89,7 @@ export const useBookManager = () => {
   async function createSingleInstance(block: IBlock) {
     if (block.structureKind === IBlockStructureKind.single) {
       const instance = await BlockInstanceRepository.createSingleInstance(bookDb, block);
-      await BlockInstanceRepository.appendDefaultParams(bookDb, instance)
+      await BlockParameterInstanceRepository.appendDefaultParams(bookDb, instance)
     }
   }
 

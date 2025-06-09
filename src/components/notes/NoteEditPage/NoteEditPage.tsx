@@ -19,7 +19,7 @@ import {InlineEdit} from "@/components/shared/InlineEdit/InlineEdit";
 import {INote} from "@/entities/BookEntities";
 import {InlineTagEdit} from "@/components/shared/InlineEdit/InlineTagEdit";
 import {usePageTitle} from "@/providers/PageTitleProvider/PageTitleProvider";
-import {NoteRepository} from "@/repository/NoteRepository";
+import {NoteRepository} from "@/repository/Note/NoteRepository";
 
 
 export const NoteEditPage = () => {

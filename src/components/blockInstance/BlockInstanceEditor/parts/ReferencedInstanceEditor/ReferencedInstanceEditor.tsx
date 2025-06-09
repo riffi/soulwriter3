@@ -3,7 +3,7 @@ import {IBlockInstance} from "@/entities/BookEntities";
 import {useLiveQuery} from "dexie-react-hooks";
 import {bookDb} from "@/entities/bookDb";
 import {Box, Text, Table, Group, ActionIcon} from "@mantine/core";
-import {BlockRepository} from "@/repository/BlockRepository";
+import {BlockRepository} from "@/repository/Block/BlockRepository";
 import {IconLink} from "@tabler/icons-react";
 import {useNavigate} from "react-router-dom";
 

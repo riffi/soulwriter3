@@ -10,9 +10,9 @@ import {configDatabase} from "@/entities/configuratorDb";
 
 import {useDialog} from "@/providers/DialogProvider/DialogProvider";
 import {bookDb} from "@/entities/bookDb";
-import {BlockRepository} from "@/repository/BlockRepository";
+import {BlockRepository} from "@/repository/Block/BlockRepository";
 import { InkLuminApiError } from "@/api/inkLuminMlApi";
-import {BlockInstanceRepository} from "@/repository/BlockInstanceRepository";
+import {BlockInstanceRepository} from "@/repository/BlockInstance/BlockInstanceRepository";
 import {generateUUID} from "@/utils/UUIDUtils";
 
 export const useBookConfigurationEditForm = (configurationUuid: string,

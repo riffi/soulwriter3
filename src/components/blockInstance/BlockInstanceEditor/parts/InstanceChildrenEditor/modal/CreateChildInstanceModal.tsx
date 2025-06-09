@@ -1,6 +1,6 @@
 import { Modal, TextInput, Button, Stack } from "@mantine/core";
 import { useForm } from "@mantine/form";
-import { BlockInstanceRepository } from "@/repository/BlockInstanceRepository";
+import { BlockInstanceRepository } from "@/repository/BlockInstance/BlockInstanceRepository";
 import { bookDb } from "@/entities/bookDb";
 import {generateUUID} from "@/utils/UUIDUtils";
 import {IBlock} from "@/entities/ConstructorEntities";

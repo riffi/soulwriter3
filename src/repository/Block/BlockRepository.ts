@@ -7,9 +7,9 @@ import {
 import {generateUUID} from "@/utils/UUIDUtils";
 import {useLiveQuery} from "dexie-react-hooks";
 import {BookDB, bookDb} from "@/entities/bookDb";
-import {BlockRelationRepository} from "@/repository/BlockRelationRepository";
+import {BlockRelationRepository} from "@/repository/Block/BlockRelationRepository";
 import {InkLuminMlApi, InkLuminApiError} from "@/api/inkLuminMlApi";
-import {BlockInstanceRepository} from "@/repository/BlockInstanceRepository";
+import {BlockInstanceRepository} from "@/repository/BlockInstance/BlockInstanceRepository";
 import {notifications} from "@mantine/notifications";
 
 const getByUuid = async (db: BlockAbstractDb, blockUuid: string) => {

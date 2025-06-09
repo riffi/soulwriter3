@@ -3,7 +3,7 @@ import { configDatabase } from "@/entities/configuratorDb";
 import { INote, INoteGroup } from "@/entities/BookEntities";
 import { generateUUID } from "@/utils/UUIDUtils";
 import { useDialog } from "@/providers/DialogProvider/DialogProvider";
-import {NoteRepository} from "@/repository/NoteRepository";
+import {NoteRepository} from "@/repository/Note/NoteRepository";
 
 export const useNoteManager = () => {
   const { showDialog } = useDialog();

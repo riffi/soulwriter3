@@ -1,5 +1,5 @@
 // useBlockTabsManager.ts
-import { BlockTabRepository } from "@/repository/BlockTabRepository";
+import { BlockTabRepository } from "@/repository/Block/BlockTabRepository";
 import { notifications } from "@mantine/notifications";
 import {IBlock, IBlockTab} from "@/entities/ConstructorEntities";
 import {bookDb} from "@/entities/bookDb";

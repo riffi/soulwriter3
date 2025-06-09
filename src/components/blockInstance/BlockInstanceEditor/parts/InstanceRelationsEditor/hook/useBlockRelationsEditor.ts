@@ -2,10 +2,11 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { bookDb } from '@/entities/bookDb';
 import { IBlockInstance, IBlockInstanceRelation } from '@/entities/BookEntities';
-import { BlockInstanceRepository } from "@/repository/BlockInstanceRepository";
-import { BlockRepository } from "@/repository/BlockRepository";
+import { BlockInstanceRepository } from "@/repository/BlockInstance/BlockInstanceRepository";
+import { BlockRepository } from "@/repository/Block/BlockRepository";
 import {IBlock} from "@/entities/ConstructorEntities";
 import {generateUUID} from "@/utils/UUIDUtils";
+import {BlockInstanceRelationRepository} from "@/repository/BlockInstance/BlockInstanceRelationRepository";
 
 export const useBlockRelationsEditor = (
     blockInstanceUuid: string,
@@ -37,7 +38,7 @@ export const useBlockRelationsEditor = (
   );
 
   const instanceRelations = useLiveQuery(
-      () => BlockInstanceRepository.getRelatedInstances(bookDb, blockInstanceUuid, relatedBlock.uuid),
+      () => BlockInstanceRelationRepository.getRelatedInstances(bookDb, blockInstanceUuid, relatedBlock.uuid),
       [blockInstanceUuid, relatedBlock.uuid]
   );
 
@@ -62,7 +63,7 @@ export const useBlockRelationsEditor = (
 
     const sourceBlockUuid = isRelatedBlockTarget ? blockUuid : relatedBlock.uuid;
     const targetBlockUuid = isRelatedBlockTarget ? relatedBlock.uuid : blockUuid;
-    await BlockInstanceRepository.createRelation(bookDb,
+    await BlockInstanceRelationRepository.createRelation(bookDb,
         source,
         target,
         sourceBlockUuid,
