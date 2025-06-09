@@ -262,22 +262,6 @@ export const useBlockEditForm = (blockUuid: string, bookUuid?: string, currentGr
     }
   };
 
-  const appendDefaultParamGroup = async (blockData: IBlock) => {
-    if (!blockData?.uuid) {
-      throw new Error("Block UUID is required");
-    }
-
-    const defaultGroup = {
-      blockUuid: blockData.uuid,
-      uuid: generateUUID(),
-      orderNumber: 0,
-      description: '',
-      title: 'Основное'
-    };
-
-    await db.blockParameterGroups.add(defaultGroup);
-  }
-
 
   const loadPossibleValues = async (parameterUuid: string) => {
     return BlockParameterRepository.getParamPossibleValues(db, parameterUuid) // Changed

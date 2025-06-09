@@ -79,6 +79,7 @@ export interface INoteGroup{
   title: string;
   order?: number;
   parentUuid?: string;
+  kindCode?: string; // Added this line
 }
 
 export interface INote{

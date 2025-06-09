@@ -8,10 +8,14 @@ import {
   IconBox,
   IconBrandDatabricks,
   IconDashboard, IconDatabaseCog, IconGraph,
-  IconNotes
+  IconNotes,
+  IconBulb // Added IconBulb
 } from "@tabler/icons-react";
 import {CollapsedNavbar} from "@/components/layout/NavbarNested/parts/CollapsedNavbar/CollapsedNavbar";
 import {ExpandedNavbar} from "@/components/layout/NavbarNested/parts/ExpandedNavbar/ExpandedNavbar";
+import { useNavigate } from "react-router-dom"; // Added useNavigate
+import { useNoteManager } from "@/components/notes/hook/useNoteManager"; // Added useNoteManager
+import { configDatabase } from "@/entities/configuratorDb"; // Added configDatabase
 
 export interface NavLinkItem {
   label: string;
@@ -25,6 +29,7 @@ export interface NavLinkGroup {
   initiallyOpened?: boolean;
   links?: NavLinkItem[];
   link?: string;
+  onClick?: () => Promise<void>; // Added onClick handler
 }
 
 const BASE_MENU_ITEMS: NavLinkGroup[] = [
@@ -65,12 +70,55 @@ const getBlockPageTitle = (block: IBlock) => {
 
 export const NavbarNested = ({ toggleNavbar, opened }: { toggleNavbar?: () => void; opened: boolean }) => {
   const { selectedBook } = useBookStore();
+  const navigate = useNavigate(); // Hook for navigation
+  const { createNoteGroup, createNote } = useNoteManager(); // Hooks for note management
+
+  const handleQuickNoteClick = async () => {
+    try {
+      let quickNotesGroup = await configDatabase.notesGroups
+          .where('title')
+          .equals("Быстрые заметки")
+          .first();
+
+      if (!quickNotesGroup) {
+        quickNotesGroup = await createNoteGroup({
+          title: "Быстрые заметки",
+          kindCode: 'system',
+          parentUuid: "topLevel"
+        });
+      }
+
+      if (!quickNotesGroup || !quickNotesGroup.uuid) {
+        console.error("Failed to find or create 'Быстрые заметки' group.");
+        return;
+      }
+
+      const newNote = await createNote({
+        title: "новая заметка",
+        noteGroupUuid: quickNotesGroup.uuid,
+        tags: '',
+      });
+
+      if (newNote && newNote.uuid) {
+        navigate(`/notes/edit/${newNote.uuid}`);
+      } else {
+        console.error("Failed to create new quick note.");
+      }
+    } catch (error) {
+      console.error("Error creating quick note:", error);
+    }
+  };
 
   const blocks = useLiveQuery<IBlock[]>(() => {
     return selectedBook ? bookDb.blocks.toArray() : [];
   }, [selectedBook]);
 
   const { baseItems, dynamicItems } = useMemo(() => {
+    const quickNoteItem: NavLinkGroup = {
+      label: 'Быстрая заметка',
+      icon: IconBulb,
+      onClick: handleQuickNoteClick,
+    };
     const dynamicItems: NavLinkGroup[] = [];
 
     if (selectedBook) {
@@ -98,10 +146,10 @@ export const NavbarNested = ({ toggleNavbar, opened }: { toggleNavbar?: () => vo
     }
 
     return {
-      baseItems: BASE_MENU_ITEMS,
+      baseItems: [quickNoteItem, ...BASE_MENU_ITEMS], // Prepend quick note item
       dynamicItems
     };
-  }, [selectedBook, blocks]);
+  }, [selectedBook, blocks, handleQuickNoteClick]); // Added handleQuickNoteClick to dependency array
 
   if (!opened) {
     return <CollapsedNavbar

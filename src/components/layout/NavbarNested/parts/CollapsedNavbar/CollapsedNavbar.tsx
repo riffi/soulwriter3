@@ -83,9 +83,18 @@ export const CollapsedNavbar = ({
                   >
                     <UnstyledButton
                         className={classes.mainLink}
-                        onClick={(e) => {
+                        onClick={async (e) => { // Made async
                           e.preventDefault();
-                          if (item.link) navigate(item.link);
+                          if (item.onClick) { // Check for onClick first
+                            await item.onClick();
+                            // Optionally, toggle navbar if it's a pure action and on mobile.
+                            // CollapsedNavbar is usually for desktop, but good to be consistent.
+                            // For now, just executing onClick.
+                            return;
+                          }
+                          if (item.link) {
+                            navigate(item.link);
+                          }
                         }}
                     >
                       <item.icon size={22} stroke={1.5} />

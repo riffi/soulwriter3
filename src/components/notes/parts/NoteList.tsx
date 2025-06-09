@@ -114,7 +114,8 @@ export const NoteList = ({ notes, onEdit, onDelete, onAdd, selectedFolderUuid, s
                   {allGroups.find((g) => g.uuid === note.noteGroupUuid)?.title || ''}
                 </Text>
             )}
-            <Group gap={4}>
+            {note.tags && note.tags !== '' &&
+              <Group gap={4}>
               {(expandedNoteUuid === note.uuid
                       ? note.tags?.split(',')
                       : note.tags?.split(',').slice(0, 2)
@@ -141,6 +142,7 @@ export const NoteList = ({ notes, onEdit, onDelete, onAdd, selectedFolderUuid, s
                   </Badge>
               )}
             </Group>
+            }
           </Table.Td>
 
           <Table.Td>

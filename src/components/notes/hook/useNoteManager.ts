@@ -23,6 +23,7 @@ export const useNoteManager = () => {
       ...group,
       uuid: generateUUID(),
       parentUuid: group.parentUuid || "topLevel",
+      kindCode: group.kindCode || 'userGroup', // Add this line
       order: await configDatabase.notesGroups.count()
     };
     await configDatabase.notesGroups.add(newGroup as INoteGroup);
@@ -41,34 +42,45 @@ export const useNoteManager = () => {
   };
 
   const deleteNoteGroup = async (uuid: string) => {
+    // Fetch the group first
+    const groupToDelete = await configDatabase.notesGroups.where('uuid').equals(uuid).first();
+
+    // Check if the group exists and if it's a system group
+    if (groupToDelete && groupToDelete.kindCode === 'system') {
+      // Ideally, show a notification here, but hooks shouldn't directly cause UI side effects like notifications.
+      // The component calling this function should handle the notification.
+      // For now, we can console log or just prevent deletion.
+      console.warn(`Attempted to delete a system group: ${groupToDelete.title}`);
+      // Or use the showDialog for feedback, though it's already used for confirmation.
+      // A different dialog or a more specific error state might be better.
+      // For this task, let's use showDialog to give feedback.
+      await showDialog("Ошибка", "Системные группы не могут быть удалены.");
+      return;
+    }
+
     const confirm = await showDialog("Подтверждение", "Удалить папку и все вложенные элементы?");
     if (!confirm) return;
 
+    // ... rest of the function (deleteChildrenRecursively and transaction) remains the same
     const deleteChildrenRecursively = async (parentUuid: string) => {
-      // Удаляем все дочерние группы (включая глубокую вложенность)
       const childGroups = await configDatabase.notesGroups
-        .where('parentUuid')
-        .equals(parentUuid)
-        .toArray();
+          .where('parentUuid')
+          .equals(parentUuid)
+          .toArray();
 
-      // Рекурсивно удаляем всех потомков
       await Promise.all(childGroups.map(async (group) => {
-        await deleteChildrenRecursively(group.uuid); // Сначала удаляем вложенные элементы
-        await configDatabase.notesGroups.delete(group.id);
+        await deleteChildrenRecursively(group.uuid);
+        await configDatabase.notesGroups.delete(group.id!); // Added non-null assertion for id
       }));
 
-      // Удаляем все заметки в текущей группе
       await configDatabase.notes
-        .where('noteGroupUuid')
-        .equals(parentUuid)
-        .delete();
+          .where('noteGroupUuid')
+          .equals(parentUuid)
+          .delete();
     };
 
     await configDatabase.transaction('rw', configDatabase.notesGroups, configDatabase.notes, async () => {
-      // Удаляем всю иерархию
       await deleteChildrenRecursively(uuid);
-
-      // Удаляем саму целевую папку
       await configDatabase.notesGroups.where('uuid').equals(uuid).delete();
     });
   };
