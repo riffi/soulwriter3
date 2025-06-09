@@ -16,6 +16,11 @@ const getByUuid = async (db: BlockAbstractDb, blockUuid: string) => {
   return db.blocks.where("uuid").equals(blockUuid).first()
 }
 
+const getByUuidList = async (db: BlockAbstractDb, blockUuids: string[]) => {
+  return db.blocks.where("uuid").anyOf(blockUuids).toArray()
+}
+
+
 const getSiblings = async (db: BlockAbstractDb, block: IBlock) => {
   return db.blocks.where(
       {
@@ -345,6 +350,7 @@ const getReferencingParametersFromBlock = async (db: BlockAbstractDb, blockUuid:
 export const BlockRepository = {
   getAll,
   getByUuid,
+  getByUuidList,
   getChildren,
   getSiblings,
   getParameterGroups,

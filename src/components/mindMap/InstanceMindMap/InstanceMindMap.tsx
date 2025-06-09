@@ -10,6 +10,7 @@ import {useNavigate} from "react-router-dom";
 import {BlockRepository} from "@/repository/Block/BlockRepository";
 import {BlockInstanceRelationRepository} from "@/repository/BlockInstance/BlockInstanceRelationRepository";
 import {BlockParameterInstanceRepository} from "@/repository/BlockInstance/BlockParameterInstanceRepository";
+import {BlockInstanceRepository} from "@/repository/BlockInstance/BlockInstanceRepository";
 
 interface InstanceMindMapProps {
     blockInstance: IBlockInstance;
@@ -117,15 +118,12 @@ export const InstanceMindMap = ({ blockInstance }: InstanceMindMapProps) => {
                 });
 
                 // Загружаем связанные экземпляры
-                const relatedInstances = await bookDb.blockInstances
-                    .where('uuid')
-                    .anyOf([...relatedInstanceUuids])
-                    .toArray();
+                const relatedInstances =
+                    await BlockInstanceRepository.getByUuidList(bookDb, [...relatedInstanceUuids]);
 
-                const relatedBlocks = await bookDb.blocks
-                    .where('uuid')
-                    .anyOf([...relatedInstances.map(i => i.blockUuid)])
-                    .toArray();
+                // Загружаем связанные блоки
+                const relatedBlocks =
+                    await BlockRepository.getByUuidList(bookDb, [...relatedInstances.map(i => i.blockUuid)]);
 
                 // Добавляем связанные экземпляры как узлы
                 relatedInstances.forEach(instance => {
