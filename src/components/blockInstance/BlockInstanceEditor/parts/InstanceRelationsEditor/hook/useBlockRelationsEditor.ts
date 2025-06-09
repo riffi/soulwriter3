@@ -60,15 +60,14 @@ export const useBlockRelationsEditor = (
         ? [blockInstanceUuid, targetInstanceUuid]
         : [targetInstanceUuid, blockInstanceUuid];
 
-    const relation: IBlockInstanceRelation = {
-      sourceInstanceUuid: source,
-      targetInstanceUuid: target,
-      sourceBlockUuid: isRelatedBlockTarget ? blockUuid : relatedBlock.uuid,
-      targetBlockUuid: isRelatedBlockTarget ? relatedBlock.uuid : blockUuid,
-      blockRelationUuid: blockRelationUuid
-    };
-
-    await bookDb.blockInstanceRelations.add(relation);
+    const sourceBlockUuid = isRelatedBlockTarget ? blockUuid : relatedBlock.uuid;
+    const targetBlockUuid = isRelatedBlockTarget ? relatedBlock.uuid : blockUuid;
+    await BlockInstanceRepository.createRelation(bookDb,
+        source,
+        target,
+        sourceBlockUuid,
+        targetBlockUuid,
+        blockRelationUuid);
   };
 
   return {

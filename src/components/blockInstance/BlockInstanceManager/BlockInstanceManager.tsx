@@ -10,14 +10,15 @@ import {
   Box,
   Modal,
   TextInput, Container, Title, Space,
-  MultiSelect, ActionIcon
+  MultiSelect, ActionIcon, SegmentedControl
 } from '@mantine/core';
 import {
   IconPlus,
   IconFilter,
-  IconX, IconFilterOff
+  IconX, IconFilterOff, IconCalendar, IconSortAZ
 } from '@tabler/icons-react';
 import { useDisclosure } from '@mantine/hooks';
+import {BlockInstanceSortType, useUiSettingsStore} from "@/stores/uiSettingsStore/uiSettingsStore";
 import { generateUUID } from "@/utils/UUIDUtils";
 import { useDialog } from "@/providers/DialogProvider/DialogProvider";
 import classes from "./BlockInstanceManager.module.css";
@@ -57,6 +58,7 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
   const [filtersVisible, { toggle: toggleFilters, close: closeFilters }] = useDisclosure(false);
   const [filters, setFilters] = useState<Record<string, string[]>>({});
   const {isMobile} = useMedia();
+  const { blockInstanceSortType, setBlockInstanceSortType } = useUiSettingsStore();
 
   const navigate = useNavigate();
   const { showDialog } = useDialog();
@@ -174,6 +176,18 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
     });
   }) || [];
 
+  const sortedAndFilteredInstances = [...filteredInstances].sort((a, b) => {
+    // 'a' and 'b' are of type (IBlockInstance & { params: IBlockParameterInstanceDisplay[] })
+    if (blockInstanceSortType === 'title') {
+      return (a.title || '').localeCompare(b.title || '');
+    }
+
+    // Default to date sorting (newest first)
+    const dateA = new Date(a.updatedAt || 0).getTime();
+    const dateB = new Date(b.updatedAt || 0).getTime();
+    return dateB - dateA;
+  });
+
 // Обработчики фильтров
   const handleFilterChange = (paramUuid: string, values: string[]) => {
     setFilters(prev => ({
@@ -200,122 +214,133 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
   }
   return (
       <Container size="xl" p={0} >
-      <Box className={classes.container} pos="relative">
-        <Box visibleFrom={"sm"}>
-          {header}
-        </Box>
-        <Space h="md"/>
+        <Box className={classes.container} pos="relative">
+          <Box visibleFrom={"sm"}>
+            {header}
+          </Box>
+          <Space h="md"/>
 
-        <Group justify="space-between" mb="md" px={"sm"}>
-          <Button
-              onClick={handleAddClick}
-              leftSection={<IconPlus size="1rem" />}
-              size="sm"
-              variant="light"
-              className={classes.addButton}
-          >
-            Добавить
-          </Button>
-
-          {displayedParameters?.length > 0 && <Group>
-            <ActionIcon
-                onClick={toggleFilters}
-                variant={filtersVisible? "filled" : "default"}
-            >
-              <IconFilter size="1rem" />
-            </ActionIcon>
-            {Object.keys(filters).length > 0 && <ActionIcon
-                onClick={clearFilters}
-                variant={"default"}
-            >
-              <IconFilterOff size="1rem" />
-            </ActionIcon>}
-          </Group>
-        }
-        </Group>
-
-        {filtersVisible && displayedParameters && (
-            <div className={classes.filtersContainer}>
-              <Group gap="xs" mb="md">
-                {displayedParameters.map(param => (
-                    <MultiSelect
-                        key={param.uuid}
-                        label={param.title}
-                        placeholder={filters[param.uuid!]?.length > 0 ? '' : param.title}
-                        data={getUniqueParamValues(param.uuid!)}
-                        value={filters[param.uuid!] || []}
-                        onChange={(values) => handleFilterChange(param.uuid!, values)}
-                        clearable
-                        className={classes.filterInput}
-                    />
-                ))}
-              </Group>
-            </div>
-        )}
-        <Table highlightOnHover className={classes.table}>
-          <>
-          {filteredInstances?.length > 0 ? (
-              <Table.Tbody>
-                {filteredInstances?.map((instance) => (
-                    <BlockInstanceTableRow
-                        key={instance.uuid}
-                        instance={instance}
-                        block={block}
-                        displayedParameters={displayedParameters}
-                        onEdit={handleEditInstance}
-                        onDelete={handleDeleteInstance}
-                    />
-                ))}
-              </Table.Tbody>
-          ) : (
-              <Table.Tbody>
-                <Table.Tr>
-                  <Table.Td colSpan={2}>
-                    <Text c="dimmed" ta="center" py="md" size="sm">
-                      Добавьте {block?.titleForms?.accusative}
-                    </Text>
-                  </Table.Td>
-                </Table.Tr>
-              </Table.Tbody>
-          )}
-          </>
-        </Table>
-
-        <Modal
-            opened={opened}
-            onClose={close}
-            fullScreen={isMobile}
-            title={"Создание " + block?.titleForms?.genitive}
-            centered
-        >
-          <TextInput
-              label="Название"
-              value={newInstanceName}
-              onChange={(e) => setNewInstanceName(e.currentTarget.value)}
-              placeholder="Введите название"
-              mb="md"
-          />
-          <TextInput
-              label="Краткое описание"
-              value={newShortDescription}
-              onChange={(e) => setNewShortDescription(e.currentTarget.value)}
-              placeholder="Введите краткое описание (необязательно)"
-              mb="md"
-          />
-          <Group justify="flex-end">
-            <Button variant="default" onClick={close}>
-              Отмена
-            </Button>
+          <Group justify="space-between" mb="md" px={"sm"}>
             <Button
-                onClick={handleCreateInstance}
-                loading={addingInstance}
-                disabled={!newInstanceName.trim()}
+                onClick={handleAddClick}
+                leftSection={<IconPlus size="1rem" />}
+                size="sm"
+                variant="light"
+                className={classes.addButton}
             >
-              Создать
+              Добавить
             </Button>
+
+            <Group> {/* New group for sorting and filters */}
+              <SegmentedControl
+                  value={blockInstanceSortType}
+                  onChange={(value) => setBlockInstanceSortType(value as BlockInstanceSortType)}
+                  data={[
+                    { value: 'date', label: <IconCalendar size="1rem" />, title: 'Сортировка по дате' },
+                    { value: 'title', label: <IconSortAZ size="1rem" />, title: 'Сортировка по алфавиту' },
+                  ]}
+              />
+              {displayedParameters?.length > 0 && ( /* Filter icons existing logic */
+                  <>
+                    <ActionIcon
+                        onClick={toggleFilters}
+                        variant={filtersVisible? "filled" : "default"}
+                    >
+                      <IconFilter size="1rem" />
+                    </ActionIcon>
+                    {Object.keys(filters).length > 0 && <ActionIcon
+                        onClick={clearFilters}
+                        variant={"default"}
+                    >
+                      <IconFilterOff size="1rem" />
+                    </ActionIcon>}
+                  </>
+              )}
+            </Group>
           </Group>
-        </Modal>
-      </Box>
+
+          {filtersVisible && displayedParameters && (
+              <div className={classes.filtersContainer}>
+                <Group gap="xs" mb="md">
+                  {displayedParameters.map(param => (
+                      <MultiSelect
+                          key={param.uuid}
+                          label={param.title}
+                          placeholder={filters[param.uuid!]?.length > 0 ? '' : param.title}
+                          data={getUniqueParamValues(param.uuid!)}
+                          value={filters[param.uuid!] || []}
+                          onChange={(values) => handleFilterChange(param.uuid!, values)}
+                          clearable
+                          className={classes.filterInput}
+                      />
+                  ))}
+                </Group>
+              </div>
+          )}
+          <Table highlightOnHover className={classes.table}>
+            <>
+              {sortedAndFilteredInstances.length > 0 ? (
+                  <Table.Tbody>
+                    {sortedAndFilteredInstances.map((instance) => (
+                        <BlockInstanceTableRow
+                            key={instance.uuid!}
+                            instance={instance}
+                            block={block}
+                            displayedParameters={displayedParameters}
+                            onEdit={() => handleEditInstance(instance.uuid!)}
+                            onDelete={() => handleDeleteInstance(instance)}
+                        />
+                    ))}
+                  </Table.Tbody>
+              ) : (
+                  <Table.Tbody>
+                    <Table.Tr>
+                      <Table.Td colSpan={2}>
+                        <Text c="dimmed" ta="center" py="md" size="sm">
+                          Добавьте {block?.titleForms?.accusative}
+                        </Text>
+                      </Table.Td>
+                    </Table.Tr>
+                  </Table.Tbody>
+              )}
+            </>
+          </Table>
+
+          <Modal
+              opened={opened}
+              onClose={close}
+              fullScreen={isMobile}
+              title={"Создание " + block?.titleForms?.genitive}
+              centered
+          >
+            <TextInput
+                label="Название"
+                value={newInstanceName}
+                onChange={(e) => setNewInstanceName(e.currentTarget.value)}
+                placeholder="Введите название"
+                mb="md"
+            />
+            <TextInput
+                label="Краткое описание"
+                value={newShortDescription}
+                onChange={(e) => setNewShortDescription(e.currentTarget.value)}
+                placeholder="Введите краткое описание (необязательно)"
+                mb="md"
+            />
+            <Group justify="flex-end">
+              <Button variant="default" onClick={close}>
+                Отмена
+              </Button>
+              <Button
+                  onClick={handleCreateInstance}
+                  loading={addingInstance}
+                  disabled={!newInstanceName.trim()}
+              >
+                Создать
+              </Button>
+            </Group>
+          </Modal>
+        </Box>
       </Container>
   );
 };

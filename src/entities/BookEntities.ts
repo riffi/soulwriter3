@@ -17,7 +17,8 @@ export interface IBlockInstance{
   title: string; // Название экземпляра блока
   parentInstanceUuid?: string; // Ссылка на родительский экземпляр блока
   shortDescription?: string; // Краткое описание экземпляра блока
-  icon?: IIcon
+  icon?: IIcon,
+  updatedAt?: string;
 }
 
 export interface IBlockInstanceSceneLink{

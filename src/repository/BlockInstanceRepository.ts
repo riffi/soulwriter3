@@ -53,47 +53,101 @@ const appendDefaultParam = async (db: BookDB, instance: IBlockInstance, param: I
   await db
       .blockParameterInstances.add(blockParameterInstance)
 
+  await update(db, instance); // Call the modified update
+
 }
 const appendDefaultParams = async (db: BookDB, instance: IBlockInstance)=> {
-  const defaultParameters =
-      await BlockRepository.getDefaultParameters(db, instance.blockUuid);
+  // instance.uuid must be defined to fetch parameters and later the instance itself.
+  if (!instance.uuid) {
+    console.error("BlockInstanceRepository.appendDefaultParams: instance.uuid is undefined.");
+    return;
+  }
+  const defaultParameters = await BlockRepository.getDefaultParameters(db, instance.blockUuid);
 
-
-  const defaultParameterInstances = []
-  for (const defaultParameter of defaultParameters) {
-    const blockParameterInstance: IBlockParameterInstance = {
+  if (defaultParameters.length > 0) {
+    const defaultParameterInstances = defaultParameters.map(defaultParameter => ({
       uuid: generateUUID(),
-      blockInstanceUuid: instance.uuid!!,
-      blockParameterUuid: defaultParameter.uuid!!,
+      blockInstanceUuid: instance.uuid!!, // instance.uuid is checked above
+      blockParameterUuid: defaultParameter.uuid!!, // defaultParameter.uuid must exist
       blockParameterGroupUuid: defaultParameter.groupUuid,
       value: "",
-    }
-    defaultParameterInstances.push(blockParameterInstance);
+    }));
+    await db.blockParameterInstances.bulkAdd(defaultParameterInstances);
   }
-  await db
-  .blockParameterInstances
-  .bulkAdd(defaultParameterInstances)
-}
+
+  // Always try to fetch and update the parent instance, even if no params were added,
+  // as this function might be called as part of a creation flow (e.g. createSingleInstance)
+  // where the instance's own timestamp should be updated.
+  // No need to fetch, the instance is passed in
+  // const parentInstance = await getByUuid(db, instance.uuid!!); // instance.uuid is checked above
+  // if (parentInstance) { // instance is already the parentInstance
+  await update(db, instance); // Call the modified update
+  // }
+};
 
 const create = async (db: BookDB, instance: IBlockInstance)=> {
-  db.blockInstances.add(instance);
-}
-
-const createSingleInstance = async (db: BookDB, block: IBlock)=> {
-  const uuid = generateUUID();
-  const newInstance: IBlockInstance = {
-    blockUuid: block.uuid,
-    uuid,
-    title: block?.title,
+  const instanceToCreate = {
+    ...instance, // Spread incoming instance data first
+    uuid: instance.uuid || generateUUID(), // Ensure UUID
+    updatedAt: new Date().toISOString(), // Set updatedAt
   };
-  await BlockInstanceRepository.create(db, newInstance)
-  await BlockInstanceRepository.appendDefaultParams(db, newInstance);
-  return newInstance;
+  // Remove id from instanceToCreate if it exists, as 'add' doesn't want it for auto-increment PKs.
+  delete (instanceToCreate as any).id;
+  await db.blockInstances.add(instanceToCreate);
+};
+
+const createSingleInstance = async (db: BookDB, block: IBlock): Promise<IBlockInstance | undefined> => {
+  const newUuid = generateUUID();
+  // Prepare data for IBlockInstance. Title is mandatory.
+  const newInstanceData: IBlockInstance = {
+    uuid: newUuid,
+    blockUuid: block.uuid, // block.uuid must exist
+    title: block.title || 'Unnamed Instance',
+    // other IBlockInstance fields (id, shortDescription, icon, parentInstanceUuid, updatedAt)
+    // will be undefined or set by 'create'/'update'
+  };
+
+  // 'create' will use newInstanceData.uuid and set updatedAt. It won't set an id.
+  await BlockInstanceRepository.create(db, newInstanceData);
+
+  // 'appendDefaultParams' needs an instance object, primarily for its uuid.
+  // It will fetch the full instance (which will include an 'id' from the DB) internally before updating.
+  await BlockInstanceRepository.appendDefaultParams(db, newInstanceData);
+
+  // Fetch the final state of the instance, which now has an id and the latest updatedAt.
+  return getByUuid(db, newUuid);
+};
+
+// Обновление инстанса по его UUID
+const updateByInstanceUuid = async (db: BookDB, instanceUuid: string, newData: Partial<IBlockInstance>)=> {
+  const instanceToUpdate = await getByUuid(db, instanceUuid);
+  if (!instanceToUpdate) {
+    console.error("BlockInstanceRepository.updateByInstanceUuid: Instance not found.", instanceUuid);
+    return;
+  }
+
+  // Merge newData into existing data, but keep existing updatedAt.
+  const mergedData: IBlockInstance = {
+    ...instanceToUpdate, // Spread existing instance data
+    ...newData, // Merge in newData
+    updatedAt: new Date().toISOString(),
+  };
+
+  await db.blockInstances.update(mergedData.id, mergedData)
 }
 
 const update = async (db: BookDB, instance: IBlockInstance)=> {
-  db.blockInstances.update(instance.id, instance);
-}
+  if (instance.id === undefined) {
+    console.error("BlockInstanceRepository.update: Attempted to update an instance without an ID.", instance);
+    // Optionally throw an error: throw new Error("Instance ID is required for update.");
+    return; // Or handle error appropriately
+  }
+  const instanceToUpdate = {
+    ...instance, // Spread existing instance data
+    updatedAt: new Date().toISOString(), // Set/overwrite updatedAt
+  };
+  await db.blockInstances.update(instance.id, instanceToUpdate);
+};
 
 const remove = async (db: BookDB, instance: IBlockInstance)=> {
   await Promise.all([
@@ -123,7 +177,55 @@ const getChildInstances = async (db: BookDB, parentInstanceUuid: string, childBl
 }
 
 const removeRelation = async (db: BookDB, relation: IBlockInstanceRelation)=> {
-  return db.blockInstanceRelations.delete(relation.id)
+  // relation.id must exist for deletion
+  if (relation.id === undefined) {
+    console.error("BlockInstanceRepository.removeRelation: relation.id is undefined.");
+    return; // Or throw an error
+  }
+  const result = await db.blockInstanceRelations.delete(relation.id);
+
+  const [sourceInstance, targetInstance] = await Promise.all([
+    getByUuid(db, relation.sourceInstanceUuid),
+    getByUuid(db, relation.targetInstanceUuid)
+  ]);
+
+  if (sourceInstance) {
+    await update(db, sourceInstance); // Call the modified update
+  }
+  if (targetInstance) {
+    await update(db, targetInstance); // Call the modified update
+  }
+  return result;
+};
+
+const createRelation = async (db: BookDB,
+                              sourceInstanceUuid: string,
+                              targetInstanceUuid: string,
+                              sourceBlockUuid: string,
+                              targetBlockUuid: string,
+                              blockRelationUuid: string) => {
+
+  const relation: IBlockInstanceRelation = {
+    sourceInstanceUuid: sourceInstanceUuid,
+    targetInstanceUuid: targetInstanceUuid,
+    sourceBlockUuid: sourceBlockUuid,
+    targetBlockUuid: targetBlockUuid,
+    blockRelationUuid: blockRelationUuid
+  };
+
+  const [sourceInstance, targetInstance] = await Promise.all([
+    getByUuid(db, relation.sourceInstanceUuid),
+    getByUuid(db, relation.targetInstanceUuid)
+  ]);
+
+  if (sourceInstance) {
+    await update(db, sourceInstance); // Call the modified update
+  }
+  if (targetInstance) {
+    await update(db, targetInstance); // Call the modified update
+  }
+
+  await bookDb.blockInstanceRelations.add(relation);
 }
 
 const getInstanceParams = async (db: BookDB, instanceUuid: string) => {
@@ -152,7 +254,9 @@ export const BlockInstanceRepository = {
   create,
   createSingleInstance,
   update,
+  updateByInstanceUuid,
   remove,
+  createRelation,
   removeRelation,
   removeByBlock,
 }

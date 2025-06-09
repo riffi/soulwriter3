@@ -9,6 +9,7 @@ import {
 import {BlockRepository} from "@/repository/BlockRepository";
 import {BlockRelationRepository} from "@/repository/BlockRelationRepository";
 import {BlockInstanceRepository} from "@/repository/BlockInstanceRepository";
+import {BlockTabRepository} from "@/repository/BlockTabRepository";
 
 export const useBlockInstanceEditor = (blockInstanceUuid: string, currentParamGroup: IBlockParameterGroup | null) => {
 
@@ -54,10 +55,7 @@ export const useBlockInstanceEditor = (blockInstanceUuid: string, currentParamGr
 
   const blockTabs = useLiveQuery<IBlockTab[]>(() => {
     if (!block) return [];
-    return bookDb.blockTabs
-    .where("blockUuid")
-    .equals(block.uuid)
-    .sortBy("orderNumber");
+    return BlockTabRepository.getBlockTabs(bookDb, block.uuid);
   }, [block]);
 
   //значения параметров группы
@@ -102,11 +100,7 @@ export const useBlockInstanceEditor = (blockInstanceUuid: string, currentParamGr
 
   const childBlocks = useLiveQuery<IBlock[]>(() => {
     if (!block) return [];
-    return bookDb
-    .blocks
-    .where("parentBlockUuid")
-    .equals(block.uuid)
-    .toArray();
+    return BlockRepository.getChildren(bookDb, block.uuid);
   }, [block]);
 
   const childInstancesMap = useLiveQuery<Record<string, IBlockInstance[]>>(async () => {
@@ -126,17 +120,17 @@ export const useBlockInstanceEditor = (blockInstanceUuid: string, currentParamGr
 
   const updateBlockInstanceTitle = async (newTitle: string) =>{
     if (!blockInstance) return;
-    await bookDb.blockInstances.update(blockInstance.id, {title: newTitle})
+    await BlockInstanceRepository.updateByInstanceUuid(bookDb, blockInstance.uuid, {title: newTitle})
   }
 
   const updateBlockInstanceShortDescription = async (newDescription: string) =>{
     if (!blockInstance) return;
-    await bookDb.blockInstances.update(blockInstance.id, {shortDescription: newDescription});
+    await BlockInstanceRepository.updateByInstanceUuid(bookDb, blockInstance.uuid, {shortDescription: newDescription})
   }
 
   const updateBlockInstanceIcon = async (icon: IIcon) => {
     if (!blockInstance) return;
-    await bookDb.blockInstances.update(blockInstance.id, {icon: icon});
+    await BlockInstanceRepository.updateByInstanceUuid(bookDb, blockInstance.uuid, {icon: icon})
   }
 
 

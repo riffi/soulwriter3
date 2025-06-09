@@ -335,6 +335,7 @@ const getChildren = async (db: BlockAbstractDb, parentBlockUuid: string) => {
 export const BlockRepository = {
   getAll,
   getByUuid,
+  getChildren,
   getSiblings,
   getParameterGroups,
   getParamsByGroup,
@@ -349,5 +350,4 @@ export const BlockRepository = {
   remove,
   unlinkChildFromParent,
   linkChildToParent,
-  getChildren
 }
