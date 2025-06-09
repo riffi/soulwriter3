@@ -139,6 +139,7 @@ export const InstanceMindMap = ({ blockInstance }: InstanceMindMapProps) => {
                         id: instance.uuid!,
                         type: 'custom',
                         position: { x: 0, y: 0 },
+                        gravity: instance.uuid === currentUuid ? 'center' : isIncoming ? 'left' : 'right',
                         data: {
                             onClick: () => {
                                 navigate('/block-instance/card?uuid=' + instance.uuid);
@@ -230,7 +231,7 @@ export const InstanceMindMap = ({ blockInstance }: InstanceMindMapProps) => {
     return <MindMap
         initialNodes={initialNodes}
         initialEdges={initialEdges}
-        defaultLayout={"circular"}
+        defaultLayout={"doubleCircular"}
         hideButtons={true}
     />;
 };

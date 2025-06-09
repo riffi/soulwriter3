@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { ReactFlow, Background, Controls, useNodesState, useEdgesState, useReactFlow, Node, Edge } from 'reactflow';
 import { Button, Group } from '@mantine/core';
-import { hierarchicalLayout, circularLayout, gridLayout } from './layouts';
+import { hierarchicalLayout, circularLayout, gridLayout, doubleCircularLayout } from './layouts';
 import { updateEdgeHandles } from './utils/layoutUtils';
 import { FlowNode, FlowEdge } from './types';
 import { CustomNode } from './parts/CustomNode';
@@ -15,7 +15,7 @@ const edgeTypes = { bidirectional: BidirectionalEdge };
 interface MindMapProps {
     initialNodes: FlowNode[];
     initialEdges: FlowEdge[];
-    defaultLayout?: 'hierarchical' | 'circular' | 'grid';
+    defaultLayout?: 'hierarchical' | 'circular' | 'grid' | 'doubleCircular';
     hideButtons?: boolean;
 }
 
@@ -24,7 +24,7 @@ export const MindMap = ({ initialNodes, initialEdges, defaultLayout, hideButtons
     const [edges, setEdges, onEdgesChange] = useEdgesState<FlowEdge>([]);
     const [originalNodes, setOriginalNodes] = useState<FlowNode[]>(initialNodes);
     const [originalEdges, setOriginalEdges] = useState<FlowEdge[]>(initialEdges);
-    const [selectedLayout, setSelectedLayout] = useState<'hierarchical' | 'circular' | 'grid'>(defaultLayout ?? 'hierarchical');
+    const [selectedLayout, setSelectedLayout] = useState<'hierarchical' | 'circular' | 'grid' | 'doubleCircular'>(defaultLayout ?? 'hierarchical');
     const { fitView } = useReactFlow();
 
     useEffect(() => {
@@ -32,7 +32,7 @@ export const MindMap = ({ initialNodes, initialEdges, defaultLayout, hideButtons
         setOriginalEdges(initialEdges);
     }, [initialNodes, initialEdges]);
 
-    const applyLayout = useCallback((layoutType: 'hierarchical' | 'circular' | 'grid') => {
+    const applyLayout = useCallback((layoutType: 'hierarchical' | 'circular' | 'grid' | 'doubleCircular') => {
         let layoutNodes = [...originalNodes];
         setSelectedLayout(layoutType);
 
@@ -42,6 +42,9 @@ export const MindMap = ({ initialNodes, initialEdges, defaultLayout, hideButtons
                 break;
             case 'circular':
                 layoutNodes = circularLayout(originalNodes);
+                break;
+            case 'doubleCircular':
+                layoutNodes = doubleCircularLayout(originalNodes);
                 break;
             case 'grid':
                 layoutNodes = gridLayout(originalNodes);
@@ -71,7 +74,7 @@ export const MindMap = ({ initialNodes, initialEdges, defaultLayout, hideButtons
     return (
         <div style={{ height: '800px' }}>
             {!hideButtons && <Group spacing="xs">
-                {['hierarchical', 'circular', 'grid'].map(layout => (
+                {['hierarchical', 'circular', 'doubleCircular', 'grid'].map(layout => (
                     <Button
                         key={layout}
                         size="xs"
@@ -81,6 +84,7 @@ export const MindMap = ({ initialNodes, initialEdges, defaultLayout, hideButtons
                         {{
                             hierarchical: 'Иерархическая',
                             circular: 'Круговая',
+                            doubleCircular: 'Двойной круг',
                             grid: 'Сетка'
                         }[layout]}
                     </Button>

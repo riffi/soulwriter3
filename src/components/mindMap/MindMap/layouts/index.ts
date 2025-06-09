@@ -64,6 +64,65 @@ export const circularLayout = (nodes: FlowNode[]) => {
   }));
 };
 
+export const doubleCircularLayout = (nodes: FlowNode[]) => {
+  // Разделяем узлы по gravity
+  const leftNodes = nodes.filter(node => node.gravity === 'left');
+  const rightNodes = nodes.filter(node => node.gravity === 'right');
+  const centerNodes = nodes.filter(node => node.gravity === 'center' || !node.gravity);
+
+  const result: FlowNode[] = [];
+
+  // Настройки для полуокружностей
+  const semicircleRadius = Math.max(150, Math.max(leftNodes.length, rightNodes.length) * 10);
+  const centerX = 0; // Общий центр для обеих полуокружностей
+
+  // Размещаем левые узлы в левой полуокружности (110-250 градусов)
+  leftNodes.forEach((node, index) => {
+    // Распределяем по дуге от 110 до 250 градусов
+    const startAngle = (110 * Math.PI) / 180; // 110° в радианах
+    const endAngle = (250 * Math.PI) / 180;   // 250° в радианах
+    const angle = startAngle + ((endAngle - startAngle) * index) / (leftNodes.length - 1 || 1);
+    result.push({
+      ...node,
+      position: {
+        x: centerX + semicircleRadius * Math.cos(angle),
+        y: semicircleRadius * Math.sin(angle)
+      }
+    });
+  });
+
+  // Размещаем правые узлы в правой полуокружности (290-430 градусов)
+  rightNodes.forEach((node, index) => {
+    // Распределяем по дуге от 290 до 430 градусов
+    const startAngle = (290 * Math.PI) / 180; // 290° в радианах
+    const endAngle = (430 * Math.PI) / 180;   // 430° в радианах
+    const angle = startAngle + ((endAngle - startAngle) * index) / (rightNodes.length - 1 || 1);
+    result.push({
+      ...node,
+      position: {
+        x: centerX + semicircleRadius * Math.cos(angle),
+        y: semicircleRadius * Math.sin(angle)
+      }
+    });
+  });
+
+  // Размещаем центральные узлы по середине (вертикально)
+  const centerSpacing = 80;
+  const centerStartY = -(centerNodes.length - 1) * centerSpacing / 2;
+
+  centerNodes.forEach((node, index) => {
+    result.push({
+      ...node,
+      position: {
+        x: centerX,
+        y: centerStartY + index * centerSpacing
+      }
+    });
+  });
+
+  return result;
+};
+
 export const gridLayout = (nodes: FlowNode[]) => {
   const cols = Math.ceil(Math.sqrt(nodes.length));
   return nodes.map((node, index) => ({

@@ -11,6 +11,7 @@ export interface FlowNode {
     icon?: IIcon
   };
   type?: string;
+  gravity?: 'center' | 'left' | 'right'
 }
 
 export interface FlowEdge {
