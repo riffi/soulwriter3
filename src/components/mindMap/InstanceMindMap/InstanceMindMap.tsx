@@ -7,6 +7,8 @@ import { MarkerType } from 'reactflow';
 import { IBlockInstance } from '@/entities/BookEntities';
 import {IBlockParameterDataType} from "@/entities/ConstructorEntities";
 import {useNavigate} from "react-router-dom";
+import {BlockRepository} from "@/repository/Block/BlockRepository";
+import {BlockInstanceRelationRepository} from "@/repository/BlockInstance/BlockInstanceRelationRepository";
 
 interface InstanceMindMapProps {
     blockInstance: IBlockInstance;
@@ -23,7 +25,7 @@ export const InstanceMindMap = ({ blockInstance }: InstanceMindMapProps) => {
                 if (!blockInstance?.uuid) return;
 
                 const currentUuid = blockInstance.uuid;
-                const currentBlock = await bookDb.blocks.where('uuid').equals(blockInstance.blockUuid).first();
+                const currentBlock = await BlockRepository.getByUuid(bookDb, blockInstance.blockUuid);
                 const nodes: FlowNode[] = [];
                 const edges: FlowEdge[] = [];
 
@@ -47,14 +49,10 @@ export const InstanceMindMap = ({ blockInstance }: InstanceMindMapProps) => {
                         }
                     }
                 });
-                // 1. Загрузка связей из blockInstanceRelations
-                const relationsAsSource = await bookDb.blockInstanceRelations
-                    .where('sourceInstanceUuid').equals(currentUuid).toArray();
 
-                const relationsAsTarget = await bookDb.blockInstanceRelations
-                    .where('targetInstanceUuid').equals(currentUuid).toArray();
 
-                const allRelations = [...relationsAsSource, ...relationsAsTarget];
+                const allRelations = await BlockInstanceRelationRepository.getInstanceRelations(bookDb, currentUuid);
+
                 const currentBlockReferencingParameters = await bookDb.blockParameters
                     .filter(param => (
                         (param.blockUuid === blockInstance.blockUuid)

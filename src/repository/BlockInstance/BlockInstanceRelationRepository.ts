@@ -3,7 +3,7 @@ import { IBlockInstanceRelation } from "@/entities/BookEntities";
 import { BlockInstanceRepository } from "./BlockInstanceRepository";
 import { updateBlockInstance } from "./BlockInstanceUpdateHelper";
 
-export const getRelatedInstances = async (db: BookDB, blockInstanceUuid: string, relatedBlockUuid?: string) => {
+export const getInstanceRelations = async (db: BookDB, blockInstanceUuid: string, relatedBlockUuid?: string) => {
     const [source, target] = await Promise.all([
         db.blockInstanceRelations
             .where('sourceInstanceUuid').equals(blockInstanceUuid)
@@ -69,7 +69,7 @@ export const removeAllForInstance = async (db: BookDB, instanceUuid: string) => 
 }
 
 export const BlockInstanceRelationRepository = {
-    getRelatedInstances,
+    getInstanceRelations,
     createRelation,
     removeRelation,
     removeAllForInstance,

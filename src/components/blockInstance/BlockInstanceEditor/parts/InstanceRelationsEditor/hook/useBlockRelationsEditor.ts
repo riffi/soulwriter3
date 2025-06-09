@@ -6,7 +6,10 @@ import { BlockInstanceRepository } from "@/repository/BlockInstance/BlockInstanc
 import { BlockRepository } from "@/repository/Block/BlockRepository";
 import {IBlock} from "@/entities/ConstructorEntities";
 import {generateUUID} from "@/utils/UUIDUtils";
-import {BlockInstanceRelationRepository} from "@/repository/BlockInstance/BlockInstanceRelationRepository";
+import {
+  BlockInstanceRelationRepository,
+  getInstanceRelations
+} from "@/repository/BlockInstance/BlockInstanceRelationRepository";
 
 export const useBlockRelationsEditor = (
     blockInstanceUuid: string,
@@ -38,7 +41,7 @@ export const useBlockRelationsEditor = (
   );
 
   const instanceRelations = useLiveQuery(
-      () => BlockInstanceRelationRepository.getRelatedInstances(bookDb, blockInstanceUuid, relatedBlock.uuid),
+      () => BlockInstanceRelationRepository.getInstanceRelations(bookDb, blockInstanceUuid, relatedBlock.uuid),
       [blockInstanceUuid, relatedBlock.uuid]
   );
 
