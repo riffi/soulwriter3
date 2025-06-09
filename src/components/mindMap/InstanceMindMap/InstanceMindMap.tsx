@@ -9,6 +9,7 @@ import {IBlockParameterDataType} from "@/entities/ConstructorEntities";
 import {useNavigate} from "react-router-dom";
 import {BlockRepository} from "@/repository/Block/BlockRepository";
 import {BlockInstanceRelationRepository} from "@/repository/BlockInstance/BlockInstanceRelationRepository";
+import {BlockParameterInstanceRepository} from "@/repository/BlockInstance/BlockParameterInstanceRepository";
 
 interface InstanceMindMapProps {
     blockInstance: IBlockInstance;
@@ -53,19 +54,14 @@ export const InstanceMindMap = ({ blockInstance }: InstanceMindMapProps) => {
 
                 const allRelations = await BlockInstanceRelationRepository.getInstanceRelations(bookDb, currentUuid);
 
-                const currentBlockReferencingParameters = await bookDb.blockParameters
-                    .filter(param => (
-                        (param.blockUuid === blockInstance.blockUuid)
-                        && (param.dataType === IBlockParameterDataType.blockLink)
-                        )
-                    )
-                    .toArray();
+                // Список параметров текущего блока, которые могут ссылаться на другие блоки
+                const currentBlockReferencingParameters =
+                    await BlockRepository.getReferencingParametersFromBlock(bookDb, blockInstance.blockUuid);
 
 
                 // Находим инстансы параметров, ссылающиеся на текущий инстанс блока
-                const otherBlocksParamInstances = await bookDb.blockParameterInstances
-                    .filter(param => param.value === currentUuid)
-                    .toArray()
+                const otherBlocksParamInstances =
+                    await BlockParameterInstanceRepository.getReferencingParamsToInstance(bookDb, currentUuid)
 
                 // Находим инстансы параметров текущего инстанса блока, которые ссылаются на другие инстансы блоков
                 const currentBlockParamInstances = await bookDb.blockParameterInstances

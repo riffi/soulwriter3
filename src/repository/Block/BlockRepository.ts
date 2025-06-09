@@ -1,7 +1,7 @@
 import {BlockAbstractDb} from "@/entities/BlockAbstractDb";
 import {
   IBlock,
-  IBlockParameter,
+  IBlockParameter, IBlockParameterDataType,
   IBlockParameterPossibleValue, IBlockRelation, IBlockStructureKind, IBlockTabKind, IBlockTitleForms
 } from "@/entities/ConstructorEntities";
 import {generateUUID} from "@/utils/UUIDUtils";
@@ -332,6 +332,16 @@ const getChildren = async (db: BlockAbstractDb, parentBlockUuid: string) => {
   return db.blocks.where('parentBlockUuid').equals(parentBlockUuid).toArray();
 }
 
+const getReferencingParametersFromBlock = async (db: BlockAbstractDb, blockUuid: string) => {
+  return  db.blockParameters
+      .filter(param => (
+              (param.blockUuid === blockUuid)
+              && (param.dataType === IBlockParameterDataType.blockLink)
+          )
+      )
+      .toArray();
+}
+
 export const BlockRepository = {
   getAll,
   getByUuid,
@@ -350,4 +360,5 @@ export const BlockRepository = {
   remove,
   unlinkChildFromParent,
   linkChildToParent,
+  getReferencingParametersFromBlock
 }
