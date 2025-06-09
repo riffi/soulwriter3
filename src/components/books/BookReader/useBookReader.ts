@@ -1,14 +1,16 @@
 import { useEffect, useState } from 'react';
-import { IScene, IChapter } from '@/entities/BookEntities';
 import { bookDb } from '@/entities/bookDb';
 import { useLiveQuery } from "dexie-react-hooks";
+import {SceneRepository} from "@/repository/Scene/SceneRepository";
+import {ChapterRepository} from "@/repository/Scene/ChapterRepository";
 
 export const useBookReader = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const scenes = useLiveQuery(() => bookDb.scenes.orderBy("order").toArray(), [], null);
-  const chapters = useLiveQuery(() => bookDb.chapters.orderBy("order").toArray(), [], null);
+  const scenes = useLiveQuery(() => SceneRepository.getAll(bookDb), [], null);
+  const chapters = useLiveQuery(() => ChapterRepository.getAll(bookDb), [], null);
+
 
   useEffect(() => {
     if (scenes === null || chapters === null) {

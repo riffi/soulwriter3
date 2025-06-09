@@ -2,10 +2,14 @@ import {useLiveQuery} from "dexie-react-hooks";
 import {bookDb} from "@/entities/bookDb";
 import {IBlock} from "@/entities/ConstructorEntities";
 import {IScene, ISceneWithInstances} from "@/entities/BookEntities";
+import {SceneRepository} from "@/repository/Scene/SceneRepository";
+import {ChapterRepository} from "@/repository/Scene/ChapterRepository";
+import {BlockRepository} from "@/repository/Block/BlockRepository";
+import {BlockInstanceRepository} from "@/repository/BlockInstance/BlockInstanceRepository";
 
 export const useSceneLayout = () => {
-  const scenes = useLiveQuery(() => bookDb.scenes.orderBy("order").toArray(), [])
-  const chapters = useLiveQuery(() => bookDb.chapters.orderBy("order").toArray(), [])
+  const scenes = useLiveQuery(() => SceneRepository.getAll(bookDb), [])
+  const chapters = useLiveQuery(() => ChapterRepository.getAll(bookDb), [])
 
   const getLinkedBlockInstances = async (sceneId: number) => {
     const links = await bookDb.blockInstanceSceneLinks
@@ -18,10 +22,10 @@ export const useSceneLayout = () => {
 
     const [blocks, instances] = await Promise.all([
       Promise.all(blockUuids.map(uuid =>
-          bookDb.blocks.where('uuid').equals(uuid).first()
+          BlockRepository.getByUuid(bookDb, uuid)
       )),
       Promise.all(instanceUuids.map(uuid =>
-          bookDb.blockInstances.where('uuid').equals(uuid).toArray()
+          BlockInstanceRepository.getByUuid(bookDb, uuid)
       )).then(arr => arr.flat())
     ]);
 

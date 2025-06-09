@@ -7,6 +7,7 @@ import { BookReaderScene } from "@/components/books/BookReader/parts/BookReaderS
 import { IconBook, IconBookmark, IconLibrary, IconList, IconArrowUp, IconMenu2 } from "@tabler/icons-react";
 import { bookDb } from "@/entities/bookDb";
 import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
+import {SceneRepository} from "@/repository/Scene/SceneRepository";
 
 interface TOCItem {
   type: 'chapter' | 'scene';
@@ -154,7 +155,7 @@ export const BookReader: React.FC = () => {
 
   const handleSceneUpdate = useCallback(async (sceneId: number, newBody: string) => {
     try {
-      await bookDb.scenes.update(sceneId, { body: newBody });
+      await SceneRepository.update(bookDb, sceneId, { body: newBody });
     } catch (err) {
       console.error('Ошибка сохранения сцены:', err);
     }
