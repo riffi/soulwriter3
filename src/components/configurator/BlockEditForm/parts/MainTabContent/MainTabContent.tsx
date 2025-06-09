@@ -210,55 +210,62 @@ export const MainTabContent = ({ block, onSave }: MainTabContentProps) => {
               onChange={(e) => handleBlockPropertyChange({ showInSceneList: e.currentTarget.checked ? 1 : 0 })}
               mb="sm"
           />
+
+          <Checkbox
+              checked={block?.showInMainMenu === 1}
+              label="Отображать в главном меню"
+              onChange={(e) => handleBlockPropertyChange({ showInMainMenu: e.currentTarget.checked ? 1 : 0 })}
+              mb="sm"
+          />
         </Card>
 
         <Title order={4}>Иконка блока</Title>
         <Card>
           <Group>
-          {block?.icon ? (
-              <Group>
-                {block.icon.iconKind === IIconKind.gameIcons ? (
-                    <IconViewer
-                        iconName={block.icon.iconName}
-                        size={64}
-                        style={{ color: "var(--mantine-color-blue-filled)" }}
-                    />
-                ) : (
-                    <MantineImage
-                        src={block.icon.iconBase64}
-                        alt="Custom icon"
-                        style={{ width: 64, height: 64 }}
-                        radius="sm"
-                    />
-                )}
+            {block?.icon ? (
+                <Group>
+                  {block.icon.iconKind === IIconKind.gameIcons ? (
+                      <IconViewer
+                          iconName={block.icon.iconName}
+                          size={64}
+                          style={{ color: "var(--mantine-color-blue-filled)" }}
+                      />
+                  ) : (
+                      <MantineImage
+                          src={block.icon.iconBase64}
+                          alt="Custom icon"
+                          style={{ width: 64, height: 64 }}
+                          radius="sm"
+                      />
+                  )}
+                  <Button
+                      onClick={() => setIconDrawerOpen(true)}
+                      variant="outline"
+                      size="sm"
+                  >
+                    Изменить
+                  </Button>
+                  <Button
+                      onClick={() => handleBlockPropertyChange({ icon: undefined })}
+                      variant="subtle"
+                      color="red"
+                      size="sm"
+                      leftSection={<IconTrash size={14} />}
+                  >
+                    Удалить
+                  </Button>
+                </Group>
+            ) : (
                 <Button
                     onClick={() => setIconDrawerOpen(true)}
                     variant="outline"
                     size="sm"
+                    leftSection={<IconPhoto size={16} />}
                 >
-                  Изменить
+                  Выбрать иконку
                 </Button>
-                <Button
-                    onClick={() => handleBlockPropertyChange({ icon: undefined })}
-                    variant="subtle"
-                    color="red"
-                    size="sm"
-                    leftSection={<IconTrash size={14} />}
-                >
-                  Удалить
-                </Button>
-              </Group>
-          ) : (
-              <Button
-                  onClick={() => setIconDrawerOpen(true)}
-                  variant="outline"
-                  size="sm"
-                  leftSection={<IconPhoto size={16} />}
-              >
-                Выбрать иконку
-              </Button>
-          )}
-        </Group>
+            )}
+          </Group>
         </Card>
 
 
@@ -272,51 +279,51 @@ export const MainTabContent = ({ block, onSave }: MainTabContentProps) => {
 
         <Title order={4} mt="xl">Формы названия</Title>
         <Card>
-        <SimpleGrid cols={2} spacing="md">
-          <InlineEdit2
-              label="Именительный (кто? что?)"
-              value={currentTitleForms.nominative}
-              onChange={(value) => handleTitleFormChange('nominative', value)}
-              placeholder="Именительный падеж"
-          />
-          <InlineEdit2
-              label="Родительный (кого? чего?)"
-              value={currentTitleForms.genitive}
-              onChange={(value) => handleTitleFormChange('genitive', value)}
-              placeholder="Родительный падеж"
-          />
-          <InlineEdit2
-              label="Дательный (кому? чему?)"
-              value={currentTitleForms.dative}
-              onChange={(value) => handleTitleFormChange('dative', value)}
-              placeholder="Дательный падеж"
-          />
-          <InlineEdit2
-              label="Винительный (кого? что?)"
-              value={currentTitleForms.accusative}
-              onChange={(value) => handleTitleFormChange('accusative', value)}
-              placeholder="Винительный падеж"
-          />
-          <InlineEdit2
-              label="Творительный (кем? чем?)"
-              value={currentTitleForms.instrumental}
-              onChange={(value) => handleTitleFormChange('instrumental', value)}
-              placeholder="Творительный падеж"
-          />
-          <InlineEdit2
-              label="Предложный (о ком? о чём?)"
-              value={currentTitleForms.prepositional}
-              onChange={(value) => handleTitleFormChange('prepositional', value)}
-              placeholder="Предложный падеж"
-          />
-          <InlineEdit2
-              label="Множественное число (Именительный)"
-              value={currentTitleForms.plural}
-              onChange={(value) => handleTitleFormChange('plural', value)}
-              placeholder="Множественное число"
-              style={{ gridColumn: '1 / -1' }}
-          />
-        </SimpleGrid>
+          <SimpleGrid cols={2} spacing="md">
+            <InlineEdit2
+                label="Именительный (кто? что?)"
+                value={currentTitleForms.nominative}
+                onChange={(value) => handleTitleFormChange('nominative', value)}
+                placeholder="Именительный падеж"
+            />
+            <InlineEdit2
+                label="Родительный (кого? чего?)"
+                value={currentTitleForms.genitive}
+                onChange={(value) => handleTitleFormChange('genitive', value)}
+                placeholder="Родительный падеж"
+            />
+            <InlineEdit2
+                label="Дательный (кому? чему?)"
+                value={currentTitleForms.dative}
+                onChange={(value) => handleTitleFormChange('dative', value)}
+                placeholder="Дательный падеж"
+            />
+            <InlineEdit2
+                label="Винительный (кого? что?)"
+                value={currentTitleForms.accusative}
+                onChange={(value) => handleTitleFormChange('accusative', value)}
+                placeholder="Винительный падеж"
+            />
+            <InlineEdit2
+                label="Творительный (кем? чем?)"
+                value={currentTitleForms.instrumental}
+                onChange={(value) => handleTitleFormChange('instrumental', value)}
+                placeholder="Творительный падеж"
+            />
+            <InlineEdit2
+                label="Предложный (о ком? о чём?)"
+                value={currentTitleForms.prepositional}
+                onChange={(value) => handleTitleFormChange('prepositional', value)}
+                placeholder="Предложный падеж"
+            />
+            <InlineEdit2
+                label="Множественное число (Именительный)"
+                value={currentTitleForms.plural}
+                onChange={(value) => handleTitleFormChange('plural', value)}
+                placeholder="Множественное число"
+                style={{ gridColumn: '1 / -1' }}
+            />
+          </SimpleGrid>
         </Card>
       </>
   );

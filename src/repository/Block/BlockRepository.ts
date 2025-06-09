@@ -26,15 +26,15 @@ const getSiblings = async (db: BlockAbstractDb, block: IBlock) => {
       {
         configurationUuid: block.configurationUuid
       })
-  .filter(b => b.uuid !== block.uuid)
-  .toArray()
+      .filter(b => b.uuid !== block.uuid)
+      .toArray()
 }
 
 const getParameterGroups = async (db: BlockAbstractDb, blockUuid: string) => {
   return db.blockParameterGroups
-  .where('blockUuid')
-  .equals(blockUuid)
-  .sortBy('orderNumber');
+      .where('blockUuid')
+      .equals(blockUuid)
+      .sortBy('orderNumber');
 }
 
 const getGroupByUuid = async (db: BlockAbstractDb, groupUuid: string) => {
@@ -43,33 +43,33 @@ const getGroupByUuid = async (db: BlockAbstractDb, groupUuid: string) => {
 
 const getParamPossibleValues = async (db: BlockAbstractDb, parameterUuid: string) => {
   return db.blockParameterPossibleValues
-  .where('parameterUuid')
-  .equals(parameterUuid)
-  .sortBy('orderNumber');
+      .where('parameterUuid')
+      .equals(parameterUuid)
+      .sortBy('orderNumber');
 };
 const getDisplayedParameters = async (db: BlockAbstractDb, blockUuid: string) => {
   return db.blockParameters
-  .where('blockUuid')
-  .equals(blockUuid)
-  .and(param => param.displayInCard === 1)
-  .toArray();
+      .where('blockUuid')
+      .equals(blockUuid)
+      .and(param => param.displayInCard === 1)
+      .toArray();
 }
 
 const getDefaultParameters = async (db: BlockAbstractDb, blockUuid: string) => {
   return db
-  .blockParameters
-  .where({
-    blockUuid,
-    isDefault: 1
-  })
-  .toArray()
+      .blockParameters
+      .where({
+        blockUuid,
+        isDefault: 1
+      })
+      .toArray()
 }
 
 const getParamsByGroup = async (db: BlockAbstractDb, groupUuid: string) => {
   return db.blockParameters
-  .where('groupUuid')
-  .equals(groupUuid)
-  .toArray();
+      .where('groupUuid')
+      .equals(groupUuid)
+      .toArray();
 }
 
 const getRelatedBlocks = async (db: BlockAbstractDb, block: IBlock, blockRelations?: IBlockRelation[]) => {
@@ -83,30 +83,30 @@ const getRelatedBlocks = async (db: BlockAbstractDb, block: IBlock, blockRelatio
   return db.blocks.where({
     configurationUuid: block?.configurationUuid
   })
-  .filter(b => b.uuid !== block.uuid)
-  .filter(b => relations.some(r => r.sourceBlockUuid === b.uuid || r.targetBlockUuid === b.uuid))
-  .toArray();
+      .filter(b => b.uuid !== block.uuid)
+      .filter(b => relations.some(r => r.sourceBlockUuid === b.uuid || r.targetBlockUuid === b.uuid))
+      .toArray();
 }
 
 const deleteParameterGroup = async (db: BlockAbstractDb, blockUuid: string, groupUuid: string) => {
 
   // Удаляем все параметры, связанные с этой группой
   await db.blockParameters
-  .where('groupUuid')
-  .equals(groupUuid)
-  .delete();
+      .where('groupUuid')
+      .equals(groupUuid)
+      .delete();
 
   // Удаляем группу
   await db.blockParameterGroups
-  .where('uuid')
-  .equals(groupUuid)
-  .delete();
+      .where('uuid')
+      .equals(groupUuid)
+      .delete();
 
   // Обновляем порядковые номера для оставшихся групп
   const remainingGroups = await db.blockParameterGroups
-  .where('blockUuid')
-  .equals(blockUuid)
-  .sortBy('orderNumber');
+      .where('blockUuid')
+      .equals(blockUuid)
+      .sortBy('orderNumber');
 
   await Promise.all(
       remainingGroups.map((group, index) =>
@@ -120,9 +120,9 @@ const deleteParameterGroup = async (db: BlockAbstractDb, blockUuid: string, grou
 const updateParamPossibleValues = async (db: BlockAbstractDb, parameterUuid: string, possibleValues: IBlockParameterPossibleValue[]) => {
   // Удаляем старые значения
   await db.blockParameterPossibleValues
-  .where('parameterUuid')
-  .equals(parameterUuid)
-  .delete();
+      .where('parameterUuid')
+      .equals(parameterUuid)
+      .delete();
 
   // Сохраняем новые значения
   await Promise.all(
@@ -174,6 +174,7 @@ const create = async (db: BlockAbstractDb, block: IBlock, isBookDb = false, titl
     }
   }
   block.uuid = generateUUID()
+  block.showInMainMenu = 1; // Set default value for showInMainMenu
   const blockId = await db.blocks.add(block)
   const persistedBlockData = await db.blocks.get(blockId)
   await appendDefaultParamGroup(db, persistedBlockData)
@@ -256,41 +257,41 @@ const remove = async (db: BlockAbstractDb, block: IBlock) => {
       async () => {
         // Получаем все группы параметров блока
         const groups = await db.blockParameterGroups
-        .where('blockUuid')
-        .equals(block.uuid)
-        .toArray();
+            .where('blockUuid')
+            .equals(block.uuid)
+            .toArray();
 
         // Для каждой группы получаем параметры
         for (const group of groups) {
           if (!group.uuid) continue;
 
           const parameters = await db.blockParameters
-          .where('groupUuid')
-          .equals(group.uuid)
-          .toArray();
+              .where('groupUuid')
+              .equals(group.uuid)
+              .toArray();
 
           // Для каждого параметра удаляем возможные значения
           for (const parameter of parameters) {
             if (!parameter.uuid) continue;
 
             await db.blockParameterPossibleValues
-            .where('parameterUuid')
-            .equals(parameter.uuid)
-            .delete();
+                .where('parameterUuid')
+                .equals(parameter.uuid)
+                .delete();
           }
 
           // Удаляем параметры группы
           await db.blockParameters
-          .where('groupUuid')
-          .equals(group.uuid)
-          .delete();
+              .where('groupUuid')
+              .equals(group.uuid)
+              .delete();
         }
 
         // Удаляем группы параметров блока
         await db.blockParameterGroups
-        .where('blockUuid')
-        .equals(block.uuid)
-        .delete();
+            .where('blockUuid')
+            .equals(block.uuid)
+            .delete();
 
         // Удаляем связи блока
         const [sourceRelations, targetRelations] = await Promise.all([
@@ -307,9 +308,9 @@ const remove = async (db: BlockAbstractDb, block: IBlock) => {
 
         // Удаляем сам блок
         await db.blocks
-        .where('uuid')
-        .equals(block.uuid)
-        .delete();
+            .where('uuid')
+            .equals(block.uuid)
+            .delete();
       }
   );
 }

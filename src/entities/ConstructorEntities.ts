@@ -85,6 +85,7 @@ export interface IBlock {
   icon?: IIcon; // Иконка
   customIconBase64?: string // Кастомная иконка в формате base64
   showInSceneList: number; // Отображать ли в списке сцен
+  showInMainMenu: number;
 }
 
 export interface IBlockParameterGroup{

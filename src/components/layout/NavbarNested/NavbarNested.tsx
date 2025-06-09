@@ -81,7 +81,7 @@ export const NavbarNested = ({ toggleNavbar, opened }: { toggleNavbar?: () => vo
           {
             label: 'База знаний',
             icon: IconBrandDatabricks,
-            links: blocks?.filter(b => !b.parentBlockUuid).map(b => ({
+            links: blocks?.filter(b => !b.parentBlockUuid && b.showInMainMenu === 1).map(b => ({
               label: getBlockPageTitle(b),
               icon: b.icon,
               link: `/block-instance/manager?uuid=${b.uuid}`
