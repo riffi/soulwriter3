@@ -35,6 +35,7 @@ const getEditorExtensions = () => [
 // Хук для управления состоянием редактора
 export const useEditorState = (
     initialContent: string,
+    focusMode: boolean,
     onContentChange?: (contentHtml: string, contentText: string) => void,
     onSelectionChange?: (from: number, to: number) => void
 ) => {

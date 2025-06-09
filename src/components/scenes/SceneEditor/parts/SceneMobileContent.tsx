@@ -13,116 +13,128 @@ import {useDisclosure} from "@mantine/hooks";
 import {IconLink} from "@tabler/icons-react";
 import {InlineEdit2} from "@/components/shared/InlineEdit2/InlineEdit2";
 interface SceneMobileContentProps {
-  sceneBody: string;
-  handleContentChange: (contentHTML: string, contentText: string) => void;
-  warningGroups: IWarningGroup[];
-  setWarningGroups: (warningGroups: IWarningGroup[]) => void;
-  selectedGroup?: IWarningGroup;
-  setSelectedGroup: (group?: IWarningGroup) => void;
-  scene: IScene;
-  saveScene: (dataToSave: IScene, silent: boolean) => void;
+    sceneBody: string;
+    handleContentChange: (contentHTML: string, contentText: string) => void;
+    warningGroups: IWarningGroup[];
+    setWarningGroups: (warningGroups: IWarningGroup[]) => void;
+    selectedGroup?: IWarningGroup;
+    setSelectedGroup: (group?: IWarningGroup) => void;
+    scene: IScene;
+    saveScene: (dataToSave: IScene, silent: boolean) => void;
+    focusMode: boolean;
+    toggleFocusMode: () => void;
 }
 
 export const SceneMobileContent = ({
-                                     sceneBody,
-                                     handleContentChange,
-                                     warningGroups,
-                                     setWarningGroups,
-                                     selectedGroup,
-                                     setSelectedGroup,
-                                     scene,
-                                     saveScene
+                                       sceneBody,
+                                       handleContentChange,
+                                       warningGroups,
+                                       setWarningGroups,
+                                       selectedGroup,
+                                       setSelectedGroup,
+                                       scene,
+                                       saveScene,
+                                       focusMode,
+                                       toggleFocusMode
                                    }: SceneMobileContentProps) => {
-  const { setPageTitle, setTitleElement } = usePageTitle();
-  const [linkManagerOpened, { open: openLinkManager, close: closeLinkManager }] = useDisclosure(false);
-  const keyboardHeight = useKeyboardHeight(true);
+    const { setPageTitle, setTitleElement } = usePageTitle();
+    const [linkManagerOpened, { open: openLinkManager, close: closeLinkManager }] = useDisclosure(false);
+    const keyboardHeight = useKeyboardHeight(true);
 
-  // Управление заголовком через эффект
-  useEffect(() => {
-    if (scene) {
-      const headerElement = (
-          <Group display="flex" align="center" style={{flexGrow:1, paddingLeft:"10px"}} >
-            <Box flex={1} flexGrow={1}>
-              <InlineEdit2
-                  value={scene.title}
-                  onChange={(title) => saveScene({ ...scene, title })}
-                  label=""
-              />
-            </Box>
-            <ActionIcon
-                variant="outline"
-                onClick={openLinkManager}
-                style={{
-                  display: 'flex',
-                  flexGrow:0
+    // Управление заголовком через эффект
+    useEffect(() => {
+        if (focusMode) {
+            setTitleElement(null);
+            return;
+        }
+        if (scene) {
+            const headerElement = (
+                <Group display="flex" align="center" style={{flexGrow:1, paddingLeft:"10px"}} >
+                    <Box flex={1} flexGrow={1}>
+                        <InlineEdit2
+                            value={scene.title}
+                            onChange={(title) => saveScene({ ...scene, title })}
+                            label=""
+                        />
+                    </Box>
+                    <ActionIcon
+                        variant="outline"
+                        onClick={openLinkManager}
+                        style={{
+                            display: 'flex',
+                            flexGrow:0
+                        }}
+                    >
+                        <IconLink size={16} />
+                    </ActionIcon>
+                </Group>
+            );
+            setTitleElement(headerElement);
+        } else {
+            setTitleElement(null);
+        }
+        return () => {
+            setTitleElement(null); // Очистка при размонтировании
+        };
+    }, [scene, focusMode, setTitleElement, openLinkManager, saveScene]); // Зависимости эффекта
+
+    return (
+        <Container size="xl" p="0" fluid style={focusMode ? { paddingTop: '1rem', paddingBottom: '1rem', height: '100dvh' } : {}}>
+            <RichEditor
+                initialContent={sceneBody}
+                onContentChange={handleContentChange}
+                onWarningsChange={setWarningGroups}
+                selectedGroup={selectedGroup}
+                setSelectedGroup={setSelectedGroup}
+                mobileConstraints={focusMode ? { top: 0, bottom: 0 } : {
+                    top: 50, // Standard top when not in focus mode
+                    bottom: warningGroups?.length > 0 && !focusMode ? 100 : 30 // Standard bottom
                 }}
-            >
-              <IconLink size={16} />
-            </ActionIcon>
-          </Group>
-      );
-      setTitleElement(headerElement);
-    } else {
-      setTitleElement(null);
-    }
-    return () => {
-      setTitleElement(null); // Очистка при размонтировании
-    };
-  }, [scene]); // Зависимости эффекта
-
-  return (
-      <Container size="xl" p="0" fluid>
-        <RichEditor
-            initialContent={sceneBody}
-            onContentChange={handleContentChange}
-            onWarningsChange={setWarningGroups}
-            selectedGroup={selectedGroup}
-            setSelectedGroup={setSelectedGroup}
-            mobileConstraints={{
-              top: 50,
-              bottom: warningGroups?.length > 0 ? 100 : 30
-            }}
-        />
-        <Flex
-            justify="stretch"
-            align="stretch"
-            direction="column"
-            wrap="wrap"
-            style={{ height: 'calc(100dvh - 50px)' }}
-        >
-          {warningGroups.length > 0 && (
-              <Box flex="auto">
-                <Box style={{
-                  position: 'absolute',
-                  bottom: keyboardHeight > 0 ? -1000 : 0,
-                  height: '100px',
-                  left: 0,
-                  right: 0,
-                  zIndex: 200,
-                  transition: 'bottom 0.3s ease',
-                  padding: '8px',
-                  backgroundColor: 'white',
-                  boxShadow: '0 -2px 10px rgba(0,0,0,0.1)'
-                }}>
-                  <WarningsPanel
-                      warningGroups={warningGroups}
-                      onSelectGroup={setSelectedGroup}
-                      selectedGroup={selectedGroup}
-                      displayType="iteration"
-                  />
-                </Box>
-              </Box>
-          )}
-          <Box flex={2}>
-            <SceneStatusPanel scene={scene} />
-          </Box>
-        </Flex>
-        <SceneLinkManager
-            sceneId={scene.id!}
-            opened={linkManagerOpened}
-            onClose={closeLinkManager}
-        />
-      </Container>
-  )
+                focusMode={focusMode}
+                toggleFocusMode={toggleFocusMode}
+            />
+            {!focusMode && (
+                <Flex
+                    justify="stretch"
+                    align="stretch"
+                    direction="column"
+                    wrap="wrap"
+                    style={{ height: 'calc(100dvh - 50px)' }}
+                >
+                    {warningGroups.length > 0 && (
+                        <Box flex="auto">
+                            <Box style={{
+                                position: 'absolute',
+                                bottom: keyboardHeight > 0 ? -1000 : 0,
+                                height: '100px',
+                                left: 0,
+                                right: 0,
+                                zIndex: 200,
+                                transition: 'bottom 0.3s ease',
+                                padding: '8px',
+                                backgroundColor: 'white',
+                                boxShadow: '0 -2px 10px rgba(0,0,0,0.1)'
+                            }}>
+                                <WarningsPanel
+                                    warningGroups={warningGroups}
+                                    onSelectGroup={setSelectedGroup}
+                                    selectedGroup={selectedGroup}
+                                    displayType="iteration"
+                                />
+                            </Box>
+                        </Box>
+                    )}
+                    <Box flex={2}>
+                        <SceneStatusPanel scene={scene} />
+                    </Box>
+                </Flex>
+            )}
+            {!focusMode && <SceneLinkManager
+                sceneId={scene.id!}
+                opened={linkManagerOpened}
+                onClose={closeLinkManager}
+            />}
+        </Container>
+    )
 }
 
