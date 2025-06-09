@@ -149,7 +149,8 @@ export enum IBlockTabKind{
   parameters = 'parameters',
   relation = 'relation',
   childBlock = 'childBlock',
-  referencingParam = 'referencingParam'
+  referencingParam = 'referencingParam',
+  scenes = 'scenes'
 }
 export interface IBlockTab{
   id?: number;

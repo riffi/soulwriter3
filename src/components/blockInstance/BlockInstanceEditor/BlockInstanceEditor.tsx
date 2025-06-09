@@ -41,6 +41,7 @@ import {notifications} from "@mantine/notifications";
 import {IconSelector} from "@/components/shared/IconSelector/IconSelector";
 import {InstanceMindMap} from "@/components/mindMap/InstanceMindMap/InstanceMindMap";
 import { useUiSettingsStore } from "@/stores/uiSettingsStore/uiSettingsStore";
+import { InstanceScenesEditor } from './parts/InstanceScenesEditor/InstanceScenesEditor';
 export interface IBlockInstanceEditorProps {
   blockInstanceUuid: string;
 }
@@ -121,7 +122,11 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
             label: tab.title,
             value: `referencing-param-${tab.referencingParamUuid}`,
           };
-
+        case IBlockTabKind.scenes: // Added case for scenes
+          return {
+            label: tab.title,
+            value: 'scenes', // Or a more specific unique value if tabs of this kind can be multiple
+          };
         default: // parameters
           return {
             label: tab.title,
@@ -257,7 +262,7 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
                       onChange={setActiveTab}
                       data={tabs}
                       style={{
-                        textTransform: 'capitalize',
+                        textTransform: 'Capitalize',
                         minWidth: '100%',
                         display: tabs.length <= 1 ? 'none' : ''
                       }}
@@ -270,7 +275,9 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
                           ? `child-${tab.childBlockUuid}`
                           : tab.tabKind === IBlockTabKind.referencingParam
                               ? `referencing-param-${tab.referencingParamUuid}`
-                              : 'params';
+                              : tab.tabKind === IBlockTabKind.scenes // Added condition for scenes
+                                  ? 'scenes'
+                                  : 'params';
 
                   return (
                       activeTab === tabValue && (
@@ -329,6 +336,15 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
                                           />
                                       )
                                   ))
+                              )}
+                            </>
+                            {/* Added condition for scenes */}
+                            <>
+                              {tab.tabKind === IBlockTabKind.scenes && (
+                                  <InstanceScenesEditor
+                                      blockInstanceUuid={props.blockInstanceUuid}
+                                      blockUuid={blockInstance?.blockUuid || ''} // Pass blockUuid
+                                  />
                               )}
                             </>
                           </Box>
