@@ -108,12 +108,17 @@ export const InstanceMindMap = ({ blockInstance }: InstanceMindMapProps) => {
                     }
                 });
 
+                const incomingInstanceUuids = new Set<string>();
+                const outgoingInstanceUuids = new Set<string>();
+
                 // Добавляем связи из параметров
                 blockParameterInstances.forEach(param => {
                     if (param.blockInstanceUuid === currentUuid) {
                         relatedInstanceUuids.add(param.value as string);
+                        outgoingInstanceUuids.add(param.value as string);
                     } else if (param.value === currentUuid) {
                         relatedInstanceUuids.add(param.blockInstanceUuid);
+                        incomingInstanceUuids.add(param.blockInstanceUuid);
                     }
                 });
 
@@ -128,6 +133,7 @@ export const InstanceMindMap = ({ blockInstance }: InstanceMindMapProps) => {
                 // Добавляем связанные экземпляры как узлы
                 relatedInstances.forEach(instance => {
                     const relatedBlock = relatedBlocks.find(block => block.uuid === instance.blockUuid);
+                    const isIncoming = incomingInstanceUuids.has(instance.uuid);
 
                     nodes.push({
                         id: instance.uuid!,
@@ -142,7 +148,7 @@ export const InstanceMindMap = ({ blockInstance }: InstanceMindMapProps) => {
                             icon: instance.icon ?? relatedBlock?.icon,
                             uuid: instance.uuid,
                             style: {
-                                background: '#40c057',
+                                background: !isIncoming ? '#ff9900' : '#40c057',
                                 border: '1px solid #f0f0ff',
                                 borderRadius: '8px',
                                 padding: '5px 5px',
