@@ -1,3 +1,4 @@
+// useEditorState.ts
 import {useCallback, useEffect, useRef, useState} from "react";
 import {debounce} from "lodash";
 import {Editor, useEditor} from "@tiptap/react";
@@ -15,9 +16,11 @@ import {
 import {
   ClicheHighlighterExtension
 } from "@/components/shared/RichEditor/plugins/ClisheHightligherExtension";
+// 1. Импортируем новое расширение
+import { FocusModeExtension } from "@/components/shared/RichEditor/plugins/FocusModeExtension";
 
-// Функция получения расширений для редактора
-const getEditorExtensions = () => [
+// 2. Обновляем функцию getEditorExtensions
+const getEditorExtensions = (focusMode: boolean) => [
   StarterKit,
   Underline,
   Superscript,
@@ -28,6 +31,10 @@ const getEditorExtensions = () => [
   SimpleTextChecker,
   RepeatHighlighterExtension,
   ClicheHighlighterExtension,
+  // 3. Конфигурируем расширение с актуальным значением focusMode
+  FocusModeExtension.configure({
+    focusMode,
+  }),
 ];
 
 
@@ -40,35 +47,41 @@ export const useEditorState = (
     onSelectionChange?: (from: number, to: number) => void
 ) => {
 
-  // Функция создания конфигурации редактора
-  const createEditorConfig = (content: string, onUpdate: (editor: Editor) => void) => ({
-    extensions: getEditorExtensions(),
-    content,
+  const onContentChangeRef = useRef(onContentChange);
+
+  const debouncedContentChange = useCallback(
+      debounce((html: string, text: string) => onContentChangeRef.current?.(html, text), 600),
+      []
+  );
+
+  // 4. Переписываем использование хука useEditor
+  const editor = useEditor({
+    extensions: getEditorExtensions(focusMode), // Передаем focusMode сюда
+    content: initialContent,
     editorProps: {
       handleDOMEvents: {
         copy: (view, event) => {
           const { state } = view;
           const { from, to } = state.selection;
-
-          // Получаем выделенный текст без HTML разметки
           const selectedText = state.doc.textBetween(from, to, '\n');
-
-          // Устанавливаем чистый текст в буфер обмена
           if (event.clipboardData) {
             event.clipboardData.setData('text/plain', selectedText);
             event.preventDefault();
             return true;
           }
-
           return false;
         }
       }
     },
-    onUpdate: ({ editor }) => onUpdate(editor),
+    onUpdate: ({ editor }) => {
+      if (editor.getHTML() !== initialContent) {
+        debouncedContentChange(editor.getHTML(), editor.getText());
+      }
+    },
     onBlur: ({ editor }) => {
-      editor.setEditable(false)
-      if (editor.getHTML() != initialContent) {
-         onContentChange?.(editor.getHTML(), editor.getText())
+      editor.setEditable(false);
+      if (editor.getHTML() !== initialContent) {
+        onContentChange?.(editor.getHTML(), editor.getText());
       }
     },
     onTransaction: ({ editor, transaction }) => {
@@ -79,42 +92,28 @@ export const useEditorState = (
     },
     onSelectionUpdate({ editor }) {
       if (onSelectionChange){
-        onSelectionChange(editor.state.selection.from, editor.state.selection.to)
+        onSelectionChange(editor.state.selection.from, editor.state.selection.to);
       }
     },
-  });
+  }, [focusMode]); // <-- ВАЖНО: добавляем focusMode в зависимости
 
-  const [localContent, setLocalContent] = useState(initialContent || '');
-  const onContentChangeRef = useRef(onContentChange);
+  useEffect(() => () => debouncedContentChange.cancel(), [debouncedContentChange]);
 
-  const debouncedContentChange = useCallback(
-      debounce((html: string, text: string) => onContentChangeRef.current?.(html, text), 600),
-      []
-  );
-
-  const editor = useEditor(createEditorConfig(localContent, editor => {
-    if (editor.getHTML() != initialContent) {
-      debouncedContentChange(editor.getHTML(), editor.getText());
-    }
-  }));
-
-  useEffect(() => () => debouncedContentChange.cancel(), []);
-
-  // Когда изменяется контент, обновляем его в состоянии и обновляем выделение
   useEffect(() => {
     if (editor && initialContent !== undefined) {
       const currentContent = editor.getHTML();
       if (currentContent !== initialContent) {
-        console.log("initialContent changed")
-        debouncedContentChange.cancel()
-        // Сохраняем позицию курсора
+        debouncedContentChange.cancel();
         const { from, to } = editor.state.selection;
-        editor.commands.setContent(initialContent);
-        // Восстанавливаем позицию курсора
-        editor.commands.setTextSelection({ from, to });
+        editor.commands.setContent(initialContent, false); // `false` предотвращает запуск onUpdate
+        // Восстанавливаем позицию курсора, если это необходимо
+        if (editor.state.doc.content.size >= to) {
+          editor.commands.setTextSelection({ from, to });
+        }
       }
     }
-  }, [initialContent]);
+  }, [initialContent, editor, debouncedContentChange]);
 
-  return { editor, localContent, setLocalContent };
+  // Возвращаем только editor, так как localContent больше не нужен
+  return { editor };
 };

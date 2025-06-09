@@ -69,11 +69,10 @@
 }
 
 .focus-mode-paragraphs .ProseMirror p {
-  opacity: 0.5;
+  opacity: 0.2;
   transition: opacity 0.3s ease-in-out;
 }
 
-* Style for the active paragraph using the data attribute */
 .focus-mode-paragraphs .ProseMirror p[data-is-active-paragraph="true"] {
   opacity: 1;
 }

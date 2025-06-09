@@ -40,7 +40,6 @@ export const SceneEditor = ({ sceneId}: SceneEditorProps) => {
     // Обработчик изменения контента в редакторе
     const handleContentChange = useCallback(
         (contentHTML, contentText) => {
-            debugger
             if (!scene?.id || contentHTML === scene.body) return;
             const updatedScene = {
                 ...scene,
