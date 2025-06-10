@@ -67,18 +67,18 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
   const header =( <Group>
     <IconViewer
         icon={block?.icon}
-        size={isMobile? 20 : 28}
+        size={isMobile? 20 : 30}
         style={{
-          color: 'white',
+          color: isMobile? 'white' : "rgb(104 151 191)",
           boxShadow: '0px 0px 5px rgba(0,0,0,0.2)',
-          backgroundColor: "var(--mantine-color-blue-5)"
+          backgroundColor: isMobile? "var(--mantine-color-blue-5)" : 'white'
         }}
     />
     <Title
         order={isMobile? 4 : 2}
         style={{
           textTransform: "capitalize",
-          color: "var(--mantine-color-blue-5)"
+          color: isMobile? "var(--mantine-color-blue-5)" : 'white'
         }}
     >
       {block?.structureKind === IBlockStructureKind.multiple ? block?.titleForms?.plural : block?.title}
@@ -215,7 +215,11 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
   return (
       <Container size="xl" p={0} >
         <Box className={classes.container} pos="relative">
-          <Box visibleFrom={"sm"}>
+          <Box visibleFrom={"sm"} style={{
+            padding: '20px 20px',
+            backgroundColor: 'rgb(104 151 191)',
+            borderRadius: '10px',
+          }}>
             {header}
           </Box>
           <Space h="md"/>
