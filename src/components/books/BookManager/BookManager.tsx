@@ -86,9 +86,11 @@ const getBlankBook = (): IBook => ({
   uuid: "",
   title: "",
   author: "",
-  kind: "novel",
+  form: "Роман", // Changed from kind, set default
+  genre: "", // Added genre
   configurationUuid: "",
-  cover: undefined, // Added cover
+  configurationTitle: "", // Added configurationTitle
+  cover: undefined,
 });
 
 export const BookManager = () => {
@@ -350,7 +352,7 @@ export const BookManager = () => {
                     {/* Left Side: Image Section */}
                     <Box
                         style={{
-                          width: isMobile ? '100px' : '200px',
+                          width: '200px',
                           position: 'relative',
                           flexShrink: 0
                         }}
@@ -379,7 +381,7 @@ export const BookManager = () => {
                       {book.cover &&
                           <MantineImage
                               src={book.cover}
-                              // height={285}
+                              height={285}
                               alt="Book cover"
                               radius="md"
                               style={{
@@ -409,13 +411,8 @@ export const BookManager = () => {
                     {/* Right Side: Content Section */}
                     <Stack style={{ flex: 1 }} justify="space-between">
                       <Stack gap="xs">
-                        <Group
-                            justify="space-between" mb="xs" wrap="nowrap">
-                          <Text
-                              fw={500}
-                              size={isMobile ? 'md' : 'xl'}
-                              lineClamp={2}
-                          >{book.title}</Text>
+                        <Group justify="space-between" mt="xs" mb="xs" wrap="nowrap">
+                          <Text fw={500} size="xl" lineClamp={2}>{book.title}</Text>
                           <ActionIcon
                               color="red"
                               variant="subtle"
@@ -425,13 +422,16 @@ export const BookManager = () => {
                           </ActionIcon>
                         </Group>
                         <Text size="sm" c="dimmed">
-                          Автор: {book.author}
+                          <Text span fw={500} inherit>Автор:</Text> {book.author}
                         </Text>
                         <Text size="sm" c="dimmed">
-                          Тип: {getKindLabel(book.kind)}
+                          <Text span fw={500} inherit>Форма:</Text> {getFormLabel(book.form)}
                         </Text>
                         <Text size="sm" c="dimmed">
-                          Конфигурация: {getConfigurationTitle(book)}
+                          <Text span fw={500} inherit>Жанр:</Text> {book.genre}
+                        </Text>
+                        <Text size="sm" c="dimmed">
+                          <Text span fw={500} inherit>Конфигурация:</Text> {getConfigurationTitle(book)}
                         </Text>
                       </Stack>
 
@@ -607,13 +607,8 @@ export const BookManager = () => {
 };
 
 // Вспомогательные функции
-const getKindLabel = (kind: string) => {
-  const kindList = {
-    novel: "Роман",
-    story: "Рассказ",
-    novella: "Повесть",
-    poem: "Поэма",
-    other: "Другое",
-  };
-  return kindList[kind as keyof typeof kindList] || kind;
+const getFormLabel = (formValue: string) => {
+  // Assuming formValue is already human-readable, e.g., "Роман", "Повесть"
+  // as set by BookEditModal and getBlankBook
+  return formValue;
 };

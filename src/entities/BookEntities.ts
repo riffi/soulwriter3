@@ -5,7 +5,8 @@ export interface IBook {
   uuid: string;
   title: string; // Название книги
   author: string; // Автор книги
-  kind: string; // Жанр книги
+  form: string; // Форма произведения
+  genre: string; // Жанр книги
   configurationUuid: string; // Ссылка на конфигурацию
   configurationTitle: string; // Название конфигурации
   cover?: string;
