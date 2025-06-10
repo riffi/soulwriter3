@@ -1,6 +1,7 @@
 // api/authAPI.ts
 const API_BASE = 'https://api.inclumin.ru/api';
 //const API_BASE = 'http://localhost:8080/api';
+//const API_BASE = 'http://192.168.1.103:8080/api';
 
 export const inkLuminAPI = {
   register: async (userData: any) => {
