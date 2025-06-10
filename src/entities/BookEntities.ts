@@ -8,6 +8,7 @@ export interface IBook {
   kind: string; // Жанр книги
   configurationUuid: string; // Ссылка на конфигурацию
   configurationTitle: string; // Название конфигурации
+  cover?: string;
 }
 
 export interface IBlockInstance{

@@ -9,10 +9,10 @@ import {
   Group,
   SimpleGrid,
   Text,
-  Image,
+  Image as MantineImage,
   Space,
   Menu,
-  LoadingOverlay, Modal,
+  LoadingOverlay, Modal, Stack, FileInput, Box
 } from "@mantine/core";
 import {
   IconCheck,
@@ -23,11 +23,13 @@ import {
   IconUpload,
   IconCloud,
   IconCloudDown,
-  IconDots,
+  IconDots, IconBook,
 } from "@tabler/icons-react";
-import React, { useState } from "react";
+import React, {useState, useCallback} from "react"; // Added useCallback
 import { BookEditModal } from "./BookEditModal/BookEditModal";
 import { useNavigate } from "react-router-dom";
+import Cropper from 'react-easy-crop'; // Added Cropper
+import { Point, Area } from 'react-easy-crop/types'; // Added Point, Area
 import {IBook} from "@/entities/BookEntities";
 import {useBookManager} from "@/components/books/BookManager/useBookManager";
 import { useBookStore } from '@/stores/bookStore/bookStore';
@@ -41,6 +43,43 @@ import {
   loadBookFromServer
 } from "@/utils/bookBackupManager";
 import {useAuth} from "@/providers/AuthProvider/AuthProvider";
+import {theme} from "@/theme";
+
+// Helper functions for image cropping (copied from IconSelector.tsx and modified)
+const createImage = (url: string): Promise<HTMLImageElement> =>
+    new Promise((resolve, reject) => {
+      const image = new Image();
+      image.addEventListener('load', () => resolve(image));
+      image.addEventListener('error', error => reject(error));
+      image.setAttribute('crossOrigin', 'anonymous'); // Needed for cross-origin images
+      image.src = url;
+    });
+
+const getCroppedImg = async (imageSrc: string, pixelCrop: Area, targetWidth: number, targetHeight: number): Promise<string> => {
+  const image = await createImage(imageSrc);
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+
+  if (!ctx) throw new Error('Could not get canvas context');
+
+  canvas.width = targetWidth;
+  canvas.height = targetHeight;
+
+  ctx.drawImage(
+      image,
+      pixelCrop.x,
+      pixelCrop.y,
+      pixelCrop.width,
+      pixelCrop.height,
+      0,
+      0,
+      targetWidth,
+      targetHeight
+  );
+
+  return canvas.toDataURL('image/png');
+};
+
 
 const getBlankBook = (): IBook => ({
   uuid: "",
@@ -48,6 +87,7 @@ const getBlankBook = (): IBook => ({
   author: "",
   kind: "novel",
   configurationUuid: "",
+  cover: undefined, // Added cover
 });
 
 export const BookManager = () => {
@@ -58,6 +98,15 @@ export const BookManager = () => {
   const [isServerBooksModalOpened, setIsServerBooksModalOpened] = useState(false);
   const [serverBooks, setServerBooks] = useState<any[]>([]);
   const [loadingServerBooks, setLoadingServerBooks] = useState(false);
+
+  // State for image cropping modal
+  const [isCropModalOpened, setIsCropModalOpened] = useState(false);
+  const [editingBookCover, setEditingBookCover] = useState<IBook | null>(null);
+  const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+  const [crop, setCrop] = useState<Point>({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
+  const [processingCrop, setProcessingCrop] = useState(false);
 
   const { selectedBook, selectBook, clearSelectedBook } = useBookStore();
   const { user } = useAuth();
@@ -70,7 +119,78 @@ export const BookManager = () => {
     saveBook,
     deleteBook,
     refreshBooks
-  } = useBookManager()
+  } = useBookManager();
+
+  // Function to handle file input for cover image
+  const handleImageUpload = (file: File | null) => {
+    if (!file) return;
+
+    if (!file.type.match(/^image\/(jpeg|jpg|png)$/)) {
+      notifications.show({ title: "Ошибка", message: "Только JPG/PNG файлы", color: "red" });
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) { // 5MB limit
+      notifications.show({ title: "Ошибка", message: "Файл слишком большой (макс. 5MB)", color: "red" });
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = e => {
+      if (typeof e.target?.result === 'string') {
+        setUploadedImage(e.target.result);
+        setCrop({ x: 0, y: 0 }); // Reset crop and zoom for new image
+        setZoom(1);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Callback for crop completion
+  const onCropComplete = useCallback((croppedArea: Area, croppedAreaPixelsValue: Area) => {
+    setCroppedAreaPixels(croppedAreaPixelsValue);
+  }, []);
+
+  // Function to save the cropped image
+  const handleSaveCrop = async () => {
+    if (!uploadedImage || !croppedAreaPixels || !editingBookCover) {
+      notifications.show({
+        title: 'Ошибка',
+        message: 'Нет изображения, области обрезки или выбранной книги.',
+        color: 'red',
+      });
+      return;
+    }
+
+    setProcessingCrop(true);
+    try {
+      const croppedImageBase64 = await getCroppedImg(uploadedImage, croppedAreaPixels, 200, 285);
+      const updatedBook = { ...editingBookCover, cover: croppedImageBase64 };
+
+      await saveBook(updatedBook); // Assuming saveBook handles the update in the store/DB
+
+      notifications.show({
+        title: 'Обложка обновлена',
+        message: `Обложка для книги "${editingBookCover.title}" успешно обновлена.`,
+        color: 'green',
+      });
+
+      setIsCropModalOpened(false);
+      setUploadedImage(null);
+      setEditingBookCover(null);
+      setCroppedAreaPixels(null);
+      // refreshBooks might be needed if useBookManager doesn't auto-update the list
+      if (refreshBooks) await refreshBooks();
+
+    } catch (error) {
+      console.error("Error cropping or saving image:", error);
+      notifications.show({
+        title: 'Ошибка',
+        message: `Не удалось сохранить обложку: ${error.message || 'Неизвестная ошибка'}`,
+        color: 'red',
+      });
+    } finally {
+      setProcessingCrop(false);
+    }
+  };
 
 
   const breadCrumbs = [
@@ -200,20 +320,20 @@ export const BookManager = () => {
               Загрузить из файла
             </Button>
             {token && (<Button
-                leftSection={<IconCloudDown size={20} />}
-                onClick={() => {
-                  setIsServerBooksModalOpened(true);
-                  fetchServerBooks();
-                }}
-                variant="outline"
-            >
-              Загрузить с сервера
-            </Button>
+                    leftSection={<IconCloudDown size={20} />}
+                    onClick={() => {
+                      setIsServerBooksModalOpened(true);
+                      fetchServerBooks();
+                    }}
+                    variant="outline"
+                >
+                  Загрузить с сервера
+                </Button>
             )}
           </Group>
 
           <Space h={20} />
-          <SimpleGrid cols={{ base: 1, sm: 2, lg: 2, xl: 4 }}>
+          <SimpleGrid cols={{ base: 1, sm: 2, lg: 2, xl: 5 }}>
             {books?.map((book) => (
                 <Card key={book.uuid} shadow="sm" padding="lg" radius="md" withBorder style={{ position: 'relative' }}>
                   <LoadingOverlay
@@ -223,12 +343,71 @@ export const BookManager = () => {
                       loaderProps={{ size: 'sm' }}
                   />
 
-                  <Card.Section>
-                    <Image
-                        src="https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/images/bg-8.png"
-                        height={160}
-                        alt="Book cover"
-                    />
+                  <Card.Section style={{
+                    position: 'relative',
+                  }}>
+
+                    <Box
+                        style={{
+                          width: '200px',
+                          borderRadius: '20px',
+                          margin: '0 auto'
+                        }}
+                    >
+                      <div style={{position: 'absolute', marginTop: 16, marginLeft: 16, zIndex: 1}}>
+                        <ActionIcon
+                            variant="filled"
+                            color="blue"
+                            onClick={() => {
+                              setEditingBookCover(book);
+                              setUploadedImage(null); // Clear previous image
+                              setCroppedAreaPixels(null); // Clear previous crop
+                              setCrop({x: 0, y: 0}); // Reset crop position
+                              setZoom(1); // Reset zoom
+                              setIsCropModalOpened(true);
+                            }}
+                            title="Upload cover"
+                            aria-label="Upload cover"
+                            style={{
+                              boxShadow: "rgb(255 255 255 / 87%) 0px 0px 1px 3px"
+                            }}
+                        >
+                          <IconUpload size={18}/>
+                        </ActionIcon>
+                      </div>
+                      {book.cover &&
+                        <MantineImage
+                            src={book.cover}
+                            height={285}
+                            alt="Book cover"
+                            style={{
+                              width: '100%',
+                              objectFit: 'contain',
+                              borderRadius: '20px',
+                              marginTop: '10px'
+                             }}
+                        />
+                      }
+                      {!book.cover &&
+                        <Box style={{
+                          color: '#ccc',
+                          width: '200px',
+                          height: '285px',
+                          marginTop: '10px',
+                          backgroundColor: '#f1f1f1',
+                          borderRadius: '20px',
+                          textAlign: 'center'
+                        }}>
+                          <IconBook
+                              size={100}
+                              style={{
+                                marginTop: '90px',
+                                verticalAlign: 'middle'
+                              }}
+                          />
+                        </Box>
+                      }
+                    </Box>
                   </Card.Section>
                   <Group justify="space-between" mt="md" mb="xs">
                     <Text fw={500}>{book.title}</Text>
@@ -237,7 +416,7 @@ export const BookManager = () => {
                         variant="subtle"
                         onClick={() => deleteBook(book)}
                     >
-                      <IconTrash size={18} />
+                      <IconTrash size={18}/>
                     </ActionIcon>
                   </Group>
                   <Text size="sm" c="dimmed">
@@ -327,6 +506,58 @@ export const BookManager = () => {
             initialData={currentBook}
             configurations={configurations || []}
         />}
+
+        {/* Modal for cropping image - similar to IconSelector */}
+        <Modal
+            opened={isCropModalOpened}
+            onClose={() => {
+              setIsCropModalOpened(false);
+              setUploadedImage(null);
+              setEditingBookCover(null);
+              setCroppedAreaPixels(null);
+            }}
+            title={`Редактировать обложку: ${editingBookCover?.title || ''}`}
+            size="lg"
+        >
+          <Stack>
+            <FileInput
+                label="Загрузить новую обложку"
+                placeholder="Выберите файл (JPEG/PNG, до 5MB)"
+                accept="image/jpeg,image/jpg,image/png"
+                onChange={handleImageUpload} // Use the new handler
+            />
+            {uploadedImage && (
+                <div style={{ position: 'relative', height: 400, width: '100%' }}>
+                  <Cropper
+                      image={uploadedImage}
+                      crop={crop}
+                      zoom={zoom}
+                      aspect={200 / 285} // Aspect ratio for book cover
+                      onCropChange={setCrop}
+                      onZoomChange={setZoom}
+                      onCropComplete={onCropComplete} // Use the new handler
+                  />
+                </div>
+            )}
+            <Group mt="md">
+              <Button
+                  onClick={handleSaveCrop} // Use the new handler
+                  loading={processingCrop}
+                  disabled={!uploadedImage || !croppedAreaPixels || processingCrop}
+              >
+                Сохранить обложку
+              </Button>
+              <Button variant="outline" onClick={() => {
+                setIsCropModalOpened(false);
+                setUploadedImage(null);
+                setEditingBookCover(null);
+                setCroppedAreaPixels(null);
+              }} disabled={processingCrop}>
+                Отмена
+              </Button>
+            </Group>
+          </Stack>
+        </Modal>
 
         {/* Модальное окно выбора книг с сервера */}
         <Modal
