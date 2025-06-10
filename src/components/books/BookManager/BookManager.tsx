@@ -43,7 +43,6 @@ import {
   loadBookFromServer
 } from "@/utils/bookBackupManager";
 import {useAuth} from "@/providers/AuthProvider/AuthProvider";
-import {theme} from "@/theme";
 import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
 import {usePageTitle} from "@/providers/PageTitleProvider/PageTitleProvider";
 
@@ -396,7 +395,7 @@ export const BookManager = () => {
                                 width: '200px',
                                 height: '285px',
                                 backgroundColor: '#f1f1f1',
-                                borderRadius: theme.radius.md,
+                                borderRadius: "10px",
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center'
