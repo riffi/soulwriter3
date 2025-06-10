@@ -10,6 +10,8 @@ export interface IBook {
   configurationUuid: string; // Ссылка на конфигурацию
   configurationTitle: string; // Название конфигурации
   cover?: string;
+  kind?: string;
+  description?: string;
 }
 
 export interface IBlockInstance{

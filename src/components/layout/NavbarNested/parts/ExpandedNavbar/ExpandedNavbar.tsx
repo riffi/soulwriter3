@@ -8,7 +8,7 @@ import {
     Burger, UnstyledButton, ThemeIcon, Collapse, Text
 } from '@mantine/core';
 import { useBookStore } from '@/stores/bookStore/bookStore';
-import {IconBooks, IconChevronRight} from '@tabler/icons-react';
+import {IconBooks, IconChevronRight, IconMicroscope} from '@tabler/icons-react';
 import classes from './ExpandedNavbar.module.css';
 import config from '../../../../../../package.json';
 import {UserButton} from "@/components/layout/UserButton/UserButton";
@@ -184,11 +184,20 @@ export const ExpandedNavbar = ({
                     {selectedBook && (
                         <Box px="md" py="sm">
                             <Group gap="xs" align="center">
-                                <IconBooks
-                                    size={18}
-                                    color="var(--mantine-color-blue-6)"
-                                    style={{ marginRight: "var(--mantine-spacing-xs)" }}
-                                />
+                                {selectedBook.kind === 'book' &&
+                                    <IconBooks
+                                        size={18}
+                                        color="var(--mantine-color-blue-6)"
+                                        style={{ marginRight: "var(--mantine-spacing-xs)" }}
+                                    />
+                                }
+                                {selectedBook.kind === 'material' &&
+                                    <IconMicroscope
+                                        size={18}
+                                        color="var(--mantine-color-blue-6)"
+                                        style={{ marginRight: "var(--mantine-spacing-xs)" }}
+                                    />
+                                }
                                 <Text fw={700} truncate style={{ maxWidth: 180 }}>
                                     {selectedBook.title}
                                 </Text>

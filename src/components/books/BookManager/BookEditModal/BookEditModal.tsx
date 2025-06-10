@@ -1,5 +1,5 @@
 // BookEditModal.tsx
-import { Button, Group, Modal, Select, TextInput, Text, Space } from "@mantine/core"; // Added Text and Space
+import {Button, Group, Modal, Select, TextInput, Text, Space, Textarea} from "@mantine/core"; // Added Text and Space
 import { useForm } from "@mantine/form";
 import { IBookConfiguration } from "@/entities/ConstructorEntities";
 import {IBook} from "@/entities/BookEntities";
@@ -13,6 +13,7 @@ interface BookEditModalProps {
   onSave: (data: IBook) => void;
   initialData?: IBook;
   configurations: IBookConfiguration[];
+  kind?: string; // Added kind prop
 }
 
 export const BookEditModal = ({
@@ -21,8 +22,10 @@ export const BookEditModal = ({
                                 onSave,
                                 initialData,
                                 configurations,
+                                kind, // Added kind to props destructuring
                               }: BookEditModalProps) => {
   const {isMobile} = useMedia();
+  const currentKind = kind || initialData?.kind; // Determine current kind
 
   const form = useForm({
     initialValues: {
@@ -37,45 +40,53 @@ export const BookEditModal = ({
     },
     validate: {
       title: (value) => (value ? null : "Название обязательно"),
-      form: (value) => (value ? null : "Форма обязательна"),
-      genre: (value) => (value ? null : "Основной жанр обязателен"),
+      // Conditional validation
+      form: (value) => (currentKind !== 'material' && !value ? "Форма обязательна" : null),
+      genre: (value) => (currentKind !== 'material' && !value ? "Основной жанр обязателен" : null),
     },
   });
 
   // Handle initialData population
   useEffect(() => {
     if (initialData) {
-      const { genre, form: initialForm, ...restData } = initialData;
+      const { genre, form: initialForm, kind: initialKind, ...restData } = initialData; // kind is part of initialData
       let mainGenre = '';
       let subGenre = '';
-      if (genre && genre.includes('/')) {
+      if (currentKind !== 'material' && genre && genre.includes('/')) {
         const parts = genre.split('/');
         mainGenre = parts[0];
         subGenre = parts[1];
-      } else if (genre) {
+      } else if (currentKind !== 'material' && genre) {
         mainGenre = genre;
       }
       form.setValues({
         ...restData,
-        form: initialForm || "",
-        genre: mainGenre,
-        subGenre: subGenre,
+        form: currentKind !== 'material' ? (initialForm || "") : "", // Clear if material
+        genre: currentKind !== 'material' ? mainGenre : "", // Clear if material
+        subGenre: currentKind !== 'material' ? subGenre : "", // Clear if material
         configurationUuid: initialData.configurationUuid || "",
         author: initialData.author || "",
-        title: initialData.title || "", // ensure title is also handled
-        // uuid needs to be handled if it's part of the form and can be undefined in initialData
+        title: initialData.title || "",
         uuid: initialData.uuid || "",
         configurationTitle: initialData.configurationTitle || "",
+        // kind is not part of the form values, but it's used for conditional rendering
       });
     } else {
-      // Reset to blank if no initialData, explicitly set new fields
+      // Reset to blank if no initialData
       form.reset();
-      form.setFieldValue('genre', '');
-      form.setFieldValue('subGenre', '');
-      form.setFieldValue('form', '');
+      form.setValues({ // Use setValues to ensure all fields, including new ones, are reset
+        uuid: "",
+        title: "",
+        author: "",
+        form: currentKind !== 'material' ? "Роман" : "", // Default form if not material
+        genre: "",
+        subGenre: "",
+        configurationUuid: "",
+        configurationTitle: "",
+      });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialData]); // form.setValues is not stable, if form is recreated, this might be an issue.
+  }, [initialData, currentKind]); // Add currentKind to dependency array
   // Consider using form.setValues directly in the initialValues setup if possible or ensure form instance is stable.
 
   const handleSubmit = (values: typeof form.values) => {
@@ -83,17 +94,23 @@ export const BookEditModal = ({
     if (values.subGenre) {
       finalGenre = `${values.genre}/${values.subGenre}`;
     }
-    const bookDataToSave = {
+    const bookDataToSave: Partial<IBook> & { subGenre?: string } = { // Ensure IBook compatibility
       ...values,
       genre: finalGenre,
       configurationTitle: configurations.find(
           (config) => config.uuid === values.configurationUuid
       )?.title || "",
+      kind: currentKind, // Ensure kind is included when saving
     };
-    // delete bookDataToSave.subGenre; // subGenre is not part of IBook, so it's fine if it's not deleted from the argument to onSave if IBook is used correctly
 
+    if (currentKind === 'material') {
+      bookDataToSave.form = ""; // Explicitly set to empty for materials
+      bookDataToSave.genre = ""; // Explicitly set to empty for materials
+    }
+
+
+    // Remove subGenre before saving as it's not part of IBook
     const { subGenre, ...bookDataForSave } = bookDataToSave;
-
 
     onSave(bookDataForSave as IBook);
     onClose();
@@ -143,71 +160,85 @@ export const BookEditModal = ({
               mt="md"
               {...form.getInputProps("author")}
           />
-          <Select
-              withAsterisk
-              label="Форма произведения"
-              placeholder="Выберите форму"
-              mt="md"
-              data={formOptions}
-              {...form.getInputProps("form")}
-          />
-          {form.values.form && forms[form.values.form] && (
+
+          {currentKind !== 'material' && (
               <>
-                <Space h="xs" />
-                <Text size="sm" c="dimmed">{forms[form.values.form].description}</Text>
-                <Text size="sm" c="dimmed">{formatCharCount(forms[form.values.form].char_count)}</Text>
+                <Select
+                    withAsterisk
+                    label="Форма произведения"
+                    placeholder="Выберите форму"
+                    mt="md"
+                    data={formOptions}
+                    {...form.getInputProps("form")}
+                />
+                {form.values.form && forms[form.values.form] && (
+                    <>
+                      <Space h="xs" />
+                      <Text size="sm" c="dimmed">{forms[form.values.form].description}</Text>
+                      <Text size="sm" c="dimmed">{formatCharCount(forms[form.values.form].char_count)}</Text>
+                    </>
+                )}
+                <Select
+                    withAsterisk
+                    label="Основной жанр"
+                    placeholder="Выберите основной жанр"
+                    mt="md"
+                    data={genreOptions}
+                    {...form.getInputProps("genre")}
+                    onChange={(value) => {
+                      form.setFieldValue('genre', value || "");
+                      form.setFieldValue('subGenre', '');
+                    }}
+                />
+                <Select
+                    label="Поджанр"
+                    placeholder="Выберите поджанр"
+                    mt="md"
+                    data={subGenreOptions}
+                    disabled={!form.values.genre || !genres[form.values.genre]?.subcategories || Object.keys(genres[form.values.genre].subcategories!).length === 0}
+                    {...form.getInputProps("subGenre")}
+                />
+                {(() => {
+                  const mainGenreName = form.values.genre;
+                  const subGenreName = form.values.subGenre;
+                  let detailsToShow: { description: string; char_count: { min: number; max: number } } | undefined;
+
+                  if (mainGenreName && genres[mainGenreName]) {
+                    if (subGenreName && genres[mainGenreName].subcategories && genres[mainGenreName].subcategories[subGenreName]) {
+                      detailsToShow = genres[mainGenreName].subcategories[subGenreName];
+                    } else {
+                      detailsToShow = genres[mainGenreName];
+                    }
+                  }
+
+                  if (detailsToShow) {
+                    return (
+                        <>
+                          <Space h="xs" />
+                          <Text size="sm" c="dimmed" mt="xs">Описание жанра: {detailsToShow.description}</Text>
+                          <Text size="sm" c="dimmed">{formatCharCount(detailsToShow.char_count)}</Text>
+                        </>
+                    );
+                  }
+                  return null;
+                })()}
               </>
           )}
-          <Select
-              withAsterisk
-              label="Основной жанр"
-              placeholder="Выберите основной жанр"
-              mt="md"
-              data={genreOptions}
-              {...form.getInputProps("genre")}
-              onChange={(value) => {
-                form.setFieldValue('genre', value || "");
-                form.setFieldValue('subGenre', '');
-              }}
-          />
-          <Select
-              label="Поджанр"
-              placeholder="Выберите поджанр"
-              mt="md"
-              data={subGenreOptions}
-              disabled={!form.values.genre || !genres[form.values.genre]?.subcategories || Object.keys(genres[form.values.genre].subcategories!).length === 0}
-              {...form.getInputProps("subGenre")}
-          />
-          {(() => {
-            const mainGenreName = form.values.genre;
-            const subGenreName = form.values.subGenre;
-            let detailsToShow: { description: string; char_count: { min: number; max: number } } | undefined;
 
-            if (mainGenreName && genres[mainGenreName]) {
-              if (subGenreName && genres[mainGenreName].subcategories && genres[mainGenreName].subcategories[subGenreName]) {
-                detailsToShow = genres[mainGenreName].subcategories[subGenreName];
-              } else {
-                detailsToShow = genres[mainGenreName];
-              }
-            }
-
-            if (detailsToShow) {
-              return (
-                  <>
-                    <Space h="xs" />
-                    <Text size="sm" c="dimmed" mt="xs">Описание жанра: {detailsToShow.description}</Text>
-                    <Text size="sm" c="dimmed">{formatCharCount(detailsToShow.char_count)}</Text>
-                  </>
-              );
-            }
-            return null;
-          })()}
           <Select
               label="Конфигурация"
               placeholder="Выберите конфигурацию"
               mt="md"
               data={configurationOptions}
               {...form.getInputProps("configurationUuid")}
+          />
+          <Textarea
+              label="Описание"
+              placeholder="Введите описание"
+              mt="md"
+              autosize
+              minRows={2}
+              {...form.getInputProps("description")}
           />
           <Group justify="flex-end" mt="xl">
             <Button variant="outline" onClick={onClose}>

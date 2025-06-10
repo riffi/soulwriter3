@@ -84,38 +84,42 @@ export const NavbarNested = ({ toggleNavbar, opened }: { toggleNavbar?: () => vo
       icon: IconBulb,
       onClick: handleQuickNoteClick, // This function reference is now stable
     };
-    const dynamicItems: NavLinkGroup[] = [];
+    let dynamicItems: NavLinkGroup[] = [];
 
     if (selectedBook) {
-      dynamicItems.push(
-          { label: 'Рабочий стол', icon: IconDashboard, link: '/book/dashboard' },
-          { label: 'Сцены', icon: IconNotes, link: '/scenes' },
-          { label: 'Заметки книги', icon: IconGraph, link: '/book-notes' },
-          { label: 'Чтение', icon: IconBooks, link: '/book/reader' },
-          {
-            label: 'База знаний',
-            icon: IconBrandDatabricks,
-            links: blocks?.filter(b => !b.parentBlockUuid && b.showInMainMenu === 1).map(b => ({
-              label: getBlockPageTitle(b),
-              icon: b.icon,
-              link: `/block-instance/manager?uuid=${b.uuid}`
-            })) || []
-          },
-          {
-            label: 'Конфигурация',
-            icon: IconDatabaseCog,
-            link: `/configuration/edit/?uuid=${selectedBook.configurationUuid}&bookUuid=${selectedBook.uuid}`
-          },
+      const allDynamicItems: NavLinkGroup[] = [
+        { label: 'Рабочий стол', icon: IconDashboard, link: '/book/dashboard' },
+        { label: 'Сцены', icon: IconNotes, link: '/scenes' },
+        { label: 'Заметки книги', icon: IconGraph, link: '/book-notes' },
+        { label: 'Чтение', icon: IconBooks, link: '/book/reader' },
+        {
+          label: 'База знаний',
+          icon: IconBrandDatabricks,
+          links: blocks?.filter(b => !b.parentBlockUuid && b.showInMainMenu === 1).map(b => ({
+            label: getBlockPageTitle(b),
+            icon: b.icon,
+            link: `/block-instance/manager?uuid=${b.uuid}`
+          })) || []
+        },
+        {
+          label: 'Конфигурация',
+          icon: IconDatabaseCog,
+          link: `/configuration/edit/?uuid=${selectedBook.configurationUuid}&bookUuid=${selectedBook.uuid}`
+        },
+      ];
 
-
-      );
+      if (selectedBook.kind === 'material') {
+        dynamicItems = allDynamicItems.filter(item => item.label !== 'Чтение' && item.label !== 'Сцены');
+      } else {
+        dynamicItems = allDynamicItems;
+      }
     }
 
     return {
       baseItems: [quickNoteItem, ...BASE_MENU_ITEMS], // Prepend quick note item
       dynamicItems
     };
-  }, [selectedBook, blocks]); // Removed handleQuickNoteClick from dependency array
+  }, [selectedBook, blocks, handleQuickNoteClick]); // Added handleQuickNoteClick back
 
   if (!opened) {
     return <CollapsedNavbar

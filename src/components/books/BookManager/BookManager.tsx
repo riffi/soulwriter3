@@ -12,7 +12,8 @@ import {
   Image as MantineImage,
   Space,
   Menu,
-  LoadingOverlay, Modal, Stack, FileInput, Box, Flex
+  LoadingOverlay, Modal, Stack, FileInput, Box, Flex,
+  Tabs
 } from "@mantine/core";
 import {
   IconCheck,
@@ -82,25 +83,30 @@ const getCroppedImg = async (imageSrc: string, pixelCrop: Area, targetWidth: num
 };
 
 
-const getBlankBook = (): IBook => ({
+const getBlankBook = (kind: string = 'book'): IBook => ({
   uuid: "",
   title: "",
   author: "",
-  form: "Роман", // Changed from kind, set default
-  genre: "", // Added genre
+  form: "Роман",
+  genre: "",
   configurationUuid: "",
-  configurationTitle: "", // Added configurationTitle
+  configurationTitle: "",
   cover: undefined,
+  kind: kind, // Set the kind property
 });
 
 export const BookManager = () => {
   const [isModalOpened, setIsModalOpened] = useState(false);
-  const [currentBook, setCurrentBook] = useState<IBook>(getBlankBook());
+  // Initialize currentBook with a book of kind 'book' by default or based on activeTab if needed for initial state.
+  // For now, we'll let the "Добавить" button set the kind for new books.
+  // If an initial book is loaded for editing, its kind will be preserved.
+  const [currentBook, setCurrentBook] = useState<IBook>(getBlankBook('book'));
   const [loading, setLoading] = useState(false);
   const [loadingBookId, setLoadingBookId] = useState<string | null>(null);
   const [isServerBooksModalOpened, setIsServerBooksModalOpened] = useState(false);
   const [serverBooks, setServerBooks] = useState<any[]>([]);
   const [loadingServerBooks, setLoadingServerBooks] = useState(false);
+  const [activeTab, setActiveTab] = useState<'books' | 'materials'>('books');
 
   // State for image cropping modal
   const [isCropModalOpened, setIsCropModalOpened] = useState(false);
@@ -309,7 +315,8 @@ export const BookManager = () => {
             <Button
                 leftSection={<IconPlus />}
                 onClick={() => {
-                  setCurrentBook(getBlankBook());
+                  const newBookKind = activeTab === 'materials' ? 'material' : 'book';
+                  setCurrentBook(getBlankBook(newBookKind));
                   setIsModalOpened(true);
                 }}
             >
@@ -337,173 +344,362 @@ export const BookManager = () => {
           </Group>
 
           <Space h={20} />
-          <SimpleGrid cols={{ base: 1, sm: 1, lg: 1, xl: 1 }}>
-            {books?.map((book) => (
-                <Card key={book.uuid} shadow="sm" padding="lg" radius="md" withBorder style={{ position: 'relative' }}>
-                  <LoadingOverlay
-                      visible={loadingBookId === book.uuid}
-                      zIndex={100}
-                      overlayBlur={1}
-                      loaderProps={{ size: 'sm' }}
-                  />
+          <Tabs value={activeTab} onChange={(value) => setActiveTab(value as 'books' | 'materials')}>
+            <Tabs.List>
+              <Tabs.Tab value="books">Книги</Tabs.Tab>
+              <Tabs.Tab value="materials">Материалы</Tabs.Tab>
+            </Tabs.List>
 
-                  {/* Changed layout to a Group for side-by-side display */}
-                  <Group wrap="nowrap" align="flex-start">
-                    {/* Left Side: Image Section */}
-                    <Box
-                        style={{
-                          width: isMobile ? '100px' : '200px',
-                          position: 'relative',
-                          flexShrink: 0
-                        }}
-                    >
-                      <div style={{position: 'absolute', top: 8, left: 8, zIndex: 1}}>
-                        <ActionIcon
-                            variant="filled"
-                            color="blue"
-                            onClick={() => {
-                              setEditingBookCover(book);
-                              setUploadedImage(null); // Clear previous image
-                              setCroppedAreaPixels(null); // Clear previous crop
-                              setCrop({x: 0, y: 0}); // Reset crop position
-                              setZoom(1); // Reset zoom
-                              setIsCropModalOpened(true);
-                            }}
-                            title="Upload cover"
-                            aria-label="Upload cover"
+            <Tabs.Panel value="books" pt="xs">
+              <SimpleGrid cols={{ base: 1, sm: 1, lg: 1, xl: 1 }}>
+                {books?.filter(book =>(book.kind !== 'material')).map((book) => (
+                    <Card key={book.uuid} shadow="sm" padding="lg" radius="md" withBorder style={{ position: 'relative' }}>
+                      <LoadingOverlay
+                          visible={loadingBookId === book.uuid}
+                          zIndex={100}
+                          overlayBlur={1}
+                          loaderProps={{ size: 'sm' }}
+                      />
+
+                      {/* Changed layout to a Group for side-by-side display */}
+                      <Group wrap="nowrap" align="flex-start">
+                        {/* Left Side: Image Section */}
+                        <Box
                             style={{
-                              boxShadow: "rgb(255 255 255 / 87%) 0px 0px 1px 3px"
+                              width: isMobile ? '100px' : '200px',
+                              position: 'relative',
+                              flexShrink: 0
                             }}
                         >
-                          <IconUpload size={18}/>
-                        </ActionIcon>
-                      </div>
-                      {book.cover &&
-                          <MantineImage
-                              src={book.cover}
-                              alt="Book cover"
-                              radius="md"
-                              style={{
-                                width: '100%',
-                                objectFit: 'cover',
-                              }}
-                          />
-                      }
-                      {!book.cover &&
-                          <Box
-                              style={{
-                                color: '#ccc',
-                                width: '200px',
-                                height: '285px',
-                                backgroundColor: '#f1f1f1',
-                                borderRadius: "10px",
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center'
-                              }}
-                          >
-                            <IconBook size={100} />
-                          </Box>
-                      }
-                    </Box>
-
-                    {/* Right Side: Content Section */}
-                    <Stack style={{ flex: 1 }} justify="space-between">
-                      <Stack gap="xs">
-                        <Group justify="space-between"  mb="xs" wrap="nowrap">
-                          <Text fw={500} size={isMobile ? 'md' : 'xl'} lineClamp={2}>{book.title}</Text>
-                          <ActionIcon
-                              color="red"
-                              variant="subtle"
-                              onClick={() => deleteBook(book)}
-                          >
-                            <IconTrash size={18}/>
-                          </ActionIcon>
-                        </Group>
-                        <Text size="sm" c="dimmed">
-                          <Text span fw={500} inherit>Автор:</Text> {book.author}
-                        </Text>
-                        <Text size="sm" c="dimmed">
-                          <Text span fw={500} inherit>Форма:</Text> {getFormLabel(book.form)}
-                        </Text>
-                        <Text size="sm" c="dimmed">
-                          <Text span fw={500} inherit>Жанр:</Text> {book.genre}
-                        </Text>
-                        <Text size="sm" c="dimmed">
-                          <Text span fw={500} inherit>Конфигурация:</Text> {getConfigurationTitle(book)}
-                        </Text>
-                      </Stack>
-
-                      <Group>
-                        <Button
-                            variant={selectedBook?.uuid === book.uuid ? "filled" : "outline"}
-                            color={selectedBook?.uuid === book.uuid ? "blue" : "gray"}
-                            onClick={() => {
-                              onSelectBook(book);
-                            }}
-                            leftSection={
-                              selectedBook?.uuid === book.uuid
-                                  ? <IconCheck size={18} />
-                                  : <IconPlus size={18} />
-                            }
-                        >
-                          {selectedBook?.uuid === book.uuid ? 'Выбрана' : 'Выбрать'}
-                        </Button>
-
-                        <Menu shadow="md" width={200}>
-                          <Menu.Target>
-                            <Button
-                                variant="outline"
-                                leftSection={<IconDots size={18} />}
-                            >
-                              Действия
-                            </Button>
-                          </Menu.Target>
-
-                          <Menu.Dropdown>
-                            <Menu.Item
-                                leftSection={<IconDownload size={14} />}
-                                onClick={() => handleExportBook(book.uuid)}
-                            >
-                              Экспорт в файл
-                            </Menu.Item>
-
-                            {token && (
-                                <>
-                                  <Menu.Item
-                                      leftSection={<IconCloud size={14} />}
-                                      onClick={() => handleSaveToServer(book.uuid)}
-                                  >
-                                    Сохранить на сервер
-                                  </Menu.Item>
-                                  <Menu.Item
-                                      leftSection={<IconCloudDown size={14} />}
-                                      onClick={() => handleLoadFromServer(book.uuid)}
-                                  >
-                                    Загрузить с сервера
-                                  </Menu.Item>
-                                </>
-                            )}
-
-                            <Menu.Divider />
-
-                            <Menu.Item
-                                leftSection={<IconEdit size={14} />}
+                          <div style={{position: 'absolute', top: 8, left: 8, zIndex: 1}}>
+                            <ActionIcon
+                                variant="filled"
+                                color="blue"
                                 onClick={() => {
-                                  setCurrentBook(book);
-                                  setIsModalOpened(true);
+                                  setEditingBookCover(book);
+                                  setUploadedImage(null); // Clear previous image
+                                  setCroppedAreaPixels(null); // Clear previous crop
+                                  setCrop({x: 0, y: 0}); // Reset crop position
+                                  setZoom(1); // Reset zoom
+                                  setIsCropModalOpened(true);
+                                }}
+                                title="Upload cover"
+                                aria-label="Upload cover"
+                                style={{
+                                  boxShadow: "rgb(255 255 255 / 87%) 0px 0px 1px 3px"
                                 }}
                             >
-                              Редактировать
-                            </Menu.Item>
-                          </Menu.Dropdown>
-                        </Menu>
+                              <IconUpload size={18}/>
+                            </ActionIcon>
+                          </div>
+                          {book.cover &&
+                              <MantineImage
+                                  src={book.cover}
+                                  alt="Book cover"
+                                  radius="md"
+                                  style={{
+                                    width: '100%',
+                                    objectFit: 'cover',
+                                  }}
+                              />
+                          }
+                          {!book.cover &&
+                              <Box
+                                  style={{
+                                    color: '#ccc',
+                                    width: '200px',
+                                    height: '285px',
+                                    backgroundColor: '#f1f1f1',
+                                    borderRadius: "10px",
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center'
+                                  }}
+                              >
+                                <IconBook size={100} />
+                              </Box>
+                          }
+                        </Box>
+
+                        {/* Right Side: Content Section */}
+                        <Stack style={{ flex: 1 }} justify="space-between">
+                          <Stack gap="xs">
+                            <Group justify="space-between"  mb="xs" wrap="nowrap">
+                              <Text fw={500} size={isMobile ? 'md' : 'xl'} lineClamp={2}>{book.title}</Text>
+                              <ActionIcon
+                                  color="red"
+                                  variant="subtle"
+                                  onClick={() => deleteBook(book)}
+                              >
+                                <IconTrash size={18}/>
+                              </ActionIcon>
+                            </Group>
+                            <Text size="sm" c="dimmed">
+                              <Text span fw={500} inherit>Автор:</Text> {book.author}
+                            </Text>
+                            <Text size="sm" c="dimmed">
+                              <Text span fw={500} inherit>Форма:</Text> {getFormLabel(book.form)}
+                            </Text>
+                            <Text size="sm" c="dimmed">
+                              <Text span fw={500} inherit>Жанр:</Text> {book.genre}
+                            </Text>
+                            <Text size="sm" c="dimmed">
+                              <Text span fw={500} inherit>Конфигурация:</Text> {getConfigurationTitle(book)}
+                            </Text>
+                            <Text size="sm" c="dimmed">
+                              <Text span fw={500} inherit>Описание:</Text> {book.description}
+                            </Text>
+                          </Stack>
+
+                          <Group>
+                            <Button
+                                variant={selectedBook?.uuid === book.uuid ? "filled" : "outline"}
+                                color={selectedBook?.uuid === book.uuid ? "blue" : "gray"}
+                                onClick={() => {
+                                  onSelectBook(book);
+                                }}
+                                leftSection={
+                                  selectedBook?.uuid === book.uuid
+                                      ? <IconCheck size={18} />
+                                      : <IconPlus size={18} />
+                                }
+                            >
+                              {selectedBook?.uuid === book.uuid ? 'Выбрана' : 'Выбрать'}
+                            </Button>
+
+                            <Menu shadow="md" width={200}>
+                              <Menu.Target>
+                                <Button
+                                    variant="outline"
+                                    leftSection={<IconDots size={18} />}
+                                >
+                                  Действия
+                                </Button>
+                              </Menu.Target>
+
+                              <Menu.Dropdown>
+                                <Menu.Item
+                                    leftSection={<IconDownload size={14} />}
+                                    onClick={() => handleExportBook(book.uuid)}
+                                >
+                                  Экспорт в файл
+                                </Menu.Item>
+
+                                {token && (
+                                    <>
+                                      <Menu.Item
+                                          leftSection={<IconCloud size={14} />}
+                                          onClick={() => handleSaveToServer(book.uuid)}
+                                      >
+                                        Сохранить на сервер
+                                      </Menu.Item>
+                                      <Menu.Item
+                                          leftSection={<IconCloudDown size={14} />}
+                                          onClick={() => handleLoadFromServer(book.uuid)}
+                                      >
+                                        Загрузить с сервера
+                                      </Menu.Item>
+                                    </>
+                                )}
+
+                                <Menu.Divider />
+
+                                <Menu.Item
+                                    leftSection={<IconEdit size={14} />}
+                                    onClick={() => {
+                                      setCurrentBook(book);
+                                      setIsModalOpened(true);
+                                    }}
+                                >
+                                  Редактировать
+                                </Menu.Item>
+                              </Menu.Dropdown>
+                            </Menu>
+                          </Group>
+                        </Stack>
                       </Group>
-                    </Stack>
-                  </Group>
-                </Card>
-            ))}
-          </SimpleGrid>
+                    </Card>
+                ))}
+              </SimpleGrid>
+            </Tabs.Panel>
+
+            <Tabs.Panel value="materials" pt="xs">
+              <SimpleGrid cols={{ base: 1, sm: 1, lg: 1, xl: 1 }}>
+                {books?.filter(book => book.kind === 'material').map((book) => (
+                    <Card key={book.uuid} shadow="sm" padding="lg" radius="md" withBorder style={{ position: 'relative' }}>
+                      <LoadingOverlay
+                          visible={loadingBookId === book.uuid}
+                          zIndex={100}
+                          overlayBlur={1}
+                          loaderProps={{ size: 'sm' }}
+                      />
+
+                      {/* Changed layout to a Group for side-by-side display */}
+                      <Group wrap="nowrap" align="flex-start">
+                        {/* Left Side: Image Section */}
+                        <Box
+                            style={{
+                              width: isMobile ? '100px' : '200px',
+                              position: 'relative',
+                              flexShrink: 0
+                            }}
+                        >
+                          <div style={{position: 'absolute', top: 8, left: 8, zIndex: 1}}>
+                            <ActionIcon
+                                variant="filled"
+                                color="blue"
+                                onClick={() => {
+                                  setEditingBookCover(book);
+                                  setUploadedImage(null); // Clear previous image
+                                  setCroppedAreaPixels(null); // Clear previous crop
+                                  setCrop({x: 0, y: 0}); // Reset crop position
+                                  setZoom(1); // Reset zoom
+                                  setIsCropModalOpened(true);
+                                }}
+                                title="Upload cover"
+                                aria-label="Upload cover"
+                                style={{
+                                  boxShadow: "rgb(255 255 255 / 87%) 0px 0px 1px 3px"
+                                }}
+                            >
+                              <IconUpload size={18}/>
+                            </ActionIcon>
+                          </div>
+                          {book.cover &&
+                              <MantineImage
+                                  src={book.cover}
+                                  alt="Book cover"
+                                  radius="md"
+                                  style={{
+                                    width: '100%',
+                                    objectFit: 'cover',
+                                  }}
+                              />
+                          }
+                          {!book.cover &&
+                              <Box
+                                  style={{
+                                    color: '#ccc',
+                                    width: '200px',
+                                    height: '285px',
+                                    backgroundColor: '#f1f1f1',
+                                    borderRadius: "10px",
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center'
+                                  }}
+                              >
+                                <IconBook size={100} />
+                              </Box>
+                          }
+                        </Box>
+
+                        {/* Right Side: Content Section */}
+                        <Stack style={{ flex: 1 }} justify="space-between">
+                          <Stack gap="xs">
+                            <Group justify="space-between"  mb="xs" wrap="nowrap">
+                              <Text fw={500} size={isMobile ? 'md' : 'xl'} lineClamp={2}>{book.title}</Text>
+                              <ActionIcon
+                                  color="red"
+                                  variant="subtle"
+                                  onClick={() => deleteBook(book)}
+                              >
+                                <IconTrash size={18}/>
+                              </ActionIcon>
+                            </Group>
+                            <Text size="sm" c="dimmed">
+                              <Text span fw={500} inherit>Автор:</Text> {book.author}
+                            </Text>
+                            {book.kind !== 'material' && (
+                                <>
+                                  <Text size="sm" c="dimmed">
+                                    <Text span fw={500} inherit>Форма:</Text> {getFormLabel(book.form)}
+                                  </Text>
+                                  <Text size="sm" c="dimmed">
+                                    <Text span fw={500} inherit>Жанр:</Text> {book.genre}
+                                  </Text>
+                                </>
+                            )}
+                            <Text size="sm" c="dimmed">
+                              <Text span fw={500} inherit>Конфигурация:</Text> {getConfigurationTitle(book)}
+                            </Text>
+                            <Text size="sm" c="dimmed">
+                              <Text span fw={500} inherit>Описание:</Text> {book.description}
+                            </Text>
+                          </Stack>
+
+                          <Group>
+                            <Button
+                                variant={selectedBook?.uuid === book.uuid ? "filled" : "outline"}
+                                color={selectedBook?.uuid === book.uuid ? "blue" : "gray"}
+                                onClick={() => {
+                                  onSelectBook(book);
+                                }}
+                                leftSection={
+                                  selectedBook?.uuid === book.uuid
+                                      ? <IconCheck size={18} />
+                                      : <IconPlus size={18} />
+                                }
+                            >
+                              {selectedBook?.uuid === book.uuid ? 'Выбрана' : 'Выбрать'}
+                            </Button>
+
+                            <Menu shadow="md" width={200}>
+                              <Menu.Target>
+                                <Button
+                                    variant="outline"
+                                    leftSection={<IconDots size={18} />}
+                                >
+                                  Действия
+                                </Button>
+                              </Menu.Target>
+
+                              <Menu.Dropdown>
+                                <Menu.Item
+                                    leftSection={<IconDownload size={14} />}
+                                    onClick={() => handleExportBook(book.uuid)}
+                                >
+                                  Экспорт в файл
+                                </Menu.Item>
+
+                                {token && (
+                                    <>
+                                      <Menu.Item
+                                          leftSection={<IconCloud size={14} />}
+                                          onClick={() => handleSaveToServer(book.uuid)}
+                                      >
+                                        Сохранить на сервер
+                                      </Menu.Item>
+                                      <Menu.Item
+                                          leftSection={<IconCloudDown size={14} />}
+                                          onClick={() => handleLoadFromServer(book.uuid)}
+                                      >
+                                        Загрузить с сервера
+                                      </Menu.Item>
+                                    </>
+                                )}
+
+                                <Menu.Divider />
+
+                                <Menu.Item
+                                    leftSection={<IconEdit size={14} />}
+                                    onClick={() => {
+                                      setCurrentBook(book);
+                                      setIsModalOpened(true);
+                                    }}
+                                >
+                                  Редактировать
+                                </Menu.Item>
+                              </Menu.Dropdown>
+                            </Menu>
+                          </Group>
+                        </Stack>
+                      </Group>
+                    </Card>
+                ))}
+              </SimpleGrid>
+            </Tabs.Panel>
+          </Tabs>
         </Container>
 
 
@@ -513,6 +709,10 @@ export const BookManager = () => {
             onSave={saveBook}
             initialData={currentBook}
             configurations={configurations || []}
+            // Pass the kind of the current book to the modal
+            // This is important if currentBook is being edited, so the modal knows its kind.
+            // For new books, currentBook.kind is already set by getBlankBook(newBookKind).
+            kind={currentBook?.kind}
         />}
 
         {/* Modal for cropping image - similar to IconSelector */}
