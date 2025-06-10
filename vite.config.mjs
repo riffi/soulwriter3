@@ -1,13 +1,13 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import tsconfigPaths from 'vite-tsconfig-paths';
-import {VitePWA} from "vite-plugin-pwa";
+import { VitePWA } from "vite-plugin-pwa";
 
-export default defineConfig({
+export default defineConfig(({ command }) => ({
   plugins: [
     react(),
     tsconfigPaths(),
-    VitePWA({
+    VitePWA({ // Ensure VitePWA is active
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png'],
       manifest: {
@@ -33,10 +33,47 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,ico,png,svg}']
       }
     })
-  ],
+    // visualizer plugin completely removed
+  ].filter(Boolean),
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id, { getModuleInfo }) {
+          if (id.includes('node_modules')) {
+            if (id.includes('/react/') || id.includes('/react-dom/')) {
+              return 'react-vendor';
+            }
+            if (id.includes('@mantine/core') || id.includes('@mantine/hooks')) {
+              return 'mantine-vendor';
+            }
+            if (id.includes('@dnd-kit')) {
+              return 'dnd-kit-vendor';
+            }
+            if (id.includes('@tiptap')) {
+              return 'tiptap-vendor';
+            }
+            if (id.includes('dexie')) { // Catches dexie and dexie-react-hooks
+              return 'dexie-vendor';
+            }
+            if (id.includes('reactflow')) {
+              return 'reactflow-vendor';
+            }
+            if (id.includes('lodash')) {
+              return 'lodash-vendor';
+            }
+            if (id.includes('react-icons')) {
+              return 'react-icons-vendor';
+            }
+            // Remaining node_modules will be handled by Vite's default chunking
+          }
+          // App-specific chunking can be added here if needed
+        }
+      }
+    }
+  },
   test: {
     globals: true,
     environment: 'jsdom',
     setupFiles: './vitest.setup.mjs',
-  },
-});
+  }
+}));
