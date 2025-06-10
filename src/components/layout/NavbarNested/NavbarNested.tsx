@@ -90,6 +90,7 @@ export const NavbarNested = ({ toggleNavbar, opened }: { toggleNavbar?: () => vo
       dynamicItems.push(
           { label: 'Рабочий стол', icon: IconDashboard, link: '/book/dashboard' },
           { label: 'Сцены', icon: IconNotes, link: '/scenes' },
+          { label: 'Заметки книги', icon: IconGraph, link: '/book-notes' },
           { label: 'Чтение', icon: IconBooks, link: '/book/reader' },
           {
             label: 'База знаний',

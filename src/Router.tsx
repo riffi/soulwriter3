@@ -70,6 +70,10 @@ const router = createBrowserRouter([
         element: <NoteManager /> as ReactNode,
       },
       {
+        path: '/book-notes',
+        element: <NoteManager bookNotesMode={true} /> as ReactNode,
+      },
+      {
         path: '/notes/folder/:folderUuid',
         element: <NoteFolder /> as ReactNode,
       },

@@ -15,8 +15,13 @@ export const useNoteManager = () => {
   const getChildGroups = (parentUuid: string) => configDatabase.notesGroups.where('parentUuid').equals(parentUuid).toArray();
 
   const getNotesByGroup = (groupUuid: string) => configDatabase.notes.where('noteGroupUuid').equals(groupUuid).toArray();
-  const getAllNotes = () => configDatabase.notes.toArray();
 
+  const getAllNotes = (bookUuid?: string) => {
+    if (bookUuid) {
+      return configDatabase.notes.where('bookUuid').equals(bookUuid).toArray();
+    }
+    return configDatabase.notes.toArray();
+  };
 
   const createNoteGroup = async (group: Omit<INoteGroup, 'id'>) => {
     const newGroup = {

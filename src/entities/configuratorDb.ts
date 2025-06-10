@@ -7,7 +7,7 @@ import {IGlobalSettings, IOpenRouterModel} from "@/entities/ConstructorEntities"
 const schema = {
     ...baseSchema,
     books: '++id, &uuid, title, author, kind, configurationUuid',
-    notes: '++id, &uuid, title, tags, noteGroupUuid',
+    notes: '++id, &uuid, title, tags, noteGroupUuid, bookUuid',
     notesGroups: '++id, &uuid, title, parentUuid, kindCode',
     globalSettings: '++id',
     openRouterModels: '++id, modelName',
