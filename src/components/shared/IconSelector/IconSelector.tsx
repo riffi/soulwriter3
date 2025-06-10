@@ -16,40 +16,7 @@ import { Point, Area } from 'react-easy-crop/types';
 import { notifications } from '@mantine/notifications';
 import {IIcon} from "@/entities/ConstructorEntities";
 import {GameIconSelector} from "@/components/shared/GameIconSelector/GameIconSelector";
-
-const createImage = (url: string): Promise<HTMLImageElement> =>
-    new Promise((resolve, reject) => {
-      const image = new Image();
-      image.addEventListener('load', () => resolve(image));
-      image.addEventListener('error', error => reject(error));
-      image.setAttribute('crossOrigin', 'anonymous');
-      image.src = url;
-    });
-
-const getCroppedImg = async (imageSrc: string, pixelCrop: Area, targetSize = 128): Promise<string> => {
-  const image = await createImage(imageSrc);
-  const canvas = document.createElement('canvas');
-  const ctx = canvas.getContext('2d');
-
-  if (!ctx) throw new Error('Could not get canvas context');
-
-  canvas.width = targetSize;
-  canvas.height = targetSize;
-
-  ctx.drawImage(
-      image,
-      pixelCrop.x,
-      pixelCrop.y,
-      pixelCrop.width,
-      pixelCrop.height,
-      0,
-      0,
-      targetSize,
-      targetSize
-  );
-
-  return canvas.toDataURL('image/png');
-};
+import { getCroppedImg, processImageFile, handleFileChangeForCropping } from "../../../utils/imageUtils";
 
 interface IconSelectorProps {
   opened: boolean;
@@ -72,28 +39,23 @@ export const IconSelector = ({
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
   const [processing, setProcessing] = useState(false);
 
-  const handleFileUpload = (file: File | null) => {
-    if (!file) return;
-
-    if (!file.type.match(/^image\/(jpeg|jpg|png)$/)) {
-      notifications.show({ title: "Ошибка", message: "Только JPG/PNG", color: "red" });
-      return;
-    }
-
-    if (file.size > 5 * 1024 * 1024) {
-      notifications.show({ title: "Ошибка", message: "Максимум 5MB", color: "red" });
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = e => {
-      if (typeof e.target?.result === 'string') {
-        setUploadedImage(e.target.result);
-        setCrop({ x: 0, y: 0 });
-        setZoom(1);
-      }
-    };
-    reader.readAsDataURL(file);
+  const handleIconFileUpload = async (file: File | null) => {
+    await handleFileChangeForCropping(
+        file,
+        processImageFile,
+        (base64Image) => {
+          setUploadedImage(base64Image);
+          setCrop({ x: 0, y: 0 });
+          setZoom(1);
+        },
+        (errorMessage) => {
+          notifications.show({
+            title: 'Ошибка',
+            message: errorMessage,
+            color: 'red',
+          });
+        }
+    );
   };
 
   const onCropComplete = useCallback((_: Area, croppedAreaPixels: Area) => {
@@ -105,7 +67,7 @@ export const IconSelector = ({
 
     setProcessing(true);
     try {
-      const croppedImage = await getCroppedImg(uploadedImage, croppedAreaPixels);
+      const croppedImage = await getCroppedImg(uploadedImage, croppedAreaPixels, 128, 128);
       onSelect({
         iconKind: 'custom',
         iconName: 'custom-icon',
@@ -146,7 +108,7 @@ export const IconSelector = ({
             <Stack>
               <FileInput
                   accept="image/jpeg,image/jpg,image/png"
-                  onChange={handleFileUpload}
+                  onChange={handleIconFileUpload}
                   placeholder="Выберите файл"
                   label="Загрузить изображение"
               />

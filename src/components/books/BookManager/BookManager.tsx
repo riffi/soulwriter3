@@ -44,41 +44,7 @@ import {
 import {useAuth} from "@/providers/AuthProvider/AuthProvider";
 import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
 import {usePageTitle} from "@/providers/PageTitleProvider/PageTitleProvider";
-
-// Helper functions for image cropping
-const createImage = (url: string): Promise<HTMLImageElement> =>
-    new Promise((resolve, reject) => {
-      const image = new Image();
-      image.addEventListener('load', () => resolve(image));
-      image.addEventListener('error', error => reject(error));
-      image.setAttribute('crossOrigin', 'anonymous');
-      image.src = url;
-    });
-
-const getCroppedImg = async (imageSrc: string, pixelCrop: Area, targetWidth: number, targetHeight: number): Promise<string> => {
-  const image = await createImage(imageSrc);
-  const canvas = document.createElement('canvas');
-  const ctx = canvas.getContext('2d');
-
-  if (!ctx) throw new Error('Could not get canvas context');
-
-  canvas.width = targetWidth;
-  canvas.height = targetHeight;
-
-  ctx.drawImage(
-      image,
-      pixelCrop.x,
-      pixelCrop.y,
-      pixelCrop.width,
-      pixelCrop.height,
-      0,
-      0,
-      targetWidth,
-      targetHeight
-  );
-
-  return canvas.toDataURL('image/png');
-};
+import { getCroppedImg, processImageFile, handleFileChangeForCropping } from "@/utils/imageUtils";
 
 const getBlankBook = (kind: string = 'book'): IBook => ({
   uuid: "",
@@ -134,27 +100,23 @@ export const BookManager = () => {
     setPageTitle('Книги')
   }, [])
 
-  // Function to handle file input for cover image
-  const handleImageUpload = (file: File | null) => {
-    if (!file) return;
-
-    if (!file.type.match(/^image\/(jpeg|jpg|png)$/)) {
-      notifications.show({ title: "Ошибка", message: "Только JPG/PNG файлы", color: "red" });
-      return;
-    }
-    if (file.size > 5 * 1024 * 1024) {
-      notifications.show({ title: "Ошибка", message: "Файл слишком большой (макс. 5MB)", color: "red" });
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = e => {
-      if (typeof e.target?.result === 'string') {
-        setUploadedImage(e.target.result);
-        setCrop({ x: 0, y: 0 });
-        setZoom(1);
-      }
-    };
-    reader.readAsDataURL(file);
+  const handleCoverImageChange = async (file: File | null) => {
+    await handleFileChangeForCropping(
+        file,
+        processImageFile,
+        (base64Image) => {
+          setUploadedImage(base64Image);
+          setCrop({ x: 0, y: 0 });
+          setZoom(1);
+        },
+        (errorMessage) => {
+          notifications.show({
+            title: 'Ошибка',
+            message: errorMessage,
+            color: 'red',
+          });
+        }
+    );
   };
 
   // Callback for crop completion
@@ -563,7 +525,7 @@ export const BookManager = () => {
                 label="Загрузить новую обложку"
                 placeholder="Выберите файл (JPEG/PNG, до 5MB)"
                 accept="image/jpeg,image/jpg,image/png"
-                onChange={handleImageUpload}
+                onChange={handleCoverImageChange}
             />
             {uploadedImage && (
                 <div style={{ position: 'relative', height: 400, width: '100%' }}>

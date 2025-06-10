@@ -1964,41 +1964,41 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mantine/notifications@npm:^7.17.3":
-  version: 7.17.7
-  resolution: "@mantine/notifications@npm:7.17.7"
+"@mantine/notifications@npm:^8.0.2":
+  version: 8.1.0
+  resolution: "@mantine/notifications@npm:8.1.0"
   dependencies:
-    "@mantine/store": "npm:7.17.7"
+    "@mantine/store": "npm:8.1.0"
     react-transition-group: "npm:4.4.5"
   peerDependencies:
-    "@mantine/core": 7.17.7
-    "@mantine/hooks": 7.17.7
+    "@mantine/core": 8.1.0
+    "@mantine/hooks": 8.1.0
     react: ^18.x || ^19.x
     react-dom: ^18.x || ^19.x
-  checksum: 10c0/963b2773c752111bc395ce30d80fe12621ecd2edf3fddb3b9543ec9d8ffb319260a5190a5965d4e0f0b96d4dff894059bf3325dcab845d275e3edca6449405d8
+  checksum: 10c0/249b6ffa718d0be57364a275f3949b40c9816c40b78bc21eb9b2997b86d574098e5b3f8741bd8aafd1b02fc63309e194589b79bbb10c125a71d7a001bbc2b2a3
   languageName: node
   linkType: hard
 
-"@mantine/store@npm:7.17.7":
-  version: 7.17.7
-  resolution: "@mantine/store@npm:7.17.7"
+"@mantine/store@npm:8.1.0":
+  version: 8.1.0
+  resolution: "@mantine/store@npm:8.1.0"
   peerDependencies:
     react: ^18.x || ^19.x
-  checksum: 10c0/ca5b9cc75c7bdcb02e2df2826a87c8b686cbfa1eb41adaafb5b0e1024f7d54893f1fb664340227a156601dba7e985f556861fca6751c790e7a039df4dfd7821d
+  checksum: 10c0/232772171fd9dcb2911d4fccb91c9981e4a62ad1fb623dee6a626cbc17a83dc3e8eef1ae90e63e44117e97e872e2ce4e6dc5dd425bcda59aca134db392103081
   languageName: node
   linkType: hard
 
-"@mantine/tiptap@npm:^7.17.4":
-  version: 7.17.7
-  resolution: "@mantine/tiptap@npm:7.17.7"
+"@mantine/tiptap@npm:^8.0.2":
+  version: 8.1.0
+  resolution: "@mantine/tiptap@npm:8.1.0"
   peerDependencies:
-    "@mantine/core": 7.17.7
-    "@mantine/hooks": 7.17.7
+    "@mantine/core": 8.1.0
+    "@mantine/hooks": 8.1.0
     "@tiptap/extension-link": ">=2.1.12"
     "@tiptap/react": ">=2.1.12"
     react: ^18.x || ^19.x
     react-dom: ^18.x || ^19.x
-  checksum: 10c0/3562e1eec1a6037cc106fd9048772ac725200f5597f2bebeca2b902b7281172a261f6f6202a42daf7371808852a31e508b7af9c693cf88d285f1fc711296db59
+  checksum: 10c0/2de0ad2f58ab3ea51b88ce40f7c865587734212cc5272b0cf30ed9ccd5989479d183b82266d774cbc56f6326ce0744299713f1979b37ab4217d09f97bbe3d330
   languageName: node
   linkType: hard
 
@@ -9172,8 +9172,8 @@ __metadata:
     "@mantine/dates": "npm:^8.0.1"
     "@mantine/form": "npm:^7.17.3"
     "@mantine/hooks": "npm:^8.0.2"
-    "@mantine/notifications": "npm:^7.17.3"
-    "@mantine/tiptap": "npm:^7.17.4"
+    "@mantine/notifications": "npm:^8.0.2"
+    "@mantine/tiptap": "npm:^8.0.2"
     "@storybook/react": "npm:^8.6.8"
     "@storybook/react-vite": "npm:^8.6.8"
     "@tabler/icons-react": "npm:^3.31.0"
