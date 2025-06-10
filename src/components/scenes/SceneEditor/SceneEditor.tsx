@@ -24,7 +24,8 @@ export const SceneEditor = ({ sceneId}: SceneEditorProps) => {
     // Global keyboard shortcut for focus mode
     useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {
-            if (event.key === 'F' && event.shiftKey && (event.ctrlKey || event.metaKey)) {
+            if ((event.key === 'F' && event.shiftKey && (event.ctrlKey || event.metaKey)) ||
+               (event.key === 'А' && event.shiftKey && (event.ctrlKey || event.metaKey))) {
                 event.preventDefault();
                 toggleFocusMode();
             }

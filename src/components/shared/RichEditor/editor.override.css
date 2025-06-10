@@ -70,7 +70,6 @@
 
 .focus-mode-paragraphs .ProseMirror p {
   opacity: 0.2;
-  transition: opacity 0.3s ease-in-out;
 }
 
 .focus-mode-paragraphs .ProseMirror p[data-is-active-paragraph="true"] {

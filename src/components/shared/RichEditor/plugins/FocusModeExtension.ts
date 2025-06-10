@@ -61,6 +61,7 @@ export const FocusModeExtension = Extension.create<{ focusMode: boolean }>({
 
                 // `appendTransaction` позволяет модифицировать транзакцию перед ее применением
                 appendTransaction: (transactions, oldState, newState) => {
+                    // Нас интересуют только транзакции, где изменилась позиция курсора
                     const selectionHasChanged = transactions.some(tr => tr.selectionSet);
                     if (!selectionHasChanged) {
                         return null;
@@ -69,24 +70,34 @@ export const FocusModeExtension = Extension.create<{ focusMode: boolean }>({
                     const tr = newState.tr;
                     let hasChanged = false;
 
-                    const oldParagraph = findParentParagraph(oldState.doc, oldState.selection.from);
-                    const newParagraph = findParentParagraph(newState.doc, newState.selection.from);
+                    // Находим параграф, в котором сейчас находится курсор
+                    const newActiveParagraph = findParentParagraph(newState.doc, newState.selection.from);
+                    // Получаем его позицию или -1, если курсор не в параграфе
+                    const newActiveParagraphPos = newActiveParagraph ? newActiveParagraph.pos : -1;
 
-                    // Если курсор покинул параграф, который был активным, убираем с него атрибут
-                    if (oldParagraph && oldParagraph.node.attrs['data-is-active-paragraph']) {
-                        if (!newParagraph || newParagraph.pos !== oldParagraph.pos) {
-                            tr.setNodeAttribute(oldParagraph.pos, 'data-is-active-paragraph', null);
+                    // Проходимся по всем узлам документа
+                    newState.doc.descendants((node, pos) => {
+                        // Работаем только с параграфами
+                        if (node.type.name !== 'paragraph') {
+                            return;
+                        }
+
+                        const isThisNodeTheActiveOne = pos === newActiveParagraphPos;
+                        const hasAttribute = !!node.attrs['data-is-active-paragraph'];
+
+                        // Сценарий 1: Этот параграф должен быть активным, но у него нет атрибута
+                        if (isThisNodeTheActiveOne && !hasAttribute) {
+                            tr.setNodeAttribute(pos, 'data-is-active-paragraph', 'true');
                             hasChanged = true;
                         }
-                    }
+                        // Сценарий 2: Этот параграф НЕ должен быть активным, но у него есть атрибут
+                        else if (!isThisNodeTheActiveOne && hasAttribute) {
+                            tr.setNodeAttribute(pos, 'data-is-active-paragraph', null);
+                            hasChanged = true;
+                        }
+                    });
 
-                    // Если курсор вошел в новый параграф, добавляем ему атрибут
-                    if (newParagraph && !newParagraph.node.attrs['data-is-active-paragraph']) {
-                        tr.setNodeAttribute(newParagraph.pos, 'data-is-active-paragraph', 'true');
-                        hasChanged = true;
-                    }
-
-                    // Возвращаем измененную транзакцию, если были изменения
+                    // Возвращаем измененную транзакцию, только если были реальные изменения
                     return hasChanged ? tr : null;
                 },
             }),
