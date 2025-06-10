@@ -7,14 +7,15 @@ import {
     LoadingOverlay,
     Paper,
     Drawer,
-    Space, ActionIcon
+    Space, ActionIcon,
+    Select
 } from "@mantine/core";
 import { RichEditor } from "@/components/shared/RichEditor/RichEditor";
 import { configDatabase } from "@/entities/configuratorDb";
 import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
 import {IconSettings} from "@tabler/icons-react";
 import {InlineEdit} from "@/components/shared/InlineEdit/InlineEdit";
-import {INote, INoteGroup} from "@/entities/BookEntities"; // Corrected INotesGroup to INoteGroup
+import {INote, INoteGroup, IBook} from "@/entities/BookEntities"; // Corrected INotesGroup to INoteGroup
 import {InlineTagEdit} from "@/components/shared/InlineEdit/InlineTagEdit";
 import {usePageTitle} from "@/providers/PageTitleProvider/PageTitleProvider";
 import {NoteRepository} from "@/repository/Note/NoteRepository";
@@ -26,6 +27,8 @@ export const NoteEditPage = () => {
     const { uuid } = useParams();
     const navigate = useNavigate();
     const [note, setNote] = useState<INote | null>(null);
+    const [books, setBooks] = useState<IBook[]>([]);
+    const [selectedBookUuid, setSelectedBookUuid] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
     const [isNewNote, setIsNewNote] = useState(false);
     const {isMobile} = useMedia();
@@ -33,8 +36,11 @@ export const NoteEditPage = () => {
     const { setTitleElement } = usePageTitle(); // Removed setPageTitle as it's not used directly
 
     useEffect(() => {
-        const loadNote = async () => {
+        const loadNoteAndBooks = async () => {
             setLoading(true);
+            const booksData = await configDatabase.books.toArray();
+            setBooks(booksData);
+
             if (!uuid || uuid === 'new') {
                 setIsNewNote(true);
                 setNote({
@@ -43,21 +49,24 @@ export const NoteEditPage = () => {
                     body: "",
                     tags: "",
                     noteGroupUuid: undefined,
+                    bookUuid: null, // Initialize bookUuid for new notes
                     createdAt: moment().toISOString(true),
                     updatedAt: moment().toISOString(true),
                     id: undefined
                 });
+                setSelectedBookUuid(null); // Initialize selectedBookUuid for new notes
                 setLoading(false);
             } else {
                 setIsNewNote(false);
                 const data = await NoteRepository.getByUuid(configDatabase, uuid!);
                 if (data) {
                     setNote(data);
+                    setSelectedBookUuid(data.bookUuid || null); // Set selected book from loaded note
                 }
                 setLoading(false);
             }
         };
-        loadNote();
+        loadNoteAndBooks();
     }, [uuid]);
 
     // Управление заголовком через эффект
@@ -84,7 +93,7 @@ export const NoteEditPage = () => {
         return () => {
             setTitleElement(null); // Очистка при размонтировании
         };
-    }, [note, isMobile, setTitleElement]); // Added setTitleElement to deps
+    }, [note, isMobile]); // Added setTitleElement to deps
 
     const persistNote = useCallback(async (updatedFields: Partial<INote>) => {
         if (!note && !isNewNote) {
@@ -94,6 +103,8 @@ export const NoteEditPage = () => {
         setLoading(true);
         let noteToSave: INote;
         let finalUuid = note?.uuid;
+
+        const bookUuidToSave = updatedFields.hasOwnProperty('bookUuid') ? updatedFields.bookUuid : selectedBookUuid;
 
         if (isNewNote) {
             let quickNotesGroup = await configDatabase.notesGroups
@@ -122,13 +133,14 @@ export const NoteEditPage = () => {
             }
 
             noteToSave = {
-                ...(note!), // note should be initialized in useEffect for new notes
+                ...(note!),
                 ...updatedFields,
+                bookUuid: bookUuidToSave,
                 noteGroupUuid: quickNotesGroup.uuid,
                 updatedAt: moment().toISOString(true),
-                // createdAt is set when the note is first initialized in useEffect for 'new'
+                // createdAt is set when the note is first initialized for 'new'
             };
-            finalUuid = note!.uuid; // UUID from the initial new note state
+            finalUuid = note!.uuid;
 
         } else {
             if (!note) {
@@ -139,6 +151,7 @@ export const NoteEditPage = () => {
             noteToSave = {
                 ...note,
                 ...updatedFields,
+                bookUuid: bookUuidToSave,
                 updatedAt: moment().toISOString(true),
             };
             finalUuid = note.uuid;
@@ -146,9 +159,12 @@ export const NoteEditPage = () => {
 
         try {
             const savedId = await NoteRepository.save(configDatabase, noteToSave);
-            // Ensure local state `id` is updated if it was undefined (for new notes)
             const savedNote = { ...noteToSave, id: noteToSave.id || savedId };
             setNote(savedNote);
+
+            if (updatedFields.hasOwnProperty('bookUuid')) {
+                setSelectedBookUuid(updatedFields.bookUuid || null);
+            }
 
             if (isNewNote) {
                 setIsNewNote(false);
@@ -163,7 +179,7 @@ export const NoteEditPage = () => {
         } finally {
             setLoading(false);
         }
-    }, [note, isNewNote, navigate]);
+    }, [note, isNewNote, navigate, selectedBookUuid]);
 
     const handleContentChange = useCallback((content: string) => {
         if (!isNewNote && note && note.body === content) {
@@ -207,6 +223,19 @@ export const NoteEditPage = () => {
                 }}
             />
             <Space mb="sm"/>
+
+            <Select
+                label="Книга"
+                placeholder="Выберите книгу"
+                data={books.map(book => ({ value: book.uuid, label: book.title }))}
+                value={selectedBookUuid}
+                onChange={async (value) => {
+                    // setSelectedBookUuid(value); // persistNote will update selectedBookUuid if successful
+                    await persistNote({ bookUuid: value || undefined });
+                }}
+                clearable
+                mb="md"
+            />
 
             <InlineTagEdit
                 label="Теги"

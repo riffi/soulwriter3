@@ -92,5 +92,6 @@ export interface INote{
   body: string;
   order?: number;
   noteGroupUuid?: string;
+  bookUuid?: string;
   updatedAt?: string;
 }
