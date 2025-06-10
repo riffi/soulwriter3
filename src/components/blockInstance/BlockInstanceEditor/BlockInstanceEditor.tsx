@@ -224,7 +224,7 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
                         <Space h="md"/>
                         <InlineEdit2
                             label="Краткое описание"
-                            placeholder="Краткое описание..."
+                            placeholder="Введите описание..."
                             onChange={(val) => updateBlockInstanceShortDescription(val)}
                             value={blockInstance?.shortDescription || ''}
                             size="sm"

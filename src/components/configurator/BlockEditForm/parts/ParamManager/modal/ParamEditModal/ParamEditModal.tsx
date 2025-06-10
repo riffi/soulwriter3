@@ -110,6 +110,7 @@ export const ParamEditModal  = (props: IBlockEditModalProps) => {
 
             <Select
                 label="Тип данных"
+                disabled={props.initialData?.uuid}
                 data={dataTypeOptions}
                 {...form.getInputProps('dataType')}
             />
@@ -118,6 +119,7 @@ export const ParamEditModal  = (props: IBlockEditModalProps) => {
                 <Select
                     label="Связанный блок"
                     data={relatedBlocksOptions}
+                    disabled={props.initialData?.uuid}
                     {...form.getInputProps('relatedBlockUuid')}
                 />
             )}
