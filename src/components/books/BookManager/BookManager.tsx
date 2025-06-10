@@ -71,6 +71,7 @@ export const BookManager = () => {
   const [serverBooks, setServerBooks] = useState<any[]>([]);
   const [loadingServerBooks, setLoadingServerBooks] = useState(false);
   const [activeTab, setActiveTab] = useState<'books' | 'materials'>('books');
+  const [serverBooksActiveTab, setServerBooksActiveTab] = useState<'books' | 'materials'>('books');
 
   // State for image cropping modal
   const [isCropModalOpened, setIsCropModalOpened] = useState(false);
@@ -99,6 +100,10 @@ export const BookManager = () => {
   useEffect(() => {
     setPageTitle('Книги')
   }, [])
+
+  useEffect(() => {
+    setServerBooksActiveTab(activeTab);
+  }, [activeTab])
 
   const handleCoverImageChange = async (file: File | null) => {
     await handleFileChangeForCropping(
@@ -429,6 +434,14 @@ export const BookManager = () => {
       activeTab === 'books' ? book.kind !== 'material' : book.kind === 'material'
   ) || [];
 
+  const filteredServerBooks = serverBooks.filter(book => {
+    if (serverBooksActiveTab === 'materials') {
+      return book.kind === 'material';
+    }
+    // By default, or for 'books' tab, show non-materials (including kind='book' or undefined kind)
+    return book.kind !== 'material';
+  });
+
   return (
       <>
         <Container style={{ position: 'relative' }}>
@@ -573,30 +586,64 @@ export const BookManager = () => {
         >
           <LoadingOverlay visible={loadingServerBooks} />
 
-          {serverBooks.length === 0 && !loadingServerBooks && (
-              <Text>На сервере нет доступных книг</Text>
-          )}
+          <Tabs value={serverBooksActiveTab} onChange={(value) => setServerBooksActiveTab(value as 'books' | 'materials')}>
+            <Tabs.List>
+              <Tabs.Tab value="books">Книги</Tabs.Tab>
+              <Tabs.Tab value="materials">Материалы</Tabs.Tab>
+            </Tabs.List>
 
-          <SimpleGrid cols={1} spacing="md">
-            {serverBooks.map((book) => (
-                <Card key={book.uuid} padding="sm" withBorder>
-                  <Group justify="space-between">
-                    <div>
-                      <Text fw={500}>{book.bookTitle}</Text>
-                    </div>
-                    <Button
-                        onClick={async () => {
-                          await handleLoadFromServer(book.uuid);
-                          setIsServerBooksModalOpened(false);
-                        }}
-                        loading={loadingBookId === book.uuid}
-                    >
-                      Загрузить
-                    </Button>
-                  </Group>
-                </Card>
-            ))}
-          </SimpleGrid>
+            <Tabs.Panel value="books" pt="xs">
+              {filteredServerBooks.length === 0 && !loadingServerBooks && (
+                  <Text>На сервере нет доступных книг</Text>
+              )}
+              <SimpleGrid cols={1} spacing="md">
+                {filteredServerBooks.map((book) => (
+                    <Card key={book.uuid} padding="sm" withBorder>
+                      <Group justify="space-between">
+                        <div>
+                          <Text fw={500}>{book.bookTitle}</Text>
+                        </div>
+                        <Button
+                            onClick={async () => {
+                              await handleLoadFromServer(book.uuid);
+                              setIsServerBooksModalOpened(false);
+                            }}
+                            loading={loadingBookId === book.uuid}
+                        >
+                          Загрузить
+                        </Button>
+                      </Group>
+                    </Card>
+                ))}
+              </SimpleGrid>
+            </Tabs.Panel>
+
+            <Tabs.Panel value="materials" pt="xs">
+              {filteredServerBooks.length === 0 && !loadingServerBooks && (
+                  <Text>На сервере нет доступных материалов</Text>
+              )}
+              <SimpleGrid cols={1} spacing="md">
+                {filteredServerBooks.map((book) => (
+                    <Card key={book.uuid} padding="sm" withBorder>
+                      <Group justify="space-between">
+                        <div>
+                          <Text fw={500}>{book.bookTitle}</Text>
+                        </div>
+                        <Button
+                            onClick={async () => {
+                              await handleLoadFromServer(book.uuid);
+                              setIsServerBooksModalOpened(false);
+                            }}
+                            loading={loadingBookId === book.uuid}
+                        >
+                          Загрузить
+                        </Button>
+                      </Group>
+                    </Card>
+                ))}
+              </SimpleGrid>
+            </Tabs.Panel>
+          </Tabs>
         </Modal>
       </>
   );

@@ -119,6 +119,7 @@ export const saveBookToServer = async (bookUuid: string, token: string) => {
     const response = await inkLuminAPI.saveBookData(token, {
       uuid: bookUuid,
       bookTitle: backupData.book.title,
+      kind: backupData.book.kind,
       bookData: JSON.stringify(backupData)
     });
 
