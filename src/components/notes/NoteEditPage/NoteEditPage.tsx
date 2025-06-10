@@ -8,7 +8,8 @@ import {
     Paper,
     Drawer,
     Space, ActionIcon,
-    Select
+    Select,
+    Anchor
 } from "@mantine/core";
 import { RichEditor } from "@/components/shared/RichEditor/RichEditor";
 import { configDatabase } from "@/entities/configuratorDb";
@@ -31,6 +32,7 @@ export const NoteEditPage = () => {
     const [selectedBookUuid, setSelectedBookUuid] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
     const [isNewNote, setIsNewNote] = useState(false);
+    const [showBookSelect, setShowBookSelect] = useState(false);
     const {isMobile} = useMedia();
     const [drawerOpened, setDrawerOpened] = useState(false);
     const { setTitleElement } = usePageTitle(); // Removed setPageTitle as it's not used directly
@@ -55,6 +57,7 @@ export const NoteEditPage = () => {
                     id: undefined
                 });
                 setSelectedBookUuid(null); // Initialize selectedBookUuid for new notes
+                setShowBookSelect(false); // Don't show select by default for new notes
                 setLoading(false);
             } else {
                 setIsNewNote(false);
@@ -62,6 +65,7 @@ export const NoteEditPage = () => {
                 if (data) {
                     setNote(data);
                     setSelectedBookUuid(data.bookUuid || null); // Set selected book from loaded note
+                    setShowBookSelect(!!data.bookUuid); // Show select if note already has a book
                 }
                 setLoading(false);
             }
@@ -74,7 +78,12 @@ export const NoteEditPage = () => {
         if (note && isMobile) {
             const headerElement = (
                 <Group justify="space-between" align="flex-end" flex={2} flexShrink={1}>
-                    <div style={{ flexGrow: 1 }} /> {/* Пустой элемент для выталкивания кнопки */}
+                    <div style={{
+                        flexGrow: 1,
+                        marginLeft: 10,
+                    }}>
+                        {note.title}
+                    </div>
                     <ActionIcon
                         flexShrink={0}
                         variant="subtle"
@@ -164,6 +173,8 @@ export const NoteEditPage = () => {
 
             if (updatedFields.hasOwnProperty('bookUuid')) {
                 setSelectedBookUuid(updatedFields.bookUuid || null);
+                // Update showBookSelect based on whether we have a book
+                setShowBookSelect(!!updatedFields.bookUuid);
             }
 
             if (isNewNote) {
@@ -205,8 +216,39 @@ export const NoteEditPage = () => {
         persistNote({ body: content });
     }, [persistNote, isNewNote, note]); // Added note to dependencies
 
+    const handleBookLinkClick = () => {
+        setShowBookSelect(true);
+    };
+
+    const handleBookSelectChange = async (value: string | null) => {
+        await persistNote({ bookUuid: value || undefined });
+        if (!value) {
+            setShowBookSelect(false);
+        }
+    };
 
     if (loading && !note) return <LoadingOverlay visible />; // Show full loading only if note is not yet available
+
+    const bookSelectSection = showBookSelect || selectedBookUuid ? (
+        <Select
+            label="Книга"
+            placeholder="Выберите книгу"
+            data={books.map(book => ({ value: book.uuid, label: book.title }))}
+            value={selectedBookUuid}
+            onChange={handleBookSelectChange}
+            clearable
+            mb="md"
+        />
+    ) : (
+        <Group mb="md">
+            <Anchor
+                onClick={handleBookLinkClick}
+                style={{ cursor: 'pointer' }}
+            >
+                Привязать к книге
+            </Anchor>
+        </Group>
+    );
 
     const headerContent = (
         <>
@@ -224,18 +266,7 @@ export const NoteEditPage = () => {
             />
             <Space mb="sm"/>
 
-            <Select
-                label="Книга"
-                placeholder="Выберите книгу"
-                data={books.map(book => ({ value: book.uuid, label: book.title }))}
-                value={selectedBookUuid}
-                onChange={async (value) => {
-                    // setSelectedBookUuid(value); // persistNote will update selectedBookUuid if successful
-                    await persistNote({ bookUuid: value || undefined });
-                }}
-                clearable
-                mb="md"
-            />
+            {bookSelectSection}
 
             <InlineTagEdit
                 label="Теги"
@@ -282,4 +313,3 @@ export const NoteEditPage = () => {
         </Container>
     );
 };
-
