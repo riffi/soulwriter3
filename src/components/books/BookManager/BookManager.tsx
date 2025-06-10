@@ -352,7 +352,7 @@ export const BookManager = () => {
                     {/* Left Side: Image Section */}
                     <Box
                         style={{
-                          width: '200px',
+                          width: isMobile ? '100px' : '200px',
                           position: 'relative',
                           flexShrink: 0
                         }}
@@ -381,7 +381,6 @@ export const BookManager = () => {
                       {book.cover &&
                           <MantineImage
                               src={book.cover}
-                              height={285}
                               alt="Book cover"
                               radius="md"
                               style={{
@@ -411,8 +410,8 @@ export const BookManager = () => {
                     {/* Right Side: Content Section */}
                     <Stack style={{ flex: 1 }} justify="space-between">
                       <Stack gap="xs">
-                        <Group justify="space-between" mt="xs" mb="xs" wrap="nowrap">
-                          <Text fw={500} size="xl" lineClamp={2}>{book.title}</Text>
+                        <Group justify="space-between"  mb="xs" wrap="nowrap">
+                          <Text fw={500} size={isMobile ? 'md' : 'xl'} lineClamp={2}>{book.title}</Text>
                           <ActionIcon
                               color="red"
                               variant="subtle"
