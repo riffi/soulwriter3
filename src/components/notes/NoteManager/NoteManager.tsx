@@ -49,10 +49,11 @@ export const NoteManager = () => {
   const groups = useLiveQuery(getTopLevelGroups) || [];
   const allNotes = useLiveQuery(getAllNotes) || [];
   const navigate = useNavigate();
-  const {setPageTitle} = usePageTitle();
+  const {setPageTitle, setTitleElement} = usePageTitle();
 
   useEffect(() => {
     setPageTitle('Заметки')
+    setTitleElement(<></>)
   }, [])
 
   const handleGroupSubmit = async () => {

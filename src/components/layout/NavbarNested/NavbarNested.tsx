@@ -14,8 +14,6 @@ import {
 import {CollapsedNavbar} from "@/components/layout/NavbarNested/parts/CollapsedNavbar/CollapsedNavbar";
 import {ExpandedNavbar} from "@/components/layout/NavbarNested/parts/ExpandedNavbar/ExpandedNavbar";
 import { useNavigate } from "react-router-dom"; // Added useNavigate
-import { useNoteManager } from "@/components/notes/hook/useNoteManager"; // Added useNoteManager
-import { configDatabase } from "@/entities/configuratorDb"; // Added configDatabase
 
 export interface NavLinkItem {
   label: string;
@@ -71,42 +69,9 @@ const getBlockPageTitle = (block: IBlock) => {
 export const NavbarNested = ({ toggleNavbar, opened }: { toggleNavbar?: () => void; opened: boolean }) => {
   const { selectedBook } = useBookStore();
   const navigate = useNavigate(); // Hook for navigation
-  const { createNoteGroup, createNote } = useNoteManager(); // Hooks for note management
 
-  const handleQuickNoteClick = async () => {
-    try {
-      let quickNotesGroup = await configDatabase.notesGroups
-          .where('title')
-          .equals("Быстрые заметки")
-          .first();
-
-      if (!quickNotesGroup) {
-        quickNotesGroup = await createNoteGroup({
-          title: "Быстрые заметки",
-          kindCode: 'system',
-          parentUuid: "topLevel"
-        });
-      }
-
-      if (!quickNotesGroup || !quickNotesGroup.uuid) {
-        console.error("Failed to find or create 'Быстрые заметки' group.");
-        return;
-      }
-
-      const newNote = await createNote({
-        title: "новая заметка",
-        noteGroupUuid: quickNotesGroup.uuid,
-        tags: '',
-      });
-
-      if (newNote && newNote.uuid) {
-        navigate(`/notes/edit/${newNote.uuid}`);
-      } else {
-        console.error("Failed to create new quick note.");
-      }
-    } catch (error) {
-      console.error("Error creating quick note:", error);
-    }
+  const handleQuickNoteClick = () => {
+    navigate('/notes/new');
   };
 
   const blocks = useLiveQuery<IBlock[]>(() => {
@@ -117,7 +82,7 @@ export const NavbarNested = ({ toggleNavbar, opened }: { toggleNavbar?: () => vo
     const quickNoteItem: NavLinkGroup = {
       label: 'Быстрая заметка',
       icon: IconBulb,
-      onClick: handleQuickNoteClick,
+      onClick: handleQuickNoteClick, // This function reference is now stable
     };
     const dynamicItems: NavLinkGroup[] = [];
 
@@ -149,7 +114,7 @@ export const NavbarNested = ({ toggleNavbar, opened }: { toggleNavbar?: () => vo
       baseItems: [quickNoteItem, ...BASE_MENU_ITEMS], // Prepend quick note item
       dynamicItems
     };
-  }, [selectedBook, blocks, handleQuickNoteClick]); // Added handleQuickNoteClick to dependency array
+  }, [selectedBook, blocks]); // Removed handleQuickNoteClick from dependency array
 
   if (!opened) {
     return <CollapsedNavbar

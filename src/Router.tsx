@@ -74,6 +74,10 @@ const router = createBrowserRouter([
         element: <NoteFolder /> as ReactNode,
       },
       {
+        path: '/notes/new',
+        element: <NoteEditPage /> as ReactNode
+      },
+      {
         path: '/notes/edit/:uuid',
         element: <NoteEditPage /> as ReactNode,
       },
