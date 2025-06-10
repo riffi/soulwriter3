@@ -113,6 +113,7 @@ export const CollapsedNavbar = ({
                               <Group
                                   justify="flex-start"
                                   gap={0}
+                                  key={link.label}
                                   onClick={(e) => {
                                     e.preventDefault();
                                     e.stopPropagation();

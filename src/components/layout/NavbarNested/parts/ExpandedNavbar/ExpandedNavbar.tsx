@@ -47,13 +47,6 @@ const NavLink = ({
             if (isMobile && !link && !hasLinks) { // If it's purely an action button, toggle navbar on mobile
                 toggleNavbar?.();
             }
-            // If onClick is present, we might still want to navigate if a link is also there.
-            // The current requirement implies onClick is exclusive. If not, this logic needs adjustment.
-            // For now, if onClick runs, we assume it handles everything.
-            // If there's also a link, and navigation is desired AFTER onClick, the handler itself should navigate.
-            // Or, remove the 'return' and let it fall through, but that could be confusing.
-            // Let's assume onClick is primary and exclusive for now for items that have it.
-            // If an item has 'onClick' and 'link', 'onClick' takes over.
             return;
         }
         if (link) {
@@ -69,38 +62,36 @@ const NavLink = ({
 
     const linkItems = useMemo(() => (
         hasLinks ? links.map((item) => (
-            <>
-                <Text<'a'>
-                    component="a"
-                    flex={4}
-                    href={item.link}
-                    key={item.label}
-                    className={classes.link}
-                    style={item.link === (location.pathname+location.search) ? { backgroundColor: 'var(--mantine-color-blue-0)' } :{}}
-                    onClick={(e) => {
-                        e.preventDefault();
-                        navigate(item.link || '#');
-                        if (isMobile){
-                            toggleNavbar?.();
-                        }
-                    }}
+            <Text<'a'>
+                component="a"
+                flex={4}
+                href={item.link}
+                key={item.label}
+                className={classes.link}
+                style={item.link === (location.pathname+location.search) ? { backgroundColor: 'var(--mantine-color-blue-0)' } :{}}
+                onClick={(e) => {
+                    e.preventDefault();
+                    navigate(item.link || '#');
+                    if (isMobile){
+                        toggleNavbar?.();
+                    }
+                }}
+            >
+                <Group
+                    justify="flex-start"
+                    gap={0}
                 >
-                    <Group
-                        justify="flex-start"
-                        gap={0}
-                    >
-                        <IconViewer
-                            icon={item.icon}
-                            size={20}
-                            backgroundColor={"transparent"}
-                            color="var(--mantine-color-blue-7)"
-                        />
-                        <div style={{marginLeft: "10px"}}>
-                            {item.label}
-                        </div>
-                    </Group>
-                </Text>
-            </>
+                    <IconViewer
+                        icon={item.icon}
+                        size={20}
+                        backgroundColor={"transparent"}
+                        color="var(--mantine-color-blue-7)"
+                    />
+                    <div style={{marginLeft: "10px"}}>
+                        {item.label}
+                    </div>
+                </Group>
+            </Text>
         )) : null
     ), [hasLinks, links, navigate, toggleNavbar, location.pathname, location.search]);
 
