@@ -25,7 +25,7 @@ import {
   IconCloudDown,
   IconDots, IconBook,
 } from "@tabler/icons-react";
-import React, {useState, useCallback} from "react"; // Added useCallback
+import React, {useState, useCallback, useEffect} from "react"; // Added useCallback
 import { BookEditModal } from "./BookEditModal/BookEditModal";
 import { useNavigate } from "react-router-dom";
 import Cropper from 'react-easy-crop'; // Added Cropper
@@ -45,6 +45,7 @@ import {
 import {useAuth} from "@/providers/AuthProvider/AuthProvider";
 import {theme} from "@/theme";
 import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
+import {usePageTitle} from "@/providers/PageTitleProvider/PageTitleProvider";
 
 // Helper functions for image cropping (copied from IconSelector.tsx and modified)
 const createImage = (url: string): Promise<HTMLImageElement> =>
@@ -115,6 +116,7 @@ export const BookManager = () => {
   const { isMobile} = useMedia();
   const token = user?.token;
   const navigate = useNavigate();
+  const {setPageTitle} = usePageTitle()
 
   const {
     books,
@@ -123,6 +125,10 @@ export const BookManager = () => {
     deleteBook,
     refreshBooks
   } = useBookManager();
+
+  useEffect(() => {
+    setPageTitle('Книги')
+  }, [])
 
   // Function to handle file input for cover image
   const handleImageUpload = (file: File | null) => {
@@ -196,13 +202,6 @@ export const BookManager = () => {
   };
 
 
-  const breadCrumbs = [
-    { title: "Книги", href: "#" },
-  ].map((item, index) => (
-      <Anchor href={item.href} key={index}>
-        {item.title}
-      </Anchor>
-  ));
 
   const getConfigurationTitle = (book: IBook) => {
     return  book?.configurationTitle
@@ -301,9 +300,6 @@ export const BookManager = () => {
 
           {!isMobile && <>
             <h1>Управление книгами</h1>
-            <Breadcrumbs separator="→" separatorMargin="md" mt="xs">
-              {breadCrumbs}
-            </Breadcrumbs>
           </>
           }
           <Space h={20} />
