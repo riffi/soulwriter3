@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 export type BlockInstanceSortType = 'date' | 'title';
+export type SceneLayoutMode = 'manager' | 'split';
 
 interface UiSettingsState {
     noteManagerMode: 'folders' | 'list';
@@ -15,6 +16,9 @@ interface UiSettingsState {
 
     blockInstanceSortType: BlockInstanceSortType;
     setBlockInstanceSortType: (mode: BlockInstanceSortType) => void;
+
+    sceneLayoutMode: SceneLayoutMode;
+    setSceneLayoutMode: (mode: SceneLayoutMode) => void;
 
     navbarLinkStates: Record<string, boolean>;
     setNavbarLinkState: (label: string, isOpen: boolean) => void;
@@ -34,6 +38,9 @@ export const useUiSettingsStore = create<UiSettingsState>()(
 
             blockInstanceSortType: 'date',
             setBlockInstanceSortType: (type) => set({ blockInstanceSortType: type }),
+
+            sceneLayoutMode: 'manager', // Default value
+            setSceneLayoutMode: (mode) => set({ sceneLayoutMode: mode }),
 
             navbarLinkStates: {},
             setNavbarLinkState: (label, isOpen) =>

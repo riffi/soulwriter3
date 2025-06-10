@@ -58,14 +58,7 @@ export const SceneRow = ({ scene, scenesInChapter, openScene, selectedSceneId, s
   };
 
   const handleClick = () => {
-    if (openScene){
-      openScene(scene.id);
-    }
-    if (isMobile) {
-      navigate(`/scene/card?id=${scene.id}`);
-    } else {
-      openScene(scene.id);
-    }
+     openScene(scene.id);
   };
 
   const handleMove = async (newChapterId: number | null) => {
@@ -162,7 +155,7 @@ export const SceneRow = ({ scene, scenesInChapter, openScene, selectedSceneId, s
                     display: 'flex',
                     gap: '8px',
                     transition: 'opacity 0.2s ease',
-                    opacity: hovered? 1 : 0.2
+                    opacity: hovered? 1 : 0
                   }}
               >
                 <ActionIcon

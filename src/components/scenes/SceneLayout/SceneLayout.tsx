@@ -10,12 +10,13 @@ import {
   IconChevronRight,
 } from "@tabler/icons-react";
 import {useLiveQuery} from "dexie-react-hooks";
+import {useUiSettingsStore} from "@/stores/uiSettingsStore/uiSettingsStore";
 
 export const SceneLayout = () => {
   const { isMobile } = useMedia();
   const navigate = useNavigate();
   const [sceneId, setSceneId] = useState<number | undefined>();
-  const [mode, setMode] = useState<'manager' | 'split'>('split');
+  const { sceneLayoutMode, setSceneLayoutMode } = useUiSettingsStore();
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const {scenes, chapters, getScenesWithBlockInstances} = useSceneLayout()
 
@@ -36,13 +37,17 @@ export const SceneLayout = () => {
     if (isMobile) {
       navigate(`/scene/card?id=${sceneId}`);
     } else {
-      setSceneId(sceneId);
-      setMode('split');
+        if (sceneLayoutMode === 'manager') {
+            navigate(`/scene/card?id=${sceneId}`);
+        }
+        else{
+            setSceneId(sceneId);
+        }
     }
   };
 
   const toggleMode = () => {
-    setMode(prev => prev === 'manager' ? 'split' : 'manager');
+     setSceneLayoutMode(sceneLayoutMode === 'manager' ? 'split' : 'manager');
   };
 
   if (isMobile) {
@@ -54,13 +59,13 @@ export const SceneLayout = () => {
         />;
   }
 
-  if (mode === 'manager') {
+  if (sceneLayoutMode === 'manager') {
     return (
         <Box pos="relative">
           <SceneManager
               openScene={openScene}
               selectedSceneId={sceneId}
-              mode={mode}
+              mode={sceneLayoutMode}
               onToggleMode={toggleMode}
               scenes={scenesWithBlockInstances}
               chapters={chapters}
@@ -92,7 +97,7 @@ export const SceneLayout = () => {
             <SceneManager
                 openScene={openScene}
                 selectedSceneId={sceneId}
-                mode={mode}
+                mode={sceneLayoutMode}
                 onToggleMode={toggleMode}
                 scenes={scenesWithBlockInstances}
                 chapters={chapters}
