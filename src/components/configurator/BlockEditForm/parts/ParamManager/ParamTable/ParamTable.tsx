@@ -55,7 +55,7 @@ export const ParamTable = ({
                     <Table.Tr>
                         <Table.Th>Название</Table.Th>
                         <Table.Th width={80}>Тип</Table.Th>
-                        <Table.Th width={100}></Table.Th>
+                        <Table.Th width={150}></Table.Th>
                     </Table.Tr>
                 </Table.Thead>
                 {params?.length > 0 ? (
