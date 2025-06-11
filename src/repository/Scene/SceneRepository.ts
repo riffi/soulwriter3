@@ -1,5 +1,5 @@
-import { BookDB } from "../../entities/bookDb";
-import { IScene } from "../../entities/BookEntities";
+import { BookDB } from "@/entities/bookDb";
+import { IScene } from "@/entities/BookEntities";
 
 export const getById = async (db: BookDB, sceneId: number): Promise<IScene | undefined> => {
     return db.scenes.get(sceneId);

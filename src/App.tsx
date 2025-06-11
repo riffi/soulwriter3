@@ -11,23 +11,26 @@ import React from "react";
 import {MediaQueryProvider} from "@/providers/MediaQueryProvider/MediaQueryProvider";
 import {AuthProvider, useAuth} from "@/providers/AuthProvider/AuthProvider";
 import {ReactFlowProvider} from "reactflow";
+import ErrorBoundary from "@/components/ErrorBoundary/ErrorBoundary"; // Added import
 
 export default function App() {
 
   return (
-    <MantineProvider defaultColorScheme={"light"} datesLocale="ru">
-      <AuthProvider>
-        <DialogProvider>
-          <PageTitleProvider>
-            <ReactFlowProvider>
-              <MediaQueryProvider>
-                <Notifications />
-                <Router />
-              </MediaQueryProvider>
-            </ReactFlowProvider>
-          </PageTitleProvider>
-        </DialogProvider>
-      </AuthProvider>
-    </MantineProvider>
+      <MantineProvider defaultColorScheme={"light"} datesLocale="ru">
+        <Notifications /> {/* Moved Notifications outside ErrorBoundary for global error display */}
+        <AuthProvider>
+          <DialogProvider>
+            <PageTitleProvider>
+              <ErrorBoundary>
+                <ReactFlowProvider>
+                  <MediaQueryProvider>
+                    <Router />
+                  </MediaQueryProvider>
+                </ReactFlowProvider>
+              </ErrorBoundary>
+            </PageTitleProvider>
+          </DialogProvider>
+        </AuthProvider>
+      </MantineProvider>
   );
 }

@@ -1,6 +1,6 @@
 import { BookDB } from "../../entities/bookDb";
 import { IChapter } from "../../entities/BookEntities";
-import { SceneRepository } from "../Scene/SceneRepository"; // For recalculating scene order after chapter deletion
+import { SceneRepository } from "./SceneRepository"; // For recalculating scene order after chapter deletion
 
 export const getById = async (db: BookDB, chapterId: number): Promise<IChapter | undefined> => {
     return db.chapters.get(chapterId);

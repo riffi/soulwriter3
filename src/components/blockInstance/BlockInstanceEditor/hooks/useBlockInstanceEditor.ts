@@ -66,13 +66,13 @@ export const useBlockInstanceEditor = (blockInstanceUuid: string, currentParamGr
       'blockParameterGroupUuid': currentParamGroup?.uuid,
       'blockInstanceUuid': blockInstance?.uuid
     }).toArray();
-  }, [currentParamGroup]);
+  }, [currentParamGroup, blockInstance]);
 
   //все доступные параметры в группе параметров блока
   const availableParameters = useLiveQuery<IBlockParameter[]>(() => {
     if (!blockInstance || !currentParamGroup) return [];
     return BlockParameterRepository.getParamsByGroup(bookDb, currentParamGroup?.uuid); // Changed to BlockParameterRepository
-  }, [currentParamGroup]);
+  }, [currentParamGroup, blockInstance]);
 
   const possibleValuesMap = useLiveQuery<Record<string, IBlockParameterPossibleValue[]>>(() => {
     if (!availableParameters) return {};
