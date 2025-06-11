@@ -152,6 +152,44 @@ export const InstanceParameterEditor = ({
         }
     };
 
+    const handleAddNewInstance = async (blockParameterUuid: string) => {
+        // Find the parameter definition to potentially set a more type-appropriate default value
+        const parameterDefinition = availableParameters?.find(p => p.uuid === blockParameterUuid);
+        let defaultValue: string | number = ""; // General default
+
+        if (parameterDefinition) {
+            switch (parameterDefinition.dataType) {
+                case "number":
+                case "checkbox": // Checkboxes often use 0 or 1
+                    defaultValue = 0;
+                    break;
+                // case "select": // For select, might pick the first possibleValue if available
+                //     defaultValue = parameterDefinition.possibleValues?.[0]?.value || "";
+                //     break;
+                default:
+                    defaultValue = "";
+            }
+        }
+
+        const newInstance: IBlockParameterInstance = {
+            blockParameterUuid: blockParameterUuid,
+            blockInstanceUuid: blockInstanceUuid,
+            // Use currentParamGroup?.uuid if tabs are used, otherwise, it might be an empty string
+            // or a specific group UUID if non-tabbed parameters belong to a default group.
+            // For now, currentParamGroup?.uuid (which could be null -> undefined) or "" is fine.
+            blockParameterGroupUuid: currentParamGroup?.uuid || "",
+            value: defaultValue,
+        };
+
+        try {
+            await BlockParameterInstanceRepository.addParameterInstance(bookDb, newInstance);
+            // Data should refresh via useLiveQuery in useBlockInstanceEditor
+        } catch (error) {
+            console.error("Error adding new parameter instance:", error);
+            // Consider adding user-facing notification here
+        }
+    };
+
     return (
         <>
             {blockUseTabs ? (
@@ -166,6 +204,7 @@ export const InstanceParameterEditor = ({
                         onAdd={() => setIsAddModalOpen(true)}
                         onSaveEdit={handleUpdateParameterValue}
                         onDelete={handleDeleteParameter}
+                        onAddNewInstance={handleAddNewInstance} // Added prop
                         possibleValuesMap={possibleValuesMap}
                         relatedBlocks={relatedBlocks}
                         allBlocks={allBlocks}
@@ -178,6 +217,7 @@ export const InstanceParameterEditor = ({
                     onAdd={() => setIsAddModalOpen(true)}
                     onSaveEdit={handleUpdateParameterValue}
                     onDelete={handleDeleteParameter}
+                    onAddNewInstance={handleAddNewInstance} // Added prop
                     possibleValuesMap={possibleValuesMap}
                     relatedBlocks={relatedBlocks}
                     allBlocks={allBlocks}
