@@ -14,11 +14,18 @@ export const getByUuidList = async (db: BookDB, blockInstanceUuidList: string[])
   return db.blockInstances.where('uuid').anyOf(blockInstanceUuidList).toArray();
 }
 
-export const getBlockInstances = async (db: BookDB, blockUuid: string) => {
-  return db.blockInstances
+export const getBlockInstances = async (db: BookDB, blockUuid: string, titleSearch?: string) => {
+  let collection = db.blockInstances
       .where('blockUuid')
-      .equals(blockUuid)
-      .toArray();
+      .equals(blockUuid);
+
+  if (titleSearch && titleSearch.trim() !== '') {
+    collection = collection.filter(instance =>
+        instance.title.toLowerCase().includes(titleSearch.toLowerCase())
+    );
+  }
+
+  return collection.toArray();
 }
 
 export const create = async (db: BookDB, instance: IBlockInstance) => {

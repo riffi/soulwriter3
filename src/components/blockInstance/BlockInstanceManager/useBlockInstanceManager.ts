@@ -18,15 +18,15 @@ export interface IBlockInstanceWithParams extends IBlockInstance {
 
 export type TParameterDisplayMode = 'inline' | 'drawer';
 
-export const useBlockInstanceManager = (blockUuid: string) => {
+export const useBlockInstanceManager = (blockUuid: string, titleSearch?: string) => {
 
   const block = useLiveQuery<IBlock>(() => {
     return BlockRepository.getByUuid(bookDb, blockUuid);
   }, [blockUuid]);
 
   const instances = useLiveQuery<IBlockInstance[]>(() => {
-    return  BlockInstanceRepository.getBlockInstances(bookDb, blockUuid);
-  }, [blockUuid]);
+    return  BlockInstanceRepository.getBlockInstances(bookDb, blockUuid, titleSearch);
+  }, [blockUuid, titleSearch]);
 
   const displayedParameters = useLiveQuery<IBlockParameter[]>(() => {
     return BlockParameterRepository.getDisplayedParameters(bookDb, blockUuid); // Changed to BlockParameterRepository

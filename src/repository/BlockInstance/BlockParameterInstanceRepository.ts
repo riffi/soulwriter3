@@ -3,6 +3,7 @@ import { IBlockInstance, IBlockParameter, IBlockParameterInstance } from "@/enti
 import { generateUUID } from "@/utils/UUIDUtils";
 import { BlockRepository } from "@/repository/Block/BlockRepository";
 import { updateBlockInstance } from "./BlockInstanceUpdateHelper";
+import {BlockParameterRepository} from "@/repository/Block/BlockParameterRepository";
 
 export const getInstanceParams = async (db: BookDB, instanceUuid: string) => {
     return db.blockParameterInstances
@@ -26,7 +27,7 @@ export const appendDefaultParam = async (db: BookDB, instance: IBlockInstance, p
 export const appendDefaultParams = async (db: BookDB, instance: IBlockInstance) => {
     if (!instance.uuid) return;
 
-    const defaultParameters = await BlockRepository.getDefaultParameters(db, instance.blockUuid);
+    const defaultParameters = await BlockParameterRepository.getDefaultParameters(db, instance.blockUuid);
     if (defaultParameters.length === 0) return;
 
     const paramInstances = defaultParameters.map(param => ({

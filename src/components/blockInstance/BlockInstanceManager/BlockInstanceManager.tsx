@@ -15,9 +15,9 @@ import {
 import {
   IconPlus,
   IconFilter,
-  IconX, IconFilterOff, IconCalendar, IconSortAZ
+  IconX, IconFilterOff, IconCalendar, IconSortAZ, IconSearch
 } from '@tabler/icons-react';
-import { useDisclosure } from '@mantine/hooks';
+import {useDebouncedValue, useDisclosure} from '@mantine/hooks';
 import {BlockInstanceSortType, useUiSettingsStore} from "@/stores/uiSettingsStore/uiSettingsStore";
 import { generateUUID } from "@/utils/UUIDUtils";
 import { useDialog } from "@/providers/DialogProvider/DialogProvider";
@@ -41,6 +41,10 @@ export interface IBlockInstanceManagerProps {
 }
 
 export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
+
+  const [titleSearchQuery, setTitleSearchQuery] = useState('');
+  const [debouncedQuery] = useDebouncedValue(titleSearchQuery, 300);
+
   const {
     instances,
     block,
@@ -48,7 +52,8 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
     instancesWithParams,
     displayedParameters,
     deleteBlockInstance
-  } = useBlockInstanceManager(props.blockUuid);
+  } = useBlockInstanceManager(props.blockUuid, debouncedQuery);
+
 
   const [addingInstance, setAddingInstance] = useState(false);
   const [opened, { open, close }] = useDisclosure(false);
@@ -234,6 +239,21 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
             >
               Добавить
             </Button>
+
+            <TextInput
+                placeholder="Поиск по названию..."
+                value={titleSearchQuery}
+                onChange={(event) => setTitleSearchQuery(event.currentTarget.value)}
+                icon={<IconSearch size="1rem" />}
+                rightSection={
+                  titleSearchQuery ? (
+                      <ActionIcon onClick={() => setTitleSearchQuery('')} title="Очистить поиск">
+                        <IconX size="1rem" />
+                      </ActionIcon>
+                  ) : null
+                }
+                style={{ flexGrow: 1, marginRight: '10px' }}
+            />
 
             <Group> {/* New group for sorting and filters */}
               <SegmentedControl
