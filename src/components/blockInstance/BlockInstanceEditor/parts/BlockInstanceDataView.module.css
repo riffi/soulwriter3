@@ -1,0 +1,25 @@
+/* Styles for BlockInstanceDataView */
+.tabList {
+  border-bottom: 1px solid var(--mantine-color-gray-3);
+}
+
+.tab {
+  padding: 12px 20px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+
+  &[data-active] {
+    color: var(--mantine-primary-color-filled);
+    border-bottom: 2px solid var(--mantine-primary-color-filled);
+  }
+}
+
+.panelContent {
+  padding: 6px 0; /* Or var(--mantine-spacing-md) 0; for consistency */
+}
+
+.addButton {
+  @mixin hover {
+    background-color: var(--mantine-color-blue-1);
+  }
+}

@@ -1,125 +1,54 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Box, Text, Button, Group, Title, Paper, ActionIcon, Modal, ScrollArea, Collapse, UnstyledButton, TextInput } from '@mantine/core'; // Added TextInput
-import { IconLink, IconUnlink, IconArrowRight, IconChevronDown, IconChevronRight, IconSearch } from '@tabler/icons-react'; // Added IconSearch
+import { Box, Text, Button, Group, Title, Paper, ActionIcon, Modal, ScrollArea, Collapse, UnstyledButton, TextInput } from '@mantine/core';
+import { IconLink, IconUnlink, IconArrowRight, IconChevronDown, IconChevronRight, IconSearch } from '@tabler/icons-react';
 import { useNavigate } from 'react-router-dom';
-import { IBlockInstanceSceneLink, IScene, IChapter } from '@/entities/BookEntities';
-import { bookDb } from '@/entities/bookDb';
-import { generateUUID } from '@/utils/UUIDUtils';
-import { useLiveQuery } from 'dexie-react-hooks';
-import {SceneRepository} from "@/repository/Scene/SceneRepository";
-import {ChapterRepository} from "@/repository/Scene/ChapterRepository";
-import {useDialog} from "@/providers/DialogProvider/DialogProvider";
+// IBlockInstanceSceneLink, IScene, IChapter are now primarily used within the hooks or as return types from them
+// import { IBlockInstanceSceneLink, IScene, IChapter } from '@/entities/BookEntities';
+// import { bookDb } from '@/entities/bookDb'; // Moved to hooks
+// import { generateUUID } from '@/utils/UUIDUtils'; // Moved to hooks
+// import { useLiveQuery } from 'dexie-react-hooks'; // Moved to hooks
+// import {SceneRepository} from "@/repository/Scene/SceneRepository"; // Moved to hooks
+// import {ChapterRepository} from "@/repository/Scene/ChapterRepository"; // Moved to hooks
+// import {useDialog} from "@/providers/DialogProvider/DialogProvider"; // Moved to hooks
+
+import { useInstanceScenesData, ISceneTreeNode, ILinkedSceneDetail } from '../hooks/useInstanceScenesData'; // Import data hook
+import { useInstanceScenesMutations } from '../hooks/useInstanceScenesMutations'; // Import mutations hook
 
 export interface IInstanceScenesEditorProps {
     blockInstanceUuid: string;
-    blockUuid: string;
+    blockUuid: string | undefined; // Made undefined consistent with hook usage
 }
 
-export interface ISceneTreeNode {
-    id: string;
-    title: string;
-    scenes: IScene[];
-    isChapter: boolean;
-    chapterObj?: IChapter;
-}
+// ISceneTreeNode is now imported from useInstanceScenesData
 
 export const InstanceScenesEditor: React.FC<IInstanceScenesEditorProps> = ({ blockInstanceUuid, blockUuid }) => {
     const navigate = useNavigate();
     const [linkModalOpen, setLinkModalOpen] = useState(false);
-    const [modalLoading, setModalLoading] = useState(false);
+    // const [modalLoading, setModalLoading] = useState(false); // isLoading now comes from data hook
     const [expandedChapterIds, setExpandedChapterIds] = useState<Record<string, boolean>>({});
     const [searchTerm, setSearchTerm] = useState('');
-    const { showDialog } = useDialog();
+    // const { showDialog } = useDialog(); // Moved to mutations hook
+
+    const {
+        linkedScenesDetails, // Comes from useInstanceScenesData
+        availableScenesTree, // Comes from useInstanceScenesData (renamed from treeData)
+        isLoading,           // Comes from useInstanceScenesData
+    } = useInstanceScenesData(blockInstanceUuid);
+
+    const { linkSceneToInstance, unlinkSceneFromInstance } = useInstanceScenesMutations();
 
     const toggleChapterExpansion = (nodeId: string) => {
         setExpandedChapterIds(prev => ({ ...prev, [nodeId]: !prev[nodeId] }));
     };
 
-    const linkedSceneLinks = useLiveQuery(
-        () => bookDb.blockInstanceSceneLinks.where({ blockInstanceUuid }).toArray(),
-        [blockInstanceUuid],
-        undefined
-    );
-
-    const allScenesCollection = useLiveQuery(
-        () => SceneRepository.getAll(bookDb),
-        [],
-        undefined
-    );
-
-    const allChapters = useLiveQuery(
-        () => ChapterRepository.getAll(bookDb),
-        [],
-        undefined
-    );
-
-    const [linkedScenesDetails, setLinkedScenesDetails] = useState<Array<{link: IBlockInstanceSceneLink, scene: IScene | undefined}>>([]);
-    useEffect(() => {
-        if (linkedSceneLinks && allScenesCollection) {
-            const details = linkedSceneLinks.map(link => {
-                const scene = allScenesCollection.find(s => s.id === link.sceneId);
-                return { link, scene };
-            });
-            setLinkedScenesDetails(details);
-        } else {
-            setLinkedScenesDetails([]);
-        }
-    }, [linkedSceneLinks, allScenesCollection]);
-
-    const [treeData, setTreeData] = useState<ISceneTreeNode[]>([]);
-    useEffect(() => {
-        if (allChapters && allScenesCollection && linkedSceneLinks) {
-            const nodes: ISceneTreeNode[] = [];
-            const scenesByChapterId: Record<string, IScene[]> = {};
-            const linkedSceneIds = new Set(linkedSceneLinks.map(l => l.sceneId));
-
-            allScenesCollection.forEach(scene => {
-                if (scene.id && !linkedSceneIds.has(scene.id)) {
-                    const chapterIdKey = scene.chapterId?.toString() || "0";
-                    if (!scenesByChapterId[chapterIdKey]) {
-                        scenesByChapterId[chapterIdKey] = [];
-                    }
-                    scenesByChapterId[chapterIdKey].push(scene);
-                }
-            });
-
-            for (const chapterIdKey in scenesByChapterId) {
-                scenesByChapterId[chapterIdKey].sort((a, b) => (a.order || 0) - (b.order || 0));
-            }
-
-            allChapters.forEach(chapter => {
-                const chapterIdStr = chapter.id?.toString();
-                if (chapterIdStr && scenesByChapterId[chapterIdStr] && scenesByChapterId[chapterIdStr].length > 0) {
-                    nodes.push({
-                        id: `chapter-${chapter.id}`,
-                        title: chapter.title,
-                        scenes: scenesByChapterId[chapterIdStr] || [],
-                        isChapter: true,
-                        chapterObj: chapter,
-                    });
-                }
-            });
-
-            if (scenesByChapterId["0"] && scenesByChapterId["0"].length > 0) {
-                nodes.push({
-                    id: 'chapter-uncategorized',
-                    title: 'Сцены без главы',
-                    scenes: scenesByChapterId["0"],
-                    isChapter: false,
-                });
-            }
-            setTreeData(nodes);
-        } else {
-            setTreeData([]);
-        }
-    }, [allChapters, allScenesCollection, linkedSceneLinks, linkModalOpen]);
+    // useEffects for linkedScenesDetails and treeData are removed as this logic is now in useInstanceScenesData
 
     const filteredTreeData = useMemo(() => {
         if (!searchTerm.trim()) {
-            return treeData;
+            return availableScenesTree; // Use data from hook
         }
         const lowerSearchTerm = searchTerm.toLowerCase();
-        return treeData.map(node => {
+        return availableScenesTree.map(node => {
             const chapterTitleMatches = node.title.toLowerCase().includes(lowerSearchTerm);
             const matchingScenes = node.scenes.filter(scene =>
                 scene.title.toLowerCase().includes(lowerSearchTerm)
@@ -143,8 +72,7 @@ export const InstanceScenesEditor: React.FC<IInstanceScenesEditorProps> = ({ blo
             setExpandedChapterIds(newExpanded);
         }
         // No specific action on search term clear to retain user's manual expansions.
-    }, [filteredTreeData, searchTerm]);
-
+    }, [filteredTreeData, searchTerm]); // filteredTreeData itself depends on availableScenesTree
 
     const handleNavigateToScene = (sceneId: number | undefined) => {
         if (sceneId === undefined) return;
@@ -152,58 +80,30 @@ export const InstanceScenesEditor: React.FC<IInstanceScenesEditorProps> = ({ blo
     };
 
     const handleLinkScene = async (sceneId: number) => {
-        if (!blockUuid) {
-            console.error("blockUuid is missing, cannot link scene.");
-            return;
-        }
-        const newLink: IBlockInstanceSceneLink = {
-            uuid: generateUUID(),
-            blockInstanceUuid,
-            blockUuid,
-            sceneId,
-        };
-        try {
-            await bookDb.blockInstanceSceneLinks.add(newLink);
-        } catch (error) {
-            console.error("Failed to link scene:", error);
-        }
+        // blockUuid is passed to the component and should be available
+        await linkSceneToInstance(blockInstanceUuid, blockUuid, sceneId);
+        // Potentially close modal or give feedback. Data will refresh via useLiveQuery in the hook.
     };
 
-    const handleUnlinkScene = async (linkId: number | undefined) => {
-        const confirm = await showDialog("Подтверждение", "Удалить привязку к сцене?");
-        if (!confirm) return;
-        if (linkId === undefined) {
-            console.error("Link ID is undefined, cannot unlink scene.");
-            return;
-        }
-        try {
-            await bookDb.blockInstanceSceneLinks.delete(linkId);
-        } catch (error) {
-            console.error("Failed to unlink scene:", error);
-        }
+    const handleUnlinkScene = async (link: ILinkedSceneDetail) => {
+        // unlinkSceneFromInstance from the hook now handles the dialog
+        await unlinkSceneFromInstance(link.link.id);
+        // Data will refresh via useLiveQuery in the hook.
     };
 
     const handleLinkNewScene = () => {
-        setModalLoading(true);
+        // setModalLoading(true); // isLoading from data hook can be used in modal if needed
         setLinkModalOpen(true);
     };
 
-    useEffect(() => {
-        if (linkModalOpen) {
-            if (allChapters && allScenesCollection && linkedSceneLinks) {
-                setModalLoading(false);
-            } else {
-                setModalLoading(true);
-            }
-        }
-    }, [linkModalOpen, allChapters, allScenesCollection, linkedSceneLinks]);
+    // useEffect for modalLoading is removed as isLoading from data hook can manage this.
+    // The modal can show its own loading state based on whether availableScenesTree is populated.
 
-
-    if (linkedSceneLinks === undefined || allScenesCollection === undefined || allChapters === undefined) {
+    if (isLoading) { // Use isLoading from data hook
         return <Text>Загрузка данных...</Text>;
     }
 
-    if (!blockInstanceUuid) {
+    if (!blockInstanceUuid) { // This check might be redundant if isLoading handles initial undefined blockInstanceUuid state
         return <Text>Экземпляр блока не найден.</Text>;
     }
 
@@ -222,13 +122,13 @@ export const InstanceScenesEditor: React.FC<IInstanceScenesEditorProps> = ({ blo
 
             <Box>
                 {linkedScenesDetails.map(({ link, scene }) => (
-                    <Paper shadow="xs" p="sm" mb="sm" key={link.uuid}>
+                    <Paper shadow="xs" p="sm" mb="sm" key={item.link.uuid}> {/* Use item.link.uuid */}
                         <Group justify="space-between">
-                            <Text>{scene?.title || `Сцена ID: ${link.sceneId}`}</Text>
+                            <Text>{item.scene?.title || `Сцена ID: ${item.link.sceneId}`}</Text>
                             <Group>
                                 <ActionIcon
                                     variant="subtle"
-                                    onClick={() => handleNavigateToScene(link.sceneId)}
+                                    onClick={() => handleNavigateToScene(item.link.sceneId)}
                                     title="Перейти к сцене"
                                 >
                                     <IconArrowRight size={16} />
@@ -236,7 +136,7 @@ export const InstanceScenesEditor: React.FC<IInstanceScenesEditorProps> = ({ blo
                                 <ActionIcon
                                     variant="subtle"
                                     color="red"
-                                    onClick={() => handleUnlinkScene(link.id)}
+                                    onClick={() => handleUnlinkScene(item)} // Pass the whole item or just item.link.id
                                     title="Отвязать сцену"
                                 >
                                     <IconUnlink size={16} />
@@ -255,7 +155,7 @@ export const InstanceScenesEditor: React.FC<IInstanceScenesEditorProps> = ({ blo
                     onChange={(event) => setSearchTerm(event.currentTarget.value)}
                     mb="md"
                 />
-                {modalLoading ? <Text>Загрузка доступных сцен...</Text> :
+                {isLoading ? <Text>Загрузка доступных сцен...</Text> : // Use isLoading from data hook
                     <ScrollArea style={{ height: 400 }}> {/* Adjusted height */}
                         {filteredTreeData.map(node => (
                             <Box key={node.id} mb="sm">

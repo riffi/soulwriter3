@@ -8,8 +8,9 @@ import {IBlock} from "@/entities/ConstructorEntities";
 import {generateUUID} from "@/utils/UUIDUtils";
 import {
   BlockInstanceRelationRepository,
-  getInstanceRelations
+  // getInstanceRelations, // This specific import seems unused if methods on the repo are static or class-based
 } from "@/repository/BlockInstance/BlockInstanceRelationRepository";
+import { useDialog } from "@/providers/DialogProvider/DialogProvider"; // Import useDialog
 
 export const useBlockRelationsEditor = (
     blockInstanceUuid: string,
@@ -82,6 +83,7 @@ export const useBlockRelationsEditor = (
     allRelatedInstances,
     unusedRelatedInstances,
     isInstanceInRelation,
-    createBlockInstanceRelation
+    createBlockInstanceRelation,
+    deleteBlockInstanceRelation, // Expose new function
   };
 };

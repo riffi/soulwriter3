@@ -1,10 +1,11 @@
 import { Modal, TextInput, Button, Stack } from "@mantine/core";
 import { useForm } from "@mantine/form";
-import { BlockInstanceRepository } from "@/repository/BlockInstance/BlockInstanceRepository";
-import { bookDb } from "@/entities/bookDb";
-import {generateUUID} from "@/utils/UUIDUtils";
-import {IBlock} from "@/entities/ConstructorEntities";
+// import { BlockInstanceRepository } from "@/repository/BlockInstance/BlockInstanceRepository"; // To be removed
+// import { bookDb } from "@/entities/bookDb"; // To be removed
+// import {generateUUID} from "@/utils/UUIDUtils"; // UUID generation is now in the hook
+import {IBlock, IBlockStructureKind} from "@/entities/ConstructorEntities"; // Added IBlockStructureKind
 import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
+import { useChildInstanceMutations } from "@/components/blockInstance/BlockInstanceEditor/hooks/useChildInstanceMutations"; // Import new hook
 
 interface CreateChildInstanceModalProps {
   opened: boolean;
@@ -22,6 +23,8 @@ export const CreateChildInstanceModal = ({
                                          }: CreateChildInstanceModalProps) => {
 
   const {isMobile} = useMedia();
+  const { addChildInstance } = useChildInstanceMutations(); // Use the hook
+
   const form = useForm({
     initialValues: {
       title: "",
@@ -32,14 +35,27 @@ export const CreateChildInstanceModal = ({
   });
 
   const handleCreate = async () => {
-    await BlockInstanceRepository.create(bookDb, {
-      uuid: generateUUID(),
-      blockUuid: relatedBlock.uuid,
-      title: form.values.title.trim(),
-      parentInstanceUuid: blockInstanceUuid
-    });
-    onClose();
-    form.reset();
+    if (form.validate().hasErrors) {
+      return;
+    }
+    try {
+      // The hook's addChildInstance expects:
+      // parentBlockInstanceUuid: string,
+      // childBlockUuid: string,
+      // title: string,
+      // structureKind: IBlockStructureKind
+      await addChildInstance(
+        blockInstanceUuid,      // parentBlockInstanceUuid
+        relatedBlock.uuid,      // childBlockUuid
+        form.values.title.trim(),
+        relatedBlock.structureKind // structureKind from relatedBlock
+      );
+      onClose();
+      form.reset();
+    } catch (error) {
+      console.error("Failed to create child instance:", error);
+      // Add user notification if necessary
+    }
   };
 
   return (

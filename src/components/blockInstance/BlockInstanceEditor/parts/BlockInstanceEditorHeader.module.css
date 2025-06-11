@@ -1,0 +1,26 @@
+/* Styles for BlockInstanceEditorHeader will be added here */
+.headerGroup {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* Example style */
+    padding: var(--mantine-spacing-xs);
+    background-color: var(--mantine-color-gray-0); /* Example style */
+}
+
+.iconEditSection {
+    padding: var(--mantine-spacing-sm);
+    background-color: var(--mantine-color-white);
+    border-bottom: 1px solid var(--mantine-color-gray-2);
+}
+
+.iconBox {
+    cursor: pointer;
+    border-radius: 10px;
+    background-color: #ffffff;
+    display: flex;
+    width: 120px;
+    height: 120px;
+    justify-content: center;
+    align-items: center;
+    border: 2px dashed var(--mantine-color-blue-filled);
+}

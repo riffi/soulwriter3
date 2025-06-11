@@ -5,41 +5,14 @@
   border-radius: var(--mantine-radius-md);
 }
 
-.header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
+/* .header styles moved to BlockInstanceEditorHeader.module.css */
 
 .titleInput {
   flex: 1;
   font-weight: bold;
 }
 
-.tabList {
-  border-bottom: 1px solid var(--mantine-color-gray-3);
-}
-
-.tab {
-  padding: 12px 20px;
-  font-weight: 500;
-  transition: all 0.2s ease;
-
-  &[data-active] {
-    color: var(--mantine-primary-color-filled);
-    border-bottom: 2px solid var(--mantine-primary-color-filled);
-  }
-}
-
-.panelContent {
-  padding: 6px 0;
-}
-
-.addButton {
-  @mixin hover {
-    background-color: var(--mantine-color-blue-1);
-  }
-}
+/* tabList, tab, panelContent, addButton moved to BlockInstanceDataView.module.css */
 
 .overlay {
   background-color: rgba(255, 255, 255, 0.8);

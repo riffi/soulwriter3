@@ -1,16 +1,17 @@
 import {Table, ActionIcon, Button, Group, TextInput, Timeline} from "@mantine/core";
 import { IconEdit, IconTrash, IconPlus } from "@tabler/icons-react";
-import { useLiveQuery } from "dexie-react-hooks";
-import { bookDb } from "@/entities/bookDb";
-import { BlockInstanceRepository } from "@/repository/BlockInstance/BlockInstanceRepository";
+// import { useLiveQuery } from "dexie-react-hooks"; // Not used directly here
+// import { bookDb } from "@/entities/bookDb"; // To be removed
+// import { BlockInstanceRepository } from "@/repository/BlockInstance/BlockInstanceRepository"; // To be removed
 import { useState } from "react";
 import { CreateChildInstanceModal } from "./modal/CreateChildInstanceModal";
 import {IBlockInstance} from "@/entities/BookEntities";
-import {IBlock, IBlockDisplayKind} from "@/entities/ConstructorEntities";
-import {useDialog} from "@/providers/DialogProvider/DialogProvider";
+import {IBlock, IBlockDisplayKind, IBlockStructureKind} from "@/entities/ConstructorEntities"; // Added IBlockStructureKind
+// import {useDialog} from "@/providers/DialogProvider/DialogProvider"; // Moved to hook
+import { useChildInstanceMutations } from "@/components/blockInstance/BlockInstanceEditor/hooks/useChildInstanceMutations"; // Import new hook
 
 interface ChildInstancesTableProps {
-  blockInstanceUuid: string;
+  blockInstanceUuid: string; // This is the parent's UUID
   instances: IBlockInstance[];
   relatedBlock: IBlock
 }
@@ -19,20 +20,30 @@ export const ChildInstancesTable = ({ blockInstanceUuid, instances, relatedBlock
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const {showDialog} = useDialog()
+  // const {showDialog} = useDialog(); // Moved to hook
+
+  const { updateChildInstanceTitle, deleteChildInstance } = useChildInstanceMutations();
 
   const handleUpdateTitle = async (instance: IBlockInstance) => {
-    await BlockInstanceRepository.update(bookDb, instance.uuid, {
-      ...instance,
-      title: editTitle,
-    });
-    setEditingId(null);
+    if (!editingId || !instance) return;
+    try {
+      await updateChildInstanceTitle(instance.uuid, editTitle);
+      setEditingId(null);
+    } catch (error) {
+      console.error("Failed to update title:", error);
+      // Add user notification if necessary
+    }
   };
 
   const handleDeleteInstance = async (instance: IBlockInstance) => {
-    const result = showDialog("Внимание", `Вы действительно хотите удалить ${instance.title}?`);
-    if (!result) return
-    await BlockInstanceRepository.remove(bookDb, instance.uuid);
+    if (!instance) return;
+    try {
+      // deleteChildInstance from the hook now handles the dialog
+      await deleteChildInstance(instance.uuid, instance.title);
+    } catch (error) {
+      console.error("Failed to delete instance:", error);
+      // Add user notification if necessary
+    }
   };
 
   const renderContent = () => {

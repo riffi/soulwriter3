@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Table, Button, Group, Modal} from '@mantine/core';
-import { bookDb } from '@/entities/bookDb';
+// import { bookDb } from '@/entities/bookDb'; // No longer directly used
 import { IBlock, IBlockRelation } from '@/entities/ConstructorEntities';
-import { BlockInstanceRepository } from "@/repository/BlockInstance/BlockInstanceRepository";
+// import { BlockInstanceRepository } from "@/repository/BlockInstance/BlockInstanceRepository"; // Seems unused
 import { IBlockInstanceRelation } from "@/entities/BookEntities";
 import {
   RelationRow
@@ -16,9 +16,9 @@ import {
 import {
   useBlockRelationsEditor
 } from "@/components/blockInstance/BlockInstanceEditor/parts/InstanceRelationsEditor/hook/useBlockRelationsEditor";
-import {useDialog} from "@/providers/DialogProvider/DialogProvider";
+// import {useDialog} from "@/providers/DialogProvider/DialogProvider"; // Moved to hook
 import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
-import {BlockInstanceRelationRepository} from "@/repository/BlockInstance/BlockInstanceRelationRepository";
+// import {BlockInstanceRelationRepository} from "@/repository/BlockInstance/BlockInstanceRelationRepository"; // No longer directly used
 
 interface BlockRelationsEditorProps {
   blockUuid: string;
@@ -41,7 +41,7 @@ export const InstanceRelationsEditor = ({
   const isRelatedBlockChild = !!relatedBlock?.parentBlockUuid;
   const isRelatedBlockTarget = blockRelation.targetBlockUuid === relatedBlock?.uuid;
   const {isMobile} = useMedia();
-  const {showDialog} = useDialog();
+  // const {showDialog} = useDialog(); // Moved to hook
 
 
   const {
@@ -51,7 +51,8 @@ export const InstanceRelationsEditor = ({
     instanceRelations,
     allRelatedInstances,
     unusedRelatedInstances,
-    createBlockInstanceRelation
+    createBlockInstanceRelation,
+    deleteBlockInstanceRelation, // Destructure new function
   } = useBlockRelationsEditor(
       blockInstanceUuid,
       relatedBlock,
@@ -68,12 +69,7 @@ export const InstanceRelationsEditor = ({
     resetModalState();
   };
 
-  const deleteRelation = async (relation: IBlockInstanceRelation) =>{
-    const result = await showDialog('Внимание', 'Вы действительно хотите удалить связь?')
-    if (!result) return
-    await BlockInstanceRelationRepository.removeRelation(bookDb, relation);
-  }
-
+  // deleteRelation function is now removed, using deleteBlockInstanceRelation from the hook.
 
   const resetModalState = () => {
     setIsModalOpen(false);
@@ -111,7 +107,7 @@ export const InstanceRelationsEditor = ({
                     isRelatedBlockChild={isRelatedBlockChild}
                     isRelatedBlockTarget = {isRelatedBlockTarget}
                     allRelatedInstances={allRelatedInstances}
-                    onDelete={deleteRelation}
+                    onDelete={deleteBlockInstanceRelation} // Use new function from hook
                 />
             )}
           </Table.Tbody>

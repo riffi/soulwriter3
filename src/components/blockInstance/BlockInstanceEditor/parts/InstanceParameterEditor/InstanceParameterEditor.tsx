@@ -1,16 +1,16 @@
 // InstanceParameterEditor.tsx
 import React, {useEffect, useState} from "react";
-import {
-    useBlockInstanceEditor
-} from "@/components/blockInstance/BlockInstanceEditor/hooks/useBlockInstanceEditor";
+// Removed useBlockInstanceEditor
+import { useBlockParameters } from "@/components/blockInstance/BlockInstanceEditor/hooks/useBlockParameters";
+import { useBlockParameterMutations } from "@/components/blockInstance/BlockInstanceEditor/hooks/useBlockParameterMutations";
 import {
     Box,
     Button, Tabs
 } from "@mantine/core";
 import { IconPlus } from "@tabler/icons-react";
-import {IBlock, IBlockParameterGroup, IBlockRelation} from "@/entities/ConstructorEntities";
+import {IBlock, IBlockParameterGroup } from "@/entities/ConstructorEntities"; // Removed IBlockRelation
 import { IBlockParameterInstance } from "@/entities/BookEntities";
-import { bookDb } from "@/entities/bookDb";
+// Removed bookDb import
 import classes from "../../BlockInstanceEditor.module.css";
 import {
     ParameterList
@@ -19,15 +19,11 @@ import {
     AddParameterModal
 } from "@/components/blockInstance/BlockInstanceEditor/parts/InstanceParameterEditor/modal/AddParameterModal";
 import {FullParam} from "@/components/blockInstance/BlockInstanceEditor/types";
-import {BlockInstanceRepository} from "@/repository/BlockInstance/BlockInstanceRepository";
-import {
-    addParameterInstance,
-    BlockParameterInstanceRepository,
-    updateParameterInstance
-} from "@/repository/BlockInstance/BlockParameterInstanceRepository";
+// Removed BlockInstanceRepository and BlockParameterInstanceRepository direct imports
 
 interface InstanceParameterEditorProps {
     blockInstanceUuid: string;
+    blockUuid: string | undefined; // Added blockUuid
     blockUseTabs: boolean;
     relatedBlocks?: IBlock[];
     allBlocks?: IBlock[];
@@ -71,6 +67,7 @@ const ParameterGroupContent = ({ availableParameters, fullParams, onAdd, ...prop
 
 export const InstanceParameterEditor = ({
                                             blockInstanceUuid,
+                                            blockUuid, // Destructure new prop
                                             blockUseTabs,
                                             relatedBlocks,
                                             allBlocks,
@@ -84,10 +81,12 @@ export const InstanceParameterEditor = ({
         availableParametersWithoutInstances,
         parameterGroups,
         possibleValuesMap,
-    } = useBlockInstanceEditor(blockInstanceUuid, currentParamGroup);
+    } = useBlockParameters(blockInstanceUuid, blockUuid, currentParamGroup?.uuid);
+
+    const { addBlockParameterInstance, deleteBlockParameterInstance, updateBlockParameterInstanceValue } = useBlockParameterMutations();
 
     useEffect(() => {
-        if (parameterGroups && parameterGroups.length > 0) {
+        if (parameterGroups && parameterGroups.length > 0 && !currentParamGroup) { // Only set if not already set
             setCurrentParamGroup(parameterGroups[0]);
         }
     }, [blockInstanceUuid, parameterGroups]);
@@ -127,16 +126,16 @@ export const InstanceParameterEditor = ({
         };
 
         try {
-            await BlockParameterInstanceRepository.addParameterInstance(bookDb,newInstance);
+            await addBlockParameterInstance(newInstance); // Use new hook function
             setIsAddModalOpen(false);
-        } catch (error) {
+        } catch (error)
             console.error("Error saving parameter instance:", error);
         }
     };
 
     const handleDeleteParameter = async (instanceId: number) => {
         try {
-            await BlockParameterInstanceRepository.deleteParameterInstance(bookDb, instanceId);
+            await deleteBlockParameterInstance(instanceId); // Use new hook function
         } catch (error) {
             console.error("Error deleting parameter instance:", error);
         }
@@ -144,9 +143,9 @@ export const InstanceParameterEditor = ({
 
     const handleUpdateParameterValue = async (instance: IBlockParameterInstance, newValue: string | number) => {
         try {
-            await BlockParameterInstanceRepository.updateParameterInstance(bookDb, instance.id, {
-                value: newValue
-            });
+            // The new hook function updateBlockParameterInstanceValue expects (instance, newValue)
+            // which matches the parameters here.
+            await updateBlockParameterInstanceValue(instance, newValue); // Use new hook function
         } catch (error) {
             console.error("Error updating parameter instance:", error);
         }
@@ -182,8 +181,8 @@ export const InstanceParameterEditor = ({
         };
 
         try {
-            await BlockParameterInstanceRepository.addParameterInstance(bookDb, newInstance);
-            // Data should refresh via useLiveQuery in useBlockInstanceEditor
+            await addBlockParameterInstance(newInstance); // Use new hook function
+            // Data should refresh via useLiveQuery in useBlockParameters
         } catch (error) {
             console.error("Error adding new parameter instance:", error);
             // Consider adding user-facing notification here
