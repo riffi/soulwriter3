@@ -108,6 +108,7 @@ export const ParameterEditVariantRenderer = ({
                 data={
                     instances?.map(i => ({value: i.uuid, label: i.title}))
                 }
+                searchable
                 value={value}
                 onChange={(value) => onValueChange(value || '')}
             />

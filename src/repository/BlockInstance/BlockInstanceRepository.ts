@@ -21,7 +21,7 @@ export const getBlockInstances = async (db: BookDB, blockUuid: string, titleSear
 
   if (titleSearch && titleSearch.trim() !== '') {
     collection = collection.filter(instance =>
-        instance.title.toLowerCase().includes(titleSearch.toLowerCase())
+        instance.title.toLowerCase().includes(titleSearch.trim().toLowerCase())
     );
   }
 
