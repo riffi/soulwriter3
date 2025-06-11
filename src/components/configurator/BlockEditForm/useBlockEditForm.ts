@@ -39,11 +39,18 @@ export const useBlockEditForm = (blockUuid: string, bookUuid?: string, currentGr
   }, [block])
 
   const paramList = useLiveQuery<IBlockParameter[]>(() => {
-    if (!currentGroupUuid) {
-      return []
+    if (currentGroupUuid) {
+      // If a specific group UUID is provided, fetch parameters for that group and block
+      return db.blockParameters
+          .where({ groupUuid: currentGroupUuid, blockUuid: blockUuid })
+          .sortBy("orderNumber");
+    } else {
+      // If no specific group UUID is provided, fetch all parameters for the block
+      return db.blockParameters
+          .where({ blockUuid: blockUuid })
+          .sortBy("orderNumber");
     }
-    return db.blockParameters.where({groupUuid : currentGroupUuid }).toArray();
-  }, [currentGroupUuid]);
+  }, [blockUuid, currentGroupUuid]);
 
 
   const configuration = useLiveQuery(() => {

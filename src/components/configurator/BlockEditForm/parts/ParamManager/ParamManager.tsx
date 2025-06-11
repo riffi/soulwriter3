@@ -5,9 +5,11 @@ import { ParamTable } from "@/components/configurator/BlockEditForm/parts/ParamM
 import { GroupsModal } from "@/components/configurator/BlockEditForm/parts/ParamManager/modal/GroupsModal/GroupsModal";
 import { ParamEditModal } from "@/components/configurator/BlockEditForm/parts/ParamManager/modal/ParamEditModal/ParamEditModal";
 import { useBlockEditForm } from "@/components/configurator/BlockEditForm/useBlockEditForm";
-import {IBlock, IBlockParameter, IBlockRelation} from "@/entities/ConstructorEntities";
+import {IBlock, IBlockParameter, IBlockRelation, IBlockParameterGroup} from "@/entities/ConstructorEntities"; // Added IBlockParameterGroup, though not directly used in this file, it's good for context with paramGroupList
 import { notifications } from "@mantine/notifications";
 import {IconSettings} from "@tabler/icons-react";
+import { bookDb } from "@/entities/bookDb";
+import { configDatabase } from "@/entities/configuratorDb";
 
 interface ParamManagerProps {
   blockUuid: string;
@@ -45,14 +47,47 @@ export const ParamManager = ({
     }
   }, [paramGroupList, currentGroupUuid]);
 
-  const getInitialParamData = (): IBlockParameter => ({
-    uuid: "",
-    title: "",
-    description: "",
-    groupUuid: currentGroupUuid,
-    dataType: "string",
-    orderNumber: paramList?.length || 0,
-  });
+  const getInitialParamData = (specificGroupUuidForTab?: string): IBlockParameter => {
+    const targetGroupUuidForNewParam = useTabs === 1 ? (specificGroupUuidForTab || currentGroupUuid) : undefined;
+    // paramList from the hook is filtered by currentGroupUuid if currentGroupUuid is set AND useTabs is NOT 1.
+    // When useTabs IS 1, paramList contains ALL params for the block.
+    // For calculating order number for a NEW param in a specific group,
+    // we need to count existing params in THAT group.
+    const paramsInTargetGroup = useTabs === 1
+        ? paramList?.filter(p => p.groupUuid === targetGroupUuidForNewParam) || []
+        : paramList || []; // In non-tab mode, paramList is already filtered or contains all if no group context
+
+    return {
+      uuid: "",
+      title: "",
+      description: "",
+      groupUuid: targetGroupUuidForNewParam,
+      dataType: "string",
+      orderNumber: paramsInTargetGroup.length,
+      blockUuid: blockUuid, // Assign blockUuid from props
+    };
+  };
+
+  const handleMoveParamToGroup = async (paramUuid: string, targetGroupUuid: string) => {
+    const db = bookUuid ? bookDb : configDatabase;
+    const paramToMove = await db.blockParameters.get({ uuid: paramUuid });
+
+    if (paramToMove) {
+      const updatedParam = { ...paramToMove, groupUuid: targetGroupUuid };
+      await saveParam(updatedParam); // saveParam is from useBlockEditForm
+      notifications.show({
+        title: "Параметр перемещен",
+        message: `Параметр "${paramToMove.title}" успешно перемещен.`,
+        color: "green",
+      });
+    } else {
+      notifications.show({
+        title: "Ошибка",
+        message: "Не удалось найти параметр для перемещения.",
+        color: "red",
+      });
+    }
+  };
 
   const handleParamModalOpen = (param?: IBlockParameter) => {
     setCurrentParam(param || getInitialParamData());
@@ -93,11 +128,15 @@ export const ParamManager = ({
         {paramGroupList?.map((group) => (
             <Tabs.Panel value={group.uuid} key={group.uuid}>
               <ParamTable
-                  params={paramList?.filter((param) => param.groupUuid === group.uuid) || []}
+                  params={paramList?.filter((p) => p.groupUuid === group.uuid) || []}
                   otherBlocks={otherBlocks}
-                  onAddParam={() => handleParamModalOpen(getInitialParamData())}
+                  onAddParam={() => handleParamModalOpen(getInitialParamData(group.uuid))}
                   onEditParam={handleParamModalOpen}
                   onDeleteParam={deleteParam}
+                  paramGroupList={paramGroupList}
+                  onMoveParam={handleMoveParamToGroup}
+                  showMoveButton={paramGroupList && paramGroupList.length > 1}
+                  currentGroupUuid={group.uuid}
               />
             </Tabs.Panel>
         ))}
@@ -133,7 +172,7 @@ export const ParamManager = ({
             blockUuid={blockUuid}
             bookUuid={bookUuid}
             otherBlocks={otherBlocks}
-          />
+        />
         }
 
         <GroupsModal

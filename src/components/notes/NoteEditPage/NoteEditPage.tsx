@@ -28,6 +28,7 @@ export const NoteEditPage = () => {
     const { uuid } = useParams();
     const navigate = useNavigate();
     const [note, setNote] = useState<INote | null>(null);
+    const [noteBody, setNoteBody] = useState("");
     const [books, setBooks] = useState<IBook[]>([]);
     const [selectedBookUuid, setSelectedBookUuid] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
@@ -56,6 +57,7 @@ export const NoteEditPage = () => {
                     updatedAt: moment().toISOString(true),
                     id: undefined
                 });
+                setNoteBody("");
                 setSelectedBookUuid(null); // Initialize selectedBookUuid for new notes
                 setShowBookSelect(false); // Don't show select by default for new notes
                 setLoading(false);
@@ -64,6 +66,9 @@ export const NoteEditPage = () => {
                 const data = await NoteRepository.getByUuid(configDatabase, uuid!);
                 if (data) {
                     setNote(data);
+                    if (data.body !== noteBody) {
+                        setNoteBody(data.body);
+                    }
                     setSelectedBookUuid(data.bookUuid || null); // Set selected book from loaded note
                     setShowBookSelect(!!data.bookUuid); // Show select if note already has a book
                 }
@@ -193,28 +198,12 @@ export const NoteEditPage = () => {
     }, [note, isNewNote, navigate, selectedBookUuid]);
 
     const handleContentChange = useCallback((content: string) => {
-        if (!isNewNote && note && note.body === content) {
+        if (noteBody === content) {
             return;
         }
-        setNote(prev => {
-            const baseState = prev || (isNewNote ? {
-                uuid: note?.uuid || generateUUID(), // Use existing UUID if available (from new note state)
-                title: "", body: "", tags: "", noteGroupUuid: undefined,
-                createdAt: moment().toISOString(true), // Should match initial new note state
-                updatedAt: moment().toISOString(true),
-                id: undefined
-            } : null);
-            // Ensure we use the UUID from the initial new note state set in useEffect
-            if (isNewNote && prev && prev.uuid) { // If new note already initialized, use its uuid
-                baseState.uuid = prev.uuid;
-                baseState.createdAt = prev.createdAt;
-            }
-
-            if (baseState) return {...baseState, body: content };
-            return null;
-        });
+        //setNoteBody(content);
         persistNote({ body: content });
-    }, [persistNote, isNewNote, note]); // Added note to dependencies
+    }, [persistNote, noteBody]); // Updated dependencies
 
     const handleBookLinkClick = () => {
         setShowBookSelect(true);
@@ -303,7 +292,7 @@ export const NoteEditPage = () => {
 
                 <RichEditor
                     key={note?.uuid || 'new-note-editor'} // Added key to help React re-mount editor for new notes
-                    initialContent={note?.body || ""}
+                    initialContent={noteBody}
                     mobileConstraints={
                         {top: 50, bottom: 0}
                     }
