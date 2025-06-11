@@ -39,6 +39,8 @@ export const ParamManager = ({
     moveGroupDown,
     updateGroupTitle,
     deleteGroup,
+    moveParamUp,
+    moveParamDown,
   } = useBlockEditForm(blockUuid, bookUuid, currentGroupUuid);
 
   useEffect(() => {
@@ -133,6 +135,8 @@ export const ParamManager = ({
                   onAddParam={() => handleParamModalOpen(getInitialParamData(group.uuid))}
                   onEditParam={handleParamModalOpen}
                   onDeleteParam={deleteParam}
+                  onMoveParamUp={moveParamUp}
+                  onMoveParamDown={moveParamDown}
                   paramGroupList={paramGroupList}
                   onMoveParam={handleMoveParamToGroup}
                   showMoveButton={paramGroupList && paramGroupList.length > 1}
@@ -153,6 +157,8 @@ export const ParamManager = ({
                 onAddParam={() => handleParamModalOpen(getInitialParamData())}
                 onEditParam={handleParamModalOpen}
                 onDeleteParam={deleteParam}
+                onMoveParamUp={moveParamUp}
+                onMoveParamDown={moveParamDown}
                 otherBlocks={otherBlocks}
             />
         )}

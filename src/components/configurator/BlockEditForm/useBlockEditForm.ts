@@ -168,6 +168,99 @@ export const useBlockEditForm = (blockUuid: string, bookUuid?: string, currentGr
     }
   };
 
+  const moveParamUp = async (paramId: number) => {
+    const targetParam = await db.blockParameters.get(paramId);
+    if (!targetParam) return;
+
+    // Determine siblings based on whether currentGroupUuid is set
+    let siblings = paramList;
+    if (targetParam.groupUuid) {
+      siblings = paramList?.filter(p => p.groupUuid === targetParam.groupUuid && p.blockUuid === targetParam.blockUuid);
+    } else {
+      siblings = paramList?.filter(p => !p.groupUuid && p.blockUuid === targetParam.blockUuid);
+    }
+
+    if (!siblings) return;
+
+
+    const currentIndex = siblings.findIndex(p => p.id === paramId);
+
+    if (currentIndex <= 0) {
+      notifications.show({
+        title: "Информация",
+        message: "Параметр уже наверху списка.",
+      });
+      return; // Already at the top or not found
+    }
+
+    const precedingParam = siblings[currentIndex - 1];
+
+    // Swap orderNumbers
+    const currentOrder = targetParam.orderNumber;
+    targetParam.orderNumber = precedingParam.orderNumber;
+    precedingParam.orderNumber = currentOrder;
+
+    try {
+      await db.blockParameters.bulkPut([targetParam, precedingParam]);
+      notifications.show({
+        title: "Успешно",
+        message: "Параметр перемещен вверх.",
+      });
+    } catch (error) {
+      notifications.show({
+        title: "Ошибка",
+        message: "Не удалось переместить параметр.",
+        color: "red",
+      });
+    }
+  };
+
+  const moveParamDown = async (paramId: number) => {
+    const targetParam = await db.blockParameters.get(paramId);
+    if (!targetParam) return;
+
+    // Determine siblings based on whether currentGroupUuid is set
+    let siblings = paramList;
+    if (targetParam.groupUuid) {
+      siblings = paramList?.filter(p => p.groupUuid === targetParam.groupUuid && p.blockUuid === targetParam.blockUuid);
+    } else {
+      siblings = paramList?.filter(p => !p.groupUuid && p.blockUuid === targetParam.blockUuid);
+    }
+
+    if (!siblings) return;
+
+    const currentIndex = siblings.findIndex(p => p.id === paramId);
+
+    if (currentIndex === -1 || currentIndex >= siblings.length - 1) {
+      notifications.show({
+        title: "Информация",
+        message: "Параметр уже внизу списка.",
+      });
+      return; // Not found or already at the bottom
+    }
+
+    const succeedingParam = siblings[currentIndex + 1];
+
+    // Swap orderNumbers
+    const currentOrder = targetParam.orderNumber;
+    targetParam.orderNumber = succeedingParam.orderNumber;
+    succeedingParam.orderNumber = currentOrder;
+
+    try {
+      await db.blockParameters.bulkPut([targetParam, succeedingParam]);
+      notifications.show({
+        title: "Успешно",
+        message: "Параметр перемещен вниз.",
+      });
+    } catch (error) {
+      notifications.show({
+        title: "Ошибка",
+        message: "Не удалось переместить параметр.",
+        color: "red",
+      });
+    }
+  };
+
   const saveParamGroup = async (data: IBlockParameterGroup) => {
     try {
       if (!data.uuid) {
@@ -304,6 +397,8 @@ export const useBlockEditForm = (blockUuid: string, bookUuid?: string, currentGr
     paramList,
     saveParam,
     deleteParam,
+    moveParamUp,
+    moveParamDown,
     moveGroupUp,
     moveGroupDown,
     updateGroupTitle,

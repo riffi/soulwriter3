@@ -6,7 +6,7 @@ import {
     IBlockRelation,
     IBlockParameterGroup
 } from "@/entities/ConstructorEntities";
-import { IconEdit, IconPlus, IconTrash, IconArrowsRightLeft } from "@tabler/icons-react";
+import { IconEdit, IconPlus, IconTrash, IconArrowsRightLeft, IconArrowUp, IconArrowDown } from "@tabler/icons-react";
 import React from "react";
 import { useDialog } from "@/providers/DialogProvider/DialogProvider";
 import classes from "./ParamTable.module.css"; // Создайте этот CSS модуль для кастомизации
@@ -17,6 +17,8 @@ interface IParamTableProps {
     onAddParam: () => void;
     onEditParam: (param: IBlockParameter) => void;
     onDeleteParam: (paramId: number) => void;
+    onMoveParamUp?: (paramId: number) => void;
+    onMoveParamDown?: (paramId: number) => void;
     otherBlocks: IBlock[];
     paramGroupList?: IBlockParameterGroup[];
     onMoveParam?: (paramUuid: string, targetGroupUuid: string) => void;
@@ -29,6 +31,8 @@ export const ParamTable = ({
                                onAddParam,
                                onEditParam,
                                onDeleteParam,
+                               onMoveParamUp,
+                               onMoveParamDown,
                                otherBlocks,
                                paramGroupList,
                                onMoveParam,
@@ -60,7 +64,7 @@ export const ParamTable = ({
                 </Table.Thead>
                 {params?.length > 0 ? (
                     <Table.Tbody>
-                        {params?.map((param) => (
+                        {params?.map((param, index) => (
                             <Table.Tr key={param.uuid}>
                                 <Table.Td>
                                     <Text>
@@ -86,7 +90,25 @@ export const ParamTable = ({
                                     </Text>
                                 </Table.Td>
                                 <Table.Td>
-                                    <Group gap={4} justify="center">
+                                    <Group gap={4} justify="center" wrap="nowrap">
+                                        <ActionIcon
+                                            variant="subtle"
+                                            color="gray"
+                                            onClick={() => onMoveParamUp?.(param.id!)}
+                                            disabled={index === 0}
+                                            title="Переместить вверх"
+                                        >
+                                            <IconArrowUp size="1rem" />
+                                        </ActionIcon>
+                                        <ActionIcon
+                                            variant="subtle"
+                                            color="gray"
+                                            onClick={() => onMoveParamDown?.(param.id!)}
+                                            disabled={index === params.length - 1}
+                                            title="Переместить вниз"
+                                        >
+                                            <IconArrowDown size="1rem" />
+                                        </ActionIcon>
                                         <ActionIcon
                                             variant="subtle"
                                             color="blue"
