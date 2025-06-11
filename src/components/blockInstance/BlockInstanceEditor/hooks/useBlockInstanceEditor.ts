@@ -93,10 +93,18 @@ export const useBlockInstanceEditor = (blockInstanceUuid: string, currentParamGr
 
   //параметры, которые еще не используются в данном блоке
   const availableParametersWithoutInstances = useLiveQuery<IBlockParameter[]>(() => {
-    if (!availableParameters || !parameterInstances) return availableParameters || [];
+    if (!availableParameters) return []; // No parameters available at all
+    if (!parameterInstances) return availableParameters; // No instances exist yet, all are available
 
-    const usedParameterUuids = new Set(parameterInstances.map(pi => pi.blockParameterUuid));
-    return availableParameters.filter(param => !usedParameterUuids.has(param.uuid));
+    return availableParameters.filter(param => {
+      // If allowMultiple is true (1), it's always available for adding another instance.
+      if (param.allowMultiple === 1) {
+        return true;
+      }
+      // If allowMultiple is false (0 or undefined), it's available only if no instance of it exists.
+      const instanceExists = parameterInstances.some(pi => pi.blockParameterUuid === param.uuid);
+      return !instanceExists;
+    });
   }, [availableParameters, parameterInstances]);
 
   const childBlocks = useLiveQuery<IBlock[]>(() => {

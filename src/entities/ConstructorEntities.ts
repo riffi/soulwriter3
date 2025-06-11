@@ -112,6 +112,7 @@ export interface IBlockParameter {
   displayInCard: number; // Отображать ли параметр в карточке
   orderNumber: number; // Порядковый номер
   relatedBlockUuid?: string; // Ссылка на связь блоков
+  allowMultiple?: number;
 }
 
 export interface IBlockParameterWithBlockTitle extends IBlockParameter{

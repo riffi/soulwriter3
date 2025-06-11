@@ -40,6 +40,7 @@ export const ParamEditModal  = (props: IBlockEditModalProps) => {
       orderNumber: 0,
       isDefault: 0,
       displayInCard: 0,
+      allowMultiple: props.initialData?.allowMultiple || 0,
     }
   });
 
@@ -59,11 +60,11 @@ export const ParamEditModal  = (props: IBlockEditModalProps) => {
   );
 
   const relatedBlocksOptions =  props.otherBlocks.map(b => {
-        return {
-          value: b.uuid!,
-          label: `${b?.title}`
-        };
-    });
+    return {
+      value: b.uuid!,
+      label: `${b?.title}`
+    };
+  });
 
 
   const handleAddValue = () => {
@@ -168,6 +169,12 @@ export const ParamEditModal  = (props: IBlockEditModalProps) => {
                 label="Отображать в карточке"
                 checked={form.values.displayInCard === 1}
                 onChange={(e) => form.setFieldValue('displayInCard', e.currentTarget.checked ? 1 : 0)}
+            />
+
+            <Checkbox
+                label="Разрешить несколько экземпляров"
+                checked={form.values.allowMultiple === 1}
+                onChange={(e) => form.setFieldValue('allowMultiple', e.currentTarget.checked ? 1 : 0)}
             />
 
             <Group justify="flex-end" mt="md">
