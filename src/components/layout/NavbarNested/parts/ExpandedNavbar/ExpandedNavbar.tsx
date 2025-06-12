@@ -8,7 +8,7 @@ import {
     Burger, UnstyledButton, ThemeIcon, Collapse, Text
 } from '@mantine/core';
 import { useBookStore } from '@/stores/bookStore/bookStore';
-import {IconBooks, IconChevronRight, IconMicroscope} from '@tabler/icons-react';
+import {IconBooks, IconChevronRight, IconMicroscope, IconWifiOff} from '@tabler/icons-react'; // Added IconWifiOff
 import classes from './ExpandedNavbar.module.css';
 import config from '../../../../../../package.json';
 import {UserButton} from "@/components/layout/UserButton/UserButton";
@@ -93,7 +93,7 @@ const NavLink = ({
                 </Group>
             </Text>
         )) : null
-    ), [hasLinks, links, navigate, toggleNavbar, location.pathname, location.search]);
+    ), [hasLinks, links, navigate, toggleNavbar, location.pathname, location.search, isMobile]); // Added isMobile
 
     return (
         <>
@@ -145,28 +145,50 @@ export const ExpandedNavbar = ({
                                    opened,
                                    toggleNavbar,
                                    baseItems,
-                                   dynamicItems
+                                   dynamicItems,
+                                   isOnline // Added isOnline prop
                                }: {
     opened: boolean;
     toggleNavbar?: () => void;
     baseItems: NavLinkGroup[];
     dynamicItems: NavLinkGroup[];
+    isOnline: boolean; // Added isOnline prop type
 }) => {
     const { selectedBook } = useBookStore();
+    const { isMobile } = useMedia(); // Get media query info
 
     return (
         <nav className={classes.navbar} aria-label="Основное меню">
             <div className={classes.header}>
-                <Group justify="space-between">
+                <Group justify="space-between" align="center"> {/* Added align="center" for better vertical alignment */}
                     <Logo style={{ width: 150 }} />
-                    <Burger
-                        opened={opened}
-                        onClick={toggleNavbar}
-                        visibleFrom="sm"
-                        lineSize={1}
-                        size="lg"
-                    />
-                    <Code fw={700}>{config.version}</Code>
+                    {/* Combined right-side items into a new Group for better layout control */}
+                    <Group gap="xs" align="center">
+                        {isMobile && !isOnline && (
+                            <IconWifiOff
+                                size={26}
+                                stroke={1.5}
+                                color="orange"
+                                style={{ marginRight: '8px' }}
+                            />
+                        )}
+                        <Burger
+                            opened={opened}
+                            onClick={toggleNavbar}
+                            visibleFrom="sm"
+                            lineSize={1}
+                            size="lg"
+                        />
+                        <Code fw={700}>{config.version}</Code>
+                        {!isMobile && !isOnline && (
+                            <IconWifiOff
+                                size={24}
+                                stroke={1.5}
+                                color="orange"
+                                style={{ marginLeft: '8px' }}
+                            />
+                        )}
+                    </Group>
                 </Group>
             </div>
 
