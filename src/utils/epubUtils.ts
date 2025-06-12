@@ -40,7 +40,10 @@ async function embedImagesAsBase64(chapterHtml: string, bookEpub: any): Promise<
             let base64: string | null = null;
             if (bookEpub.archive && typeof bookEpub.archive.getBase64 === 'function') {
                 // epub.js v0.3+
-                base64 = await bookEpub.archive.getBase64('/OEBPS/'+src);
+                base64 = await bookEpub.archive.getBase64('/' + src);
+                if (!base64){
+                    await bookEpub.archive.getBase64('/OEBPS/'+src);
+                }
             }
             else if (bookEpub.resources && typeof bookEpub.resources.get === 'function') {
 
