@@ -9,7 +9,7 @@ export default defineConfig(({ command }) => ({
     tsconfigPaths(),
     VitePWA({ // Ensure VitePWA is active
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png'],
+      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'src/components/layout/NavbarNested/parts/logo/logo.png', 'src/components/layout/NavbarNested/parts/logo/logo_collapsed.png'],
       manifest: {
         name: 'IncLumin',
         short_name: 'IncLumin',
