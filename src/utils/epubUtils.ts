@@ -5,6 +5,14 @@ import { generateUUID } from "@/utils/UUIDUtils";
 import { notifications } from "@mantine/notifications";
 import {importBookData} from "@/utils/bookBackupManager";
 
+// Helper function to extract text from an HTML string for accurate character counting
+function getTextFromHtml(html: string): string {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+    return doc.body.textContent || "";
+}
+
+
 // Вспомогательная функция для извлечения HTML из документа
 function extractHtmlFromDocument(doc: Document): string {
     const body = doc.body || doc.documentElement;
@@ -175,11 +183,17 @@ async function extractChaptersAndScenesFromEpub(bookEpub: Book) {
                                 sceneHtmls.forEach((sceneHtml, index) => {
                                     if (sceneHtml.trim()) {
                                         const sceneTitle = generateSceneTitle(sceneHtml, index + 1);
+                                        const sceneText = getTextFromHtml(sceneHtml);
+                                        const totalSymbolCountWithSpaces = sceneText.length;
+                                        const totalSymbolCountWoSpaces = sceneText.replace(/\s/g, '').length;
+
                                         scenes.push({
                                             title: sceneTitle,
                                             body: sceneHtml.trim(),
                                             order: index + 1,
                                             chapterId: sceneChapterOrderLink,
+                                            totalSymbolCountWithSpaces,
+                                            totalSymbolCountWoSpaces,
                                         });
                                     }
                                 });
@@ -188,170 +202,200 @@ async function extractChaptersAndScenesFromEpub(bookEpub: Book) {
                                 scenes.push({
                                     title: `${chapterTitle} - Сцена 1`,
                                     body: `<p>Содержимое главы "${chapterTitle}" не удалось извлечь из загруженной секции.</p>`,
-order: 1,
-    chapterId: sceneChapterOrderLink,
-});
-}
-} else {
-    scenes.push({
-        title: `${chapterTitle} - Пустая секция`,
-        body: `<p>Секция главы "${chapterTitle}" пуста.</p>`,
-        order: 1,
-        chapterId: sceneChapterOrderLink,
-    });
-}
-} else {
-    scenes.push({
-        title: `${chapterTitle} - Секция не найдена`,
-        body: `<p>Секция для главы "${chapterTitle}" не найдена.</p>`,
-        order: 1,
-        chapterId: sceneChapterOrderLink,
-    });
-}
-} catch (sectionError) {
-    console.warn(`Section load error for ${tocItem.label}:`, sectionError);
-
-    // Fallback: пробуем через URL загрузку
-    try {
-        const response = await fetch(spineItem.url);
-        const content = await response.text();
-        const parser = new DOMParser();
-
-        let doc: Document;
-        try {
-            doc = parser.parseFromString(content, 'application/xhtml+xml');
-            if (doc.documentElement.tagName === 'parsererror') {
-                throw new Error('XHTML parse error');
-            }
-        } catch {
-            doc = parser.parseFromString(content, 'text/html');
-        }
-
-        const chapterHtml = extractHtmlFromDocument(doc);
-
-        if (chapterHtml.trim()) {
-            const sceneHtmls = splitHtmlIntoScenes(chapterHtml);
-
-            sceneHtmls.forEach((sceneHtml, index) => {
-                if (sceneHtml.trim()) {
-                    const sceneTitle = generateSceneTitle(sceneHtml, index + 1);
-                    scenes.push({
-                        title: sceneTitle,
-                        body: sceneHtml.trim(),
-                        order: index + 1,
-                        chapterId: sceneChapterOrderLink,
-                    });
-                }
-            });
-        } else {
-            scenes.push({
-                title: `${chapterTitle} - Fetch fallback`,
-                body: `<p>Содержимое главы "${chapterTitle}" загружено через fetch, но HTML не извлечен.</p>`,
-                order: 1,
-                chapterId: sceneChapterOrderLink,
-            });
-        }
-    } catch (fetchError) {
-        console.warn(`Fetch fallback failed for ${tocItem.label}:`, fetchError);
-        scenes.push({
-            title: `${chapterTitle} - Ошибка загрузки`,
-            body: `<p>Не удалось загрузить содержимое главы "${chapterTitle}". Ошибки: ${sectionError.message}, ${fetchError.message}</p>`,
-            order: 1,
-            chapterId: sceneChapterOrderLink,
-        });
-    }
-}
-} else {
-    // Если spine item не найден, пробуем создать URL вручную
-    console.warn(`Spine item not found for href: ${tocItem.href}`);
-
-    try {
-        // Пробуем разные варианты URL
-        const baseUrl = bookEpub.url ? bookEpub.url.replace(/\/[^\/]*$/, '/') : '';
-        const possibleUrls = [
-            `${baseUrl}${cleanHref}`,
-            `${baseUrl}OEBPS/${cleanHref}`,
-            `${baseUrl}OPS/${cleanHref}`,
-            `${baseUrl}Text/${cleanHref}`
-        ];
-
-        let content = '';
-        for (const url of possibleUrls) {
-            try {
-                const response = await fetch(url);
-                if (response.ok) {
-                    content = await response.text();
-                    break;
-                }
-            } catch (urlError) {
-                continue;
-            }
-        }
-
-        if (content) {
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(content, 'text/html');
-            const chapterHtml = extractHtmlFromDocument(doc);
-
-            if (chapterHtml.trim()) {
-                const sceneHtmls = splitHtmlIntoScenes(chapterHtml);
-
-                sceneHtmls.forEach((sceneHtml, index) => {
-                    if (sceneHtml.trim()) {
-                        const sceneTitle = generateSceneTitle(sceneHtml, index + 1);
+                                    order: 1,
+                                    chapterId: sceneChapterOrderLink,
+                                    totalSymbolCountWithSpaces: 0,
+                                    totalSymbolCountWoSpaces: 0,
+                                });
+                            }
+                        } else {
+                            scenes.push({
+                                title: `${chapterTitle} - Пустая секция`,
+                                body: `<p>Секция главы "${chapterTitle}" пуста.</p>`,
+                                order: 1,
+                                chapterId: sceneChapterOrderLink,
+                                totalSymbolCountWithSpaces: 0,
+                                totalSymbolCountWoSpaces: 0,
+                            });
+                        }
+                    } else {
                         scenes.push({
-                            title: sceneTitle,
-                            body: sceneHtml.trim(),
-                            order: index + 1,
+                            title: `${chapterTitle} - Секция не найдена`,
+                            body: `<p>Секция для главы "${chapterTitle}" не найдена.</p>`,
+                            order: 1,
                             chapterId: sceneChapterOrderLink,
+                            totalSymbolCountWithSpaces: 0,
+                            totalSymbolCountWoSpaces: 0,
                         });
                     }
-                });
+                } catch (sectionError) {
+                    console.warn(`Section load error for ${tocItem.label}:`, sectionError);
+
+                    // Fallback: пробуем через URL загрузку
+                    try {
+                        const response = await fetch(spineItem.url);
+                        const content = await response.text();
+                        const parser = new DOMParser();
+
+                        let doc: Document;
+                        try {
+                            doc = parser.parseFromString(content, 'application/xhtml+xml');
+                            if (doc.documentElement.tagName === 'parsererror') {
+                                throw new Error('XHTML parse error');
+                            }
+                        } catch {
+                            doc = parser.parseFromString(content, 'text/html');
+                        }
+
+                        const chapterHtml = extractHtmlFromDocument(doc);
+
+                        if (chapterHtml.trim()) {
+                            const sceneHtmls = splitHtmlIntoScenes(chapterHtml);
+
+                            sceneHtmls.forEach((sceneHtml, index) => {
+                                if (sceneHtml.trim()) {
+                                    const sceneTitle = generateSceneTitle(sceneHtml, index + 1);
+                                    const sceneText = getTextFromHtml(sceneHtml);
+                                    const totalSymbolCountWithSpaces = sceneText.length;
+                                    const totalSymbolCountWoSpaces = sceneText.replace(/\s/g, '').length;
+
+                                    scenes.push({
+                                        title: sceneTitle,
+                                        body: sceneHtml.trim(),
+                                        order: index + 1,
+                                        chapterId: sceneChapterOrderLink,
+                                        totalSymbolCountWithSpaces,
+                                        totalSymbolCountWoSpaces,
+                                    });
+                                }
+                            });
+                        } else {
+                            scenes.push({
+                                title: `${chapterTitle} - Fetch fallback`,
+                                body: `<p>Содержимое главы "${chapterTitle}" загружено через fetch, но HTML не извлечен.</p>`,
+                                order: 1,
+                                chapterId: sceneChapterOrderLink,
+                                totalSymbolCountWithSpaces: 0,
+                                totalSymbolCountWoSpaces: 0,
+                            });
+                        }
+                    } catch (fetchError) {
+                        console.warn(`Fetch fallback failed for ${tocItem.label}:`, fetchError);
+                        scenes.push({
+                            title: `${chapterTitle} - Ошибка загрузки`,
+                            body: `<p>Не удалось загрузить содержимое главы "${chapterTitle}". Ошибки: ${sectionError.message}, ${fetchError.message}</p>`,
+                            order: 1,
+                            chapterId: sceneChapterOrderLink,
+                            totalSymbolCountWithSpaces: 0,
+                            totalSymbolCountWoSpaces: 0,
+                        });
+                    }
+                }
             } else {
-                scenes.push({
-                    title: `${chapterTitle} - Manual URL`,
-                    body: `<p>Содержимое главы "${chapterTitle}" загружено по URL, но HTML не извлечен.</p>`,
-                    order: 1,
-                    chapterId: sceneChapterOrderLink,
-                });
+                // Если spine item не найден, пробуем создать URL вручную
+                console.warn(`Spine item not found for href: ${tocItem.href}`);
+
+                try {
+                    // Пробуем разные варианты URL
+                    const baseUrl = bookEpub.url ? bookEpub.url.replace(/\/[^\/]*$/, '/') : '';
+                    const possibleUrls = [
+                        `${baseUrl}${cleanHref}`,
+                        `${baseUrl}OEBPS/${cleanHref}`,
+                        `${baseUrl}OPS/${cleanHref}`,
+                        `${baseUrl}Text/${cleanHref}`
+                    ];
+
+                    let content = '';
+                    for (const url of possibleUrls) {
+                        try {
+                            const response = await fetch(url);
+                            if (response.ok) {
+                                content = await response.text();
+                                break;
+                            }
+                        } catch (urlError) {
+                            continue;
+                        }
+                    }
+
+                    if (content) {
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(content, 'text/html');
+                        const chapterHtml = extractHtmlFromDocument(doc);
+
+                        if (chapterHtml.trim()) {
+                            const sceneHtmls = splitHtmlIntoScenes(chapterHtml);
+
+                            sceneHtmls.forEach((sceneHtml, index) => {
+                                if (sceneHtml.trim()) {
+                                    const sceneTitle = generateSceneTitle(sceneHtml, index + 1);
+                                    const sceneText = getTextFromHtml(sceneHtml);
+                                    const totalSymbolCountWithSpaces = sceneText.length;
+                                    const totalSymbolCountWoSpaces = sceneText.replace(/\s/g, '').length;
+
+                                    scenes.push({
+                                        title: sceneTitle,
+                                        body: sceneHtml.trim(),
+                                        order: index + 1,
+                                        chapterId: sceneChapterOrderLink,
+                                        totalSymbolCountWithSpaces,
+                                        totalSymbolCountWoSpaces,
+                                    });
+                                }
+                            });
+                        } else {
+                            scenes.push({
+                                title: `${chapterTitle} - Manual URL`,
+                                body: `<p>Содержимое главы "${chapterTitle}" загружено по URL, но HTML не извлечен.</p>`,
+                                order: 1,
+                                chapterId: sceneChapterOrderLink,
+                                totalSymbolCountWithSpaces: 0,
+                                totalSymbolCountWoSpaces: 0,
+                            });
+                        }
+                    } else {
+                        scenes.push({
+                            title: `${chapterTitle} - URL не найден`,
+                            body: `<p>Не удалось найти рабочий URL для главы "${chapterTitle}".</p>`,
+                            order: 1,
+                            chapterId: sceneChapterOrderLink,
+                            totalSymbolCountWithSpaces: 0,
+                            totalSymbolCountWoSpaces: 0,
+                        });
+                    }
+                } catch (manualError) {
+                    scenes.push({
+                        title: `${chapterTitle} - Manual error`,
+                        body: `<p>Ошибка при ручной загрузке главы "${chapterTitle}": ${manualError.message}</p>`,
+                        order: 1,
+                        chapterId: sceneChapterOrderLink,
+                        totalSymbolCountWithSpaces: 0,
+                        totalSymbolCountWoSpaces: 0,
+                    });
+                }
             }
-        } else {
+        } catch (chapterLoadError) {
+            console.error(`Error loading/processing chapter "${tocItem.label}":`, chapterLoadError);
+            notifications.show({
+                title: 'Chapter Error',
+                message: `Could not process chapter: ${tocItem.label}`,
+                color: 'orange'
+            });
+
             scenes.push({
-                title: `${chapterTitle} - URL не найден`,
-                body: `<p>Не удалось найти рабочий URL для главы "${chapterTitle}".</p>`,
+                title: `${chapterTitle} - Общая ошибка`,
+                body: `<p>Общая ошибка при загрузке содержимого главы "${chapterTitle}": ${chapterLoadError.message}</p>`,
                 order: 1,
                 chapterId: sceneChapterOrderLink,
+                totalSymbolCountWithSpaces: 0,
+                totalSymbolCountWoSpaces: 0,
             });
         }
-    } catch (manualError) {
-        scenes.push({
-            title: `${chapterTitle} - Manual error`,
-            body: `<p>Ошибка при ручной загрузке главы "${chapterTitle}": ${manualError.message}</p>`,
-            order: 1,
-            chapterId: sceneChapterOrderLink,
-        });
+
+        chapterOrder++;
     }
-}
-} catch (chapterLoadError) {
-    console.error(`Error loading/processing chapter "${tocItem.label}":`, chapterLoadError);
-    notifications.show({
-        title: 'Chapter Error',
-        message: `Could not process chapter: ${tocItem.label}`,
-        color: 'orange'
-    });
 
-    scenes.push({
-        title: `${chapterTitle} - Общая ошибка`,
-        body: `<p>Общая ошибка при загрузке содержимого главы "${chapterTitle}": ${chapterLoadError.message}</p>`,
-        order: 1,
-        chapterId: sceneChapterOrderLink,
-    });
-}
-
-chapterOrder++;
-}
-
-return { chaptersToCreate, scenes };
+    return { chaptersToCreate, scenes };
 }
 
 export const importEpubFile = async (file: File): Promise<boolean> => {
