@@ -39,12 +39,13 @@ import {
   exportBook,
   handleFileImport,
   saveBookToServer,
-  loadBookFromServer
+  loadBookFromServer,
 } from "@/utils/bookBackupManager";
 import {useAuth} from "@/providers/AuthProvider/AuthProvider";
 import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
 import {usePageTitle} from "@/providers/PageTitleProvider/PageTitleProvider";
 import { getCroppedImg, processImageFile, handleFileChangeForCropping } from "@/utils/imageUtils";
+import {importEpubFile} from "@/utils/epubUtils";
 
 const getBlankBook = (kind: string = 'book'): IBook => ({
   uuid: "",
@@ -232,6 +233,25 @@ export const BookManager = () => {
       await refreshBooks();
     }
     setLoading(false);
+  };
+
+  const triggerEpubImport = async () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.epub';
+    input.onchange = async (event) => {
+      const target = event.target as HTMLInputElement;
+      if (target.files && target.files[0]) {
+        const file = target.files[0];
+        setLoading(true);
+        const success = await importEpubFile(file);
+        if (success && refreshBooks) {
+          await refreshBooks();
+        }
+        setLoading(false);
+      }
+    };
+    input.click();
   };
 
   const fetchServerBooks = async () => {
@@ -470,6 +490,13 @@ export const BookManager = () => {
                 variant="outline"
             >
               Загрузить из файла
+            </Button>
+            <Button
+                leftSection={<IconUpload size={20} />}
+                onClick={triggerEpubImport}
+                variant="outline"
+            >
+              Импорт из EPUB
             </Button>
             {token && (
                 <Button

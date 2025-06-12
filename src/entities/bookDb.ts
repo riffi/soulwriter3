@@ -55,7 +55,9 @@ const closeDBConnection = (db)=>{
 }
 
 const deleteBookDatabase = async (uuid: string): Promise<void> => {
-  await db.close();
+  if (db){
+    db.close();
+  }
   const dbName = `book_db_${uuid}`;
   await Dexie.delete(dbName);
 }

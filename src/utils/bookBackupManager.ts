@@ -48,7 +48,7 @@ const collectBookBackupData = async (bookUuid: string): Promise<BackupData> => {
 };
 
 // Вспомогательная функция для импорта данных книги
-const importBookData = async (backupData: BackupData): Promise<void> => {
+export const importBookData = async (backupData: BackupData): Promise<void> => {
   if (!backupData?.book?.uuid) {
     throw new Error("Неверный формат данных");
   }
@@ -65,23 +65,68 @@ const importBookData = async (backupData: BackupData): Promise<void> => {
   await deleteBookDatabase(backupData.book.uuid);
   const db = connectToBookDatabase(backupData.book.uuid);
 
-  // Импорт данных
-  await Promise.all([
-    db.books.add(backupData.book),
-    db.scenes.bulkAdd(backupData.scenes || []),
-    db.chapters.bulkAdd(backupData.chapters || []),
-    db.blockInstances.bulkAdd(backupData.blockInstances || []),
-    db.blockParameterInstances.bulkAdd(backupData.blockParameterInstances || []),
-    db.blockInstanceRelations.bulkAdd(backupData.blockInstanceRelations || []),
-    db.bookConfigurations.bulkAdd(backupData.bookConfigurations || []),
-    db.blocks.bulkAdd(backupData.blocks || []),
-    db.blockParameterGroups.bulkAdd(backupData.blockParameterGroups || []),
-    db.blockParameters.bulkAdd(backupData.blockParameters || []),
-    db.blockParameterPossibleValues.bulkAdd(backupData.blockParameterPossibleValues || []),
-    db.blocksRelations.bulkAdd(backupData.blocksRelations || []),
-    db.blockTabs.bulkAdd(backupData.blockTabs || []),
-    db.blockInstanceSceneLinks.bulkAdd(backupData.blockInstanceSceneLinks || []),
-  ]);
+  // 1. Add Book data
+  await db.books.add(backupData.book);
+
+  // 2. Add Chapters and get their database IDs
+  const chapterEntries = backupData.chapters || [];
+  let addedChapterIds: number[] = [];
+  if (chapterEntries.length > 0) {
+    // Dexie's bulkAdd with allKeys: true returns an array of the generated primary keys.
+    // We map to ensure we only pass properties Dexie expects for new entries.
+    addedChapterIds = await db.chapters.bulkAdd(
+        chapterEntries.map(c => ({ title: c.title, order: c.order })),
+        { allKeys: true }
+    ) as number[];
+  }
+
+  // 3. Create a map from original chapter order to new database IDs
+  const chapterOrderToDbIdMap = new Map<number, number>();
+  if (chapterEntries.length > 0 && addedChapterIds.length === chapterEntries.length) {
+    chapterEntries.forEach((chapter, index) => {
+      if (chapter.order !== undefined) { // Ensure order is present
+        chapterOrderToDbIdMap.set(chapter.order, addedChapterIds[index]);
+      }
+    });
+  }
+
+  // 4. Update scene.chapterId to use the new database IDs
+  const scenesToImport = backupData.scenes || [];
+  if (scenesToImport.length > 0 && chapterOrderToDbIdMap.size > 0) {
+    scenesToImport.forEach(scene => {
+      const originalChapterOrder = scene.chapterId as number; // This was the chapter.order
+      const dbChapterId = chapterOrderToDbIdMap.get(originalChapterOrder);
+      if (dbChapterId !== undefined) {
+        scene.chapterId = dbChapterId;
+      } else {
+        console.warn(`Scene "${scene.title}" (original chapter order: ${originalChapterOrder}) could not be mapped to a chapter DB ID. It will become chapterless.`);
+        scene.chapterId = undefined; // Consistent with IScene: chapterId?: number
+      }
+    });
+  }
+
+  // 5. Now add scenes and other data.
+  const otherPromises = [];
+  if (scenesToImport.length > 0) {
+    otherPromises.push(db.scenes.bulkAdd(scenesToImport));
+  }
+  // Ensure other arrays are also checked for length before adding to promises, if necessary,
+  // though bulkAdd handles empty arrays gracefully.
+  otherPromises.push(db.blockInstances.bulkAdd(backupData.blockInstances || []));
+  otherPromises.push(db.blockParameterInstances.bulkAdd(backupData.blockParameterInstances || []));
+  otherPromises.push(db.blockInstanceRelations.bulkAdd(backupData.blockInstanceRelations || []));
+  otherPromises.push(db.bookConfigurations.bulkAdd(backupData.bookConfigurations || []));
+  otherPromises.push(db.blocks.bulkAdd(backupData.blocks || []));
+  otherPromises.push(db.blockParameterGroups.bulkAdd(backupData.blockParameterGroups || []));
+  otherPromises.push(db.blockParameters.bulkAdd(backupData.blockParameters || []));
+  otherPromises.push(db.blockParameterPossibleValues.bulkAdd(backupData.blockParameterPossibleValues || []));
+  otherPromises.push(db.blocksRelations.bulkAdd(backupData.blocksRelations || []));
+  otherPromises.push(db.blockTabs.bulkAdd(backupData.blockTabs || []));
+  otherPromises.push(db.blockInstanceSceneLinks.bulkAdd(backupData.blockInstanceSceneLinks || []));
+
+  if (otherPromises.length > 0) {
+    await Promise.all(otherPromises);
+  }
 };
 
 // Вспомогательная функция для показа уведомлений об ошибках
