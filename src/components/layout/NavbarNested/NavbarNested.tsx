@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useMemo } from 'react'; // Removed useState
 import { useBookStore } from '@/stores/bookStore/bookStore';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { bookDb } from '@/entities/bookDb';
@@ -14,6 +14,7 @@ import {
 import {CollapsedNavbar} from "@/components/layout/NavbarNested/parts/CollapsedNavbar/CollapsedNavbar";
 import {ExpandedNavbar} from "@/components/layout/NavbarNested/parts/ExpandedNavbar/ExpandedNavbar";
 import { useNavigate } from "react-router-dom"; // Added useNavigate
+import { useConnection } from '@/providers/ConnectionStatusProvider/ConnectionStatusProvider'; // Added import
 
 export interface NavLinkItem {
   label: string;
@@ -69,10 +70,11 @@ const getBlockPageTitle = (block: IBlock) => {
 export const NavbarNested = ({ toggleNavbar, opened }: { toggleNavbar?: () => void; opened: boolean }) => {
   const { selectedBook } = useBookStore();
   const navigate = useNavigate(); // Hook for navigation
+  const { isOnline } = useConnection(); // Get connection status
 
-  const handleQuickNoteClick = () => {
+  const handleQuickNoteClick = React.useCallback(() => { // Wrapped with useCallback
     navigate('/notes/new');
-  };
+  }, [navigate]);
 
   const blocks = useLiveQuery<IBlock[]>(() => {
     return selectedBook ? bookDb.blocks.toArray() : [];
@@ -127,6 +129,7 @@ export const NavbarNested = ({ toggleNavbar, opened }: { toggleNavbar?: () => vo
         toggleNavbar={toggleNavbar}
         baseItems={baseItems}
         dynamicItems={dynamicItems}
+        isOnline={isOnline} // Pass isOnline
     />;
   }
 
@@ -135,5 +138,6 @@ export const NavbarNested = ({ toggleNavbar, opened }: { toggleNavbar?: () => vo
       toggleNavbar={toggleNavbar}
       baseItems={baseItems}
       dynamicItems={dynamicItems}
+      isOnline={isOnline} // Pass isOnline
   />;
 };

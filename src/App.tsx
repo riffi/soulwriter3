@@ -9,9 +9,10 @@ import {DialogProvider} from "@/providers/DialogProvider/DialogProvider";
 import {PageTitleProvider} from "@/providers/PageTitleProvider/PageTitleProvider";
 import React from "react";
 import {MediaQueryProvider} from "@/providers/MediaQueryProvider/MediaQueryProvider";
-import {AuthProvider, useAuth} from "@/providers/AuthProvider/AuthProvider";
+import { AuthProvider } from "@/providers/AuthProvider/AuthProvider"; // Removed useAuth as it's not used here
 import {ReactFlowProvider} from "reactflow";
 import ErrorBoundary from "@/components/ErrorBoundary/ErrorBoundary"; // Added import
+import { ConnectionStatusProvider } from '@/providers/ConnectionStatusProvider/ConnectionStatusProvider'; // Added import
 
 export default function App() {
 
@@ -22,11 +23,13 @@ export default function App() {
           <DialogProvider>
             <PageTitleProvider>
               <ErrorBoundary>
+              <ConnectionStatusProvider> {/* Added ConnectionStatusProvider */}
                 <ReactFlowProvider>
                   <MediaQueryProvider>
                     <Router />
                   </MediaQueryProvider>
                 </ReactFlowProvider>
+              </ConnectionStatusProvider> {/* Added ConnectionStatusProvider */}
               </ErrorBoundary>
             </PageTitleProvider>
           </DialogProvider>
