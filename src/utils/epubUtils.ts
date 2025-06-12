@@ -98,36 +98,6 @@ function splitHtmlIntoScenes(chapterHtml: string): string[] {
         .map(scene => scene.trim())
         .filter(scene => scene.length > 100); // Порог для HTML можно сделать выше, т.к. теги занимают место
 
-    // Если получилась только одна очень длинная сцена, разделяем по "абзацам" (элементам верхнего уровня)
-    if (scenes.length <= 1 && chapterHtml.length > 10000) {
-        const chunkedScenes: string[] = [];
-        let currentScene = '';
-        const children = Array.from(body.children);
-
-        for (const child of children) {
-            // Игнорируем замененные разделители (которые теперь комментарии)
-            if (child.nodeType === Node.COMMENT_NODE && child.nodeValue === 'SCENE_BREAK') {
-                continue;
-            }
-            
-            const elementHtml = child.outerHTML;
-            if (currentScene.length > 0 && currentScene.length + elementHtml.length > 5000) { // Порог для сцены
-                chunkedScenes.push(currentScene);
-                currentScene = elementHtml;
-            } else {
-                currentScene += elementHtml;
-            }
-        }
-
-        if (currentScene.trim()) {
-            chunkedScenes.push(currentScene.trim());
-        }
-        
-        const filteredChunks = chunkedScenes.filter(scene => scene.length > 100);
-        if (filteredChunks.length > 0) {
-            return filteredChunks;
-        }
-    }
 
     return scenes.length > 0 ? scenes : [chapterHtml]; // Возвращаем исходный HTML если не удалось разделить
 }
@@ -141,25 +111,18 @@ async function extractChaptersAndScenesFromEpub(bookEpub: Book) {
     // Рекурсивная функция для обработки TOC, включая вложенные элементы
     const flattenTocItems = (tocItems: any[], parentTitle?: string): any[] => {
         const result: any[] = [];
-
         for (const item of tocItems) {
             // Если есть дочерние элементы, они могут быть главами
             if (item.subitems && item.subitems.length > 0) {
-                // Если у родительского элемента есть href, добавляем его как главу
-                if (item.href) {
+                // Рекурсивно обрабатываем дочерние элементы
+                result.push(...flattenTocItems(item.subitems, item.label));
+            } else {
+                if (item.href !== 'toc.xhtml'){
                     result.push({
                         label: item.label,
                         href: item.href
                     });
                 }
-                // Рекурсивно обрабатываем дочерние элементы
-                result.push(...flattenTocItems(item.subitems, item.label));
-            } else {
-                // Обычный элемент TOC
-                result.push({
-                    label: item.label,
-                    href: item.href
-                });
             }
         }
 
