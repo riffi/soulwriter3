@@ -1,5 +1,6 @@
 import {notifications} from "@mantine/notifications";
 import {getOpenRouterKey, useApiSettingsStore} from "@/stores/apiSettingsStore/apiSettingsStore";
+import {IBlock} from "@/entities/ConstructorEntities";
 
 
 const fetchCompletions = async (prompt: string) => {
@@ -34,6 +35,7 @@ const fetchCompletions = async (prompt: string) => {
     throw error;
   }
 };
+
 
 const fetchSynonyms = async (word: string) => {
   const prompt = `Сгенерируй 7-15 синонимов для русского слова '${word}' в формате JSON. 
@@ -139,10 +141,102 @@ const fetchRhymes = async (word: string) => {
   return JSON.parse(jsonMatch[1]).rhymes as string[];
 };
 
+
+
+
+
+interface KnowledgeBaseEntity {
+  title: string;
+  description: string;
+}
+
+const fetchKnowledgeBaseEntities = async (sceneContent: string, block: IBlock): Promise<KnowledgeBaseEntity[]> => {
+  const prompt = `Проанализируй  текст сцены
+
+Найди в тексте все сущности типа "${block.title}" (описание: "${block.description}").
+Для каждой найденной сущности извлеки краткое название (title) и описание из контекста сцены (description).
+Верни результат в формате JSON массива объектов. Каждый объект должен иметь поля "title" (строка) и "description" (строка).
+
+Пример ответа для "${block.title}":
+[
+  { "title": "Название сущности 1", "description": "Описание сущности 1 из текста" },
+  { "title": "Название сущности 2", "description": "Описание сущности 2 из текста" }
+]
+
+Если сущности не найдены, верни пустой массив [].
+
+Текст сцены:
+"""
+${sceneContent}
+"""
+`;
+
+  try {
+    const data = await fetchCompletions(prompt);
+    let content = data.choices[0]?.message?.content;
+
+    if (!content) {
+      throw new Error("Ответ API не содержит ожидаемого поля 'content'.");
+    }
+
+    // Извлечение JSON из обрамления ```json ... ``` или просто ``` ... ```
+    const jsonMatch = content.match(/```(?:json)?\n([\s\S]*?)\n```/);
+    if (jsonMatch && jsonMatch[1]) {
+      content = jsonMatch[1];
+    } else {
+      // Попытка извлечь JSON, если он не обрамлен в ```json ... ```, а просто является строкой JSON
+      // Это может быть полезно, если LLM иногда возвращает "голый" JSON
+      content = content.trim();
+      if (!content.startsWith('[') || !content.endsWith(']')) {
+        // Если это не массив, и не было ```json ... ```, считаем формат неверным.
+        // Можно добавить более сложную проверку, если ожидаются и объекты {}.
+        console.warn("Ответ API не содержит ожидаемого JSON массива в ```json ... ``` или в чистом виде. Попытка парсинга как есть.");
+      }
+    }
+
+    const parsedResult = JSON.parse(content);
+
+    if (!Array.isArray(parsedResult)) {
+      notifications.show({
+        title: "Ошибка обработки данных",
+        message: "Полученные данные от AI не являются массивом.",
+        color: "orange",
+      });
+      return [];
+    }
+
+    // Дополнительная проверка структуры объектов в массиве (опционально, но рекомендуется)
+    if (parsedResult.length > 0) {
+      const firstItem = parsedResult[0];
+      if (typeof firstItem.title !== 'string' || typeof firstItem.description !== 'string') {
+        notifications.show({
+          title: "Ошибка структуры данных",
+          message: "Объекты в массиве от AI не имеют необходимых полей 'title' или 'description'.",
+          color: "orange",
+        });
+        return [];
+      }
+    }
+
+    return parsedResult as KnowledgeBaseEntity[];
+
+  } catch (error: any) {
+    console.error("Ошибка при получении или обработке сущностей базы знаний:", error);
+    notifications.show({
+      title: "Ошибка API",
+      message: error.message || "Не удалось получить сущности для базы знаний. Проверьте консоль для деталей.",
+      color: "red",
+    });
+    return [];
+  }
+};
+
+
 export const OpenRouterApi = {
   fetchSynonyms,
   fetchParaphrases,
   fetchSimplifications,
   fetchSpellingCorrection,
-  fetchRhymes
+  fetchRhymes,
+  fetchKnowledgeBaseEntities // Add new function here
 }

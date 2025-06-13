@@ -24,6 +24,7 @@ interface SceneDesktopContentProps {
     setSelectedGroup: (group?: IWarningGroup) => void;
     focusMode: boolean;
     toggleFocusMode: () => void;
+    openKnowledgeBaseDrawer: () => void; // Added prop
 }
 
 export const SceneDesktopContent = ({
@@ -38,6 +39,7 @@ export const SceneDesktopContent = ({
                                         setSelectedGroup,
                                         focusMode,
                                         toggleFocusMode,
+                                        openKnowledgeBaseDrawer, // Destructure new prop
                                     }: SceneDesktopContentProps) => {
 
     const { isHeaderVisible, handleEditorScroll } = useHeaderVisibility();
@@ -94,6 +96,14 @@ export const SceneDesktopContent = ({
                                                 leftSection={<IconLink size={16} />}
                                             >
                                                 Связи
+                                            </Button>
+                                            {/* New Button for Knowledge Base */}
+                                            <Button
+                                                variant="outline"
+                                                onClick={openKnowledgeBaseDrawer}
+                                                // leftSection={<IconDatabasePlus size={16} />} // Optional: Add an icon
+                                            >
+                                                Наполнить базу знаний
                                             </Button>
                                             <Button
                                                 variant={"outline"}

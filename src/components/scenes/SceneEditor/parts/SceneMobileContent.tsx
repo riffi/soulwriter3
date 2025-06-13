@@ -23,6 +23,7 @@ interface SceneMobileContentProps {
     saveScene: (dataToSave: IScene, silent: boolean) => void;
     focusMode: boolean;
     toggleFocusMode: () => void;
+    openKnowledgeBaseDrawer: () => void; // Added prop
 }
 
 export const SceneMobileContent = ({
@@ -35,7 +36,8 @@ export const SceneMobileContent = ({
                                        scene,
                                        saveScene,
                                        focusMode,
-                                       toggleFocusMode
+                                       toggleFocusMode,
+                                       openKnowledgeBaseDrawer // Destructure new prop
                                    }: SceneMobileContentProps) => {
     const { setPageTitle, setTitleElement } = usePageTitle();
     const [linkManagerOpened, { open: openLinkManager, close: closeLinkManager }] = useDisclosure(false);
@@ -67,6 +69,15 @@ export const SceneMobileContent = ({
                     >
                         <IconLink size={16} />
                     </ActionIcon>
+                    {/* New Button for Knowledge Base */}
+                    <Button
+                        variant="outline"
+                        size="xs" // Using xs for consistency with ActionIcon if needed, or adjust
+                        onClick={openKnowledgeBaseDrawer}
+                        style={{ marginLeft: '8px' }}
+                    >
+                        Наполнить базу знаний
+                    </Button>
                 </Group>
             );
             setTitleElement(headerElement);
@@ -76,7 +87,7 @@ export const SceneMobileContent = ({
         return () => {
             setTitleElement(null); // Очистка при размонтировании
         };
-    }, [scene, focusMode, setTitleElement, openLinkManager, saveScene]); // Зависимости эффекта
+    }, [scene, focusMode, setTitleElement, openLinkManager, saveScene, openKnowledgeBaseDrawer]); // Added openKnowledgeBaseDrawer to dependencies
 
     return (
         <Container size="xl" p="0" fluid style={focusMode ? { paddingTop: '1rem', paddingBottom: '1rem', height: '100dvh' } : {}}>
