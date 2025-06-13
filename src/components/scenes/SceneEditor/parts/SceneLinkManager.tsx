@@ -13,6 +13,7 @@ import {
   TextInput,
   Stack
 } from "@mantine/core";
+import { InlineEdit2 } from "@/components/shared/InlineEdit2/InlineEdit2";
 import { useDisclosure } from "@mantine/hooks";
 import { bookDb } from "@/entities/bookDb";
 import React, { useEffect, useState } from "react";
@@ -66,6 +67,15 @@ export const SceneLinkManager = ({ sceneId, opened, onClose }: SceneLinkManagerP
   const handleDeleteLink = async (linkId: number) => {
     await bookDb.blockInstanceSceneLinks.delete(linkId);
     setLinks(links.filter(l => l.id !== linkId));
+  };
+
+  const handleUpdateLinkTitle = async (linkId: number, newTitle: string) => {
+    try {
+      await bookDb.blockInstanceSceneLinks.update(linkId, { title: newTitle });
+      setLinks(links.map(l => l.id === linkId ? { ...l, title: newTitle } : l));
+    } catch (error) {
+      console.error("Failed to update link title:", error);
+    }
   };
 
   const getLinkedInstances = (blockUuid: string) => {
@@ -128,7 +138,7 @@ export const SceneLinkManager = ({ sceneId, opened, onClose }: SceneLinkManagerP
                       </Group>
                       <>
                         {linkedInstances.length > 0 ? (
-                            <List
+                            <Box
 
                                 listStyleType={'none'}
                             >
@@ -137,41 +147,38 @@ export const SceneLinkManager = ({ sceneId, opened, onClose }: SceneLinkManagerP
                                   const link = links.find(l => l.blockInstanceUuid === instance.uuid);
                                   return (
                                       <>
-                                        <List.Item
+                                        <Box
                                             key={instance.uuid}
-                                            style={{margin: '0'}}
+                                            style={{margin: '0', width:"100%"}}
                                         >
-                                          <Group justify="space-between" wrap={"nowrap"} w={"100%"}>
-                                            <Stack gap={0} style={{flexShrink: 1, flexGrow: 0}}>
-                                              <Text>
-                                                {instance.title}
-                                              </Text>
-                                              {link?.title &&
-                                                  <Text
-                                                      color={'dimmed'}
-                                                      style={{
-                                                        fontSize: '12px'
-                                                      }}
-                                                  >
-                                                    {link?.title}
-                                                  </Text>
-                                              }
-                                            </Stack>
-                                            <ActionIcon
-                                                color="red"
-                                                variant="subtle"
-                                                style={{flexGrow: 0, flexShrink: 0}}
-                                                onClick={() => link?.id && handleDeleteLink(link.id)}
-                                            >
-                                              <IconTrash size={16} />
-                                            </ActionIcon>
+                                          <Group justify="space-between" w="100%">
+                                            <div style={{flex: 1}}>
+                                              <Text fw={500}>{instance.title}</Text>
+                                                {link?.title &&
+                                                    <Box style={{width: '100%'}}>
+                                                    <InlineEdit2
+                                                        value={link.title}
+                                                        onChange={(newTitle) => handleUpdateLinkTitle(link.id!, newTitle)}
+                                                        size={"xs"}
+
+                                                    />
+                                                    </Box>
+                                                }
+                                              </div>
+                                              <ActionIcon
+                                                  color="red"
+                                                  variant="subtle"
+                                                  onClick={() => link?.id && handleDeleteLink(link.id)}
+                                              >
+                                                <IconTrash size={16}/>
+                                              </ActionIcon>
                                           </Group>
-                                        </List.Item>
+                                        </Box>
                                       </>
                                   );
                                 })}
                               </>
-                            </List>
+                            </Box>
                         ) : (
                             <Text c="dimmed" size="sm" ml="md">
                               Нет привязанных элементов
