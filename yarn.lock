@@ -5,13 +5,6 @@ __metadata:
   version: 8
   cacheKey: 10c0
 
-"-@npm:^0.0.1":
-  version: 0.0.1
-  resolution: "-@npm:0.0.1"
-  checksum: 10c0/44df0e3afd0dc4196efc879e7d5095028cf7367c9a7ea95ce59d39f15e653022e4af0320d34f359db4571d1530363dfc21393ef2f7e0cf84c8ddd5e6569e3b83
-  languageName: node
-  linkType: hard
-
 "@adobe/css-tools@npm:^4.4.0":
   version: 4.4.2
   resolution: "@adobe/css-tools@npm:4.4.2"
@@ -4010,13 +4003,6 @@ __metadata:
   version: 4.1.0
   resolution: "axobject-query@npm:4.1.0"
   checksum: 10c0/c470e4f95008f232eadd755b018cb55f16c03ccf39c027b941cd8820ac6b68707ce5d7368a46756db4256fbc91bb4ead368f84f7fb034b2b7932f082f6dc0775
-  languageName: node
-  linkType: hard
-
-"az@npm:^0.2.3":
-  version: 0.2.3
-  resolution: "az@npm:0.2.3"
-  checksum: 10c0/1315b27be6f853ca2c23b4f19c9605ffbc28e110ad2271e40a68fa9d8e116c2a77beb948fc9e3c0bf179e0abff71bb3a3d06ca37b7fa573b24d1b49dc4d8e50e
   languageName: node
   linkType: hard
 
@@ -9397,7 +9383,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "soulwriter@workspace:."
   dependencies:
-    "-": "npm:^0.0.1"
     "@dnd-kit/core": "npm:^6.3.1"
     "@dnd-kit/modifiers": "npm:^9.0.0"
     "@dnd-kit/sortable": "npm:^10.0.0"
@@ -9434,7 +9419,6 @@ __metadata:
     "@types/react": "npm:^19.0.12"
     "@types/react-dom": "npm:^19.0.4"
     "@vitejs/plugin-react": "npm:^4.3.4"
-    az: "npm:^0.2.3"
     dayjs: "npm:^1.11.13"
     dexie: "npm:^4.0.11"
     dexie-export-import: "npm:^4.1.4"
