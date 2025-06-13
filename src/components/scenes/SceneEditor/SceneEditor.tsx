@@ -43,9 +43,6 @@ export const SceneEditor = ({ sceneId}: SceneEditorProps) => {
 
     // State for Knowledge Base Drawer
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-    const [selectedBlock, setSelectedBlock] = useState<IBlock | null>(null); // Store the whole object
-    const [knowledgeBaseEntities, setKnowledgeBaseEntities] = useState<KnowledgeBaseEntity[]>([]);
-    const [isGeneratingEntities, setIsGeneratingEntities] = useState(false);
 
     const toggleFocusMode = useCallback(() => setFocusMode((prev) => !prev), []);
 
@@ -56,137 +53,9 @@ export const SceneEditor = ({ sceneId}: SceneEditorProps) => {
 
     const closeKnowledgeBaseDrawer = useCallback(() => {
         setIsDrawerOpen(false);
-        setSelectedBlock(null); // Clear selected IBlock on drawer close
-        setKnowledgeBaseEntities([]); // Clear entities on drawer close
+        // setSelectedBlock(null); // REMOVE THIS
+        // setKnowledgeBaseEntities([]); // REMOVE THIS
     }, []);
-
-    const handleSelectBlock = useCallback((uuid: string | null) => {
-        const block = blocks?.find(ib => ib.uuid === uuid) || null;
-        setSelectedBlock(block);
-        setKnowledgeBaseEntities([]); // Clear entities when IBlock changes
-    }, [blocks]);
-
-
-
-    const handleGenerateKnowledgeBase = useCallback(async () => {
-        if (!selectedBlock || !scene?.body) {
-            notifications.show({
-                title: "Ошибка",
-                message: "Не выбран тип блока или отсутствует текст сцены.",
-                color: "orange",
-            });
-            return;
-        }
-        setIsGeneratingEntities(true);
-        setKnowledgeBaseEntities([]); // Clear previous entities
-
-        try {
-            const entities = await OpenRouterApi.fetchKnowledgeBaseEntities(
-                scene.body, // Assuming scene.body contains the plain text or HTML content
-                selectedBlock
-            );
-            setKnowledgeBaseEntities(entities);
-            if (entities.length === 0) {
-                notifications.show({
-                    title: "Генерация завершена",
-                    message: "Сущности не найдены.",
-                    color: "blue",
-                });
-            }
-        } catch (error) {
-            // Error is already handled by notifications.show in the API, but you could add more here
-            console.error("Failed to fetch knowledge base entities", error);
-        } finally {
-            setIsGeneratingEntities(false);
-        }
-    }, [selectedBlock, scene?.body]); // Added db to dependencies
-
-    const handleAddEntity = useCallback(async (entity: KnowledgeBaseEntity) => {
-
-        if (!selectedBlock) {
-            notifications.show({ title: "Ошибка", message: "Не выбран тип блока (IBlock).", color: "red" });
-            return;
-        }
-
-        try {
-            const newInstance: IBlockInstance = {
-                uuid: generateUUID(),
-                blockUuid: selectedBlock?.uuid, // selectedIBlock.value is the UUID of the IBlock
-                title: entity.title,
-                shortDescription: entity.description,
-                // parentInstanceUuid: null, // Explicitly set if needed, otherwise undefined
-                // icon: null, // Explicitly set if needed
-                // color: null, // Explicitly set if needed
-            };
-            await BlockInstanceRepository.create(bookDb, newInstance);
-            notifications.show({
-                title: "Успех",
-                message: `Сущность "${entity.title}" добавлена.`,
-                color: "green",
-            });
-            // Optionally remove from list or disable button
-            setKnowledgeBaseEntities(prev => prev.filter(e => e.title !== entity.title || e.description !== entity.description));
-        } catch (error: any) {
-            console.error("Failed to add entity:", error);
-            notifications.show({
-                title: "Ошибка",
-                message: `Не удалось добавить сущность "${entity.title}": ${error.message}`,
-                color: "red",
-            });
-        }
-    }, [selectedBlock]);
-
-    const handleAddAllEntities = useCallback(async (entities: KnowledgeBaseEntity[]) => {
-
-        if (!selectedBlock) {
-            notifications.show({ title: "Ошибка", message: "Не выбран тип блока (IBlock).", color: "red" });
-            return;
-        }
-        if (entities.length === 0) {
-            notifications.show({ title: "Информация", message: "Нет сущностей для добавления.", color: "blue" });
-            return;
-        }
-
-        let successCount = 0;
-        for (const entity of entities) {
-            try {
-                const newInstance: IBlockInstance = {
-                    uuid: generateUUID(),
-                    blockUuid: selectedBlock.uuid,
-                    title: entity.title,
-                    shortDescription: entity.description,
-                };
-                await BlockInstanceRepository.create(bookDb, newInstance);
-                successCount++;
-            } catch (error: any) {
-                console.error(`Failed to add entity "${entity.title}":`, error);
-                notifications.show({
-                    title: "Ошибка при добавлении",
-                    message: `Не удалось добавить сущность "${entity.title}": ${error.message}`,
-                    color: "red",
-                });
-                // Optional: decide if you want to stop on first error or try all
-            }
-        }
-
-        if (successCount > 0) {
-            notifications.show({
-                title: "Успех",
-                message: `${successCount} из ${entities.length} сущностей успешно добавлены.`,
-                color: "green",
-            });
-        }
-        if (successCount === entities.length) {
-            setKnowledgeBaseEntities([]); // Clear list if all were added
-        } else {
-            // Refresh list to remove successfully added ones if partial success
-            // This is a simple way; a more robust way would be to track IDs if available
-            setKnowledgeBaseEntities(prev => prev.filter(e =>
-                !entities.slice(0, successCount).find(se => se.title === e.title && se.description === e.description)
-            ));
-        }
-
-    }, [selectedBlock]);
 
     // Global keyboard shortcut for focus mode
     useEffect(() => {
@@ -280,13 +149,8 @@ export const SceneEditor = ({ sceneId}: SceneEditorProps) => {
                     isOpen={isDrawerOpen}
                     onClose={closeKnowledgeBaseDrawer}
                     blocks={blocks}
-                    selectedBlockUuid={selectedBlock?.uuid || null} // Pass the value for Select component
-                    onSelectBlock={handleSelectBlock}
-                    onGenerate={handleGenerateKnowledgeBase}
-                    knowledgeBaseEntities={knowledgeBaseEntities}
-                    isGeneratingEntities={isGeneratingEntities}
-                    onAddEntity={handleAddEntity} // Pass implemented function
-                    onAddAllEntities={handleAddAllEntities} // Pass implemented function
+                    sceneId={scene.id}
+                    sceneBody={scene?.body}
                 />
             </Box>)
             }

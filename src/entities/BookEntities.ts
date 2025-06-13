@@ -31,6 +31,7 @@ export interface IBlockInstanceSceneLink{
   blockInstanceUuid: string // Ссылка на экземпляр блока, который мы хотим связать с сценой
   blockUuid: string // Ссылка на блок, который будет связан с сценой
   sceneId: number // Ссылка на сцену
+  title?: string; // Title from entity description
 }
 
 export interface IBlockParameterInstance{
