@@ -37,10 +37,12 @@ import {connectToBookDatabase} from "@/entities/bookDb";
 import { inkLuminAPI } from "@/api/inkLuminApi";
 import {
   exportBook,
-  handleFileImport,
-  saveBookToServer,
-  loadBookFromServer,
+  handleFileImport
 } from "@/utils/bookBackupManager";
+import {
+  saveBookToServer,
+  loadBookFromServer
+} from '@/services/bookSyncService';
 import {useAuth} from "@/providers/AuthProvider/AuthProvider";
 import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
 import {usePageTitle} from "@/providers/PageTitleProvider/PageTitleProvider";

@@ -4,11 +4,13 @@ import { IconDownload, IconUpload, IconCloud, IconCloudDown } from '@tabler/icon
 import { configDatabase } from '@/entities/configuratorDb';
 import {
   exportBook,
-  handleFileImport,
+  handleFileImport
+} from '@/utils/bookBackupManager';
+import {
   saveBookToServer,
   loadBookFromServer,
   getServerBooksList
-} from '@/utils/bookBackupManager';
+} from '@/services/bookSyncService';
 import { notifications } from "@mantine/notifications";
 import {useAuth} from "@/providers/AuthProvider/AuthProvider";
 

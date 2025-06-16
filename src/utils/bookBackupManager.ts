@@ -22,7 +22,7 @@ export interface BackupData {
 }
 
 // Вспомогательная функция для сбора данных книги
-const collectBookBackupData = async (bookUuid: string): Promise<BackupData> => {
+export const collectBookBackupData = async (bookUuid: string): Promise<BackupData> => {
   const [bookData, db] = await Promise.all([
     configDatabase.books.get({ uuid: bookUuid }),
     connectToBookDatabase(bookUuid),
@@ -158,112 +158,6 @@ export const exportBook = async (bookUuid: string) => {
   }
 };
 
-export const saveBookToServer = async (bookUuid: string, token: string) => {
-  try {
-    const backupData = await collectBookBackupData(bookUuid);
-
-    // Exclude local-only fields before sending to the server
-    const { localUpdatedAt, serverUpdatedAt, syncState, ...restBook } = backupData.book;
-    const sanitizedBackup = { ...backupData, book: restBook };
-
-    const response = await inkLuminAPI.saveBookData(token, {
-      uuid: bookUuid,
-      bookTitle: backupData.book.title,
-      kind: backupData.book.kind,
-      bookData: JSON.stringify(sanitizedBackup)
-    });
-
-    if (response.success) {
-      notifications.show({
-        message: "Книга успешно сохранена на сервер",
-        color: "green"
-      });
-      // Update local metadata with server timestamp
-      if (response.data?.updatedAt) {
-        await configDatabase.books.where('uuid').equals(bookUuid).modify({
-          serverUpdatedAt: response.data.updatedAt,
-          localUpdatedAt: response.data.updatedAt,
-          syncState: 'synced'
-        });
-      } else {
-        await configDatabase.books.where('uuid').equals(bookUuid).modify({
-          syncState: 'synced'
-        });
-      }
-
-      return true;
-    } else {
-      throw new Error(response.message || "Ошибка сохранения на сервер");
-    }
-  } catch (error) {
-    showErrorNotification("Ошибка сохранения на сервер", error);
-    return false;
-  }
-};
-
-export const loadBookFromServer = async (bookUuid: string, token: string) => {
-  try {
-    const response = await inkLuminAPI.getBookData(token, bookUuid);
-
-    if (!response.success) {
-      throw new Error(response.message || "Ошибка загрузки с сервера");
-    }
-
-    const backupData: BackupData = JSON.parse(response.data.bookData);
-    if (response.data?.updatedAt) {
-      backupData.book.serverUpdatedAt = response.data.updatedAt;
-      backupData.book.localUpdatedAt = response.data.updatedAt;
-      backupData.book.syncState = 'synced';
-    }
-
-    await importBookData(backupData);
-
-    notifications.show({
-      message: "Книга успешно загружена с сервера",
-      color: "green"
-    });
-    return true;
-  } catch (error) {
-    showErrorNotification("Ошибка загрузки с сервера", error);
-    return false;
-  }
-};
-
-export const getServerBooksList = async (token: string) => {
-  try {
-    const response = await inkLuminAPI.getBooksList(token);
-
-    if (response.success) {
-      const serverBooks = response.data || [];
-
-      // Update local metadata similar to useServerSync
-      const localBooks = await configDatabase.books.toArray();
-      for (const srvBook of serverBooks) {
-        const localBook = localBooks.find(b => b.uuid === srvBook.uuid);
-        if (!localBook) continue;
-
-        const serverDate = moment(srvBook.updatedAt);
-        const localDate = localBook.localUpdatedAt ? moment(localBook.localUpdatedAt) : moment(0);
-        const updates: any = { serverUpdatedAt: srvBook.updatedAt };
-
-        if (serverDate > localDate) {
-          updates.syncState = 'serverChanges';
-        } else if (localBook.syncState !== 'localChanges') {
-          updates.syncState = 'synced';
-        }
-
-        await configDatabase.books.where('uuid').equals(localBook.uuid).modify(updates);
-      }
-
-      return serverBooks;
-    } else {
-      throw new Error(response.message || "Ошибка получения списка книг");
-    }
-  } catch (error) {
-    showErrorNotification("Ошибка получения списка книг с сервера", error);
-    return [];
-  }
-};
 
 export const importBookBackup = async (file: File) => {
   try {

@@ -13,7 +13,7 @@ import { AuthProvider, useAuth } from "@/providers/AuthProvider/AuthProvider"; /
 import {ReactFlowProvider} from "reactflow";
 import ErrorBoundary from "@/components/ErrorBoundary/ErrorBoundary";
 import { ConnectionStatusProvider } from '@/providers/ConnectionStatusProvider/ConnectionStatusProvider';
-import { useServerSync } from '@/hooks/useServerSync'; // Added import
+import { useServerSync } from '@/services/bookSyncService';
 
 function AppContent() {
     const { user } = useAuth();
