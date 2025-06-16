@@ -374,41 +374,66 @@ export const BookManager = () => {
           </Box>
 
           {/* Right Side: Content Section */}
-          <Stack style={{ flex: 1 }} justify="space-between">
+          <Stack style={{ flex: 1 }} justify="space-between" gap="xs">
             <Stack gap="xs">
               <Group justify="space-between" mb="xs" wrap="nowrap">
                 <Text fw={500} size={isMobile ? 'md' : 'xl'} lineClamp={2}>{book.title}</Text>
-                <ActionIcon
-                    color="red"
-                    variant="subtle"
-                    onClick={() => deleteBook(book)}
-                >
-                  <IconTrash size={18}/>
+                <ActionIcon color="red" variant="subtle" onClick={() => deleteBook(book)}>
+                  <IconTrash size={18} />
                 </ActionIcon>
               </Group>
-              <Text size="sm" c="dimmed">
-                <Text span fw={500} inherit>Автор:</Text> {book.author}
-              </Text>
-              {book.kind !== 'material' && (
-                  <>
-                    <Text size="sm" c="dimmed">
-                      <Text span fw={500} inherit>Форма:</Text> {getFormLabel(book.form)}
-                    </Text>
-                    <Text size="sm" c="dimmed">
-                      <Text span fw={500} inherit>Жанр:</Text> {book.genre}
-                    </Text>
-                  </>
-              )}
-              <Text size="sm" c="dimmed">
-                <Text span fw={500} inherit>Конфигурация:</Text> {getConfigurationTitle(book)}
-              </Text>
-              <Text size="sm" c="dimmed">
-                <Text span fw={500} inherit>Описание:</Text> {book.description}
-              </Text>
-              {book.syncState && (
-                  <Text size="xs" c={getSyncStateColor(book.syncState)}>
-                    {getSyncStateText(book.syncState)}
+
+              <Stack gap={2}>
+                <Text size="sm" c="dimmed"><Text span fw={500}>Автор:</Text> {book.author}</Text>
+                {book.kind !== 'material' && (
+                    <>
+                      <Text size="sm" c="dimmed"><Text span fw={500}>Форма:</Text> {getFormLabel(book.form)}</Text>
+                      <Text size="sm" c="dimmed"><Text span fw={500}>Жанр:</Text> {book.genre}</Text>
+                    </>
+                )}
+                <Text size="sm" c="dimmed"><Text span fw={500}>Конфигурация:</Text> {getConfigurationTitle(book)}</Text>
+              </Stack>
+
+              {book.description && (
+                  <Text size="sm" c="dimmed" mt="sm" lh="lg" lineClamp={4}>
+                    <Text span fw={500}>Описание:</Text> {book.description}
                   </Text>
+              )}
+
+              {book.syncState && (
+                  <Group gap="xs" align="center" wrap="nowrap">
+                    {book.syncState === 'synced' && <IconCheck size={14} color="green" />}
+                    {book.syncState === 'localChanges' && <IconUpload size={14} color="orange" />}
+                    {book.syncState === 'serverChanges' && <IconCloudDown size={14} color="blue" />}
+
+                    <Text size="xs" c={getSyncStateColor(book.syncState)}>
+                      {getSyncStateText(book.syncState)}
+                    </Text>
+
+                    {book.syncState === 'localChanges' && (
+                        <ActionIcon
+                            size="sm"
+                            variant="light"
+                            color="orange"
+                            onClick={() => handleSaveToServer(book.uuid)}
+                            title="Отправить на сервер"
+                        >
+                          <IconCloud size={16} />
+                        </ActionIcon>
+                    )}
+
+                    {book.syncState === 'serverChanges' && (
+                        <ActionIcon
+                            size="sm"
+                            variant="light"
+                            color="blue"
+                            onClick={() => handleLoadFromServer(book.uuid)}
+                            title="Загрузить с сервера"
+                        >
+                          <IconDownload size={16} />
+                        </ActionIcon>
+                    )}
+                  </Group>
               )}
             </Stack>
 
@@ -503,7 +528,7 @@ export const BookManager = () => {
           )}
           <Space h={20} />
 
-          <Group mb="md">
+          <Group mb="md" flex={1} align="center" justify="flex-start" gap={20}>
             <Button
                 leftSection={<IconPlus />}
                 onClick={() => {
