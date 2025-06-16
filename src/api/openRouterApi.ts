@@ -1,6 +1,7 @@
 import {notifications} from "@mantine/notifications";
 import {getOpenRouterKey, useApiSettingsStore} from "@/stores/apiSettingsStore/apiSettingsStore";
 import {IBlock} from "@/entities/ConstructorEntities";
+import {KnowledgeBaseEntity} from "@/entities/KnowledgeBaseEntities";
 
 
 const fetchCompletions = async (prompt: string) => {
@@ -145,22 +146,18 @@ const fetchRhymes = async (word: string) => {
 
 
 
-interface KnowledgeBaseEntity {
-  title: string;
-  description: string;
-}
 
 const fetchKnowledgeBaseEntities = async (sceneContent: string, block: IBlock): Promise<KnowledgeBaseEntity[]> => {
   const prompt = `Проанализируй  текст сцены
 
 Найди в тексте все сущности типа "${block.title}" (описание: "${block.description}").
-Для каждой найденной сущности извлеки краткое название (title) и описание из контекста сцены (description).
+Для каждой найденной сущности извлеки краткое название (title), общее описание сущности (description), описание из контекста сцены (sceneDescription).
 Верни результат в формате JSON массива объектов. Каждый объект должен иметь поля "title" (строка) и "description" (строка).
 
 Пример ответа для "${block.title}":
 [
-  { "title": "Название сущности 1", "description": "Описание сущности 1 из текста" },
-  { "title": "Название сущности 2", "description": "Описание сущности 2 из текста" }
+  { "title": "Название сущности 1", "description": "Описание сущности 1 из текста", "sceneDescription": "Описание из контекста сцены" },
+  { "title": "Название сущности 2", "description": "Описание сущности 2 из текста", "sceneDescription": "Описание из контекста сцены" }
 ]
 
 Если сущности не найдены, верни пустой массив [].

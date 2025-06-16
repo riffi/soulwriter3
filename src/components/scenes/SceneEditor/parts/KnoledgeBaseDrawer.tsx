@@ -8,19 +8,8 @@ import { BlockInstanceRepository } from '@/repository/BlockInstance/BlockInstanc
 import { bookDb } from '@/entities/bookDb'; // To query blockInstances and blockInstanceSceneLinks
 import { OpenRouterApi } from '@/api/openRouterApi'; // For fetching knowledge base entities
 import type { IBlockInstance, IBlockInstanceSceneLink } from "@/entities/BookEntities";
-import {useLiveQuery} from "dexie-react-hooks"; // For types
-
-// Assuming these types are passed or defined if not imported from API file
-interface KnowledgeBaseEntity { // Assuming this is already defined or will be
-    title: string;
-    description: string;
-}
-
-interface KnowledgeBaseEntityDisplay extends KnowledgeBaseEntity {
-    isExisting: boolean;
-    isLinked?: boolean;
-    instanceUuid?: string;
-}
+import {useLiveQuery} from "dexie-react-hooks";
+import {KnowledgeBaseEntity, KnowledgeBaseEntityDisplay} from "@/entities/KnowledgeBaseEntities"; // For types
 
 interface KnowledgeBaseDrawerProps {
     isOpen: boolean;
@@ -28,7 +17,6 @@ interface KnowledgeBaseDrawerProps {
     blocks: IBlock[]; // Keep blocks from props
     sceneId: number; // Add sceneId
     sceneBody: string | null | undefined; // Add this
-    // Remove: selectedBlockUuid, onSelectBlock, onGenerate, knowledgeBaseEntities, isGeneratingEntities, onAddEntity, onAddAllEntities
 }
 
 export const KnowledgeBaseDrawer = ({
@@ -145,7 +133,7 @@ export const KnowledgeBaseDrawer = ({
                 blockInstanceUuid: instanceUuid,
                 blockUuid: selectedBlock.uuid,
                 sceneId: sceneId,
-                title: entity.description,
+                title: entity.sceneDescription,
             };
             await bookDb.blockInstanceSceneLinks.add(newLink);
             notifications.show({
@@ -254,24 +242,6 @@ export const KnowledgeBaseDrawer = ({
                     successCount++;
                 }
 
-                // if (linkToScene && selectedBlock.sceneLinkAllowed === 1 && instanceUuid && instanceForLink) {
-                //     const existingLink = await bookDb.blockInstanceSceneLinks
-                //         .where('blockInstanceUuid').equals(instanceUuid)
-                //         .and(link => link.sceneId === sceneId)
-                //         .first();
-                //
-                //     if (!existingLink) {
-                //         const newLink: IBlockInstanceSceneLink = {
-                //             uuid: generateUUID(),
-                //             blockInstanceUuid: instanceUuid,
-                //             blockUuid: selectedBlock.uuid,
-                //             sceneId: sceneId,
-                //             title: entity.description,
-                //         };
-                //         await bookDb.blockInstanceSceneLinks.add(newLink);
-                //         linkSuccessCount++;
-                //     }
-                // }
             } catch (error: any) {
                 console.error(`Failed to process entity "${entity.title}":`, error);
                 notifications.show({
@@ -366,7 +336,12 @@ export const KnowledgeBaseDrawer = ({
                             <Group justify="space-between">
                                 <div style={{ flex: 1 }}>
                                     <Text fw={500}>{entity.title}</Text>
-                                    <Text size="sm" c="dimmed">{entity.description}</Text>
+                                    <Text size="sm" c="dimmed">
+                                        <b>Общее описание: </b>{entity.description}
+                                    </Text>
+                                    <Text size="sm" c="dimmed">
+                                        <b>Роль в сцене: </b>{entity.sceneDescription}
+                                    </Text>
                                     {entity.isExisting && (
                                         <Text size="xs" c="teal"> (Уже есть в Базе)</Text>
                                     )}
