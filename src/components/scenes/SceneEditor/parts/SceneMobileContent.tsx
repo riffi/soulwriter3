@@ -10,7 +10,7 @@ import {usePageTitle} from "@/providers/PageTitleProvider/PageTitleProvider";
 import {useKeyboardHeight} from "@/components/scenes/SceneEditor/hooks/useKeyboardHeight";
 import {SceneLinkManager} from "@/components/scenes/SceneEditor/parts/SceneLinkManager";
 import {useDisclosure} from "@mantine/hooks";
-import {IconLink} from "@tabler/icons-react";
+import {IconDatabaseSmile, IconLink} from "@tabler/icons-react";
 import {InlineEdit2} from "@/components/shared/InlineEdit2/InlineEdit2";
 interface SceneMobileContentProps {
     sceneBody: string;
@@ -69,15 +69,17 @@ export const SceneMobileContent = ({
                     >
                         <IconLink size={16} />
                     </ActionIcon>
-                    {/* New Button for Knowledge Base */}
-                    <Button
+                    <ActionIcon
                         variant="outline"
-                        size="xs" // Using xs for consistency with ActionIcon if needed, or adjust
                         onClick={openKnowledgeBaseDrawer}
-                        style={{ marginLeft: '8px' }}
+                        style={{
+                            display: 'flex',
+                            flexGrow:0
+                        }}
                     >
-                        Наполнить базу знаний
-                    </Button>
+
+                        <IconDatabaseSmile size={16} />
+                    </ActionIcon>
                 </Group>
             );
             setTitleElement(headerElement);
@@ -85,9 +87,9 @@ export const SceneMobileContent = ({
             setTitleElement(null);
         }
         return () => {
-            setTitleElement(null); // Очистка при размонтировании
+            setTitleElement(null);
         };
-    }, [scene, focusMode, setTitleElement, openLinkManager, saveScene, openKnowledgeBaseDrawer]); // Added openKnowledgeBaseDrawer to dependencies
+    }, [scene]);
 
     return (
         <Container size="xl" p="0" fluid style={focusMode ? { paddingTop: '1rem', paddingBottom: '1rem', height: '100dvh' } : {}}>
