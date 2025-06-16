@@ -45,7 +45,7 @@ export const useServerSync = (token: string | undefined) => {
                         const serverDate = moment(serverBook.serverUpdatedAt);
                         const localDate = localBook.localUpdatedAt ? moment(localBook.localUpdatedAt) : moment(0);
 
-                        if (serverDate > localDate) {
+                        if (moment(serverDate).unix() > moment(localDate).unix()) {
                             console.log(`Book ${localBook.uuid}: server changes detected.`);
                             await configDatabase.books.where('uuid').equals(localBook.uuid).modify({
                                 serverUpdatedAt: serverBook.serverUpdatedAt,
