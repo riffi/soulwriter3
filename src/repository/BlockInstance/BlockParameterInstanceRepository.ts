@@ -4,12 +4,7 @@ import { generateUUID } from "@/utils/UUIDUtils";
 import { updateBlockInstance } from "./BlockInstanceUpdateHelper";
 import {BlockParameterRepository} from "@/repository/Block/BlockParameterRepository";
 import {IBlockParameter} from "@/entities/ConstructorEntities";
-import {updateBookSyncState} from "@/utils/bookSyncUtils";
-
-async function updateBook(db: BookDB) {
-    const bookUuid = db.name.replace('book_db_', '');
-    await updateBookSyncState(bookUuid, 'localChanges');
-}
+import { updateBook } from "@/utils/bookSyncUtils";
 export const getInstanceParams = async (db: BookDB, instanceUuid: string) => {
     return db.blockParameterInstances
         .where('blockInstanceUuid')

@@ -1,6 +1,8 @@
 import {BlockAbstractDb} from "@/entities/BlockAbstractDb";
 import {generateUUID} from "@/utils/UUIDUtils";
 import {IBlockRelation, IBlock} from "@/entities/ConstructorEntities"; // Added IBlock
+import { BookDB } from "@/entities/bookDb";
+import { updateBook } from "@/utils/bookSyncUtils";
 
 const getBlockRelations = async (db: BlockAbstractDb, blockUuid: string) => {
   const [targetRelations, sourceRelations] = await Promise.all([
@@ -21,6 +23,9 @@ const save = async (db: BlockAbstractDb, relation: IBlockRelation) => {
       await db.blocksRelations.update(existing.id!, relation);
     }
   }
+  if (db instanceof BookDB) {
+    await updateBook(db as BookDB);
+  }
 }
 const remove = async (db: BlockAbstractDb, blockRelationUuid: string) => {
   const relation = await db.blocksRelations.where({ uuid: blockRelationUuid }).first();
@@ -34,6 +39,9 @@ const remove = async (db: BlockAbstractDb, blockRelationUuid: string) => {
 
   // Удаляем саму связь
   await db.blocksRelations.where({ uuid: blockRelationUuid }).delete();
+  if (db instanceof BookDB) {
+    await updateBook(db as BookDB);
+  }
 }
 
 

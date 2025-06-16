@@ -43,6 +43,7 @@ export const createRelation = async (
         targetInstance ? updateBlockInstance(db, targetInstance) : Promise.resolve(),
         db.blockInstanceRelations.add(relation)
     ]);
+    await updateBook(db);
 }
 
 export const removeRelation = async (db: BookDB, relation: IBlockInstanceRelation) => {
@@ -59,6 +60,7 @@ export const removeRelation = async (db: BookDB, relation: IBlockInstanceRelatio
         sourceInstance ? updateBlockInstance(db, sourceInstance) : Promise.resolve(),
         targetInstance ? updateBlockInstance(db, targetInstance) : Promise.resolve()
     ]);
+    await updateBook(db);
 }
 
 export const removeAllForInstance = async (db: BookDB, instanceUuid: string) => {
@@ -66,6 +68,7 @@ export const removeAllForInstance = async (db: BookDB, instanceUuid: string) => 
         db.blockInstanceRelations.where('sourceInstanceUuid').equals(instanceUuid).delete(),
         db.blockInstanceRelations.where('targetInstanceUuid').equals(instanceUuid).delete()
     ]);
+    await updateBook(db);
 }
 
 export const BlockInstanceRelationRepository = {

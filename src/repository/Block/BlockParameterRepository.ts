@@ -6,6 +6,7 @@ import {
     IBlockParameterPossibleValue
 } from "@/entities/ConstructorEntities";
 import {generateUUID} from "@/utils/UUIDUtils";
+import { updateBook } from "@/utils/bookSyncUtils";
 
 const getParameterGroups = async (db: BlockAbstractDb, blockUuid: string) => {
     return db.blockParameterGroups
@@ -77,6 +78,9 @@ const deleteParameterGroup = async (db: BlockAbstractDb, blockUuid: string, grou
             })
         )
     );
+    if (db instanceof BookDB) {
+        await updateBook(db as BookDB);
+    }
 }
 
 const updateParamPossibleValues = async (db: BlockAbstractDb, parameterUuid: string, possibleValues: string[]) => { // Changed type to string[]
@@ -97,6 +101,9 @@ const updateParamPossibleValues = async (db: BlockAbstractDb, parameterUuid: str
             })
         )
     );
+    if (db instanceof BookDB) {
+        await updateBook(db as BookDB);
+    }
 }
 
 const appendDefaultParamGroup = async (db: BlockAbstractDb, blockData: IBlock) => {
@@ -107,6 +114,9 @@ const appendDefaultParamGroup = async (db: BlockAbstractDb, blockData: IBlock) =
         description: '',
         title: 'Основное',
     })
+    if (db instanceof BookDB) {
+        await updateBook(db as BookDB);
+    }
 }
 
 const getReferencingParametersFromBlock = async (db: BlockAbstractDb, blockUuid: string) => {

@@ -1,6 +1,7 @@
 import { configDatabase } from '@/entities/configuratorDb';
 import { IBook } from '@/entities/BookEntities';
-import {useBookStore} from "@/stores/bookStore/bookStore";
+import { useBookStore } from "@/stores/bookStore/bookStore";
+import { BookDB } from "@/entities/bookDb";
 import moment from "moment/moment";
 
 export const updateBookSyncState = async (
@@ -18,4 +19,9 @@ export const updateBookSyncState = async (
     } catch (error) {
         console.error('Error updating book sync state:', error);
     }
+};
+
+export const updateBook = async (db: BookDB) => {
+    const bookUuid = db.name.replace('book_db_', '');
+    await updateBookSyncState(bookUuid, 'localChanges');
 };

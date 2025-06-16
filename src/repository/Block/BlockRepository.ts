@@ -14,6 +14,7 @@ import {BlockTabRepository} from "./BlockTabRepository"; // Added
 import {InkLuminMlApi, InkLuminApiError} from "@/api/inkLuminMlApi";
 import {BlockInstanceRepository} from "@/repository/BlockInstance/BlockInstanceRepository";
 import {notifications} from "@mantine/notifications";
+import { updateBook } from "@/utils/bookSyncUtils";
 
 const getByUuid = async (db: BlockAbstractDb, blockUuid: string) => {
   return db.blocks.where("uuid").equals(blockUuid).first()
@@ -59,6 +60,9 @@ const create = async (db: BlockAbstractDb, block: IBlock, isBookDb = false, titl
   if (isBookDb && block.structureKind === 'single'){
     await BlockInstanceRepository.createSingleInstance(db as BookDB, block)
   }
+  if (isBookDb) {
+    await updateBook(db as BookDB);
+  }
   return block.uuid
 }
 
@@ -94,6 +98,9 @@ const update = async (db: BlockAbstractDb, block: IBlock, isBookDb = false, titl
     }
   }
   db.blocks.update(block.id, block)
+  if (isBookDb) {
+    await updateBook(db as BookDB);
+  }
 }
 
 // Сохранение блока
@@ -158,6 +165,9 @@ const remove = async (db: BlockAbstractDb, block: IBlock) => {
             .delete();
       }
   );
+  if (db instanceof BookDB) {
+    await updateBook(db as BookDB);
+  }
 }
 
 const getAll = async (db: BlockAbstractDb): Promise<IBlock[]> => {
@@ -170,6 +180,9 @@ const unlinkChildFromParent = async (db: BlockAbstractDb, childBlock: IBlock) =>
     parentBlockUuid: null,
     displayKind: 'list'
   });
+  if (db instanceof BookDB) {
+    await updateBook(db as BookDB);
+  }
 }
 
 const linkChildToParent = async (db: BlockAbstractDb, childBlock: IBlock, parentUuid: string) => {
@@ -177,6 +190,9 @@ const linkChildToParent = async (db: BlockAbstractDb, childBlock: IBlock, parent
     ...childBlock,
     parentBlockUuid: parentUuid,
   });
+  if (db instanceof BookDB) {
+    await updateBook(db as BookDB);
+  }
 }
 
 const getChildren = async (db: BlockAbstractDb, parentBlockUuid: string) => {

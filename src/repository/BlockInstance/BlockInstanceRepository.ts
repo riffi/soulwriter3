@@ -5,6 +5,7 @@ import { BlockRepository } from "@/repository/Block/BlockRepository";
 import { BlockParameterInstanceRepository } from "./BlockParameterInstanceRepository";
 import { updateBlockInstance } from "./BlockInstanceUpdateHelper";
 import {BlockInstanceRelationRepository} from "@/repository/BlockInstance/BlockInstanceRelationRepository";
+import { updateBook } from "@/utils/bookSyncUtils";
 
 export const getByUuid = async (db: BookDB, blockInstanceUuid: string) => {
   return db.blockInstances.where('uuid').equals(blockInstanceUuid).first();
@@ -36,6 +37,7 @@ export const create = async (db: BookDB, instance: IBlockInstance) => {
   };
   delete (instanceToCreate as any).id;
   await db.blockInstances.add(instanceToCreate);
+  await updateBook(db);
 }
 
 export const createSingleInstance = async (db: BookDB, block: IBlock): Promise<IBlockInstance | undefined> => {
@@ -47,11 +49,14 @@ export const createSingleInstance = async (db: BookDB, block: IBlock): Promise<I
   };
   await create(db, newInstanceData);
   await BlockParameterInstanceRepository.appendDefaultParams(db, newInstanceData);
-  return getByUuid(db, newUuid);
+  const created = await getByUuid(db, newUuid);
+  await updateBook(db);
+  return created;
 }
 
 export const update = async (db: BookDB, instance: IBlockInstance) => {
   await updateBlockInstance(db, instance);
+  await updateBook(db);
 }
 
 export const updateByInstanceUuid = async (db: BookDB, instanceUuid: string, newData: Partial<IBlockInstance>) => {
@@ -64,6 +69,7 @@ export const updateByInstanceUuid = async (db: BookDB, instanceUuid: string, new
     updatedAt: new Date().toISOString(),
   };
   await db.blockInstances.update(mergedData.id!, mergedData);
+  await updateBook(db);
 }
 
 export const remove = async (db: BookDB, instance: IBlockInstance) => {
@@ -73,6 +79,7 @@ export const remove = async (db: BookDB, instance: IBlockInstance) => {
     db.blockInstanceSceneLinks.where('blockInstanceUuid').equals(instance.uuid).delete(),
     db.blockInstances.delete(instance.id!)
   ]);
+  await updateBook(db);
 }
 
 export const getChildInstances = async (db: BookDB, parentInstanceUuid: string, childBlockUuid?: string) => {
@@ -90,6 +97,7 @@ export const removeByBlock = async (db: BookDB, blockUuid: string) => {
   for (const instance of instances) {
     await remove(db, instance);
   }
+  await updateBook(db);
 }
 
 export const BlockInstanceRepository = {
