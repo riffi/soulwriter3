@@ -20,6 +20,7 @@ import React, { useEffect, useState } from "react";
 import {IBlockInstance, IBlockInstanceSceneLink} from "@/entities/BookEntities";
 import {IBlock, IBlockStructureKind} from "@/entities/ConstructorEntities";
 import {IconMan, IconTrash} from "@tabler/icons-react";
+import {useLiveQuery} from "dexie-react-hooks";
 
 interface SceneLinkManagerProps {
   sceneId: number;
@@ -28,27 +29,42 @@ interface SceneLinkManagerProps {
 }
 
 export const SceneLinkManager = ({ sceneId, opened, onClose }: SceneLinkManagerProps) => {
-  const [blocks, setBlocks] = useState<IBlock[]>([]);
   const [selectedBlock, setSelectedBlock] = useState<IBlock | null>(null);
-  const [links, setLinks] = useState<IBlockInstanceSceneLink[]>([]);
-  const [blockInstances, setBlockInstances] = useState<IBlockInstance[]>([]);
   const [modalOpened, { open: openModal, close: closeModal }] = useDisclosure(false);
   const [newLinkTitle, setNewLinkTitle] = useState('');
 
-  useEffect(() => {
-    const loadData = async () => {
-      const [allowedBlocks, existingLinks, instances] = await Promise.all([
-        bookDb.blocks.where('sceneLinkAllowed').equals(1).toArray(),
-        bookDb.blockInstanceSceneLinks.where('sceneId').equals(sceneId).toArray(),
-        bookDb.blockInstances.toArray()
-      ]);
 
-      setBlocks(allowedBlocks);
-      setLinks(existingLinks);
-      setBlockInstances(instances);
-    };
-    loadData();
-  }, [sceneId]);
+  const blocks = useLiveQuery<IBlock[]>(async () => {
+    return bookDb.blocks.where('sceneLinkAllowed').equals(1).toArray();
+  }, [sceneId])
+
+  const links = useLiveQuery<IBlockInstanceSceneLink[]>(async () => {
+    return bookDb.blockInstanceSceneLinks.where('sceneId').equals(sceneId).toArray();
+  }, [sceneId])
+
+  const blockInstances = useLiveQuery<IBlockInstance[]>(async () => {
+    return bookDb.blockInstances.toArray();
+  }, [sceneId])
+
+  if (!blocks || !links || !blockInstances) {
+    return null;
+  }
+  //
+  //
+  // useEffect(() => {
+  //   const loadData = async () => {
+  //     const [allowedBlocks, existingLinks, instances] = await Promise.all([
+  //       bookDb.blocks.where('sceneLinkAllowed').equals(1).toArray(),
+  //       bookDb.blockInstanceSceneLinks.where('sceneId').equals(sceneId).toArray(),
+  //       bookDb.blockInstances.toArray()
+  //     ]);
+  //
+  //     setBlocks(allowedBlocks);
+  //     setLinks(existingLinks);
+  //     setBlockInstances(instances);
+  //   };
+  //   loadData();
+  // }, [sceneId]);
 
   const handleCreateLink = async (blockInstanceUuid: string) => {
     const newLink: IBlockInstanceSceneLink = {
@@ -59,20 +75,17 @@ export const SceneLinkManager = ({ sceneId, opened, onClose }: SceneLinkManagerP
     };
 
     await bookDb.blockInstanceSceneLinks.add(newLink);
-    setLinks([...links, newLink]);
     setNewLinkTitle(''); // Reset title input
     closeModal();
   };
 
   const handleDeleteLink = async (linkId: number) => {
     await bookDb.blockInstanceSceneLinks.delete(linkId);
-    setLinks(links.filter(l => l.id !== linkId));
   };
 
   const handleUpdateLinkTitle = async (linkId: number, newTitle: string) => {
     try {
       await bookDb.blockInstanceSceneLinks.update(linkId, { title: newTitle });
-      setLinks(links.map(l => l.id === linkId ? { ...l, title: newTitle } : l));
     } catch (error) {
       console.error("Failed to update link title:", error);
     }
