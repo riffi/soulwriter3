@@ -142,6 +142,22 @@ const fetchRhymes = async (word: string) => {
   return JSON.parse(jsonMatch[1]).rhymes as string[];
 };
 
+const fetchSceneAnalysis = async (sceneContent: string) => {
+  try {
+    const prompt = `Сделай подробный литературный анализ следующего текста сцены. Верни результат в Markdown.\n\n${sceneContent}`;
+    const data = await fetchCompletions(prompt);
+    const content = data.choices[0]?.message?.content || "";
+    return content as string;
+  } catch (error) {
+    notifications.show({
+      title: "Ошибка",
+      message: error instanceof Error ? error.message : "Неизвестная ошибка",
+      color: "red",
+    });
+    return "";
+  }
+};
+
 
 
 
@@ -235,5 +251,6 @@ export const OpenRouterApi = {
   fetchSimplifications,
   fetchSpellingCorrection,
   fetchRhymes,
+  fetchSceneAnalysis,
   fetchKnowledgeBaseEntities // Add new function here
 }

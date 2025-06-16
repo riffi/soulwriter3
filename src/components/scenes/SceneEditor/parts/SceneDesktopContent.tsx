@@ -24,7 +24,8 @@ interface SceneDesktopContentProps {
     setSelectedGroup: (group?: IWarningGroup) => void;
     focusMode: boolean;
     toggleFocusMode: () => void;
-    openKnowledgeBaseDrawer: () => void; // Added prop
+    openKnowledgeBaseDrawer: () => void;
+    openAnalysisDrawer: () => void;
 }
 
 export const SceneDesktopContent = ({
@@ -39,7 +40,8 @@ export const SceneDesktopContent = ({
                                         setSelectedGroup,
                                         focusMode,
                                         toggleFocusMode,
-                                        openKnowledgeBaseDrawer, // Destructure new prop
+                                        openKnowledgeBaseDrawer,
+                                        openAnalysisDrawer,
                                     }: SceneDesktopContentProps) => {
 
     const { isHeaderVisible, handleEditorScroll } = useHeaderVisibility();
@@ -104,6 +106,12 @@ export const SceneDesktopContent = ({
                                                 // leftSection={<IconDatabasePlus size={16} />} // Optional: Add an icon
                                             >
                                                 Наполнить базу знаний
+                                            </Button>
+                                            <Button
+                                                variant="outline"
+                                                onClick={openAnalysisDrawer}
+                                            >
+                                                Анализ
                                             </Button>
                                             <Button
                                                 variant={"outline"}

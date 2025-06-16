@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {KnowledgeBaseDrawer} from "./parts/KnowledgeBaseDrawer";
+import {SceneAnalysisDrawer} from "./parts/SceneAnalysisDrawer";
 import { OpenRouterApi } from "@/api/openRouterApi";
 import { BlockInstanceRepository } from "@/repository/BlockInstance/BlockInstanceRepository";
 import type { IBlockInstance } from "@/entities/BookEntities";
@@ -43,11 +44,13 @@ export const SceneEditor = ({ sceneId}: SceneEditorProps) => {
 
     // State for Knowledge Base Drawer
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+    const [isAnalysisDrawerOpen, setIsAnalysisDrawerOpen] = useState(false);
 
     const toggleFocusMode = useCallback(() => setFocusMode((prev) => !prev), []);
 
     // Functions for Knowledge Base Drawer
     const openKnowledgeBaseDrawer = useCallback(() => setIsDrawerOpen(true), []);
+    const openAnalysisDrawer = useCallback(() => setIsAnalysisDrawerOpen(true), []);
 
     const blocks = useLiveQuery<IBlock[]>(() => BlockRepository.getAll(bookDb), [])
 
@@ -56,6 +59,7 @@ export const SceneEditor = ({ sceneId}: SceneEditorProps) => {
         // setSelectedBlock(null); // REMOVE THIS
         // setKnowledgeBaseEntities([]); // REMOVE THIS
     }, []);
+    const closeAnalysisDrawer = useCallback(() => setIsAnalysisDrawerOpen(false), []);
 
     // Global keyboard shortcut for focus mode
     useEffect(() => {
@@ -127,7 +131,8 @@ export const SceneEditor = ({ sceneId}: SceneEditorProps) => {
                         saveScene={saveScene}
                         focusMode={focusMode}
                         toggleFocusMode={toggleFocusMode}
-                        openKnowledgeBaseDrawer={openKnowledgeBaseDrawer} // Pass down the function
+                        openKnowledgeBaseDrawer={openKnowledgeBaseDrawer}
+                        openAnalysisDrawer={openAnalysisDrawer}
                     />
                 ) : (
                     <SceneDesktopContent
@@ -142,7 +147,8 @@ export const SceneEditor = ({ sceneId}: SceneEditorProps) => {
                         setSelectedGroup={setSelectedGroup}
                         focusMode={focusMode}
                         toggleFocusMode={toggleFocusMode}
-                        openKnowledgeBaseDrawer={openKnowledgeBaseDrawer} // Pass down the function
+                        openKnowledgeBaseDrawer={openKnowledgeBaseDrawer}
+                        openAnalysisDrawer={openAnalysisDrawer}
                     />
                 )}
                 <KnowledgeBaseDrawer
@@ -150,6 +156,11 @@ export const SceneEditor = ({ sceneId}: SceneEditorProps) => {
                     onClose={closeKnowledgeBaseDrawer}
                     blocks={blocks}
                     sceneId={scene.id}
+                    sceneBody={scene?.body}
+                />
+                <SceneAnalysisDrawer
+                    isOpen={isAnalysisDrawerOpen}
+                    onClose={closeAnalysisDrawer}
                     sceneBody={scene?.body}
                 />
             </Box>)

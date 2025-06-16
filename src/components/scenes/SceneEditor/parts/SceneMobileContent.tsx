@@ -10,7 +10,7 @@ import {usePageTitle} from "@/providers/PageTitleProvider/PageTitleProvider";
 import {useKeyboardHeight} from "@/components/scenes/SceneEditor/hooks/useKeyboardHeight";
 import {SceneLinkManager} from "@/components/scenes/SceneEditor/parts/SceneLinkManager";
 import {useDisclosure} from "@mantine/hooks";
-import {IconDatabaseSmile, IconLink} from "@tabler/icons-react";
+import {IconDatabaseSmile, IconLink, IconReportAnalytics} from "@tabler/icons-react";
 import {InlineEdit2} from "@/components/shared/InlineEdit2/InlineEdit2";
 interface SceneMobileContentProps {
     sceneBody: string;
@@ -23,7 +23,8 @@ interface SceneMobileContentProps {
     saveScene: (dataToSave: IScene, silent: boolean) => void;
     focusMode: boolean;
     toggleFocusMode: () => void;
-    openKnowledgeBaseDrawer: () => void; // Added prop
+    openKnowledgeBaseDrawer: () => void;
+    openAnalysisDrawer: () => void;
 }
 
 export const SceneMobileContent = ({
@@ -37,7 +38,8 @@ export const SceneMobileContent = ({
                                        saveScene,
                                        focusMode,
                                        toggleFocusMode,
-                                       openKnowledgeBaseDrawer // Destructure new prop
+                                       openKnowledgeBaseDrawer,
+                                       openAnalysisDrawer
                                    }: SceneMobileContentProps) => {
     const { setPageTitle, setTitleElement } = usePageTitle();
     const [linkManagerOpened, { open: openLinkManager, close: closeLinkManager }] = useDisclosure(false);
@@ -79,6 +81,16 @@ export const SceneMobileContent = ({
                     >
 
                         <IconDatabaseSmile size={16} />
+                    </ActionIcon>
+                    <ActionIcon
+                        variant="outline"
+                        onClick={openAnalysisDrawer}
+                        style={{
+                            display: 'flex',
+                            flexGrow:0
+                        }}
+                    >
+                        <IconReportAnalytics size={16} />
                     </ActionIcon>
                 </Group>
             );
