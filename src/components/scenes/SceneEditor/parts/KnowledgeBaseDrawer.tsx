@@ -64,7 +64,8 @@ export const KnowledgeBaseDrawer = ({
             ...entity,
             isExisting: !!existingInstance,
             isLinked: isLinked,
-            instanceUuid: existingInstance?.uuid
+            instanceUuid: existingInstance?.uuid,
+            instance: existingInstance,
         };
     });
 
@@ -195,91 +196,6 @@ export const KnowledgeBaseDrawer = ({
         }
     }, [selectedBlock, sceneId,  knowledgeBaseEntities, handleGenerateKnowledgeBase]);
 
-    const handleAddAllEntities = useCallback(async (entities: KnowledgeBaseEntityDisplay[]) => {
-        if (!selectedBlock) {
-            notifications.show({ title: "Ошибка", message: "Не выбран тип блока (IBlock).", color: "red" });
-            return;
-        }
-        if (entities.length === 0) {
-            notifications.show({ title: "Информация", message: "Нет сущностей для добавления.", color: "blue" });
-            return;
-        }
-
-        let successCount = 0;
-        let linkSuccessCount = 0;
-
-        for (const entity of entities) {
-            if (entity.isExisting && ( entity.isLinked || selectedBlock.sceneLinkAllowed !== 1)) {
-                if (entity.isExisting && !entity.isLinked && selectedBlock.sceneLinkAllowed === 1) {
-                    // Fall through
-                } else {
-                    continue;
-                }
-            }
-
-            try {
-                let instanceUuid: string | undefined;
-                let instanceForLink: IBlockInstance | undefined;
-
-                if (entity.isExisting) {
-                    const existing = await bookDb.blockInstances
-                        .where('blockUuid').equals(selectedBlock.uuid)
-                        .and(inst => inst.title === entity.title)
-                        .first();
-                    if (existing) {
-                        instanceUuid = existing.uuid;
-                        instanceForLink = existing;
-                    } else continue;
-                } else {
-                    const newInstance: IBlockInstance = {
-                        uuid: generateUUID(),
-                        blockUuid: selectedBlock.uuid,
-                        title: entity.title,
-                        shortDescription: entity.description,
-                    };
-                    await BlockInstanceRepository.create(bookDb, newInstance);
-                    instanceUuid = newInstance.uuid;
-                    instanceForLink = newInstance;
-                    successCount++;
-                }
-
-            } catch (error: any) {
-                console.error(`Failed to process entity "${entity.title}":`, error);
-                notifications.show({
-                    title: "Ошибка при массовой обработке",
-                    message: `Не удалось обработать сущность "${entity.title}": ${error.message}`,
-                    color: "red",
-                });
-            }
-        }
-
-        if (successCount > 0) {
-            notifications.show({
-                title: "Успех добавления",
-                message: `${successCount} из ${entities.filter(e => !e.isExisting).length} новых сущностей успешно добавлены.`,
-                color: "green",
-            });
-        }
-        if (linkSuccessCount > 0) {
-            notifications.show({
-                title: "Успех связывания",
-                message: `${linkSuccessCount} сущностей успешно привязаны к сцене.`,
-                color: "blue",
-            });
-        }
-        if (successCount === 0 && linkSuccessCount === 0 && entities.length > 0) {
-            notifications.show({
-                title: "Информация",
-                message: "Нет новых сущностей для добавления или привязки.",
-                color: "blue",
-            });
-        }
-        if (knowledgeBaseEntities.length > 0) {
-            handleGenerateKnowledgeBase();
-        }
-
-    }, [selectedBlock, sceneId, knowledgeBaseEntities, handleGenerateKnowledgeBase]);
-
     return (
         <Drawer
             opened={isOpen}
@@ -311,21 +227,6 @@ export const KnowledgeBaseDrawer = ({
                 </Button>
                 <Space h="md" />
 
-                {knowledgeBaseEntities.length > 0 && (
-                    <>
-                        <Divider my="md" label="Найденные сущности" labelPosition="center" />
-                        <Button
-                            variant="outline"
-                            size="xs"
-                            onClick={() => handleAddAllEntities(knowledgeBaseEntities)}
-                            disabled={isGeneratingEntities}
-                            style={{ marginBottom: '1rem' }}
-                        >
-                            Добавить всех ({knowledgeBaseEntities.length})
-                        </Button>
-                    </>
-                )}
-
                 <ScrollArea style={{ height: 'calc(100vh - 350px)' }}> {/* Adjusted height */}
                     {knowledgeBaseEntities.length === 0 && !isGeneratingEntities && (
                         <Text c="dimmed" ta="center">Сущности не найдены или еще не сгенерированы.</Text>
@@ -335,13 +236,15 @@ export const KnowledgeBaseDrawer = ({
                         <Card key={index} shadow="sm" padding="sm" radius="md" withBorder mb="sm"
                               style={entity.isExisting ? { backgroundColor: 'var(--mantine-color-gray-1)' } : {}} >
                             <Group justify="space-between">
-                                <IconViewer
-                                    size={24}
-                                    icon={selectedBlock?.icon}
-                                    color={'gray'}
-                                />
+                                {entity.instance &&
+                                    <IconViewer
+                                        size={24}
+                                        icon={entity.instance.icon ?? selectedBlock?.icon}
+                                        color={'gray'}
+                                    />
+                                }
                                 <div style={{ flex: 1 }}>
-                                    <Text fw={500}>{entity.title}</Text>
+                                    <Text fw={500}>{entity.instance ? entity.instance.title : entity.title}</Text>
                                     <Text size="sm" c="dimmed">
                                         <b>Общее описание: </b>{entity.description}
                                     </Text>

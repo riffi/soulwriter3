@@ -1,9 +1,9 @@
-import {bookDb, BookDB} from "@/entities/bookDb";
-import { IBlockInstance, IBlockParameter, IBlockParameterInstance } from "@/entities/BookEntities";
+import {BookDB} from "@/entities/bookDb";
+import { IBlockInstance, IBlockParameterInstance } from "@/entities/BookEntities";
 import { generateUUID } from "@/utils/UUIDUtils";
-import { BlockRepository } from "@/repository/Block/BlockRepository";
 import { updateBlockInstance } from "./BlockInstanceUpdateHelper";
 import {BlockParameterRepository} from "@/repository/Block/BlockParameterRepository";
+import {IBlockParameter} from "@/entities/ConstructorEntities";
 
 export const getInstanceParams = async (db: BookDB, instanceUuid: string) => {
     return db.blockParameterInstances
@@ -74,7 +74,7 @@ export const removeAllForInstance = async (db: BookDB, instanceUuid: string) => 
 }
 
 export const getReferencingParamsToInstance = async (db: BookDB, instanceUuid: string) => {
-    return bookDb.blockParameterInstances
+    return db.blockParameterInstances
         .filter(param => param.value === instanceUuid)
         .toArray()
 }

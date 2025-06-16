@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {KnowledgeBaseDrawer} from "./parts/KnoledgeBaseDrawer";
+import {KnowledgeBaseDrawer} from "./parts/KnowledgeBaseDrawer";
 import { OpenRouterApi } from "@/api/openRouterApi";
 import { BlockInstanceRepository } from "@/repository/BlockInstance/BlockInstanceRepository";
 import type { IBlockInstance } from "@/entities/BookEntities";
