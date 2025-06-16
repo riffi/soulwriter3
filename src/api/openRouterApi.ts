@@ -151,7 +151,7 @@ const fetchKnowledgeBaseEntities = async (sceneContent: string, block: IBlock): 
   const prompt = `Проанализируй  текст сцены
 
 Найди в тексте все сущности типа "${block.title}" (описание: "${block.description}").
-Для каждой найденной сущности извлеки краткое название (title), общее описание сущности (description), описание из контекста сцены (sceneDescription).
+Для каждой найденной сущности извлеки краткое название (title), общее краткое описание сущности не более 5 слов (description), описание из контекста сцены (sceneDescription).
 Верни результат в формате JSON массива объектов. Каждый объект должен иметь поля "title" (строка) и "description" (строка).
 
 Пример ответа для "${block.title}":

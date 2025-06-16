@@ -9,7 +9,8 @@ import { bookDb } from '@/entities/bookDb'; // To query blockInstances and block
 import { OpenRouterApi } from '@/api/openRouterApi'; // For fetching knowledge base entities
 import type { IBlockInstance, IBlockInstanceSceneLink } from "@/entities/BookEntities";
 import {useLiveQuery} from "dexie-react-hooks";
-import {KnowledgeBaseEntity, KnowledgeBaseEntityDisplay} from "@/entities/KnowledgeBaseEntities"; // For types
+import {KnowledgeBaseEntity, KnowledgeBaseEntityDisplay} from "@/entities/KnowledgeBaseEntities";
+import {IconViewer} from "@/components/shared/IconViewer/IconViewer"; // For types
 
 interface KnowledgeBaseDrawerProps {
     isOpen: boolean;
@@ -334,6 +335,11 @@ export const KnowledgeBaseDrawer = ({
                         <Card key={index} shadow="sm" padding="sm" radius="md" withBorder mb="sm"
                               style={entity.isExisting ? { backgroundColor: 'var(--mantine-color-gray-1)' } : {}} >
                             <Group justify="space-between">
+                                <IconViewer
+                                    size={24}
+                                    icon={selectedBlock?.icon}
+                                    color={'gray'}
+                                />
                                 <div style={{ flex: 1 }}>
                                     <Text fw={500}>{entity.title}</Text>
                                     <Text size="sm" c="dimmed">
