@@ -182,6 +182,7 @@ export const saveBookToServer = async (bookUuid: string, token: string) => {
       if (response.data?.updatedAt) {
         await configDatabase.books.where('uuid').equals(bookUuid).modify({
           serverUpdatedAt: response.data.updatedAt,
+          localUpdatedAt: response.data.updatedAt,
           syncState: 'synced'
         });
       } else {
