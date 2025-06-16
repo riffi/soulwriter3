@@ -5,6 +5,7 @@ import { BlockRepository } from "@/repository/Block/BlockRepository";
 import { BlockParameterInstanceRepository } from "./BlockParameterInstanceRepository";
 import { updateBlockInstance } from "./BlockInstanceUpdateHelper";
 import {BlockInstanceRelationRepository} from "@/repository/BlockInstance/BlockInstanceRelationRepository";
+import {BlockInstanceSceneLinkRepository} from "@/repository/BlockInstance/BlockInstanceSceneLinkRepository";
 
 export const getByUuid = async (db: BookDB, blockInstanceUuid: string) => {
   return db.blockInstances.where('uuid').equals(blockInstanceUuid).first();
@@ -70,7 +71,7 @@ export const remove = async (db: BookDB, instance: IBlockInstance) => {
   await Promise.all([
     BlockInstanceRelationRepository.removeAllForInstance(db, instance.uuid!),
     BlockParameterInstanceRepository.removeAllForInstance(db, instance.uuid!),
-    db.blockInstanceSceneLinks.where('blockInstanceUuid').equals(instance.uuid).delete(),
+    BlockInstanceSceneLinkRepository.removeLinksForInstance(db, instance.uuid!),
     db.blockInstances.delete(instance.id!)
   ]);
 }

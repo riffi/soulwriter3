@@ -6,6 +6,7 @@ import { notifications } from '@mantine/notifications';
 import { generateUUID } from '@/utils/UUIDUtils';
 import { BlockInstanceRepository } from '@/repository/BlockInstance/BlockInstanceRepository';
 import { bookDb } from '@/entities/bookDb'; // To query blockInstances and blockInstanceSceneLinks
+import { BlockInstanceSceneLinkRepository } from '@/repository/BlockInstance/BlockInstanceSceneLinkRepository';
 import { OpenRouterApi } from '@/api/openRouterApi'; // For fetching knowledge base entities
 import type { IBlockInstance, IBlockInstanceSceneLink } from "@/entities/BookEntities";
 import {useLiveQuery} from "dexie-react-hooks";
@@ -44,14 +45,12 @@ export const KnowledgeBaseDrawer = ({
     }, [selectedBlock]);
 
     const sceneLinks = useLiveQuery(() => {
-        if (!selectedBlock){
-            return []
+        if (!selectedBlock) {
+            return [];
         }
-        return bookDb.blockInstanceSceneLinks
-            .where('sceneId')
-            .equals(sceneId)
-            .and(link => link.blockUuid === selectedBlock.uuid)
-            .toArray()
+        return BlockInstanceSceneLinkRepository
+            .getLinksBySceneId(bookDb, sceneId)
+            .then(links => links.filter(l => l.blockUuid === selectedBlock.uuid));
     }, [selectedBlock]);
 
 
@@ -129,18 +128,18 @@ export const KnowledgeBaseDrawer = ({
 
     const handleBindEntityToScene = async (entity: KnowledgeBaseEntityDisplay) => {
         const instanceUuid = entitySelection[entity.title] ?? entity.instanceUuid;
-        const existingLink = await bookDb.blockInstanceSceneLinks
-            .where('blockInstanceUuid').equals(instanceUuid)
-            .and(link => link.sceneId === sceneId)
-            .first();
+        const existingLink = await BlockInstanceSceneLinkRepository
+            .getLinksByBlockInstance(bookDb, instanceUuid)
+            .then(links => links.find(link => link.sceneId === sceneId));
 
         if (!existingLink) {
             if (entity.isLinked && entity.instanceUuid) {
-                await bookDb.blockInstanceSceneLinks
-                    .where('sceneId')
-                    .equals(sceneId)
-                    .and(link => link.blockInstanceUuid === entity.instanceUuid)
-                    .delete();
+                const links = await BlockInstanceSceneLinkRepository.getLinksBySceneId(bookDb, sceneId);
+                await Promise.all(
+                    links
+                        .filter(l => l.blockInstanceUuid === entity.instanceUuid)
+                        .map(l => BlockInstanceSceneLinkRepository.deleteLink(bookDb, l.id!))
+                );
             }
             const newLink: IBlockInstanceSceneLink = {
                 uuid: generateUUID(),
@@ -149,7 +148,7 @@ export const KnowledgeBaseDrawer = ({
                 sceneId: sceneId,
                 title: entity.sceneDescription,
             };
-            await bookDb.blockInstanceSceneLinks.add(newLink);
+            await BlockInstanceSceneLinkRepository.createLink(bookDb, newLink);
             notifications.show({
                 title: "Связь добавлена",
                 message: `Сущность "${entity.title}" привязана к сцене.`,

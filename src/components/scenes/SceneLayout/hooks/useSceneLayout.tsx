@@ -6,16 +6,14 @@ import {SceneRepository} from "@/repository/Scene/SceneRepository";
 import {ChapterRepository} from "@/repository/Scene/ChapterRepository";
 import {BlockRepository} from "@/repository/Block/BlockRepository";
 import {BlockInstanceRepository} from "@/repository/BlockInstance/BlockInstanceRepository";
+import {BlockInstanceSceneLinkRepository} from "@/repository/BlockInstance/BlockInstanceSceneLinkRepository";
 
 export const useSceneLayout = () => {
   const scenes = useLiveQuery(() => SceneRepository.getAll(bookDb), [])
   const chapters = useLiveQuery(() => ChapterRepository.getAll(bookDb), [])
 
   const getLinkedBlockInstances = async (sceneId: number) => {
-    const links = await bookDb.blockInstanceSceneLinks
-    .where('sceneId')
-    .equals(sceneId)
-    .toArray();
+    const links = await BlockInstanceSceneLinkRepository.getLinksBySceneId(bookDb, sceneId);
 
     const blockUuids = Array.from(new Set(links.map(l => l.blockUuid)));
     const instanceUuids = links.map(l => l.blockInstanceUuid);

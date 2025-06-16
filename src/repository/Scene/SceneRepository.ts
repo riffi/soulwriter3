@@ -1,5 +1,6 @@
 import { BookDB } from "@/entities/bookDb";
 import { IScene } from "@/entities/BookEntities";
+import {BlockInstanceSceneLinkRepository} from "@/repository/BlockInstance/BlockInstanceSceneLinkRepository";
 
 export const getById = async (db: BookDB, sceneId: number): Promise<IScene | undefined> => {
     return db.scenes.get(sceneId);
@@ -67,7 +68,7 @@ export const remove = async (db: BookDB, sceneId: number): Promise<void> => {
     await db.transaction('rw', db.scenes, db.blockInstanceSceneLinks, async () => {
         await db.scenes.delete(sceneId);
         // Also remove related data like links (e.g., blockInstanceSceneLinks)
-        await db.blockInstanceSceneLinks.where('sceneId').equals(sceneId).delete();
+        await BlockInstanceSceneLinkRepository.removeLinksForScene(db, sceneId);
     });
 
     // Recalculate order for the chapter the scene belonged to, or globally if it was chapterless

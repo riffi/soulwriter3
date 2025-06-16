@@ -1,6 +1,7 @@
 import { configDatabase } from "@/entities/configuratorDb";
 import { notifications } from "@mantine/notifications";
 import { connectToBookDatabase, deleteBookDatabase } from "@/entities/bookDb";
+import { BlockInstanceSceneLinkRepository } from "@/repository/BlockInstance/BlockInstanceSceneLinkRepository";
 import { inkLuminAPI } from "@/api/inkLuminApi";
 import moment from "moment";
 
@@ -44,7 +45,7 @@ export const collectBookBackupData = async (bookUuid: string): Promise<BackupDat
     blockParameterPossibleValues: await db.blockParameterPossibleValues.toArray(),
     blocksRelations: await db.blocksRelations.toArray(),
     blockTabs: await db.blockTabs.toArray(),
-    blockInstanceSceneLinks: await db.blockInstanceSceneLinks.toArray(),
+    blockInstanceSceneLinks: await BlockInstanceSceneLinkRepository.getAllLinks(db),
   };
 };
 
@@ -123,7 +124,12 @@ export const importBookData = async (backupData: BackupData): Promise<void> => {
   otherPromises.push(db.blockParameterPossibleValues.bulkAdd(backupData.blockParameterPossibleValues || []));
   otherPromises.push(db.blocksRelations.bulkAdd(backupData.blocksRelations || []));
   otherPromises.push(db.blockTabs.bulkAdd(backupData.blockTabs || []));
-  otherPromises.push(db.blockInstanceSceneLinks.bulkAdd(backupData.blockInstanceSceneLinks || []));
+  otherPromises.push(
+    BlockInstanceSceneLinkRepository.bulkAddLinks(
+      db,
+      backupData.blockInstanceSceneLinks || []
+    )
+  );
 
   if (otherPromises.length > 0) {
     await Promise.all(otherPromises);
