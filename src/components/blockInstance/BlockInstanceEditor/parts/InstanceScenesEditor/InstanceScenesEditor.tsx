@@ -4,6 +4,7 @@ import { IconLink, IconUnlink, IconArrowRight, IconChevronDown, IconChevronRight
 import { useNavigate } from 'react-router-dom';
 import { IBlockInstanceSceneLink, IScene, IChapter } from '@/entities/BookEntities';
 import { bookDb } from '@/entities/bookDb';
+import { BlockInstanceSceneLinkRepository } from '@/repository/BlockInstance/BlockInstanceSceneLinkRepository';
 import { generateUUID } from '@/utils/UUIDUtils';
 import { useLiveQuery } from 'dexie-react-hooks';
 import {SceneRepository} from "@/repository/Scene/SceneRepository";
@@ -36,7 +37,7 @@ export const InstanceScenesEditor: React.FC<IInstanceScenesEditorProps> = ({ blo
     };
 
     const linkedSceneLinks = useLiveQuery(
-        () => bookDb.blockInstanceSceneLinks.where({ blockInstanceUuid }).toArray(),
+        () => BlockInstanceSceneLinkRepository.getLinksByBlockInstance(bookDb, blockInstanceUuid),
         [blockInstanceUuid],
         undefined
     );
@@ -163,7 +164,7 @@ export const InstanceScenesEditor: React.FC<IInstanceScenesEditorProps> = ({ blo
             sceneId,
         };
         try {
-            await bookDb.blockInstanceSceneLinks.add(newLink);
+            await BlockInstanceSceneLinkRepository.createLink(bookDb, newLink);
         } catch (error) {
             console.error("Failed to link scene:", error);
         }
@@ -177,7 +178,7 @@ export const InstanceScenesEditor: React.FC<IInstanceScenesEditorProps> = ({ blo
             return;
         }
         try {
-            await bookDb.blockInstanceSceneLinks.delete(linkId);
+            await BlockInstanceSceneLinkRepository.deleteLink(bookDb, linkId);
         } catch (error) {
             console.error("Failed to unlink scene:", error);
         }

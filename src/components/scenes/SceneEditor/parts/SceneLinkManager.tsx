@@ -16,6 +16,7 @@ import {
 import { InlineEdit2 } from "@/components/shared/InlineEdit2/InlineEdit2";
 import { useDisclosure } from "@mantine/hooks";
 import { bookDb } from "@/entities/bookDb";
+import {BlockInstanceSceneLinkRepository} from "@/repository/BlockInstance/BlockInstanceSceneLinkRepository";
 import React, { useEffect, useState } from "react";
 import {IBlockInstance, IBlockInstanceSceneLink} from "@/entities/BookEntities";
 import {IBlock, IBlockStructureKind} from "@/entities/ConstructorEntities";
@@ -39,7 +40,7 @@ export const SceneLinkManager = ({ sceneId, opened, onClose }: SceneLinkManagerP
   }, [sceneId])
 
   const links = useLiveQuery<IBlockInstanceSceneLink[]>(async () => {
-    return bookDb.blockInstanceSceneLinks.where('sceneId').equals(sceneId).toArray();
+    return BlockInstanceSceneLinkRepository.getLinksBySceneId(bookDb, sceneId);
   }, [sceneId])
 
   const blockInstances = useLiveQuery<IBlockInstance[]>(async () => {
@@ -74,18 +75,18 @@ export const SceneLinkManager = ({ sceneId, opened, onClose }: SceneLinkManagerP
       title: newLinkTitle,
     };
 
-    await bookDb.blockInstanceSceneLinks.add(newLink);
+    await BlockInstanceSceneLinkRepository.createLink(bookDb, newLink);
     setNewLinkTitle(''); // Reset title input
     closeModal();
   };
 
   const handleDeleteLink = async (linkId: number) => {
-    await bookDb.blockInstanceSceneLinks.delete(linkId);
+    await BlockInstanceSceneLinkRepository.deleteLink(bookDb, linkId);
   };
 
   const handleUpdateLinkTitle = async (linkId: number, newTitle: string) => {
     try {
-      await bookDb.blockInstanceSceneLinks.update(linkId, { title: newTitle });
+      await BlockInstanceSceneLinkRepository.updateLink(bookDb, linkId, { title: newTitle });
     } catch (error) {
       console.error("Failed to update link title:", error);
     }
