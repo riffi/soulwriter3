@@ -1,5 +1,5 @@
-import { Drawer, Select, Button, Space, LoadingOverlay, Text, Card, Group, ActionIcon, ScrollArea, Divider, Checkbox } from '@mantine/core'; // Add Checkbox
-import { IconPlus, IconLink } from '@tabler/icons-react'; // Add IconLink for "Привязать к сцене" button
+import { Drawer, Select, Button, Space, LoadingOverlay, Text, Card, Group, ActionIcon, ScrollArea, Divider, Checkbox } from '@mantine/core';
+import { IconPlus, IconLink } from '@tabler/icons-react';
 import { IBlock } from "@/entities/ConstructorEntities"; // Ensure IBlock is imported
 import { useState, useCallback, useEffect } from 'react'; // Add useEffect if needed for any side effects
 import { notifications } from '@mantine/notifications';
@@ -30,7 +30,7 @@ export const KnowledgeBaseDrawer = ({
     const [selectedBlock, setSelectedBlock] = useState<IBlock | null>(null);
     const [apiEntities, setApiEntities] = useState<KnowledgeBaseEntity[]>([]);
     const [isGeneratingEntities, setIsGeneratingEntities] = useState(false);
-
+    const [entitySelection, setEntitySelection] = useState<Record<string, string | null>>({});
 
     const existingInstances = useLiveQuery(() => {
         if (!selectedBlock){
@@ -40,6 +40,7 @@ export const KnowledgeBaseDrawer = ({
             .where('blockUuid')
             .equals(selectedBlock?.uuid)
             .toArray()
+            .then(arr => arr.sort((a, b) => a.title.localeCompare(b.title)));
     }, [selectedBlock]);
 
     const sceneLinks = useLiveQuery(() => {
@@ -55,7 +56,11 @@ export const KnowledgeBaseDrawer = ({
 
 
     const knowledgeBaseEntities: KnowledgeBaseEntityDisplay[] = apiEntities.map(entity => {
-        const existingInstance = existingInstances?.find(inst => inst.title === entity.title);
+        const selectedUuid = entitySelection[entity.title] ?? null;
+        const existingInstance = selectedUuid
+            ? existingInstances?.find(inst => inst.uuid === selectedUuid)
+            : existingInstances?.find(inst => inst.title === entity.title);
+
         let isLinked = false;
         if (existingInstance) {
             isLinked = sceneLinks?.some(link => link.blockInstanceUuid === existingInstance.uuid);
@@ -63,7 +68,7 @@ export const KnowledgeBaseDrawer = ({
         return {
             ...entity,
             isExisting: !!existingInstance,
-            isLinked: isLinked,
+            isLinked,
             instanceUuid: existingInstance?.uuid,
             instance: existingInstance,
         };
@@ -123,13 +128,20 @@ export const KnowledgeBaseDrawer = ({
     }, [selectedBlock, sceneId, sceneBody]); // Add sceneBody to dependencies
 
     const handleBindEntityToScene = async (entity: KnowledgeBaseEntityDisplay) => {
-        const instanceUuid = entity.instanceUuid;
+        const instanceUuid = entitySelection[entity.title] ?? entity.instanceUuid;
         const existingLink = await bookDb.blockInstanceSceneLinks
             .where('blockInstanceUuid').equals(instanceUuid)
             .and(link => link.sceneId === sceneId)
             .first();
 
         if (!existingLink) {
+            if (entity.isLinked && entity.instanceUuid) {
+                await bookDb.blockInstanceSceneLinks
+                    .where('sceneId')
+                    .equals(sceneId)
+                    .and(link => link.blockInstanceUuid === entity.instanceUuid)
+                    .delete();
+            }
             const newLink: IBlockInstanceSceneLink = {
                 uuid: generateUUID(),
                 blockInstanceUuid: instanceUuid,
@@ -158,20 +170,15 @@ export const KnowledgeBaseDrawer = ({
         }
 
         try {
+            const selectedUuid = entitySelection[entity.title];
 
-
-            if (entity.isExisting) {
-                const existing = await bookDb.blockInstances
-                    .where('blockUuid').equals(selectedBlock.uuid)
-                    .and(inst => inst.title === entity.title)
-                    .first();
-                if (existing) {
-
-                } else {
-                    notifications.show({ title: "Ошибка", message: "Существующая сущность не найдена в БД.", color: "orange" });
+            if (selectedUuid) {
+                const existing = await bookDb.blockInstances.where('uuid').equals(selectedUuid).first();
+                if (!existing) {
+                    notifications.show({ title: "Ошибка", message: "Выбранный экземпляр не найден.", color: "orange" });
                     return;
                 }
-            } else {
+            } else if (!entity.isExisting) {
                 const newInstance: IBlockInstance = {
                     uuid: generateUUID(),
                     blockUuid: selectedBlock.uuid,
@@ -184,6 +191,7 @@ export const KnowledgeBaseDrawer = ({
                     message: `Сущность "${entity.title}" добавлена.`,
                     color: "green",
                 });
+                setEntitySelection(prev => ({ ...prev, [entity.title]: newInstance.uuid }));
             }
 
         } catch (error: any) {
@@ -194,7 +202,7 @@ export const KnowledgeBaseDrawer = ({
                 color: "red",
             });
         }
-    }, [selectedBlock, sceneId,  knowledgeBaseEntities, handleGenerateKnowledgeBase]);
+    }, [selectedBlock, sceneId, knowledgeBaseEntities, handleGenerateKnowledgeBase, entitySelection]);
 
     return (
         <Drawer
@@ -253,6 +261,18 @@ export const KnowledgeBaseDrawer = ({
                                     </Text>
                                     {entity.isExisting && (
                                         <Text size="xs" c="teal"> (Уже есть в Базе)</Text>
+                                    )}
+                                    {existingInstances && existingInstances.length > 0 && (
+                                        <Select
+                                            size="xs"
+                                            mt={4}
+                                            data={existingInstances.map(i => ({ value: i.uuid!, label: i.title }))}
+                                            value={entitySelection[entity.title] ?? entity.instanceUuid ?? null}
+                                            onChange={(val) => setEntitySelection(prev => ({ ...prev, [entity.title]: val }))}
+                                            placeholder={'Выбрать ' + selectedBlock?.titleForms?.genitive}
+                                            clearable
+                                            searchable
+                                        />
                                     )}
                                 </div>
 
