@@ -47,6 +47,32 @@ import {usePageTitle} from "@/providers/PageTitleProvider/PageTitleProvider";
 import { getCroppedImg, processImageFile, handleFileChangeForCropping } from "@/utils/imageUtils";
 import {importEpubFile} from "@/utils/epubUtils";
 
+const getSyncStateText = (syncState: IBook['syncState']) => {
+  switch (syncState) {
+    case 'localChanges':
+      return 'Локальные изменения';
+    case 'serverChanges':
+      return 'Серверные изменения';
+    case 'synced':
+      return 'Синхронизировано';
+    default:
+      return 'Статус неизвестен';
+  }
+};
+
+const getSyncStateColor = (syncState: IBook['syncState']) => {
+  switch (syncState) {
+    case 'localChanges':
+      return 'orange';
+    case 'serverChanges':
+      return 'blue';
+    case 'synced':
+      return 'green';
+    default:
+      return 'gray';
+  }
+};
+
 const getBlankBook = (kind: string = 'book'): IBook => ({
   uuid: "",
   title: "",
@@ -379,6 +405,11 @@ export const BookManager = () => {
               <Text size="sm" c="dimmed">
                 <Text span fw={500} inherit>Описание:</Text> {book.description}
               </Text>
+              {book.syncState && (
+                  <Text size="xs" c={getSyncStateColor(book.syncState)}>
+                    {getSyncStateText(book.syncState)}
+                  </Text>
+              )}
             </Stack>
 
             <Group>

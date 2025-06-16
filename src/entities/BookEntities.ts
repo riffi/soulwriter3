@@ -12,6 +12,9 @@ export interface IBook {
   cover?: string;
   kind?: string;
   description?: string;
+  localUpdatedAt?: string;
+  serverUpdatedAt?: string;
+  syncState?: 'localChanges' | 'serverChanges' | 'synced';
 }
 
 export interface IBlockInstance{

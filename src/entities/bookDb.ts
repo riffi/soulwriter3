@@ -8,9 +8,10 @@ import {
 } from "@/entities/BookEntities";
 import {baseSchema, BlockAbstractDb} from "@/entities/BlockAbstractDb";
 
+
 const bookSchema={
   ...baseSchema,
-  books: '++id, &uuid, title, author, kind, configurationUuid',
+  books: '++id, &uuid, title, author, kind, configurationUuid, localUpdatedAt, serverUpdatedAt, syncState',
   scenes: '++id, title, order, chapterId',
   chapters: '++id, title, order',
 
@@ -67,5 +68,6 @@ export {
   db as bookDb,
   deleteBookDatabase
 }
+
 
 
