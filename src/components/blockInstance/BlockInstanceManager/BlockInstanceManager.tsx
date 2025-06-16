@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { bookDb } from "@/entities/bookDb";
 import { IBlockInstance } from "@/entities/BookEntities";
@@ -137,69 +137,70 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
 
 
 // Функция для сбора уникальных значений параметров
-  const getUniqueParamValues = (paramUuid: string) => {
-    if (!instancesWithParams) return [];
-    const values = new Map<string, string>(); // key: value, value: label
+  const uniqueParamValuesMap = useMemo(() => {
+    if (!instancesWithParams || !displayedParameters) return {} as Record<string, { value: string; label: string }[]>;
 
-    instancesWithParams.forEach(instance => {
-      instance.params.forEach(param => {
-        if (param.blockParameterUuid === paramUuid) {
-          const displayedParam = displayedParameters?.find(p => p.uuid === paramUuid);
-          if (displayedParam?.dataType === 'blockLink') {
-            // Для blockLink сохраняем оригинальный value (UUID) и label (title)
-            values.set(param.value, param.displayValue || '—');
-          } else {
-            // Для остальных используем displayValue как value и label
-            const valueKey = param.displayValue;
-            values.set(valueKey, valueKey);
+    const map: Record<string, { value: string; label: string }[]> = {};
+
+    displayedParameters.forEach(param => {
+      const values = new Map<string, string>();
+      instancesWithParams.forEach(instance => {
+        instance.params.forEach(p => {
+          if (p.blockParameterUuid === param.uuid) {
+            if (param.dataType === 'blockLink') {
+              values.set(p.value, p.displayValue || '—');
+            } else {
+              const valueKey = p.displayValue;
+              values.set(valueKey, valueKey);
+            }
           }
-        }
+        });
       });
+
+      map[param.uuid!] = Array.from(values.entries()).map(([value, label]) => ({ value, label }));
     });
 
-    return Array.from(values.entries()).map(([value, label]) => ({
-      value,
-      label
-    }));
-  };
+    return map;
+  }, [instancesWithParams, displayedParameters]);
 
 // Функция фильтрации данных
-  const filteredInstances = instancesWithParams?.filter(instance => {
-    return Object.entries(filters).every(([paramUuid, values]) => {
-      if (values.length === 0) return true;
-      const param = instance.params.find(p => p.blockParameterUuid === paramUuid);
-      if (!param) return false;
+  const filteredInstances = useMemo(() => {
+    if (!instancesWithParams) return [] as typeof instancesWithParams;
+    return instancesWithParams.filter(instance => {
+      return Object.entries(filters).every(([paramUuid, values]) => {
+        if (values.length === 0) return true;
+        const param = instance.params.find(p => p.blockParameterUuid === paramUuid);
+        if (!param) return false;
 
-      const displayedParam = displayedParameters?.find(p => p.uuid === paramUuid);
-      let valueToCompare: string;
-      if (displayedParam?.dataType === IBlockParameterDataType.blockLink) {
-        valueToCompare = param.value; // Сравниваем по UUID
-      } else {
-        valueToCompare = param.displayValue; // Уже очищенное значение
-      }
-      return values.includes(valueToCompare);
+        const displayedParam = displayedParameters?.find(p => p.uuid === paramUuid);
+        const valueToCompare = displayedParam?.dataType === IBlockParameterDataType.blockLink
+          ? param.value
+          : param.displayValue;
+        return values.includes(valueToCompare);
+      });
     });
-  }) || [];
+  }, [instancesWithParams, filters, displayedParameters]);
 
-  const sortedAndFilteredInstances = [...filteredInstances].sort((a, b) => {
-    // 'a' and 'b' are of type (IBlockInstance & { params: IBlockParameterInstanceDisplay[] })
-    if (blockInstanceSortType === 'title') {
-      return (a.title || '').localeCompare(b.title || '');
-    }
-
-    // Default to date sorting (newest first)
-    const dateA = new Date(a.updatedAt || 0).getTime();
-    const dateB = new Date(b.updatedAt || 0).getTime();
-    return dateB - dateA;
-  });
+  const sortedAndFilteredInstances = useMemo(() => {
+    const items = [...filteredInstances];
+    items.sort((a, b) => {
+      if (blockInstanceSortType === 'title') {
+        return (a.title || '').localeCompare(b.title || '');
+      }
+      const dateA = new Date(a.updatedAt || 0).getTime();
+      const dateB = new Date(b.updatedAt || 0).getTime();
+      return dateB - dateA;
+    });
+    return items;
+  }, [filteredInstances, blockInstanceSortType]);
 
 // Обработчики фильтров
-  const handleFilterChange = (paramUuid: string, values: string[]) => {
+  const handleFilterChange = useCallback((paramUuid: string, values: string[]) => {
     setFilters(prev => ({
       ...prev,
       [paramUuid]: values
     }));
-  };
+  }, []);
 
 
 
@@ -291,7 +292,7 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
                           key={param.uuid}
                           label={param.title}
                           placeholder={filters[param.uuid!]?.length > 0 ? '' : param.title}
-                          data={getUniqueParamValues(param.uuid!)}
+                          data={uniqueParamValuesMap[param.uuid!] || []}
                           value={filters[param.uuid!] || []}
                           onChange={(values) => handleFilterChange(param.uuid!, values)}
                           clearable
