@@ -1,7 +1,32 @@
 import React, { useState, useEffect, createContext, useContext } from 'react';
-import { inkLuminAPI } from '@/api/inkLuminApi';
+import {
+  login as loginRequest,
+  register as registerRequest,
+  validateToken as validateTokenRequest,
+  saveConfigToServer as saveConfigRequest,
+  getConfigFromServer as getConfigRequest,
+  ServiceResult,
+} from '@/services/authService';
+
+interface User {
+  token: string;
+  username: string;
+  displayName: string;
+  userId: string;
+}
+
+interface AuthContextType {
+  user: User | null;
+  loading: boolean;
+  login: (credentials: any) => Promise<ServiceResult>;
+  register: (userData: any) => Promise<ServiceResult>;
+  logout: () => void;
+  saveConfigToServer: (configData: any) => Promise<ServiceResult>;
+  getConfigFromServer: () => Promise<ServiceResult>;
+}
+
 // Контекст для аутентификации
-const AuthContext = createContext();
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // Хук для использования контекста аутентификации
 export const useAuth = () => {
@@ -13,8 +38,8 @@ export const useAuth = () => {
 };
 
 // Провайдер аутентификации
-export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -27,15 +52,15 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
-  const validateStoredToken = async (token) => {
+  const validateStoredToken = async (token: string) => {
     try {
-      const response = await inkLuminAPI.validateToken(token);
-      if (response.success) {
+      const response = await validateTokenRequest(token);
+      if (response.success && response.data) {
         setUser({
-          token: token,
+          token,
           username: response.data.username,
           displayName: response.data.displayName || response.data.username,
-          userId: response.data.userId
+          userId: response.data.userId,
         });
       } else {
         localStorage.removeItem('authToken');
@@ -48,10 +73,10 @@ export function AuthProvider({ children }) {
     }
   };
 
-  const login = async (credentials) => {
+  const login = async (credentials: any): Promise<ServiceResult> => {
     try {
-      const response = await inkLuminAPI.login(credentials);
-      if (response.success) {
+      const response = await loginRequest(credentials);
+      if (response.success && response.data) {
         const userData = {
           token: response.data.token,
           username: response.data.username,
@@ -61,18 +86,17 @@ export function AuthProvider({ children }) {
         setUser(userData);
         localStorage.setItem('authToken', response.data.token);
         return { success: true };
-      } else {
-        return { success: false, message: response.message };
       }
+      return { success: false, message: response.message };
     } catch (error) {
       return { success: false, message: 'Ошибка соединения с сервером' };
     }
   };
 
-  const register = async (userData) => {
+  const register = async (userData: any): Promise<ServiceResult> => {
     try {
-      const response = await inkLuminAPI.register(userData);
-      if (response.success) {
+      const response = await registerRequest(userData);
+      if (response.success && response.data) {
         const userInfo = {
           token: response.data.token,
           username: response.data.username,
@@ -82,9 +106,8 @@ export function AuthProvider({ children }) {
         setUser(userInfo);
         localStorage.setItem('authToken', response.data.token);
         return { success: true };
-      } else {
-        return { success: false, message: response.message };
       }
+      return { success: false, message: response.message };
     } catch (error) {
       return { success: false, message: 'Ошибка соединения с сервером' };
     }
@@ -95,36 +118,25 @@ export function AuthProvider({ children }) {
     localStorage.removeItem('authToken');
   };
 
-  const saveConfigToServer = async (configData) => {
+  const saveConfigToServer = async (configData: any): Promise<ServiceResult> => {
     if (!user?.token) {
       return { success: false, message: 'Пользователь не авторизован' };
     }
 
     try {
-      const response = await inkLuminAPI.saveConfigData(user.token, configData);
-      if (response.success) {
-        return { success: true };
-      } else {
-        return { success: false, message: response.message };
-      }
+      return await saveConfigRequest(user.token, configData);
     } catch (error) {
       return { success: false, message: 'Ошибка соединения с сервером' };
     }
   };
 
-  const getConfigFromServer = async () => {
+  const getConfigFromServer = async (): Promise<ServiceResult> => {
     if (!user?.token) {
       return { success: false, message: 'Пользователь не авторизован' };
     }
 
     try {
-      const response = await inkLuminAPI.getConfigData(user.token);
-      if (response.success) {
-        const configData = JSON.parse(response.data.configData);
-        return { success: true, data: configData };
-      } else {
-        return { success: false, message: response.message };
-      }
+      return await getConfigRequest(user.token);
     } catch (error) {
       return { success: false, message: 'Ошибка соединения с сервером' };
     }
