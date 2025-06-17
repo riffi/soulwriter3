@@ -244,6 +244,28 @@ ${sceneContent}
   }
 };
 
+/**
+ * Анализирует текст сцены и находит потенциальные литературные проблемы
+ * (стилистика, логика, грамматика, пунктуация, структурные дыры и т.д.).
+ * Возвращает отчёт в Markdown, чтобы сразу отображать в UI без доп. парсинга.
+ */
+export const fetchSceneProblems = async (sceneContent: string): Promise<string> => {
+  try {
+    const prompt = `Проанализируй следующий текст сцены и найди литературные проблемы:
+
+— стилистические огрехи (канцеляризмы, штампы, клише, повторы);\n— логические несостыковки или дыры в повествовании;\n— нарушения темпоритма, перспективы или фокализации;\n— грамматические и пунктуационные ошибки.\n\nСформулируй каждую найденную проблему отдельным пунктом маркированного списка в **Markdown**.\nДля каждой проблемы добавь краткую рекомендацию, как её исправить.\n\nОтвет верни **только** в Markdown, без дополнительного форматирования кода.\n\nТекст сцены:\n"""\n${sceneContent}\n"""`;
+
+    const data = await fetchCompletions(prompt);
+    return (data.choices[0]?.message?.content ?? "") as string;
+  } catch (error) {
+    notifications.show({
+      title: "Ошибка",
+      message: error instanceof Error ? error.message : "Неизвестная ошибка",
+      color: "red",
+    });
+    return "";
+  }
+};
 
 export const OpenRouterApi = {
   fetchSynonyms,
@@ -252,5 +274,6 @@ export const OpenRouterApi = {
   fetchSpellingCorrection,
   fetchRhymes,
   fetchSceneAnalysis,
-  fetchKnowledgeBaseEntities // Add new function here
+  fetchKnowledgeBaseEntities,
+  fetchSceneProblems
 }
