@@ -1,42 +1,96 @@
-import {useState, useCallback} from 'react';
-import {Drawer, Button, LoadingOverlay, ScrollArea, Text} from '@mantine/core';
-import {notifications} from '@mantine/notifications';
-import {OpenRouterApi} from '@/api/openRouterApi';
-import { marked } from 'marked';
+import { useState, useCallback } from 'react';
+import { Drawer, Button, LoadingOverlay, Text } from '@mantine/core';
+import { notifications } from '@mantine/notifications';
+import { OpenRouterApi } from '@/api/openRouterApi';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import 'github-markdown-css/github-markdown.css';
 
-export const SceneAnalysisDrawer = ({isOpen, onClose, sceneBody}: SceneAnalysisDrawerProps) => {
-  const [analysisHtml, setAnalysisHtml] = useState('');
+interface ISceneAnalysisDrawerProps {
+  isOpen: boolean;
+  onClose: () => void;
+  sceneBody?: string | null;
+}
+
+export const SceneAnalysisDrawer = (props: ISceneAnalysisDrawerProps) => {
+  const [analysisMarkdown, setAnalysisMarkdown] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const stripWrappers = (raw: string) => {
+    let md = raw.trim();
+
+    if (md.startsWith('<code')) {
+      md = md.replace(/^<code[^>]*?>/, '').replace(/<\/code>$/, '').trim();
+    }
+
+    if (md.startsWith('```')) {
+      md = md.replace(/^```[^\n]*\n/, '').replace(/\n```$/, '').trim();
+    }
+
+    return md;
+  };
+
   const handleGenerate = useCallback(async () => {
-    if (!sceneBody) {
-      notifications.show({ title: 'Ошибка', message: 'Отсутствует текст сцены для анализа.', color: 'orange' });
+    if (!props.sceneBody) {
+      notifications.show({
+        title: 'Ошибка',
+        message: 'Отсутствует текст сцены для анализа.',
+        color: 'orange',
+      });
       return;
     }
+
     setLoading(true);
     try {
-      const markdown = await OpenRouterApi.fetchSceneAnalysis(sceneBody);
-      console.log(markdown);
-      setAnalysisHtml(marked.parse(markdown));
+      const content= "```markdown\n# Литературный анализ текста\n\n## 1. **Сюжет и структура**\n- **Процесс адаптации**: Текст представляет собой этнографический дневник, где через обучение грамоте, трудовые практики и бытовые взаимодействия раскрывается интеграция героя в общество алсинов. \n- **Хронологическая череда**: Чёткое деление на этапы (утренние занятия → труд → вечерний отдых) подчёркивает монотонность и ритуальность новой жизни.\n- **Мотив границ**: Упоминание загадочных земель Суин и Разделяющей Гряды создаёт географический и символический рубеж, формируя интригу для потенциального развития конфликта.\n\n## 2. **Хронотоп (время-пространство)**\n- **Декадентский хронос**: \n  - Время измеряется природными циклами (огненные часы, 100-дневный \"оборот\"), что символизирует синхронизацию с космосом. \n  - Медленный темп (\"14 минут в пин\") контрастирует с земной спешкой, становясь метафорой духовного перерождения героя.\n- **Пространство гармонии**: \n  - Долина Таин с мягким климатом и изобилием флоры воплощает архетип \"райского сада\". \n  - Специализированные посёлки (Эльтаин, Ватаин) напоминают утопические модели общества с чётким разделением труда.\n\n## 3. **Система образов**\n- **Герой-наблюдатель**: \n  - Присутствуют черты \"чужого\" (описывает реалии через земные аналоги: \"аналог чая\", \"нечто вроде религии\"). \n  - Его прогресс в языке (от \"робких шагов\" к письменному диалогу) маркирует стадии инкультурации.\n- **Като**: Олицетворение мудрости (архетип \"наставника\"). Его молчаливая терпеливость контрастирует с вербальной агрессией земной педагогики.\n- **Аса (Федя)**: Служит \"мостом\" между культурами. Его вечерние музицирования и чайные ритуалы — акты медитативного сопротивления рутине.\n\n## 4. **Стиль и язык**\n- **Экфрасис в миниатюре**: Детализация быта (ткань свечных делений, техники земледелия) создаёт эффект документальной достоверности.\n- **Парадоксальные метафоры**: \n  - \"Письменность как религия\" — синтез рационального и сакрального. \n  - \"Общение жестами\" противопоставлено вербальной коммуникации, критикуя избыточность человеческой речи.\n- **Интертекстуальность**: Отсылка к д'Аламберу вводит историко-научный контекст, подчёркивая утопичность десятичного времени.\n\n## 5. **Культурные особенности алсинов**\n- **Семиотический тоталитаризм**: \n  - Единая система знаков для письма, математики и религии предполагает тотальную систематизацию мышления. \n  - Жестовый язык как идеальная коммуникация (точность без слов) — возможно, следствие коллективного травматического опыта (например, запрета на речь).\n- **Социальная инженерия**: \n  - Изоляция детей до 6 лет может быть инструментом формирования культурной идентичности.\n  - Ритуализация времени (выходные раз в период) создаёт цикличность, подавляющую индивидуальность.\n\n## 6. **Символика**\n- **Яблочный чай**: Символ межкультурного диалога. Ограничение в \"один лист бумаги\" — метафора цензуры или священнодействия.\n- **Графические примитивы**: Возможно, отсылка к древним пиктограммам, подчёркивающая архаичность и в то же время совершенство местной цивилизации.\n- **Свечные часы**: Сочетание разрушения (горение) и измерения, символ быстротечности времени в статичном обществе.\n\n---\n\n**Перспективы интерпретации**: \n1. Текст можно рассматривать как притчу о ностальгии по докогнитивному сознанию, где письмо ещё не отделилось от магии.\n2. Конфликт между \"взбалмошной\" Землёй и гармоничной Таин может отражать кризис технократической цивилизации.\n3. Возможно, алсины — результат эволюционного скачка, отказавшегося от вербализации в пользу синтетического мышления.\n```"
+
+      const rawMarkdown = content//await OpenRouterApi.fetchSceneAnalysis(props.sceneBody);
+      setAnalysisMarkdown(stripWrappers(rawMarkdown));
     } catch (error: any) {
-      notifications.show({ title: 'Ошибка', message: error.message || 'Не удалось получить анализ.', color: 'red' });
+      notifications.show({
+        title: 'Ошибка',
+        message: error.message || 'Не удалось провести анализ.',
+        color: 'red',
+      });
     } finally {
       setLoading(false);
     }
-  }, [sceneBody]);
+  }, [props.sceneBody]);
 
   return (
-      <Drawer opened={isOpen} onClose={onClose} title="Литературный анализ" padding="md" size="lg" position="right">
-        <div style={{ position: 'relative', minHeight: '200px' }}>
+      <Drawer
+          opened={props.isOpen}
+          onClose={props.onClose}
+          title="Литературный анализ"
+          padding="md"
+          size="lg"
+          position="right"
+      >
+        <div style={{ position: 'relative', minHeight: 200 }}>
           <LoadingOverlay visible={loading} overlayProps={{ blur: 2 }} />
-          <Button onClick={handleGenerate} disabled={loading}>Сгенерировать анализ</Button>
-          <div style={{ overflow: 'scroll' }}>
-            {analysisHtml ? (
-                <div dangerouslySetInnerHTML={{ __html: analysisHtml }} />
-            ) : (
-                !loading && <Text c="dimmed" ta="center">Анализ еще не сгенерирован.</Text>
-            )}
-          </div>
+          <Button onClick={handleGenerate} disabled={loading} mb="md">
+            Провести анализ
+          </Button>
+
+          {analysisMarkdown ? (
+              <div
+                  style={{
+                    maxHeight: 'calc(100vh - 200px)',
+                    overflowY: 'auto',
+                    paddingRight: 10,
+                  }}
+              >
+                <div className="markdown-body">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{analysisMarkdown}</ReactMarkdown>
+                </div>
+              </div>
+          ) : (
+              !loading && (
+                  <Text c="dimmed" ta="center">
+                    Анализ ещё не проведен.
+                  </Text>
+              )
+          )}
         </div>
       </Drawer>
   );
