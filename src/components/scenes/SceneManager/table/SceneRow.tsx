@@ -32,10 +32,9 @@ interface SceneRowProps {
 }
 
 export const SceneRow = ({ scene, scenesInChapter, openScene, selectedSceneId, scenes, chapters, mode }: SceneRowProps) => {
-  const navigate = useNavigate();
   const [openedDeleteModal, { open: openDeleteModal, close: closeDeleteModal }] = useDisclosure(false);
   const [openedMoveModal, { open: openMoveModal, close: closeMoveModal }] = useDisclosure(false);
-  const { recalculateGlobalOrder, reorderScenes, deleteScene } = useScenes(scenes);
+  const { reorderScenes, deleteScene } = useScenes(scenes);
   const currentIndex = scenesInChapter.findIndex(s => s.id === scene.id);
   const { hovered, ref } = useHover();
   const { isMobile } = useMedia();
