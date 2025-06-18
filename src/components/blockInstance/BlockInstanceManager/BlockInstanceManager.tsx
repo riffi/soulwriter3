@@ -10,7 +10,7 @@ import {
   Box,
   Modal,
   TextInput, Container, Title, Space,
-  MultiSelect, ActionIcon, SegmentedControl, Tabs, Select
+  MultiSelect, ActionIcon, SegmentedControl, Tabs, Select, LoadingOverlay
 } from '@mantine/core';
 import {
   IconPlus,
@@ -63,6 +63,23 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
     deleteBlockInstance
   } = useBlockInstanceManager(props.blockUuid, debouncedQuery);
 
+  const isSameBlock = <T extends { blockUuid: string }>(arr?: T[]) =>
+      Array.isArray(arr) ? arr.every(i => i.blockUuid === props.blockUuid) : false;
+
+  const loading =
+      // пока самого блока ещё нет или это блок не от текущего UUID
+      !block || block.uuid !== props.blockUuid ||
+
+      // коллекции ещё загружаются
+      instances === undefined ||
+      groups === undefined ||
+      displayedParameters === undefined ||
+      instancesWithParams === undefined ||
+
+      // коллекции уже есть, но относятся к предыдущему blockUuid
+      !isSameBlock(instances) ||
+      !isSameBlock(groups);
+
 
   const [addingInstance, setAddingInstance] = useState(false);
   const [opened, { open, close }] = useDisclosure(false);
@@ -109,6 +126,7 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
       setPageTitle(block?.titleForms?.plural || '')
     }
   }, [block])
+
 
   const handleAddClick = () => {
     setNewInstanceName('');
@@ -262,12 +280,6 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
     );
   }, [linkGroups, instancesWithParams, groupingParam]);
 
-  useEffect(() => {
-    if (currentGroupUuid !== 'none' && !visibleLinkGroups?.some(g => g.uuid === currentGroupUuid)) {
-      setCurrentGroupUuid('none');
-    }
-  }, [currentGroupUuid, visibleLinkGroups]);
-
 // Обработчики фильтров
   const handleFilterChange = useCallback((paramUuid: string, values: string[]) => {
     setFilters(prev => ({
@@ -284,17 +296,29 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
   };
 
   if (block?.structureKind === 'single') {
-    if (!instances || instances.length === 0) {
-      return
+    if (loading || !instances || instances.length === 0) {
+      return (
+          <Container size="xl" p={0}>
+            <Box className={classes.container} pos="relative">
+              <LoadingOverlay visible={true} className={classes.overlay}/>
+            </Box>
+          </Container>
+      )
     }
     return (
-        <>
-          <BlockInstanceEditor blockInstanceUuid={instances?.[0].uuid}/>
-        </>)
+        <Container size="xl" p={0}>
+          <Box className={classes.container} pos="relative">
+            <BlockInstanceEditor blockInstanceUuid={instances?.[0].uuid}/>
+          </Box>
+        </Container>
+    )
   }
   return (
       <Container size="xl" p={0} >
         <Box className={classes.container} pos="relative">
+          <LoadingOverlay visible={loading} className={classes.overlay} />
+          {!loading && (
+              <>
           <Box visibleFrom={"sm"} style={{
             padding: '20px 20px',
             backgroundColor: 'rgb(104 151 191)',
@@ -306,7 +330,10 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
 
           {block?.useGroups === 1 && (
             <Tabs
-                value={currentGroupUuid} onChange={(val)=>setCurrentGroupUuid(val || 'none')}
+                value={currentGroupUuid}
+                onChange={(val)=>{
+                  setCurrentGroupUuid(val || 'none')
+                }}
                 mb={10}
             >
               <Tabs.List>
@@ -492,7 +519,9 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
               <Button fullWidth mt="md" onClick={handleConfirmMove}>Переместить</Button>
             </Modal>
           )}
-        </Box>
-      </Container>
+        </>
+        )}
+      </Box>
+    </Container>
   );
 };

@@ -9,7 +9,7 @@ export const BlockInstanceManagerPage = () => {
   const blockUuid = searchParams.get('uuid')
   return (
       <>
-        <BlockInstanceManager blockUuid={blockUuid}/>
+        <BlockInstanceManager blockUuid={blockUuid} key={blockUuid}/>
       </>
   )
 }

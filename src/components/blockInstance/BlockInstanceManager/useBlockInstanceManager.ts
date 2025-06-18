@@ -42,8 +42,11 @@ export const useBlockInstanceManager = (blockUuid: string, titleSearch?: string)
   }, [groupingParam?.relatedBlockUuid]);
 
   const instances = useLiveQuery<IBlockInstance[]>(() => {
+    if (block && block.uuid !== blockUuid) {
+      return undefined;
+    }
     return  BlockInstanceRepository.getBlockInstances(bookDb, blockUuid, titleSearch);
-  }, [blockUuid, titleSearch]);
+  }, [blockUuid, titleSearch, block ]);
 
   const displayedParameters = useLiveQuery<IBlockParameter[]>(() => {
     return BlockParameterRepository.getDisplayedParameters(bookDb, blockUuid); // Changed to BlockParameterRepository
