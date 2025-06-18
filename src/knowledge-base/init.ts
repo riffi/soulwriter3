@@ -8,7 +8,11 @@ interface ParsedPage {
 }
 
 function parseFrontMatter(raw: string): ParsedPage | null {
-  const match = /^---\n([\s\S]+?)\n---\n([\s\S]*)$/m.exec(raw);
+  const text = raw
+      .replace(/^\uFEFF/, '')   // срезаем возможный BOM
+      .replace(/\r\n/g, '\n');  // все переводы строк → LF
+
+  const match = /^---\n([\s\S]+?)\n---\n([\s\S]*)$/m.exec(text);
   if (!match) return null;
   const frontMatter = Object.fromEntries(
     match[1]
