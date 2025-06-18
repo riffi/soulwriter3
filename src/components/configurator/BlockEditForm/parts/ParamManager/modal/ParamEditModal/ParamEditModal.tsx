@@ -41,6 +41,7 @@ export const ParamEditModal  = (props: IBlockEditModalProps) => {
       isDefault: 0,
       displayInCard: 0,
       allowMultiple: props.initialData?.allowMultiple || 0,
+      useForInstanceGrouping: props.initialData?.useForInstanceGrouping || 0,
     }
   });
 
@@ -122,6 +123,14 @@ export const ParamEditModal  = (props: IBlockEditModalProps) => {
                     data={relatedBlocksOptions}
                     disabled={props.initialData?.uuid}
                     {...form.getInputProps('relatedBlockUuid')}
+                />
+            )}
+            {form.values.dataType === IBlockParameterDataType.blockLink && (
+                <Checkbox
+                    mt="xs"
+                    label="Использовать для группировки"
+                    checked={form.values.useForInstanceGrouping === 1}
+                    onChange={(e) => form.setFieldValue('useForInstanceGrouping', e.currentTarget.checked ? 1 : 0)}
                 />
             )}
 

@@ -36,7 +36,7 @@ export class BookDB extends BlockAbstractDb{
   blockInstanceSceneLinks!: Dexie.Table<IBlockInstanceSceneLink, number>;
   constructor(dbName:string) {
     super(dbName);
-    this.version(5).stores(bookSchema).upgrade(async (tx) => {
+    this.version(6).stores(bookSchema).upgrade(async (tx) => {
       const scenes = await tx.table('scenes').toArray();
       for (const scene of scenes) {
         const body = scene.body || '';

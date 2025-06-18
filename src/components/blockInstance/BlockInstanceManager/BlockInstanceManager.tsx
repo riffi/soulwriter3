@@ -36,6 +36,7 @@ import {IconViewer} from "@/components/shared/IconViewer/IconViewer";
 import {usePageTitle} from "@/providers/PageTitleProvider/PageTitleProvider";
 import {IBlockParameterDataType, IBlockStructureKind} from "@/entities/ConstructorEntities";
 import {InstanceGroupsModal} from "@/components/blockInstance/BlockInstanceManager/modal/InstanceGroupsModal/InstanceGroupsModal";
+import {BlockParameterInstanceRepository} from "@/repository/BlockInstance/BlockParameterInstanceRepository";
 
 export interface IBlockInstanceManagerProps {
   blockUuid: string;
@@ -57,6 +58,8 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
     deleteGroup,
     instancesWithParams,
     displayedParameters,
+    groupingParam,
+    linkGroups,
     deleteBlockInstance
   } = useBlockInstanceManager(props.blockUuid, debouncedQuery);
 
@@ -124,9 +127,19 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
         uuid,
         title: newInstanceName.trim(),
         shortDescription: newShortDescription.trim() ? newShortDescription.trim() : undefined,
-        blockInstanceGroupUuid: currentGroupUuid !== 'none' ? currentGroupUuid : undefined,
+        blockInstanceGroupUuid: block?.useGroups === 1 && currentGroupUuid !== 'none' ? currentGroupUuid : undefined,
       };
       await addBlockInstance(newInstance);
+      if (groupingParam && block?.useGroups !== 1 && currentGroupUuid !== 'none') {
+        const paramInstance = {
+          uuid: generateUUID(),
+          blockInstanceUuid: uuid,
+          blockParameterUuid: groupingParam.uuid!,
+          blockParameterGroupUuid: groupingParam.groupUuid,
+          value: currentGroupUuid,
+        };
+        await BlockParameterInstanceRepository.addParameterInstance(bookDb, paramInstance);
+      }
       setNewShortDescription('');
       close();
       navigate(`/block-instance/card?uuid=${uuid}`);
@@ -220,13 +233,28 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
   }, [filteredInstances, blockInstanceSortType]);
 
   const displayedInstancesByGroup = useMemo(() => {
-    if (block?.useGroups !== 1) return sortedAndFilteredInstances;
-    return sortedAndFilteredInstances.filter(i =>
-      currentGroupUuid === 'none'
-        ? (!i.blockInstanceGroupUuid) || (groups?.findIndex(g => g.uuid === i.blockInstanceGroupUuid) === -1)
-        : i.blockInstanceGroupUuid === currentGroupUuid
-    );
-  }, [sortedAndFilteredInstances, currentGroupUuid, block]);
+    if (block?.useGroups === 1) {
+      return sortedAndFilteredInstances.filter(i =>
+          currentGroupUuid === 'none'
+              ? (!i.blockInstanceGroupUuid) || (groups?.findIndex(g => g.uuid === i.blockInstanceGroupUuid) === -1)
+              : i.blockInstanceGroupUuid === currentGroupUuid
+      );
+    }
+    if (groupingParam) {
+      console.log('groupingParam', groupingParam);
+      console.log('sortedAndFilteredInstances', sortedAndFilteredInstances);
+      console.log('currentGroupUuid', currentGroupUuid);
+      return sortedAndFilteredInstances.filter(i => {
+        const param = i.params.find(p => p.blockParameterUuid === groupingParam.uuid);
+        console.log('param', param);
+        if (currentGroupUuid === 'none') {
+          return !param?.value || (linkGroups?.findIndex(g => g.uuid === param.value) === -1);
+        }
+        return param?.value === currentGroupUuid;
+      });
+    }
+    return sortedAndFilteredInstances;
+  }, [sortedAndFilteredInstances, currentGroupUuid, block, groupingParam, linkGroups]);
 
 // Обработчики фильтров
   const handleFilterChange = useCallback((paramUuid: string, values: string[]) => {
@@ -277,6 +305,16 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
                 <ActionIcon onClick={()=>setGroupsModalOpened(true)} variant="subtle" mt="3">
                   <IconSettings size="1rem"  />
                 </ActionIcon>
+              </Tabs.List>
+            </Tabs>
+          )}
+          {block?.useGroups !== 1 && groupingParam && (
+            <Tabs value={currentGroupUuid} onChange={(val)=>setCurrentGroupUuid(val || 'none')} mb={10}>
+              <Tabs.List>
+                <Tabs.Tab value="none">Без групп</Tabs.Tab>
+                {linkGroups?.map(g => (
+                  <Tabs.Tab key={g.uuid} value={g.uuid}>{g.title}</Tabs.Tab>
+                ))}
               </Tabs.List>
             </Tabs>
           )}
@@ -418,26 +456,30 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
             </Group>
           </Modal>
 
-          <InstanceGroupsModal
-              opened={groupsModalOpened}
-              onClose={() => setGroupsModalOpened(false)}
-              groups={groups || []}
-              onSaveGroup={(title) => saveGroup({blockUuid: props.blockUuid, title, order: groups?.length || 0})}
-              onMoveGroupUp={moveGroupUp}
-              onMoveGroupDown={moveGroupDown}
-              onDeleteGroup={deleteGroup}
-              onUpdateGroupTitle={(uuid, t) => saveGroup({ ...(groups?.find(g=>g.uuid===uuid)!), title: t })}
-          />
-
-          <Modal opened={!!movingInstanceUuid} onClose={() => setMovingInstanceUuid(null)} title="Переместить экземпляр" fullScreen={isMobile}>
-            <Select
-                label="Группа"
-                data={[{value:'none', label:'Без групп'}, ...(groups||[]).map(g=>({value:g.uuid!, label:g.title}))]}
-                value={selectedMoveGroup}
-                onChange={(v)=>setSelectedMoveGroup(v!)}
+          {block?.useGroups === 1 && (
+            <InstanceGroupsModal
+                opened={groupsModalOpened}
+                onClose={() => setGroupsModalOpened(false)}
+                groups={groups || []}
+                onSaveGroup={(title) => saveGroup({blockUuid: props.blockUuid, title, order: groups?.length || 0})}
+                onMoveGroupUp={moveGroupUp}
+                onMoveGroupDown={moveGroupDown}
+                onDeleteGroup={deleteGroup}
+                onUpdateGroupTitle={(uuid, t) => saveGroup({ ...(groups?.find(g=>g.uuid===uuid)!), title: t })}
             />
-            <Button fullWidth mt="md" onClick={handleConfirmMove}>Переместить</Button>
-          </Modal>
+          )}
+
+          {block?.useGroups === 1 && (
+            <Modal opened={!!movingInstanceUuid} onClose={() => setMovingInstanceUuid(null)} title="Переместить экземпляр" fullScreen={isMobile}>
+              <Select
+                  label="Группа"
+                  data={[{value:'none', label:'Без групп'}, ...(groups||[]).map(g=>({value:g.uuid!, label:g.title}))]}
+                  value={selectedMoveGroup}
+                  onChange={(v)=>setSelectedMoveGroup(v!)}
+              />
+              <Button fullWidth mt="md" onClick={handleConfirmMove}>Переместить</Button>
+            </Modal>
+          )}
         </Box>
       </Container>
   );

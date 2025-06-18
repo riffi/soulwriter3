@@ -29,6 +29,18 @@ export const useBlockInstanceManager = (blockUuid: string, titleSearch?: string)
     return BlockInstanceGroupRepository.getGroups(bookDb, blockUuid);
   }, [blockUuid]);
 
+  const groupingParam = useLiveQuery<IBlockParameter | undefined>(() => {
+    return bookDb.blockParameters
+        .where({ blockUuid, dataType: 'blockLink' })
+        .filter(p => p.useForInstanceGrouping === 1)
+        .first();
+  }, [blockUuid]);
+
+  const linkGroups = useLiveQuery<IBlockInstance[]>(() => {
+    if (!groupingParam?.relatedBlockUuid) return [];
+    return BlockInstanceRepository.getBlockInstances(bookDb, groupingParam.relatedBlockUuid);
+  }, [groupingParam?.relatedBlockUuid]);
+
   const instances = useLiveQuery<IBlockInstance[]>(() => {
     return  BlockInstanceRepository.getBlockInstances(bookDb, blockUuid, titleSearch);
   }, [blockUuid, titleSearch]);
@@ -48,7 +60,9 @@ export const useBlockInstanceManager = (blockUuid: string, titleSearch?: string)
       const params = await bookDb.blockParameterInstances
           .where('blockInstanceUuid')
           .equals(instance.uuid)
-          .filter(p => displayParameterUuids.includes(p.blockParameterUuid))
+          .filter(p =>
+              displayParameterUuids.includes(p.blockParameterUuid)
+          )
           .toArray();
       return { ...instance, params };
     }));
@@ -142,6 +156,8 @@ export const useBlockInstanceManager = (blockUuid: string, titleSearch?: string)
     deleteGroup,
     deleteBlockInstance,
     instancesWithParams,
-    displayedParameters
+    displayedParameters,
+    groupingParam,
+    linkGroups
   }
 }

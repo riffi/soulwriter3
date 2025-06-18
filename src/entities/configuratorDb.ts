@@ -22,7 +22,7 @@ class ConfigDatabase extends BlockAbstractDb {
     openRouterModels!: Dexie.Table<IOpenRouterModel, number>;
     constructor() {
         super('BlocksDatabase');
-        this.version(2).stores(schema);
+        this.version(3).stores(schema);
     }
 }
 

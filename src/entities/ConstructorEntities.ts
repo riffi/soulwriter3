@@ -114,6 +114,7 @@ export interface IBlockParameter {
   orderNumber: number; // Порядковый номер
   relatedBlockUuid?: string; // Ссылка на связь блоков
   allowMultiple?: number;
+  useForInstanceGrouping?: number;
 }
 
 export interface IBlockParameterWithBlockTitle extends IBlockParameter{
