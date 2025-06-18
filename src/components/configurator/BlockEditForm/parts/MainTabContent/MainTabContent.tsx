@@ -29,7 +29,6 @@ import {notifications} from "@mantine/notifications";
 import {LoadingOverlayExtended} from "@/components/shared/overlay/LoadingOverlayExtended";
 import {IconPhoto, IconTrash} from "@tabler/icons-react";
 
-import { Point, Area } from 'react-easy-crop/types';
 import {IconSelector} from "@/components/shared/IconSelector/IconSelector";
 
 interface MainTabContentProps {
@@ -43,48 +42,6 @@ const structureKindOptions = [
   { value: IBlockStructureKind.tree, label: IBlockStructureKindTitle.tree },
 ];
 
-// Утилита для создания canvas и изменения размера изображения
-const createImage = (url: string): Promise<HTMLImageElement> =>
-    new Promise((resolve, reject) => {
-      const image = new window.Image();
-      image.addEventListener('load', () => resolve(image));
-      image.addEventListener('error', error => reject(error));
-      image.setAttribute('crossOrigin', 'anonymous');
-      image.src = url;
-    });
-
-const getCroppedImg = async (
-    imageSrc: string,
-    pixelCrop: Area,
-    targetSize: number = 128
-): Promise<string> => {
-  const image = await createImage(imageSrc);
-  const canvas = document.createElement('canvas');
-  const ctx = canvas.getContext('2d');
-
-  if (!ctx) {
-    throw new Error('Could not get canvas context');
-  }
-
-  // Устанавливаем размер canvas
-  canvas.width = targetSize;
-  canvas.height = targetSize;
-
-  // Рисуем обрезанное изображение, масштабируя его до нужного размера
-  ctx.drawImage(
-      image,
-      pixelCrop.x,
-      pixelCrop.y,
-      pixelCrop.width,
-      pixelCrop.height,
-      0,
-      0,
-      targetSize,
-      targetSize
-  );
-
-  return canvas.toDataURL('image/png');
-};
 
 export const MainTabContent = ({ block, onSave }: MainTabContentProps) => {
   const [drawerOpen, setDrawerOpen] = useState(false);
