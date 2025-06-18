@@ -1,6 +1,7 @@
 import { IBook } from "@/entities/BookEntities";
 import { configDatabase } from "@/entities/configuratorDb";
 import { BookDB } from "@/entities/bookDb";
+import {updateBook, updateBookSyncState} from "@/utils/bookSyncUtils";
 
 export type BookDbLike = typeof configDatabase | BookDB;
 const getByUuid = async (
@@ -24,6 +25,7 @@ const update = async (
   data: Partial<IBook>
 ): Promise<void> => {
   await db.books.where('uuid').equals(uuid).modify(data);
+  await updateBookSyncState(uuid, 'localChanges')
 };
 
 const remove = async (db: BookDbLike = configDatabase, uuid: string): Promise<void> => {

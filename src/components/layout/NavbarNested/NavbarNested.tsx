@@ -8,7 +8,7 @@ import {
   IconBox,
   IconBrandDatabricks,
   IconDashboard, IconDatabaseCog, IconGraph,
-  IconNotes,
+  IconNotes, IconSettings,
   IconBulb // Added IconBulb
 } from "@tabler/icons-react";
 import {CollapsedNavbar} from "@/components/layout/NavbarNested/parts/CollapsedNavbar/CollapsedNavbar";
@@ -112,6 +112,11 @@ export const NavbarNested = ({ toggleNavbar, opened }: { toggleNavbar?: () => vo
           label: 'Конфигурация',
           icon: IconDatabaseCog,
           link: `/configuration/edit/?uuid=${bookConfiguration?.uuid}&bookUuid=${selectedBook.uuid}`
+        },
+        {
+          label: 'Настройки книги',
+          icon: IconSettings,
+          link: '/book/settings'
         },
       ];
 
