@@ -423,10 +423,23 @@ export const importEpubFile = async (file: File): Promise<boolean> => {
                     description: metadata.description || `Imported from EPUB (${file.name})`,
                 };
                 const { chaptersToCreate, scenes } = await extractChaptersAndScenesFromEpub(bookEpub);
+
+                // Dexie stores scene body in a separate table. Prepare data accordingly
+                const scenesToImport: Omit<IScene, 'body'>[] = [];
+                const sceneBodiesToImport: { sceneId: number; body: string }[] = [];
+
+                scenes.forEach((scene, index) => {
+                    const sceneId = index + 1;
+                    const { body, ...sceneWithoutBody } = scene;
+                    scenesToImport.push({ ...(sceneWithoutBody as Omit<IScene, 'body'>), id: sceneId });
+                    sceneBodiesToImport.push({ sceneId, body: body || '' });
+                });
+
                 const backupData = {
                     book: newBook,
                     chapters: chaptersToCreate,
-                    scenes: scenes,
+                    scenes: scenesToImport,
+                    sceneBodies: sceneBodiesToImport,
                     blockInstances: [],
                     blockParameterInstances: [],
                     blockInstanceRelations: [],
