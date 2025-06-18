@@ -5,6 +5,9 @@ import { IconEdit, IconEye } from '@tabler/icons-react';
 import { RichEditor } from '@/components/shared/RichEditor/RichEditor';
 import { ActionIcon, Box, Group, Space, Title } from "@mantine/core";
 import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
+import {SceneRepository} from "@/repository/Scene/SceneRepository";
+import {bookDb} from "@/entities/bookDb";
+import {useLiveQuery} from "dexie-react-hooks";
 
 interface SceneProps {
   scene: IScene;
@@ -25,6 +28,8 @@ export const BookReaderScene: React.FC<SceneProps> = ({
     onSceneUpdate(scene.id!, contentHtml);
   };
   const { isMobile } = useMedia();
+
+  const body = useLiveQuery<string>(() => SceneRepository.getBodyById(bookDb, scene.id!), [scene]);
 
   return (
       <Box id={`scene-${scene.id}`} data-scene style={{ scrollMarginTop: isMobile ? '50px' : '10px' }}>
@@ -56,13 +61,13 @@ export const BookReaderScene: React.FC<SceneProps> = ({
             <>
               <Space h={10}/>
               <RichEditor
-                  initialContent={scene.body}
+                  initialContent={body}
                   onContentChange={(html) => handleContentChange(html)}
               />
             </>
         ) : (
             <div
-                dangerouslySetInnerHTML={{ __html: scene.body }}
+                dangerouslySetInnerHTML={{ __html: body }}
                 className={styles.contentBody}
             />
         )}

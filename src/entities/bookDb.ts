@@ -4,7 +4,7 @@ import {
   IBlockInstanceRelation, IBlockInstanceSceneLink,
   IBlockParameterInstance,
   IBook, IChapter,
-  IScene
+  IScene, ISceneBody
 } from "@/entities/BookEntities";
 import {baseSchema, BlockAbstractDb} from "@/entities/BlockAbstractDb";
 
@@ -14,6 +14,7 @@ const bookSchema={
   books: '++id, &uuid, title, author, kind, configurationUuid, localUpdatedAt, serverUpdatedAt, syncState',
   scenes: '++id, title, order, chapterId',
   chapters: '++id, title, order',
+  sceneBodies: '++id, sceneId',
 
   blockInstances: '++id, &uuid, blockUuid, title, parentInstanceUuid',
   blockParameterInstances: '++id, &uuid, blockParameterUuid, blockInstanceUuid, blockParameterGroupUuid, value',
@@ -23,6 +24,7 @@ const bookSchema={
 
 export class BookDB extends BlockAbstractDb{
   scenes!: Dexie.Table<IScene, number>;
+  sceneBodies!: Dexie.Table<ISceneBody, number>;
   books!: Dexie.Table<IBook, number>;
   chapters!: Dexie.Table<IChapter, number>;
 
@@ -32,7 +34,15 @@ export class BookDB extends BlockAbstractDb{
   blockInstanceSceneLinks!: Dexie.Table<IBlockInstanceSceneLink, number>;
   constructor(dbName:string) {
     super(dbName);
-    this.version(3).stores(bookSchema);
+    this.version(4).stores(bookSchema).upgrade(async (tx) => {
+      const scenes = await tx.table('scenes').toArray();
+      for (const scene of scenes) {
+        const body = scene.body || '';
+        await tx.table('sceneBodies').add({ sceneId: scene.id, body });
+        delete scene.body;
+        await tx.table('scenes').put(scene);
+      }
+    });
   }
 }
 

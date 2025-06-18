@@ -8,6 +8,7 @@ import moment from "moment";
 export interface BackupData {
   book: any;
   scenes: any[];
+  sceneBodies: any[];
   chapters: any[];
   blockInstances: any[];
   blockParameterInstances: any[];
@@ -34,6 +35,7 @@ export const collectBookBackupData = async (bookUuid: string): Promise<BackupDat
   return {
     book: { ...bookData, id: undefined },
     scenes: await db.scenes.toArray(),
+    sceneBodies: await db.sceneBodies.toArray(),
     chapters: await db.chapters.toArray(),
     blockInstances: await db.blockInstances.toArray(),
     blockParameterInstances: await db.blockParameterInstances.toArray(),
@@ -111,6 +113,9 @@ export const importBookData = async (backupData: BackupData): Promise<void> => {
   const otherPromises = [];
   if (scenesToImport.length > 0) {
     otherPromises.push(db.scenes.bulkAdd(scenesToImport));
+  }
+  if (backupData.sceneBodies && backupData.sceneBodies.length > 0) {
+    otherPromises.push(db.sceneBodies.bulkAdd(backupData.sceneBodies));
   }
   // Ensure other arrays are also checked for length before adding to promises, if necessary,
   // though bulkAdd handles empty arrays gracefully.

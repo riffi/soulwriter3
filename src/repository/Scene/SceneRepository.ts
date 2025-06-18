@@ -3,29 +3,42 @@ import { IScene } from "@/entities/BookEntities";
 import {updateBook} from "@/utils/bookSyncUtils";
 
 export const getById = async (db: BookDB, sceneId: number): Promise<IScene | undefined> => {
-    return db.scenes.get(sceneId);
+    const scene = await db.scenes.get(sceneId);
+    if (!scene) return undefined;
+    const body = await db.sceneBodies.where('sceneId').equals(sceneId).first();
+    return { ...scene, body: body?.body ?? '' } as IScene;
 };
 
 export const getAll = async (db: BookDB): Promise<IScene[]> => {
-    return db.scenes.orderBy('order').toArray();
+    const scenes = await db.scenes.orderBy('order').toArray();
+    return scenes;
+    // const bodies = await db.sceneBodies.toArray();
+    // const bodyMap = new Map(bodies.map(b => [b.sceneId, b.body]));
+    // return scenes.map(s => ({ ...s, body: bodyMap.get(s.id!) || '' } as IScene));
 };
 
+export const getBodyById = async (db: BookDB, sceneId: number): Promise<string | undefined> => {
+    const body = await db.sceneBodies.where('sceneId').equals(sceneId).first();
+    return body?.body;
+}
+
 export const getByChapterId = async (db: BookDB, chapterId: number): Promise<IScene[]> => {
-    return db.scenes.where('chapterId').equals(chapterId).toArray();
+    const scenes = await db.scenes.where('chapterId').equals(chapterId).toArray();
+    const ids = scenes.map(s => s.id!);
+    const bodies = await db.sceneBodies.where('sceneId').anyOf(ids).toArray();
+    const bodyMap = new Map(bodies.map(b => [b.sceneId, b.body]));
+    return scenes.map(s => ({ ...s, body: bodyMap.get(s.id!) || '' } as IScene));
 };
 
 export const create = async (db: BookDB, sceneData: IScene): Promise<number | undefined> => {
-    const sceneToCreate = { ...sceneData };
-    // Ensure 'id' is not part of the object passed to 'add' if it's auto-incrementing
+    const { body, ...sceneToCreate } = sceneData;
     delete (sceneToCreate as any).id;
 
-    // Add default order if not provided, though recalculateGlobalOrder will handle it
-    // The original useScenes.createScene set order to 0 and then called recalculateGlobalOrder
-    // We will replicate that initial part. recalculateGlobalOrder will assign the correct order.
     sceneToCreate.order = sceneToCreate.order === undefined ? 0 : sceneToCreate.order;
 
-    const newSceneId = await db.scenes.add(sceneToCreate);
+    const newSceneId = await db.scenes.add(sceneToCreate as any);
     if (newSceneId !== undefined) {
+        await db.sceneBodies.add({ sceneId: newSceneId, body: body || '' });
         await recalculateGlobalOrder(db, { id: newSceneId, newChapterId: sceneData.chapterId ?? null });
     }
     await updateBook(db);
@@ -39,13 +52,19 @@ export const update = async (db: BookDB, sceneId: number, sceneData: Partial<ISc
         return; // Or throw an error
     }
 
-    await db.scenes.update(sceneId, sceneData);
+    const { body, ...sceneChanges } = sceneData;
+    if (Object.keys(sceneChanges).length) {
+        await db.scenes.update(sceneId, sceneChanges);
+    }
+    if (body !== undefined) {
+        await db.sceneBodies.where('sceneId').equals(sceneId).modify({ body });
+    }
 
     await updateBook(db);
 
     // Check if order or chapterId changed and if recalculation is needed
-    const newOrder = sceneData.order;
-    const newChapterId = sceneData.chapterId;
+    const newOrder = sceneChanges.order;
+    const newChapterId = sceneChanges.chapterId;
 
     const orderChanged = newOrder !== undefined && newOrder !== existingScene.order;
     // Ensure null and undefined are treated consistently for chapterId comparison
@@ -68,9 +87,9 @@ export const remove = async (db: BookDB, sceneId: number): Promise<void> => {
     const sceneToRemove = await getById(db, sceneId);
     if (!sceneToRemove) return;
 
-    await db.transaction('rw', db.scenes, db.blockInstanceSceneLinks, async () => {
+    await db.transaction('rw', [db.scenes, db.sceneBodies, db.blockInstanceSceneLinks], async () => {
         await db.scenes.delete(sceneId);
-        // Also remove related data like links (e.g., blockInstanceSceneLinks)
+        await db.sceneBodies.where('sceneId').equals(sceneId).delete();
         await db.blockInstanceSceneLinks.where('sceneId').equals(sceneId).delete();
     });
     await updateBook(db);
@@ -240,6 +259,7 @@ export const removeSceneFromChapter = async (db: BookDB, sceneId: number): Promi
 export const SceneRepository = {
     getById,
     getAll,
+    getBodyById,
     getByChapterId,
     create,
     update,

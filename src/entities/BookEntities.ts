@@ -56,6 +56,12 @@ export interface IScene{
   totalSymbolCountWoSpaces?: number; // Символов в сцене без пробелов
 }
 
+export interface ISceneBody {
+  id?: number;
+  sceneId: number;
+  body: string;
+}
+
 export interface ISceneWithInstancesBlock{
   block: IBlock,
   instances: IBlockInstance[]

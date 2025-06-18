@@ -103,7 +103,7 @@ export const SceneEditor = ({ sceneId}: SceneEditorProps) => {
         if (scene?.body !== undefined  && scene.body !== sceneBody) {
             setSceneBody(scene.body);
         }
-    }, [scene, scene?.body]);
+    }, [sceneId, scene?.id]);
 
     if (!scene?.id) return null;
 
