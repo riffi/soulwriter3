@@ -9,6 +9,7 @@ import {
 } from "@/entities/ConstructorEntities";
 import { BlockInstanceRepository } from "@/repository/BlockInstance/BlockInstanceRepository";
 import { BlockParameterInstanceRepository } from "@/repository/BlockInstance/BlockParameterInstanceRepository";
+import { BookRepository } from "@/repository/Book/BookRepository";
 
 export interface ServiceResult<T = any> {
   success: boolean;
@@ -104,7 +105,7 @@ async function initBookDb(book: IBook): Promise<ServiceResult> {
     }
     const configurationUuid = await copyConfigurationToBookDb(configuration, isNew);
     book.configurationUuid = configurationUuid;
-    await bookDb.books.add(book);
+    await BookRepository.create(bookDb, book);
     return { success: true };
   } catch (e: any) {
     return { success: false, message: e.message };
@@ -114,12 +115,12 @@ async function initBookDb(book: IBook): Promise<ServiceResult> {
 async function saveBook(book: IBook): Promise<ServiceResult> {
   try {
     if (book.uuid) {
-      await configDatabase.books.update(book.id!, book);
+      await BookRepository.update(configDatabase, book.uuid, book);
     } else {
       book.uuid = generateUUID();
       const initResult = await initBookDb(book);
       if (!initResult.success) return initResult;
-      await configDatabase.books.add(book);
+      await BookRepository.create(configDatabase, book);
     }
     return { success: true };
   } catch (e: any) {
@@ -129,7 +130,7 @@ async function saveBook(book: IBook): Promise<ServiceResult> {
 
 async function deleteBook(book: IBook): Promise<ServiceResult> {
   try {
-    await configDatabase.books.delete(book.id!);
+    await BookRepository.remove(configDatabase, book.uuid);
     await deleteBookDatabase(book.uuid);
     return { success: true };
   } catch (e: any) {

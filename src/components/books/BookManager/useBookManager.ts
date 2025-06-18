@@ -6,6 +6,7 @@ import { IBookConfiguration } from "@/entities/ConstructorEntities";
 import { useDialog } from "@/providers/DialogProvider/DialogProvider";
 import { useBookStore } from "@/stores/bookStore/bookStore";
 import { BookService } from "@/services/bookService";
+import { BookRepository } from "@/repository/Book/BookRepository";
 
 export const useBookManager = () => {
 
@@ -13,7 +14,7 @@ export const useBookManager = () => {
   const { clearSelectedBook } = useBookStore();
 
   // Получаем список книг и конфигураций из базы данных
-  const books = useLiveQuery<IBook[]>(() => configDatabase.books.toArray(), []);
+  const books = useLiveQuery<IBook[]>(() => BookRepository.getAll(configDatabase), []);
   const configurations = useLiveQuery<IBookConfiguration[]>(
       () => configDatabase.bookConfigurations.toArray(),
       []
@@ -60,7 +61,7 @@ export const useBookManager = () => {
   };
 
   const refreshBooks = async () => {
-    await configDatabase.books.toArray();
+    await BookRepository.getAll(configDatabase);
   };
 
   return {

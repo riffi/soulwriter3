@@ -223,7 +223,7 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
     if (block?.useGroups !== 1) return sortedAndFilteredInstances;
     return sortedAndFilteredInstances.filter(i =>
       currentGroupUuid === 'none'
-        ? !i.blockInstanceGroupUuid
+        ? (!i.blockInstanceGroupUuid) || (groups?.findIndex(g => g.uuid === i.blockInstanceGroupUuid) === -1)
         : i.blockInstanceGroupUuid === currentGroupUuid
     );
   }, [sortedAndFilteredInstances, currentGroupUuid, block]);

@@ -3,6 +3,7 @@ import { notifications } from '@mantine/notifications';
 import { useEffect } from 'react';
 import { inkLuminAPI } from '@/api/inkLuminApi';
 import { configDatabase } from '@/entities/configuratorDb';
+import { BookRepository } from '@/repository/Book/BookRepository';
 import { collectBookBackupData, importBookData, BackupData } from '@/utils/bookBackupManager';
 import { IBook } from '@/entities/BookEntities';
 
@@ -23,13 +24,13 @@ export const saveBookToServer = async (bookUuid: string, token: string) => {
     if (response.success) {
       notifications.show({ message: 'Книга успешно сохранена на сервер', color: 'green' });
       if (response.data?.updatedAt) {
-        await configDatabase.books.where('uuid').equals(bookUuid).modify({
+        await BookRepository.update(configDatabase, bookUuid, {
           serverUpdatedAt: response.data.updatedAt,
           localUpdatedAt: response.data.updatedAt,
           syncState: 'synced'
         });
       } else {
-        await configDatabase.books.where('uuid').equals(bookUuid).modify({ syncState: 'synced' });
+        await BookRepository.update(configDatabase, bookUuid, { syncState: 'synced' });
       }
       return true;
     } else {
@@ -71,7 +72,7 @@ export const getServerBooksList = async (token: string) => {
     const response = await inkLuminAPI.getBooksList(token);
     if (response.success) {
       const serverBooks = response.data || [];
-      const localBooks = await configDatabase.books.toArray();
+      const localBooks = await BookRepository.getAll(configDatabase);
 
       for (const srvBook of serverBooks) {
         const localBook = localBooks.find(b => b.uuid === srvBook.uuid);
@@ -87,7 +88,7 @@ export const getServerBooksList = async (token: string) => {
           updates.syncState = 'synced';
         }
 
-        await configDatabase.books.where('uuid').equals(localBook.uuid).modify(updates);
+        await BookRepository.update(configDatabase, localBook.uuid, updates);
       }
 
       return serverBooks;
@@ -127,7 +128,7 @@ export const useServerSync = (token: string | undefined) => {
           serverUpdatedAt: book.updatedAt,
         }));
 
-        const localBooks = await configDatabase.books.toArray();
+        const localBooks = await BookRepository.getAll(configDatabase);
 
         for (const serverBook of serverBooks) {
           if (!serverBook.uuid || !serverBook.serverUpdatedAt) continue;
@@ -136,13 +137,13 @@ export const useServerSync = (token: string | undefined) => {
             const serverDate = moment(serverBook.serverUpdatedAt);
             const localDate = localBook.localUpdatedAt ? moment(localBook.localUpdatedAt) : moment(0);
             if (serverDate.unix() > localDate.unix()) {
-              await configDatabase.books.where('uuid').equals(localBook.uuid).modify({
+              await BookRepository.update(configDatabase, localBook.uuid, {
                 serverUpdatedAt: serverBook.serverUpdatedAt,
                 syncState: 'serverChanges',
               });
             } else if (localBook.syncState !== 'localChanges') {
               if (localBook.syncState !== 'synced') {
-                await configDatabase.books.where('uuid').equals(localBook.uuid).modify({ syncState: 'synced' });
+                await BookRepository.update(configDatabase, localBook.uuid, { syncState: 'synced' });
               }
             }
           }

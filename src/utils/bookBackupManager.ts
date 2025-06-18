@@ -2,8 +2,7 @@ import { configDatabase } from "@/entities/configuratorDb";
 import { notifications } from "@mantine/notifications";
 import { connectToBookDatabase, deleteBookDatabase } from "@/entities/bookDb";
 import { BlockInstanceSceneLinkRepository } from "@/repository/BlockInstance/BlockInstanceSceneLinkRepository";
-import { inkLuminAPI } from "@/api/inkLuminApi";
-import moment from "moment";
+
 
 export interface BackupData {
   book: any;
@@ -21,14 +20,13 @@ export interface BackupData {
   blocksRelations: any[];
   blockTabs: any[];
   blockInstanceSceneLinks: any[];
+  blockInstanceGroups: any[];
 }
 
 // Вспомогательная функция для сбора данных книги
 export const collectBookBackupData = async (bookUuid: string): Promise<BackupData> => {
-  const [bookData, db] = await Promise.all([
-    configDatabase.books.get({ uuid: bookUuid }),
-    connectToBookDatabase(bookUuid),
-  ]);
+  const bookData = await configDatabase.books.get({ uuid: bookUuid })
+  const db = connectToBookDatabase(bookUuid)
 
   if (!bookData) throw new Error("Книга не найдена");
 
@@ -48,6 +46,7 @@ export const collectBookBackupData = async (bookUuid: string): Promise<BackupDat
     blocksRelations: await db.blocksRelations.toArray(),
     blockTabs: await db.blockTabs.toArray(),
     blockInstanceSceneLinks: await BlockInstanceSceneLinkRepository.getAllLinks(db),
+    blockInstanceGroups: await db.blockInstanceGroups.toArray(),
   };
 };
 
@@ -129,6 +128,7 @@ export const importBookData = async (backupData: BackupData): Promise<void> => {
   otherPromises.push(db.blockParameterPossibleValues.bulkAdd(backupData.blockParameterPossibleValues || []));
   otherPromises.push(db.blocksRelations.bulkAdd(backupData.blocksRelations || []));
   otherPromises.push(db.blockTabs.bulkAdd(backupData.blockTabs || []));
+  otherPromises.push(db.blockInstanceGroups.bulkAdd(backupData.blockInstanceGroups || []));
   otherPromises.push(
     BlockInstanceSceneLinkRepository.bulkAddLinks(
       db,

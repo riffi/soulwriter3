@@ -3,7 +3,7 @@ import ePub, { Book } from 'epubjs';
 import { IBook, IChapter, IScene } from "@/entities/BookEntities";
 import { generateUUID } from "@/utils/UUIDUtils";
 import { notifications } from "@mantine/notifications";
-import {importBookData} from "@/utils/bookBackupManager";
+import {BackupData, importBookData} from "@/utils/bookBackupManager";
 
 // Helper function to extract text from an HTML string for accurate character counting
 function getTextFromHtml(html: string): string {
@@ -435,7 +435,7 @@ export const importEpubFile = async (file: File): Promise<boolean> => {
                     sceneBodiesToImport.push({ sceneId, body: body || '' });
                 });
 
-                const backupData = {
+                const backupData: BackupData = {
                     book: newBook,
                     chapters: chaptersToCreate,
                     scenes: scenesToImport,
@@ -451,6 +451,7 @@ export const importEpubFile = async (file: File): Promise<boolean> => {
                     blocksRelations: [],
                     blockTabs: [],
                     blockInstanceSceneLinks: [],
+                    blockInstanceGroups: [],
                 };
                 await importBookData(backupData)
 
