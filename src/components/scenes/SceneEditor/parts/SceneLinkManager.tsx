@@ -4,24 +4,21 @@ import {
   Group,
   List,
   Text,
-  Modal,
   Box,
   ActionIcon,
   ScrollArea,
-  Title,
-  Divider,
-  TextInput,
-  Stack
+  Title
 } from "@mantine/core";
 import { InlineEdit2 } from "@/components/shared/InlineEdit2/InlineEdit2";
 import { useDisclosure } from "@mantine/hooks";
 import { bookDb } from "@/entities/bookDb";
 import {BlockInstanceSceneLinkRepository} from "@/repository/BlockInstance/BlockInstanceSceneLinkRepository";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {IBlockInstance, IBlockInstanceSceneLink} from "@/entities/BookEntities";
 import {IBlock, IBlockStructureKind} from "@/entities/ConstructorEntities";
 import {IconMan, IconTrash} from "@tabler/icons-react";
 import {useLiveQuery} from "dexie-react-hooks";
+import { SceneLinkManagerModal } from "./SceneLinkManagerModal";
 
 interface SceneLinkManagerProps {
   sceneId: number;
@@ -167,17 +164,16 @@ export const SceneLinkManager = ({ sceneId, opened, onClose }: SceneLinkManagerP
                                         >
                                           <Group justify="space-between" w="100%">
                                             <div style={{flex: 1}}>
-                                              <Text fw={500}>{instance.title}</Text>
-                                                {link?.title &&
-                                                    <Box style={{width: '100%'}}>
-                                                    <InlineEdit2
-                                                        value={link.title}
-                                                        onChange={(newTitle) => handleUpdateLinkTitle(link.id!, newTitle)}
-                                                        size={"xs"}
+                                              <Text fw={100}>{instance.title}</Text>
+                                                  <Box style={{width: '100%'}}>
+                                                  <InlineEdit2
+                                                      value={link.title}
+                                                      onChange={(newTitle) => handleUpdateLinkTitle(link.id!, newTitle)}
+                                                      size={"xs"}
+                                                      placeholder={"Введите описание.."}
 
-                                                    />
-                                                    </Box>
-                                                }
+                                                  />
+                                                  </Box>
                                               </div>
                                               <ActionIcon
                                                   color="red"
@@ -206,51 +202,20 @@ export const SceneLinkManager = ({ sceneId, opened, onClose }: SceneLinkManagerP
           </List>
         </ScrollArea>
 
-        <Modal
+        {selectedBlock && (
+          <SceneLinkManagerModal
             opened={modalOpened}
             onClose={() => {
               closeModal();
-              setNewLinkTitle(''); // Reset title on modal close
+              setNewLinkTitle('');
             }}
-            title={
-              <Title order={4}>
-                Выберите {selectedBlock?.titleForms?.accusative}
-              </Title>
-            }
-            size="lg"
-        >
-          <TextInput
-              label="Название связи (опционально)"
-              placeholder="Введите название для этой связи..."
-              value={newLinkTitle}
-              onChange={(event) => setNewLinkTitle(event.currentTarget.value)}
-              mb="md"
+            block={selectedBlock}
+            availableInstances={availableInstances}
+            linkTitle={newLinkTitle}
+            onLinkTitleChange={setNewLinkTitle}
+            onSelectInstance={handleCreateLink}
           />
-          {availableInstances.length > 0 ? (
-              <ScrollArea h={350}> {/* Adjusted height to accommodate TextInput */}
-                <List spacing="xs" listStyleType={'none'}>
-                  {availableInstances.map(i => (
-                      <List.Item key={i.uuid}>
-                        <Button
-                            variant="light"
-                            fullWidth
-                            onClick={() => handleCreateLink(i.uuid)}
-                            styles={{
-                              inner: { justifyContent: 'start' }
-                            }}
-                        >
-                          {i.title}
-                        </Button>
-                      </List.Item>
-                  ))}
-                </List>
-              </ScrollArea>
-          ) : (
-              <Text c="dimmed" ta="center" py="md">
-                Все элементы уже привязаны
-              </Text>
-          )}
-        </Modal>
+        )}
       </Drawer>
   );
 };
