@@ -241,14 +241,11 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
       );
     }
     if (groupingParam) {
-      console.log('groupingParam', groupingParam);
-      console.log('sortedAndFilteredInstances', sortedAndFilteredInstances);
-      console.log('currentGroupUuid', currentGroupUuid);
       return sortedAndFilteredInstances.filter(i => {
         const param = i.params.find(p => p.blockParameterUuid === groupingParam.uuid);
-        console.log('param', param);
         if (currentGroupUuid === 'none') {
-          return !param?.value || (linkGroups?.findIndex(g => g.uuid === param.value) === -1);
+          return true
+          //return !param?.value || (linkGroups?.findIndex(g => g.uuid === param.value) === -1);
         }
         return param?.value === currentGroupUuid;
       });
@@ -311,7 +308,7 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
           {block?.useGroups !== 1 && groupingParam && (
             <Tabs value={currentGroupUuid} onChange={(val)=>setCurrentGroupUuid(val || 'none')} mb={10}>
               <Tabs.List>
-                <Tabs.Tab value="none">Без групп</Tabs.Tab>
+                <Tabs.Tab value="none">Все</Tabs.Tab>
                 {linkGroups?.map(g => (
                   <Tabs.Tab key={g.uuid} value={g.uuid}>{g.title}</Tabs.Tab>
                 ))}

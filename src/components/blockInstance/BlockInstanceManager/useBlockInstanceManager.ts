@@ -53,7 +53,11 @@ export const useBlockInstanceManager = (blockUuid: string, titleSearch?: string)
   const instancesWithParams = useLiveQuery<IBlockInstanceWithParams[]>(async () => {
     if (!instances || !displayedParameters) return [];
 
-    const displayParameterUuids = displayedParameters.map(p => p.uuid!);
+    // Идентификаторы параметров, которые нужно подгрузить для инстансов
+    const parameterUuids = [...displayedParameters.map(p => p.uuid!)];
+    if (groupingParam?.uuid && !parameterUuids.includes(groupingParam.uuid)) {
+      parameterUuids.push(groupingParam.uuid);
+    }
 
     // Получаем базовые данные
     const instancesWithParams = await Promise.all(instances.map(async (instance) => {
@@ -61,7 +65,7 @@ export const useBlockInstanceManager = (blockUuid: string, titleSearch?: string)
           .where('blockInstanceUuid')
           .equals(instance.uuid)
           .filter(p =>
-              displayParameterUuids.includes(p.blockParameterUuid)
+              parameterUuids.includes(p.blockParameterUuid)
           )
           .toArray();
       return { ...instance, params };
@@ -113,7 +117,7 @@ export const useBlockInstanceManager = (blockUuid: string, titleSearch?: string)
         return { ...param, displayValue };
       })
     }));
-  }, [instances, displayedParameters]);
+  }, [instances, displayedParameters, groupingParam]);
 
 
 
