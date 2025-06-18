@@ -51,7 +51,12 @@ const create = async (db: BlockAbstractDb, block: IBlock, isBookDb = false, titl
   }
   block.uuid = generateUUID()
   block.showInMainMenu = 1; // Set default value for showInMainMenu
-  const blockId = await db.blocks.add(block)
+  // Persist knowledge base link if provided
+  const blockToSave: IBlock = {
+    ...block,
+    knowledgeBasePageUuid: block.knowledgeBasePageUuid ?? undefined,
+  }
+  const blockId = await db.blocks.add(blockToSave)
   const persistedBlockData = await db.blocks.get(blockId)
   await BlockParameterRepository.appendDefaultParamGroup(db, persistedBlockData) // Updated call
   await BlockTabRepository.appendDefaultTab(db, persistedBlockData) // Updated call
@@ -97,7 +102,11 @@ const update = async (db: BlockAbstractDb, block: IBlock, isBookDb = false, titl
       await BlockInstanceRepository.createSingleInstance(db as BookDB, block)
     }
   }
-  db.blocks.update(block.id, block)
+  const blockToUpdate: IBlock = {
+    ...block,
+    knowledgeBasePageUuid: block.knowledgeBasePageUuid ?? undefined,
+  }
+  db.blocks.update(block.id, blockToUpdate)
   if (isBookDb) {
     await updateBookLocalUpdatedAt(db as BookDB);
   }

@@ -87,6 +87,7 @@ export interface IBlock {
   customIconBase64?: string // Кастомная иконка в формате base64
   showInSceneList: number; // Отображать ли в списке сцен
   showInMainMenu: number;
+  knowledgeBasePageUuid?: string; // Ссылка на страницу базы знаний
 }
 
 export interface IBlockParameterGroup{
@@ -115,6 +116,7 @@ export interface IBlockParameter {
   relatedBlockUuid?: string; // Ссылка на связь блоков
   allowMultiple?: number;
   useForInstanceGrouping?: number;
+  knowledgeBasePageUuid?: string; // Ссылка на страницу базы знаний
 }
 
 export interface IBlockParameterWithBlockTitle extends IBlockParameter{

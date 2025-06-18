@@ -113,11 +113,19 @@ export const useBlockEditForm = (blockUuid: string, bookUuid?: string, currentGr
       param.groupUuid = currentGroupUuid;
       param.orderNumber = paramList?.length;
       param.blockUuid = blockUuid;
-      db.blockParameters.add(param);
+      const paramToSave: IBlockParameter = {
+        ...param,
+        knowledgeBasePageUuid: param.knowledgeBasePageUuid ?? undefined,
+      }
+      db.blockParameters.add(paramToSave);
     } else {
 
       const prevData = await db.blockParameters.get(param.id)
-      db.blockParameters.update(param.id, param);
+      const paramToUpdate: IBlockParameter = {
+        ...param,
+        knowledgeBasePageUuid: param.knowledgeBasePageUuid ?? undefined,
+      }
+      db.blockParameters.update(param.id, paramToUpdate);
 
       // Обновляем значения по умолчанию для одиночных блоков
       if (isBookDb
