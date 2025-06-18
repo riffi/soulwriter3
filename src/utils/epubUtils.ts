@@ -313,6 +313,7 @@ export const importEpubFile = async (file: File): Promise<boolean> => {
                     blockTabs: [],
                     blockInstanceSceneLinks: [],
                     blockInstanceGroups: [],
+                    knowledgeBasePages: []
                 };
                 await importBookData(backupData)
 

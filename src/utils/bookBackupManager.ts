@@ -21,6 +21,7 @@ export interface BackupData {
   blockTabs: any[];
   blockInstanceSceneLinks: any[];
   blockInstanceGroups: any[];
+  knowledgeBasePages: any[];
 }
 
 // Вспомогательная функция для сбора данных книги
@@ -47,6 +48,7 @@ export const collectBookBackupData = async (bookUuid: string): Promise<BackupDat
     blockTabs: await db.blockTabs.toArray(),
     blockInstanceSceneLinks: await BlockInstanceSceneLinkRepository.getAllLinks(db),
     blockInstanceGroups: await db.blockInstanceGroups.toArray(),
+    knowledgeBasePages: await db.knowledgeBasePages.toArray(),
   };
 };
 
@@ -129,6 +131,7 @@ export const importBookData = async (backupData: BackupData): Promise<void> => {
   otherPromises.push(db.blocksRelations.bulkAdd(backupData.blocksRelations || []));
   otherPromises.push(db.blockTabs.bulkAdd(backupData.blockTabs || []));
   otherPromises.push(db.blockInstanceGroups.bulkAdd(backupData.blockInstanceGroups || []));
+  otherPromises.push(db.knowledgeBasePages.bulkAdd(backupData.knowledgeBasePages || []));
   otherPromises.push(
     BlockInstanceSceneLinkRepository.bulkAddLinks(
       db,

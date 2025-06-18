@@ -139,6 +139,7 @@ export const importFb2File = async (file: File): Promise<boolean> => {
                     blockTabs: [],
                     blockInstanceSceneLinks: [],
                     blockInstanceGroups: [],
+                    knowledgeBasePages: [],
                 };
 
                 await importBookData(backupData);
