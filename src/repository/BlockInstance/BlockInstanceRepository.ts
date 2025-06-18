@@ -6,6 +6,8 @@ import { BlockParameterInstanceRepository } from "./BlockParameterInstanceReposi
 import { updateBlockInstance } from "./BlockInstanceUpdateHelper";
 import {BlockInstanceRelationRepository} from "@/repository/BlockInstance/BlockInstanceRelationRepository";
 import {BlockInstanceSceneLinkRepository} from "@/repository/BlockInstance/BlockInstanceSceneLinkRepository";
+import {updateBook} from "@/utils/bookSyncUtils";
+import {IBlock} from "@/entities/ConstructorEntities";
 
 export const getByUuid = async (db: BookDB, blockInstanceUuid: string) => {
   return db.blockInstances.where('uuid').equals(blockInstanceUuid).first();

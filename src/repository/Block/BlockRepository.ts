@@ -127,44 +127,32 @@ const save = async (db: BlockAbstractDb, block: IBlock, isBookDb = false, titleF
 }
 
 const remove = async (db: BlockAbstractDb, block: IBlock) => {
-  await db.transaction('rw',
-      [
-        db.blocks,
-        db.blockParameterGroups,
-        db.blockParameters,
-        db.blockTabs,
-        db.blocksRelations,
-        db.blockParameterPossibleValues // IBlockParameter and IBlockParameterPossibleValue might be removable from imports
-      ],
-      async () => {
-        // Получаем все группы параметров блока и удаляем их через BlockParameterRepository
-        const groups = await BlockParameterRepository.getParameterGroups(db, block.uuid)
-        for (const group of groups) {
-          if (!group.uuid) continue;
-          // deleteParameterGroup handles parameters and their possible values
-          await BlockParameterRepository.deleteParameterGroup(db, block.uuid, group.uuid);
-        }
+  // Получаем все группы параметров блока и удаляем их через BlockParameterRepository
+  const groups = await BlockParameterRepository.getParameterGroups(db, block.uuid)
+  for (const group of groups) {
+    if (!group.uuid) continue;
+    // deleteParameterGroup handles parameters and their possible values
+    await BlockParameterRepository.deleteParameterGroup(db, block.uuid, group.uuid);
+  }
 
-        // Удаляем связи блока
-        const [sourceRelations, targetRelations] = await Promise.all([
-          db.blocksRelations.where('sourceBlockUuid').equals(block.uuid).toArray(),
-          db.blocksRelations.where('targetBlockUuid').equals(block.uuid).toArray()
-        ]);
-        const allRelations = [...sourceRelations, ...targetRelations];
-        for (const relation of allRelations) {
-          await BlockRelationRepository.remove(db, relation.uuid);
-        }
+  // Удаляем связи блока
+  const [sourceRelations, targetRelations] = await Promise.all([
+    db.blocksRelations.where('sourceBlockUuid').equals(block.uuid).toArray(),
+    db.blocksRelations.where('targetBlockUuid').equals(block.uuid).toArray()
+  ]);
+  const allRelations = [...sourceRelations, ...targetRelations];
+  for (const relation of allRelations) {
+    await BlockRelationRepository.remove(db, relation.uuid);
+  }
 
-        //Удаляем вкладки блока
-        await BlockTabRepository.deleteTabsForBlock(db, block.uuid); // Updated call
+  //Удаляем вкладки блока
+  await BlockTabRepository.deleteTabsForBlock(db, block.uuid); // Updated call
 
-        // Удаляем сам блок
-        await db.blocks
-            .where('uuid')
-            .equals(block.uuid)
-            .delete();
-      }
-  );
+  // Удаляем сам блок
+  await db.blocks
+      .where('uuid')
+      .equals(block.uuid)
+      .delete();
   if (db instanceof BookDB) {
     await updateBook(db as BookDB);
   }

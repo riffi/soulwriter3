@@ -7,6 +7,7 @@ import {
 } from "@/entities/ConstructorEntities";
 import {generateUUID} from "@/utils/UUIDUtils";
 import { updateBook } from "@/utils/bookSyncUtils";
+import {BookDB} from "@/entities/bookDb";
 
 const getParameterGroups = async (db: BlockAbstractDb, blockUuid: string) => {
     return db.blockParameterGroups
