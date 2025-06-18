@@ -16,7 +16,7 @@ export const SceneLayout = () => {
   const { isMobile } = useMedia();
   const navigate = useNavigate();
   const [sceneId, setSceneId] = useState<number | undefined>();
-  const { sceneLayoutMode, setSceneLayoutMode } = useUiSettingsStore();
+  const { sceneLayoutMode, setSceneLayoutMode, chapterOnlyMode } = useUiSettingsStore();
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const {scenes, chapters, getScenesWithBlockInstances} = useSceneLayout()
 
@@ -56,6 +56,7 @@ export const SceneLayout = () => {
             mode="manager"
             scenes={scenesWithBlockInstances}
             chapters={chapters}
+            chapterOnly={chapterOnlyMode}
         />;
   }
 
@@ -69,6 +70,7 @@ export const SceneLayout = () => {
               onToggleMode={toggleMode}
               scenes={scenesWithBlockInstances}
               chapters={chapters}
+              chapterOnly={chapterOnlyMode}
           />
         </Box>
     );
@@ -101,6 +103,7 @@ export const SceneLayout = () => {
                 onToggleMode={toggleMode}
                 scenes={scenesWithBlockInstances}
                 chapters={chapters}
+                chapterOnly={chapterOnlyMode}
             />
           </Box>
         </Box>

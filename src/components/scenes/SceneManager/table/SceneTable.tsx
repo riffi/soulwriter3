@@ -17,6 +17,7 @@ interface SceneTableProps {
   chapters?: IChapter[];
   searchQuery?: string;
   selectedInstanceUuid?: string | null;
+  chapterOnly?: boolean;
 }
 
 export const SceneTable = ({
@@ -27,7 +28,8 @@ export const SceneTable = ({
                              scenes,
                              chapters,
                              searchQuery,
-                             selectedInstanceUuid
+                             selectedInstanceUuid,
+                             chapterOnly
                            }: SceneTableProps) => {
 
   // Функция фильтрации сцен
@@ -50,10 +52,15 @@ export const SceneTable = ({
 
   // Функция фильтрации глав
   const filterChapters = (chapters: IChapter[], filteredScenes: ISceneWithInstances[]) => {
+    if (chapterOnly) {
+      return chapters.filter(chapter =>
+          !searchQuery || chapter.title.toLowerCase().includes(searchQuery?.toLowerCase() || '')
+      );
+    }
     return chapters.filter(chapter => {
-        if (!searchQuery && !selectedInstanceUuid) {
-            return true;
-        }
+      if (!searchQuery && !selectedInstanceUuid) {
+        return true;
+      }
       const hasScenes = filteredScenes.some(scene => scene.chapterId === chapter.id);
       return hasScenes;
     });
@@ -104,15 +111,16 @@ export const SceneTable = ({
               <ChapterRow
                   key={`chapter-${chapter.id}`}
                   chapter={chapter}
-                  scenes={getScenesForChapter(chapter.id)}
+                  scenes={chapterOnly ? [] : getScenesForChapter(chapter.id)}
                   onAddScene={() => openCreateModal(chapter.id)}
                   openScene={openScene}
                   selectedSceneId={selectedSceneId}
                   mode={mode}
                   chapters={chapters}
+                  chapterOnly={chapterOnly}
               />
           ))}
-          {getScenesForChapter(null).map((scene, index, array) => (
+          {!chapterOnly && getScenesForChapter(null).map((scene, index, array) => (
               <SceneRow
                   key={`scene-${scene.id}`}
                   scene={scene}

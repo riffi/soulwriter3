@@ -15,7 +15,7 @@ import {
   IconFolderOpen,
   IconFolderUp,
   IconNote,
-  IconChevronLeft,
+  IconChevronLeft, IconPlus,
 } from "@tabler/icons-react";
 import { usePageTitle } from "@/providers/PageTitleProvider/PageTitleProvider";
 import { SceneTable } from "./table/SceneTable";
@@ -43,6 +43,7 @@ export interface SceneManagerProps {
   onToggleMode?: () => void;
   scenes?: ISceneWithInstances[];
   chapters?: IChapter[];
+  chapterOnly?: boolean;
 }
 export const SceneManager = (props: SceneManagerProps) => {
   const { setPageTitle } = usePageTitle();
@@ -202,47 +203,52 @@ export const SceneManager = (props: SceneManagerProps) => {
                 order={3}
                 visibleFrom={"sm"}
             >
-              Сцены и главы
+              {props.chapterOnly ? 'Главы' : 'Главы и сцены'}
             </Title>
             <Group>
               <Tooltip label="Добавить главу">
                 <ActionIcon
                     onClick={openChapterModal}
                 >
-                  <IconFolderPlus size={16} />
+                  {!props.chapterOnly && <IconFolderPlus  size={16}/>}
+                  {props.chapterOnly && <IconPlus  size={16} />}
                 </ActionIcon>
               </Tooltip>
-              <Tooltip label="Добавить сцену">
-                <ActionIcon
-                    onClick={() => {
-                      setChapterForNewScene(null);
-                      openCreateModal();
-                    }}
-                >
-                  <IconNote size={16} />
-                </ActionIcon>
-              </Tooltip>
+              {!props.chapterOnly && (
+                  <>
+                  <Tooltip label="Добавить сцену">
+                    <ActionIcon
+                        onClick={() => {
+                          setChapterForNewScene(null);
+                          openCreateModal();
+                        }}
+                    >
+                      <IconNote size={16} />
+                    </ActionIcon>
+                  </Tooltip>
 
-              <Tooltip label="Свернуть все главы">
-                <ActionIcon
-                    variant="subtle"
-                    onClick={collapseAllChapters}
-                    disabled={!props.chapters?.length}
-                    size={isMobile ? "sm" : "md"}
-                >
-                  <IconFolderUp size={isMobile ? 18 : 18} />
-                </ActionIcon>
-              </Tooltip>
-              <Tooltip label="Развернуть все главы">
-                <ActionIcon
-                    variant="subtle"
-                    onClick={expandAllChapters}
-                    disabled={!collapsedChapters.length}
-                    size={isMobile ? "sm" : "md"}
-                >
-                  <IconFolderOpen size={isMobile ? 18 : 18} />
-                </ActionIcon>
-              </Tooltip>
+                <Tooltip label="Свернуть все главы">
+                  <ActionIcon
+                      variant="subtle"
+                      onClick={collapseAllChapters}
+                      disabled={!props.chapters?.length}
+                      size={isMobile ? "sm" : "md"}
+                  >
+                    <IconFolderUp size={isMobile ? 18 : 18} />
+                  </ActionIcon>
+                </Tooltip>
+                <Tooltip label="Развернуть все главы">
+                  <ActionIcon
+                      variant="subtle"
+                      onClick={expandAllChapters}
+                      disabled={!collapsedChapters.length}
+                      size={isMobile ? "sm" : "md"}
+                  >
+                    <IconFolderOpen size={isMobile ? 18 : 18} />
+                  </ActionIcon>
+                </Tooltip>
+              </>
+            )}
             </Group>
             <Group ml="auto" gap={8}>
               <Tooltip label="Фильтры">
@@ -287,6 +293,7 @@ export const SceneManager = (props: SceneManagerProps) => {
             chapters={props.chapters}
             searchQuery={debouncedSearch}
             selectedInstanceUuid={selectedInstance}
+            chapterOnly={props.chapterOnly}
         />
 
         <CreateSceneModal
