@@ -24,7 +24,6 @@ function parseFrontMatter(raw: string): ParsedPage | null {
 }
 
 export async function initKnowledgeBasePages() {
-  debugger
   const modules = import.meta.glob('./*.md', { as: 'raw' });
   const entries = Object.entries(modules);
   for (const [, loader] of entries) {
