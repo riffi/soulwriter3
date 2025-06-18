@@ -199,10 +199,8 @@ async function extractChaptersAndScenesFromEpub(bookEpub: Book) {
 
     for (const tocItem of flatTocItems) {
         const chapterTitle = tocItem.label.trim() || `Глава ${chapterOrder}`;
-        chaptersToCreate.push({
-            title: chapterTitle,
-            order: chapterOrder,
-        });
+
+        const firstSceneIndex = scenes.length; // index before adding scenes
 
         const sceneChapterOrderLink = chapterOrder;
 
@@ -373,6 +371,13 @@ async function extractChaptersAndScenesFromEpub(bookEpub: Book) {
                 totalSymbolCountWoSpaces: 0,
             });
         }
+
+        const contentSceneId = scenes.length > firstSceneIndex ? firstSceneIndex + 1 : undefined;
+        chaptersToCreate.push({
+            title: chapterTitle,
+            order: chapterOrder,
+            contentSceneId,
+        });
 
         chapterOrder++;
     }

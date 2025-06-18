@@ -8,6 +8,7 @@ import { IconBook, IconBookmark, IconLibrary, IconList, IconArrowUp, IconMenu2 }
 import { bookDb } from "@/entities/bookDb";
 import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
 import {SceneRepository} from "@/repository/Scene/SceneRepository";
+import { useUiSettingsStore } from "@/stores/uiSettingsStore/uiSettingsStore";
 
 interface TOCItem {
   type: 'chapter' | 'scene';
@@ -71,6 +72,7 @@ const TOCItemComponent: React.FC<{
 
 export const BookReader: React.FC = () => {
   const { scenes, chapters, loading, error } = useBookReader();
+  const { chapterOnlyMode } = useUiSettingsStore();
   const { active: activeSceneOrder, reinitialize: reinitializeSceneSpy } = useScrollSpy({
     selector: '[data-scene]',
     getDepth: el => Number(el.getAttribute('data-scene')),
@@ -127,6 +129,17 @@ export const BookReader: React.FC = () => {
   }, []);
 
   const buildTOC = useMemo(() => {
+    if (chapterOnlyMode) {
+      return (
+          chapters?.map(chapter => ({
+            type: 'chapter' as const,
+            id: chapter.id!,
+            order: chapter.order,
+            title: chapter.title,
+          })) || []
+      );
+    }
+
     const chapterItems: TOCItem[] = chapters?.map(chapter => ({
       type: 'chapter' as const,
       id: chapter.id!,
@@ -143,15 +156,15 @@ export const BookReader: React.FC = () => {
     })) || [];
 
     const standaloneScenes: TOCItem[] = scenes?.filter(s => !s.chapterId)
-    .map(scene => ({
-      type: 'scene' as const,
-      id: scene.id!,
-      order: scene.order,
-      title: scene.title,
-    })) || [];
+        .map(scene => ({
+          type: 'scene' as const,
+          id: scene.id!,
+          order: scene.order,
+          title: scene.title,
+        })) || [];
 
     return [...chapterItems, ...standaloneScenes];
-  }, [chapters, scenes]);
+  }, [chapters, scenes, chapterOnlyMode]);
 
   const handleSceneUpdate = useCallback(async (sceneId: number, newBody: string) => {
     try {
@@ -195,16 +208,32 @@ export const BookReader: React.FC = () => {
             {buildTOC.map(item => item.type === 'chapter' ? (
                 <div key={item.id}>
                   <h2 className={styles.chapterTitle}>{item.title}</h2>
-                  {item.children?.map(child => (
-                      <BookReaderScene
-                          key={child.id}
-                          scene={scenes.find(s => s.id === child.id)!}
-                          isEditing={editingSceneId === child.id}
-                          onEditStart={() => setEditingSceneId(child.id)}
-                          onEditCancel={() => setEditingSceneId(null)}
-                          onSceneUpdate={handleSceneUpdate}
-                      />
-                  ))}
+                  {chapterOnlyMode ? (
+                      (() => {
+                        const chapterScene = scenes?.find(s => s.chapterId === item.id);
+                        return chapterScene ? (
+                            <BookReaderScene
+                                key={`scene-${item.id}`}
+                                scene={chapterScene}
+                                isEditing={editingSceneId === chapterScene.id}
+                                onEditStart={() => setEditingSceneId(chapterScene.id)}
+                                onEditCancel={() => setEditingSceneId(null)}
+                                onSceneUpdate={handleSceneUpdate}
+                            />
+                        ) : null;
+                      })()
+                  ) : (
+                      item.children?.map(child => (
+                          <BookReaderScene
+                              key={child.id}
+                              scene={scenes.find(s => s.id === child.id)!}
+                              isEditing={editingSceneId === child.id}
+                              onEditStart={() => setEditingSceneId(child.id)}
+                              onEditCancel={() => setEditingSceneId(null)}
+                              onSceneUpdate={handleSceneUpdate}
+                          />
+                      ))
+                  )}
                 </div>
             ) : (
                 <BookReaderScene

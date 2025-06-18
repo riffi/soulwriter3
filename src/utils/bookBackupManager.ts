@@ -78,7 +78,7 @@ export const importBookData = async (backupData: BackupData): Promise<void> => {
     // Dexie's bulkAdd with allKeys: true returns an array of the generated primary keys.
     // We map to ensure we only pass properties Dexie expects for new entries.
     addedChapterIds = await db.chapters.bulkAdd(
-        chapterEntries.map(c => ({ title: c.title, order: c.order })),
+        chapterEntries.map(c => ({ title: c.title, order: c.order, contentSceneId: c.contentSceneId })),
         { allKeys: true }
     ) as number[];
   }
