@@ -2,7 +2,7 @@ import {useDisclosure} from "@mantine/hooks";
 import {AppShell, Burger, Group, Text} from "@mantine/core";
 import {NavbarNested} from "@/components/layout/NavbarNested/NavbarNested";
 import {Outlet} from "react-router-dom";
-import {useBookDbConnection} from "@/components/hooks/useBookDbConnection";
+import {useBookDbConnection} from "@/hooks/useBookDbConnection";
 import {usePageTitle} from "@/providers/PageTitleProvider/PageTitleProvider";
 import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
 

@@ -5,7 +5,7 @@ import {SceneAnalysisDrawer} from "./parts/SceneAnalysisDrawer";
 import { OpenRouterApi } from "@/api/openRouterApi";
 import { BlockInstanceRepository } from "@/repository/BlockInstance/BlockInstanceRepository";
 import type { IBlockInstance } from "@/entities/BookEntities";
-import { useBookDbConnection } from "@/components/hooks/useBookDbConnection";
+import { useBookDbConnection } from "@/hooks/useBookDbConnection";
 import { generateUUID } from "@/utils/UUIDUtils";
 import { notifications } from "@mantine/notifications"; // Already imported but good to confirm
 
