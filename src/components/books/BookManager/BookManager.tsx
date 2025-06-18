@@ -48,6 +48,7 @@ import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
 import {usePageTitle} from "@/providers/PageTitleProvider/PageTitleProvider";
 import { getCroppedImg, processImageFile, handleFileChangeForCropping } from "@/utils/imageUtils";
 import {importEpubFile} from "@/utils/epubUtils";
+import {importFb2File} from "@/utils/fb2Utils";
 
 const getSyncStateText = (syncState: IBook['syncState']) => {
   switch (syncState) {
@@ -274,6 +275,25 @@ export const BookManager = () => {
         const file = target.files[0];
         setLoading(true);
         const success = await importEpubFile(file);
+        if (success && refreshBooks) {
+          await refreshBooks();
+        }
+        setLoading(false);
+      }
+    };
+    input.click();
+  };
+
+  const triggerFb2Import = async () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.fb2';
+    input.onchange = async (event) => {
+      const target = event.target as HTMLInputElement;
+      if (target.files && target.files[0]) {
+        const file = target.files[0];
+        setLoading(true);
+        const success = await importFb2File(file);
         if (success && refreshBooks) {
           await refreshBooks();
         }
@@ -556,6 +576,13 @@ export const BookManager = () => {
                 variant="outline"
             >
               Импорт из EPUB
+            </Button>
+            <Button
+                leftSection={<IconUpload size={20} />}
+                onClick={triggerFb2Import}
+                variant="outline"
+            >
+              Импорт из FB2
             </Button>
             {token && (
                 <Button

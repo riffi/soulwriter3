@@ -277,6 +277,7 @@ export const importEpubFile = async (file: File): Promise<boolean> => {
                     cover: bookCoverBase64,
                     kind: 'book',
                     description: metadata.description || `Imported from EPUB (${file.name})`,
+                    chapterOnlyMode: 1
                 };
                 const { chaptersToCreate, scenes } = await extractChaptersAndScenesFromEpub(bookEpub);
 
