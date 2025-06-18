@@ -15,7 +15,6 @@ import {CollapsedNavbar} from "@/components/layout/NavbarNested/parts/CollapsedN
 import {ExpandedNavbar} from "@/components/layout/NavbarNested/parts/ExpandedNavbar/ExpandedNavbar";
 import { useNavigate } from "react-router-dom"; // Added useNavigate
 import { useConnection } from '@/providers/ConnectionStatusProvider/ConnectionStatusProvider';
-import {useUiSettingsStore} from "@/stores/uiSettingsStore/uiSettingsStore"; // Added import
 
 export interface NavLinkItem {
   label: string;
@@ -72,7 +71,7 @@ export const NavbarNested = ({ toggleNavbar, opened }: { toggleNavbar?: () => vo
   const { selectedBook } = useBookStore();
   const navigate = useNavigate(); // Hook for navigation
   const { isOnline } = useConnection(); // Get connection status
-  const { chapterOnlyMode } = useUiSettingsStore();
+  const chapterOnlyMode = selectedBook?.chapterOnlyMode === 1;
 
   const handleQuickNoteClick = React.useCallback(() => { // Wrapped with useCallback
     navigate('/notes/new');

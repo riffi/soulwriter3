@@ -11,6 +11,7 @@ import {
   IconChevronRight,
 } from "@tabler/icons-react";
 import {useLiveQuery} from "dexie-react-hooks";
+import {useBookStore} from "@/stores/bookStore/bookStore";
 import {useUiSettingsStore} from "@/stores/uiSettingsStore/uiSettingsStore";
 
 export const SceneLayout = () => {
@@ -18,7 +19,9 @@ export const SceneLayout = () => {
   const navigate = useNavigate();
   const [sceneId, setSceneId] = useState<number | undefined>();
   const [chapter, setChapter] = useState<IChapter | undefined>();
-  const { sceneLayoutMode, setSceneLayoutMode, chapterOnlyMode } = useUiSettingsStore();
+  const { sceneLayoutMode, setSceneLayoutMode } = useUiSettingsStore();
+  const { selectedBook } = useBookStore();
+  const chapterOnlyMode = selectedBook?.chapterOnlyMode === 1;
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const {scenes, chapters, getScenesWithBlockInstances} = useSceneLayout()
 

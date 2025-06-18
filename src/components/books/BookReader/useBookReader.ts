@@ -3,13 +3,14 @@ import { bookDb } from '@/entities/bookDb';
 import { useLiveQuery } from "dexie-react-hooks";
 import { SceneRepository } from "@/repository/Scene/SceneRepository";
 import { ChapterRepository } from "@/repository/Scene/ChapterRepository";
-import { useUiSettingsStore } from "@/stores/uiSettingsStore/uiSettingsStore";
+import { useBookStore } from "@/stores/bookStore/bookStore";
 
 export const useBookReader = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const { chapterOnlyMode } = useUiSettingsStore();
+  const { selectedBook } = useBookStore();
+  const chapterOnlyMode = selectedBook?.chapterOnlyMode === 1;
 
   const chapters = useLiveQuery(() => ChapterRepository.getAll(bookDb), [], null);
   const scenes = useLiveQuery(async () => {

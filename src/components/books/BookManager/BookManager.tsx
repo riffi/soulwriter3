@@ -85,6 +85,7 @@ const getBlankBook = (kind: string = 'book'): IBook => ({
   configurationTitle: "",
   cover: undefined,
   kind: kind,
+  chapterOnlyMode: 1,
 });
 
 const getFormLabel = (formValue: string) => {

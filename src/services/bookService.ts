@@ -105,6 +105,9 @@ async function initBookDb(book: IBook): Promise<ServiceResult> {
     }
     const configurationUuid = await copyConfigurationToBookDb(configuration, isNew);
     book.configurationUuid = configurationUuid;
+    if (book.chapterOnlyMode === undefined) {
+      book.chapterOnlyMode = 1;
+    }
     await BookRepository.create(bookDb, book);
     return { success: true };
   } catch (e: any) {
@@ -114,6 +117,9 @@ async function initBookDb(book: IBook): Promise<ServiceResult> {
 
 async function saveBook(book: IBook): Promise<ServiceResult> {
   try {
+    if (book.chapterOnlyMode === undefined) {
+      book.chapterOnlyMode = 1;
+    }
     if (book.uuid) {
       await BookRepository.update(configDatabase, book.uuid, book);
     } else {

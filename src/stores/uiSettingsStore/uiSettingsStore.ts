@@ -20,9 +20,6 @@ interface UiSettingsState {
     sceneLayoutMode: SceneLayoutMode;
     setSceneLayoutMode: (mode: SceneLayoutMode) => void;
 
-    chapterOnlyMode: boolean;
-    setChapterOnlyMode: (value: boolean) => void;
-
     navbarLinkStates: Record<string, boolean>;
     setNavbarLinkState: (label: string, isOpen: boolean) => void;
 }
@@ -45,8 +42,6 @@ export const useUiSettingsStore = create<UiSettingsState>()(
             sceneLayoutMode: 'manager', // Default value
             setSceneLayoutMode: (mode) => set({ sceneLayoutMode: mode }),
 
-            chapterOnlyMode: false,
-            setChapterOnlyMode: (value) => set({ chapterOnlyMode: value }),
 
             navbarLinkStates: {},
             setNavbarLinkState: (label, isOpen) =>

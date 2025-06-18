@@ -11,6 +11,7 @@ export interface IBook {
   configurationTitle: string; // Название конфигурации
   cover?: string;
   kind?: string;
+  chapterOnlyMode?: number;
   description?: string;
   localUpdatedAt?: string;
   serverUpdatedAt?: string;

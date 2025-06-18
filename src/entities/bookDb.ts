@@ -11,7 +11,7 @@ import {baseSchema, BlockAbstractDb} from "@/entities/BlockAbstractDb";
 
 const bookSchema={
   ...baseSchema,
-  books: '++id, &uuid, title, author, kind, configurationUuid, localUpdatedAt, serverUpdatedAt, syncState',
+  books: '++id, &uuid, title, author, kind, configurationUuid, chapterOnlyMode, localUpdatedAt, serverUpdatedAt, syncState',
   scenes: '++id, title, order, chapterId',
   chapters: '++id, title, order, contentSceneId',
   sceneBodies: '++id, sceneId',
@@ -36,14 +36,12 @@ export class BookDB extends BlockAbstractDb{
   blockInstanceSceneLinks!: Dexie.Table<IBlockInstanceSceneLink, number>;
   constructor(dbName:string) {
     super(dbName);
-    this.version(6).stores(bookSchema).upgrade(async (tx) => {
-      const scenes = await tx.table('scenes').toArray();
-      for (const scene of scenes) {
-        const body = scene.body || '';
-        await tx.table('sceneBodies').add({ sceneId: scene.id, body });
-        delete scene.body;
-        await tx.table('scenes').put(scene);
-      }
+    this.version(7).stores(bookSchema).upgrade(async (tx) => {
+      await tx.table('books').toCollection().modify(book => {
+        if (book.chapterOnlyMode === undefined) {
+          book.chapterOnlyMode = 1;
+        }
+      });
     });
   }
 }

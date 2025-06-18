@@ -1,11 +1,12 @@
 import { notifications } from "@mantine/notifications";
 import { IChapter } from "@/entities/BookEntities";
 import { SceneService } from '@/services/sceneService';
-import {useUiSettingsStore} from "@/stores/uiSettingsStore/uiSettingsStore";
+import {useBookStore} from "@/stores/bookStore/bookStore";
 
 export const useChapters = (chapters?: IChapter[]) => {
 
-  const { chapterOnlyMode, setChapterOnlyMode } = useUiSettingsStore();
+  const { selectedBook } = useBookStore();
+  const chapterOnlyMode = selectedBook?.chapterOnlyMode === 1;
 
   const createChapter = async (title: string) => {
     const result = await SceneService.createChapter(title, chapterOnlyMode);

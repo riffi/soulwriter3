@@ -8,7 +8,7 @@ import { IconBook, IconBookmark, IconLibrary, IconList, IconArrowUp, IconMenu2 }
 import { bookDb } from "@/entities/bookDb";
 import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
 import {SceneRepository} from "@/repository/Scene/SceneRepository";
-import { useUiSettingsStore } from "@/stores/uiSettingsStore/uiSettingsStore";
+import { useBookStore } from "@/stores/bookStore/bookStore";
 
 interface TOCItem {
   type: 'chapter' | 'scene';
@@ -72,7 +72,8 @@ const TOCItemComponent: React.FC<{
 
 export const BookReader: React.FC = () => {
   const { scenes, chapters, loading, error } = useBookReader();
-  const { chapterOnlyMode } = useUiSettingsStore();
+  const { selectedBook } = useBookStore();
+  const chapterOnlyMode = selectedBook?.chapterOnlyMode === 1;
   const { active: activeSceneOrder, reinitialize: reinitializeSceneSpy } = useScrollSpy({
     selector: '[data-scene]',
     getDepth: el => Number(el.getAttribute('data-scene')),
