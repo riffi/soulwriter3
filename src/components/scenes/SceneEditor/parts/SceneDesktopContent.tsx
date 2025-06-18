@@ -1,11 +1,11 @@
-import {ActionIcon, Box, Button, Container, Flex, Group, Paper, Text} from "@mantine/core";
+import {ActionIcon, Box, Container, Flex, Group, Paper, Text, Menu} from "@mantine/core";
 import { RichEditor } from "@/components/shared/RichEditor/RichEditor";
 import { WarningsPanel } from "@/components/scenes/SceneEditor/parts/WarningsPanel/WarningsPanel";
 import { SceneStatusPanel } from "@/components/scenes/SceneEditor/parts/SceneStatusPanel";
 import type { IWarningGroup } from "@/components/shared/RichEditor/types";
 import {IChapter, IScene} from "@/entities/BookEntities";
 import {useHeaderVisibility} from "@/components/scenes/SceneEditor/hooks/useHeaderVisibility";
-import {IconArrowLeft, IconLink, IconEdit, IconEye, IconArrowUp} from "@tabler/icons-react";
+import {IconArrowLeft, IconLink, IconEdit, IconEye, IconArrowUp, IconMenu2, IconDatabaseSmile, IconReportAnalytics} from "@tabler/icons-react";
 import {InlineEdit} from "@/components/shared/InlineEdit/InlineEdit";
 import {SceneLinkManager} from "@/components/scenes/SceneEditor/parts/SceneLinkManager/SceneLinkManager";
 import {useDisclosure, useWindowScroll} from "@mantine/hooks";
@@ -78,6 +78,7 @@ export const SceneDesktopContent = ({
                             shadow="sm"
                             style={{
                                 maxWidth: focusMode ? '900px' : '900px',
+                                minWidth: '900px',
                                 height: focusMode ? 'calc(100vh - 2rem)' : 'calc(100vh - 65px)',
                                 overflowY: 'auto',
                                 flex: 1,
@@ -101,43 +102,39 @@ export const SceneDesktopContent = ({
                                             />
                                         </Box>
 
-                                        <Group  gap="sm">
-                                            <Button
-                                                variant="outline"
-                                                onClick={openLinkManager}
-                                                leftSection={<IconLink size={16} />}
-                                            >
-                                                Связи
-                                            </Button>
-                                            {/* New Button for Knowledge Base */}
-                                            <Button
-                                                variant="outline"
-                                                onClick={openKnowledgeBaseDrawer}
-                                                // leftSection={<IconDatabasePlus size={16} />} // Optional: Add an icon
-                                            >
-                                                Наполнить базу знаний
-                                            </Button>
-                                            <Button
-                                                variant="outline"
-                                                onClick={openAnalysisDrawer}
-                                            >
-                                                Анализ
-                                            </Button>
-                                            <Button
-                                                variant={"outline"}
-                                                onClick={() => setReadOnly(!readOnly)}
-                                                active={!readOnly}
-                                                leftSection={
-                                                    <>
-                                                        {!readOnly ? <IconEye size={16} /> :
-                                                            <IconEdit size={16} />}
-                                                    </>
-                                                }
-                                            >
-                                                {readOnly && 'Редактирование'}
-                                                {!readOnly && 'Просмотр'}
-                                            </Button>
-                                        </Group>
+                                        <Menu shadow="md" width={220}>
+                                            <Menu.Target>
+                                                <ActionIcon variant="outline">
+                                                    <IconMenu2 size={16} />
+                                                </ActionIcon>
+                                            </Menu.Target>
+                                            <Menu.Dropdown>
+                                                <Menu.Item
+                                                    leftSection={<IconLink size={14} />}
+                                                    onClick={openLinkManager}
+                                                >
+                                                    Связи
+                                                </Menu.Item>
+                                                <Menu.Item
+                                                    leftSection={<IconDatabaseSmile size={14} />}
+                                                    onClick={openKnowledgeBaseDrawer}
+                                                >
+                                                    Наполнить базу знаний
+                                                </Menu.Item>
+                                                <Menu.Item
+                                                    leftSection={<IconReportAnalytics size={14} />}
+                                                    onClick={openAnalysisDrawer}
+                                                >
+                                                    Анализ
+                                                </Menu.Item>
+                                                <Menu.Item
+                                                    leftSection={readOnly ? <IconEdit size={14} /> : <IconEye size={14} />}
+                                                    onClick={() => setReadOnly(!readOnly)}
+                                                >
+                                                    {readOnly ? 'Редактирование' : 'Просмотр'}
+                                                </Menu.Item>
+                                            </Menu.Dropdown>
+                                        </Menu>
                                     </Group>
                                 )}
                             </>
