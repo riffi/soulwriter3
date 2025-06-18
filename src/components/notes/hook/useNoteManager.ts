@@ -4,15 +4,14 @@ import { INote, INoteGroup } from "@/entities/BookEntities";
 import { generateUUID } from "@/utils/UUIDUtils";
 import { useDialog } from "@/providers/DialogProvider/DialogProvider";
 import {NoteRepository} from "@/repository/Note/NoteRepository";
+import {NoteGroupRepository} from "@/repository/Note/NoteGroupRepository";
 
 export const useNoteManager = () => {
   const { showDialog } = useDialog();
 
-  const getTopLevelGroups = () => configDatabase.notesGroups.filter(
-      (group) => group.parentUuid === undefined || group.parentUuid === "topLevel")
-      .toArray();
+  const getTopLevelGroups = () => NoteGroupRepository.getTopLevel(configDatabase);
 
-  const getChildGroups = (parentUuid: string) => configDatabase.notesGroups.where('parentUuid').equals(parentUuid).toArray();
+  const getChildGroups = (parentUuid: string) => NoteGroupRepository.getChildren(configDatabase, parentUuid);
 
   const getNotesByGroup = (groupUuid: string) => configDatabase.notes.where('noteGroupUuid').equals(groupUuid).toArray();
 
@@ -24,31 +23,20 @@ export const useNoteManager = () => {
   };
 
   const createNoteGroup = async (group: Omit<INoteGroup, 'id'>) => {
-    const newGroup = {
+    const prepared = {
       ...group,
       uuid: generateUUID(),
-      parentUuid: group.parentUuid || "topLevel",
-      kindCode: group.kindCode || 'userGroup', // Add this line
-      order: await configDatabase.notesGroups.count()
-    };
-    await configDatabase.notesGroups.add(newGroup as INoteGroup);
-    return newGroup;
+    } as Omit<INoteGroup, 'id'>;
+    return NoteGroupRepository.create(configDatabase, prepared);
   };
 
   const updateNoteGroup = async (group: INoteGroup) => {
-    if (!group.id) {
-      await createNoteGroup(group);
-    } else {
-      // Сохраняем остальные свойства группы
-      const existingGroup = await configDatabase.notesGroups.get(group.id);
-      const updatedGroup = { ...existingGroup, ...group };
-      await configDatabase.notesGroups.update(group.id, updatedGroup);
-    }
+    await NoteGroupRepository.update(configDatabase, group);
   };
 
   const deleteNoteGroup = async (uuid: string) => {
     // Fetch the group first
-    const groupToDelete = await configDatabase.notesGroups.where('uuid').equals(uuid).first();
+    const groupToDelete = await NoteGroupRepository.getByUuid(configDatabase, uuid);
 
     // Check if the group exists and if it's a system group
     if (groupToDelete && groupToDelete.kindCode === 'system') {
@@ -68,14 +56,13 @@ export const useNoteManager = () => {
 
     // ... rest of the function (deleteChildrenRecursively and transaction) remains the same
     const deleteChildrenRecursively = async (parentUuid: string) => {
-      const childGroups = await configDatabase.notesGroups
-          .where('parentUuid')
-          .equals(parentUuid)
-          .toArray();
+      const childGroups = await NoteGroupRepository.getChildren(configDatabase, parentUuid);
 
       await Promise.all(childGroups.map(async (group) => {
         await deleteChildrenRecursively(group.uuid);
-        await configDatabase.notesGroups.delete(group.id!); // Added non-null assertion for id
+        if (group.id !== undefined) {
+          await NoteGroupRepository.deleteById(configDatabase, group.id);
+        }
       }));
 
       await configDatabase.notes
@@ -86,7 +73,7 @@ export const useNoteManager = () => {
 
     await configDatabase.transaction('rw', configDatabase.notesGroups, configDatabase.notes, async () => {
       await deleteChildrenRecursively(uuid);
-      await configDatabase.notesGroups.where('uuid').equals(uuid).delete();
+      await NoteGroupRepository.remove(configDatabase, uuid);
     });
   };
 

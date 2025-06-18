@@ -8,6 +8,7 @@ import { INote, INoteGroup } from '@/entities/BookEntities';
 import { exportDB, importDB } from 'dexie-export-import';
 import { notifications } from "@mantine/notifications";
 import {useAuth} from "@/providers/AuthProvider/AuthProvider";
+import { NoteGroupRepository } from "@/repository/Note/NoteGroupRepository";
 
 export const NotesBackupTab = () => {
   const [loading, setLoading] = useState(false);
@@ -18,7 +19,7 @@ export const NotesBackupTab = () => {
     setLoading(true);
     try {
       const notes = await configDatabase.notes.toArray();
-      const noteGroups = await configDatabase.notesGroups.toArray();
+      const noteGroups = await NoteGroupRepository.getAll(configDatabase);
 
       const backupData = {
         notes,
@@ -68,11 +69,11 @@ export const NotesBackupTab = () => {
           await configDatabase.transaction('rw', configDatabase.notes, configDatabase.notesGroups, async () => {
             // Очистка существующих данных
             await configDatabase.notes.clear();
-            await configDatabase.notesGroups.clear();
+            await NoteGroupRepository.clear(configDatabase);
 
             // Добавление новых данных
             if (data.notes) await configDatabase.notes.bulkAdd(data.notes);
-            if (data.noteGroups) await configDatabase.notesGroups.bulkAdd(data.noteGroups);
+            if (data.noteGroups) await NoteGroupRepository.bulkAdd(configDatabase, data.noteGroups as INoteGroup[]);
           });
 
           notifications.show({
