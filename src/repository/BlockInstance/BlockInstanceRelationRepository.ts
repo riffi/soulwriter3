@@ -2,6 +2,7 @@ import { BookDB } from "@/entities/bookDb";
 import { IBlockInstanceRelation } from "@/entities/BookEntities";
 import { BlockInstanceRepository } from "./BlockInstanceRepository";
 import { updateBlockInstance } from "./BlockInstanceUpdateHelper";
+import {updateBook} from "@/utils/bookSyncUtils";
 
 export const getInstanceRelations = async (db: BookDB, blockInstanceUuid: string, relatedBlockUuid?: string) => {
     const [source, target] = await Promise.all([
