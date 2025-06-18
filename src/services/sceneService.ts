@@ -88,11 +88,23 @@ async function removeSceneFromChapter(sceneId: number): Promise<ServiceResult> {
   }
 }
 
-async function createChapter(title: string, chapterOnlyMode: boolean): Promise<ServiceResult<number>> {
+async function createChapter(
+  title: string,
+  chapterOnlyMode: boolean
+): Promise<ServiceResult<{ chapterId: number; sceneId?: number }>> {
   try {
-    const id = await ChapterRepository.create(bookDb, { title }, chapterOnlyMode);
-    if (id === undefined) throw new Error("Failed to create chapter");
-    return { success: true, data: id };
+    const chapterId = await ChapterRepository.create(
+      bookDb,
+      { title },
+      chapterOnlyMode
+    );
+    if (chapterId === undefined) throw new Error("Failed to create chapter");
+
+    const createdChapter = await ChapterRepository.getById(bookDb, chapterId);
+    return {
+      success: true,
+      data: { chapterId, sceneId: createdChapter?.contentSceneId },
+    };
   } catch (e: any) {
     return { success: false, message: e.message };
   }
@@ -100,6 +112,11 @@ async function createChapter(title: string, chapterOnlyMode: boolean): Promise<S
 
 async function deleteChapter(chapterId: number): Promise<ServiceResult> {
   try {
+    const chapter = await ChapterRepository.getById(bookDb, chapterId);
+    if (chapter?.contentSceneId !== undefined) {
+      await SceneRepository.remove(bookDb, chapter.contentSceneId);
+    }
+
     await ChapterRepository.remove(bookDb, chapterId);
     return { success: true };
   } catch (e: any) {
@@ -128,6 +145,12 @@ async function reorderChapters(activeId: number, overId: number): Promise<Servic
 async function updateChapter(chapterId: number, title: string): Promise<ServiceResult> {
   try {
     await ChapterRepository.update(bookDb, chapterId, { title });
+
+    const chapter = await ChapterRepository.getById(bookDb, chapterId);
+    if (chapter?.contentSceneId !== undefined) {
+      await SceneRepository.update(bookDb, chapter.contentSceneId, { title });
+    }
+
     return { success: true };
   } catch (e: any) {
     return { success: false, message: e.message };
