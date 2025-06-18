@@ -6,9 +6,13 @@ import {
     IBlockRelation,
     IBlockParameterGroup
 } from "@/entities/ConstructorEntities";
-import { IconEdit, IconPlus, IconTrash, IconArrowsRightLeft, IconArrowUp, IconArrowDown } from "@tabler/icons-react";
-import React from "react";
+import { IconEdit, IconPlus, IconTrash, IconArrowsRightLeft, IconArrowUp, IconArrowDown, IconQuestionMark } from "@tabler/icons-react";
+import React, {useState, useEffect} from "react";
 import { useDialog } from "@/providers/DialogProvider/DialogProvider";
+import {KnowledgeBasePageEditor} from "@/components/knowledgeBase/KnowledgeBasePageEditor";
+import {bookDb} from "@/entities/bookDb";
+import {configDatabase} from "@/entities/configuratorDb";
+import {IKnowledgeBasePage} from "@/entities/KnowledgeBaseEntities";
 import classes from "./ParamTable.module.css"; // Создайте этот CSS модуль для кастомизации
 
 interface IParamTableProps {
@@ -23,6 +27,8 @@ interface IParamTableProps {
     paramGroupList?: IBlockParameterGroup[];
     onMoveParam?: (paramUuid: string, targetGroupUuid: string) => void;
     showMoveButton?: boolean;
+    bookUuid?: string;
+    blockUuid: string;
 }
 
 export const ParamTable = ({
@@ -36,10 +42,28 @@ export const ParamTable = ({
                                otherBlocks,
                                paramGroupList,
                                onMoveParam,
-                               showMoveButton
+                               showMoveButton,
+                               bookUuid,
+                               blockUuid
                            }: IParamTableProps) => {
     const { showDialog } = useDialog();
+    const [kbParam, setKbParam] = useState<IBlockParameter | null>(null);
+    const [editorOpened, setEditorOpened] = useState(false);
+    const [configurationUuid, setConfigurationUuid] = useState<string>();
 
+    useEffect(() => {
+        const db = bookUuid ? bookDb : configDatabase;
+        db.blocks.where('uuid').equals(blockUuid).first().then(b => {
+            setConfigurationUuid(b?.configurationUuid);
+        });
+    }, [bookUuid, blockUuid]);
+
+    const handleSavePage = async (page: IKnowledgeBasePage) => {
+        const db = bookUuid ? bookDb : configDatabase;
+        if (kbParam?.id) {
+            await db.blockParameters.update(kbParam.id, { knowledgeBasePageUuid: page.uuid });
+        }
+    };
 
     return (
         <Box className={classes.container}>
@@ -116,6 +140,17 @@ export const ParamTable = ({
                                         >
                                             <IconEdit size="1rem" />
                                         </ActionIcon>
+                                        <ActionIcon
+                                            variant="subtle"
+                                            color="gray"
+                                            onClick={() => {
+                                                setKbParam(param);
+                                                setEditorOpened(true);
+                                            }}
+                                            title="Статья"
+                                        >
+                                            <IconQuestionMark size="1rem" />
+                                        </ActionIcon>
                                         {showMoveButton && onMoveParam && paramGroupList && paramGroupList.length > 1 && (
                                             <Menu shadow="md" width={200}>
                                                 <Menu.Target>
@@ -169,6 +204,16 @@ export const ParamTable = ({
                     </Table.Tbody>
                 )}
             </Table>
+            {kbParam && (
+                <KnowledgeBasePageEditor
+                    opened={editorOpened}
+                    onClose={() => setEditorOpened(false)}
+                    pageUuid={kbParam.knowledgeBasePageUuid}
+                    configurationUuid={configurationUuid}
+                    bookUuid={bookUuid}
+                    onSave={handleSavePage}
+                />
+            )}
         </Box>
     );
 };

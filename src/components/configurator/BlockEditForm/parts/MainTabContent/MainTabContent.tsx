@@ -1,18 +1,18 @@
 // MainTabContent.tsx
 import {
-  Group,
-  Select,
-  Checkbox,
-  Button,
-  Drawer,
-  SimpleGrid,
-  Title,
-  FileInput,
-  Modal,
-  Text,
-  Stack,
-  Image as MantineImage,
-  Paper, Card
+    Group,
+    Select,
+    Checkbox,
+    Button,
+    Drawer,
+    SimpleGrid,
+    Title,
+    FileInput,
+    Modal,
+    Text,
+    Stack,
+    Image as MantineImage,
+    Paper, Card, ActionIcon
 } from "@mantine/core";
 import {
   IBlock,
@@ -27,13 +27,16 @@ import {InlineEdit2} from "@/components/shared/InlineEdit2/InlineEdit2";
 import {InkLuminMlApi, InkLuminApiError} from "@/api/inkLuminMlApi";
 import {notifications} from "@mantine/notifications";
 import {LoadingOverlayExtended} from "@/components/shared/overlay/LoadingOverlayExtended";
-import {IconPhoto, IconTrash} from "@tabler/icons-react";
+import {IconPhoto, IconTrash, IconQuestionMark} from "@tabler/icons-react";
+import {KnowledgeBasePageEditor} from "@/components/knowledgeBase/KnowledgeBasePageEditor";
+import {IKnowledgeBasePage} from "@/entities/KnowledgeBaseEntities";
 
 import {IconSelector} from "@/components/shared/IconSelector/IconSelector";
 
 interface MainTabContentProps {
   block: IBlock;
   onSave: (blockData: IBlock, titleForms?: IBlockTitleForms) => Promise<void>;
+  bookUuid?: string;
 }
 
 const structureKindOptions = [
@@ -43,11 +46,16 @@ const structureKindOptions = [
 ];
 
 
-export const MainTabContent = ({ block, onSave }: MainTabContentProps) => {
+export const MainTabContent = ({ block, onSave, bookUuid }: MainTabContentProps) => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [titleFormsLoading, setTitleFormsLoading] = useState(false);
   const [iconDrawerOpen, setIconDrawerOpen] = useState(false);
+  const [kbOpened, setKbOpened] = useState(false);
+
+  const handleSavePage = async (page: IKnowledgeBasePage) => {
+    await onSave({ ...block, knowledgeBasePageUuid: page.uuid });
+  };
 
   const handleBlockPropertyChange = async (changedProps: Partial<IBlock>) => {
     const updatedBlock = { ...block, ...changedProps };
@@ -135,6 +143,9 @@ export const MainTabContent = ({ block, onSave }: MainTabContentProps) => {
                   label={"Описание"}
               />
             </Group>
+            <ActionIcon variant="subtle" color="gray" onClick={() => setKbOpened(true)} title="Статья">
+              <IconQuestionMark size="1rem" />
+            </ActionIcon>
             <Group>
               <Select
                   value={block?.structureKind || IBlockStructureKind.single}
@@ -289,6 +300,16 @@ export const MainTabContent = ({ block, onSave }: MainTabContentProps) => {
             />
           </SimpleGrid>
         </Card>
+        {block && (
+          <KnowledgeBasePageEditor
+              opened={kbOpened}
+              onClose={() => setKbOpened(false)}
+              pageUuid={block.knowledgeBasePageUuid}
+              configurationUuid={block.configurationUuid}
+              bookUuid={bookUuid}
+              onSave={handleSavePage}
+          />
+        )}
       </>
   );
 };

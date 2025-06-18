@@ -98,6 +98,7 @@ export const BlockEditForm = ({ blockUuid, bookUuid }: IBlockEditFormProps) => {
             <MainTabContent
                 block={block}
                 onSave={saveBlock}
+                bookUuid={bookUuid}
             />
         )}
 

@@ -43,6 +43,7 @@
     "@tiptap/pm": "^2.11.7",
     "@tiptap/react": "^2.11.7",
     "@tiptap/starter-kit": "^2.11.7",
+    "@uiw/react-md-editor": "^4.0.7",
     "dayjs": "^1.11.13",
     "dexie": "^4.0.11",
     "dexie-export-import": "^4.1.4",

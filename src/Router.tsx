@@ -18,6 +18,7 @@ import {DbViewer} from "@/pages/tech/DbViewer";
 import {BookReaderPage} from "@/pages/books/BookReaderPage";
 import {BookSettingsPage} from "@/pages/books/BookSettingsPage";
 import {SceneLayout} from "@/components/scenes/SceneLayout/SceneLayout";
+import {KnowledgeBaseViewer} from "@/components/knowledgeBase/KnowledgeBaseViewer";
 
 const router = createBrowserRouter([
   {
@@ -83,6 +84,10 @@ const router = createBrowserRouter([
       {
         path: '/notes/edit/:uuid',
         element: <NoteEditPage /> as ReactNode,
+      },
+      {
+        path: '/knowledge-base/:uuid',
+        element: <KnowledgeBaseViewer /> as ReactNode,
       },
       {
         path: '/db-viewer',

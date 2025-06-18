@@ -141,6 +141,8 @@ export const ParamManager = ({
                   onMoveParam={handleMoveParamToGroup}
                   showMoveButton={paramGroupList && paramGroupList.length > 1}
                   currentGroupUuid={group.uuid}
+                  bookUuid={bookUuid}
+                  blockUuid={blockUuid}
               />
             </Tabs.Panel>
         ))}
@@ -160,6 +162,8 @@ export const ParamManager = ({
                 onMoveParamUp={moveParamUp}
                 onMoveParamDown={moveParamDown}
                 otherBlocks={otherBlocks}
+                bookUuid={bookUuid}
+                blockUuid={blockUuid}
             />
         )}
 
