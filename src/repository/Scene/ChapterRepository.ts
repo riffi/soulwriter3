@@ -23,11 +23,17 @@ export const create = async (db: BookDB, chapterData: Pick<IChapter, 'title'>): 
     // However, to be safe and align with the example:
     delete (newChapter as any).id;
     const newChapterId = await db.chapters.add(newChapter);
-
-    // After creating a new chapter, scene orders might need recalculation if scenes could be "in" this new chapter,
-    // though typically new chapters are empty. If scenes could be orphaned and then picked up by chapter logic,
-    // a recalculation might be warranted. For now, creating a chapter itself doesn't move scenes.
-    // SceneRepository.recalculateGlobalOrder(db); // This might be an over-correction here.
+    if (newChapterId !== undefined) {
+        const contentSceneId = await SceneRepository.create(db, {
+            title: chapterData.title,
+            body: '',
+            order: 0,
+            chapterId: newChapterId,
+        } as any);
+        if (contentSceneId !== undefined) {
+            await db.chapters.update(newChapterId, { contentSceneId });
+        }
+    }
 
     await updateBook(db);
     return newChapterId;
@@ -44,6 +50,13 @@ export const update = async (db: BookDB, chapterId: number, chapterData: Partial
 
 export const remove = async (db: BookDB, chapterId: number): Promise<void> => {
     // Adapted from useChapters.deleteChapter
+    const chapter = await db.chapters.get(chapterId);
+
+    // Remove chapter's content scene if it exists
+    if (chapter?.contentSceneId !== undefined) {
+        await SceneRepository.remove(db, chapter.contentSceneId);
+    }
+
     // Before deleting the chapter, set chapterId to null for all its scenes
     await db.scenes
         .where('chapterId')

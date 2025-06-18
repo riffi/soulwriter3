@@ -13,7 +13,7 @@ const bookSchema={
   ...baseSchema,
   books: '++id, &uuid, title, author, kind, configurationUuid, localUpdatedAt, serverUpdatedAt, syncState',
   scenes: '++id, title, order, chapterId',
-  chapters: '++id, title, order',
+  chapters: '++id, title, order, contentSceneId',
   sceneBodies: '++id, sceneId',
 
   blockInstanceGroups: '++id, &uuid, blockUuid, title, order',

@@ -84,6 +84,7 @@ export interface IChapter {
   id?: number;
   title: string;
   order: number;
+  contentSceneId?: number;
 }
 
 export interface IBlockInstanceRelation {
