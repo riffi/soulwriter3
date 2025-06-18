@@ -161,7 +161,7 @@ export const ExpandedNavbar = ({
         <nav className={classes.navbar} aria-label="Основное меню">
             <div className={classes.header}>
                 <Group justify="space-between" align="center"> {/* Added align="center" for better vertical alignment */}
-                    <Logo style={{ width: 150 }} />
+                    <Logo style={{ width: 120 }} />
                     {/* Combined right-side items into a new Group for better layout control */}
                     <Group gap="xs" align="center">
                         {isMobile && !isOnline && (
@@ -172,14 +172,14 @@ export const ExpandedNavbar = ({
                                 style={{ marginRight: '8px' }}
                             />
                         )}
+                        <Code fw={700}>{config.version}</Code>
                         <Burger
                             opened={opened}
                             onClick={toggleNavbar}
                             visibleFrom="sm"
                             lineSize={1}
-                            size="lg"
+                            size="sm"
                         />
-                        <Code fw={700}>{config.version}</Code>
                         {!isMobile && !isOnline && (
                             <IconWifiOff
                                 size={24}
