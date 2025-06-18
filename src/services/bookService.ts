@@ -80,12 +80,23 @@ async function copyBlockRelations(oldConfigurationUuid: string, newConfiguration
   await bookDb.blocksRelations.bulkAdd(relations);
 }
 
+async function copyKnowledgeBasePages(oldConfigurationUuid: string, newConfigurationUuid: string) {
+  const pages = await configDatabase.knowledgeBasePages
+    .where({ configurationUuid: oldConfigurationUuid })
+    .toArray();
+  pages.forEach(page => {
+    page.configurationUuid = newConfigurationUuid;
+  });
+  await bookDb.knowledgeBasePages.bulkAdd(pages);
+}
+
 async function copyConfigurationToBookDb(configuration: IBookConfiguration, isNew = false) {
   const newConfigurationUuid = generateUUID();
   await bookDb.bookConfigurations.add({ ...configuration, uuid: newConfigurationUuid });
   if (!isNew) {
     await copyBlocks(configuration.uuid!, newConfigurationUuid);
     await copyBlockRelations(configuration.uuid!, newConfigurationUuid);
+    await copyKnowledgeBasePages(configuration.uuid!, newConfigurationUuid);
   }
   return newConfigurationUuid;
 }
@@ -155,6 +166,7 @@ export const BookService = {
   copyBlockParameters,
   copyParameterPossibleValues,
   createSingleInstance,
+  copyKnowledgeBasePages,
   saveBook,
   deleteBook,
 };
