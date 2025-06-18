@@ -253,6 +253,21 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
     return sortedAndFilteredInstances;
   }, [sortedAndFilteredInstances, currentGroupUuid, block, groupingParam, linkGroups]);
 
+  const visibleLinkGroups = useMemo(() => {
+    if (!linkGroups || !instancesWithParams || !groupingParam) return linkGroups;
+    return linkGroups.filter(g =>
+      instancesWithParams.some(inst =>
+        inst.params.some(p => p.blockParameterUuid === groupingParam.uuid && p.value === g.uuid)
+      )
+    );
+  }, [linkGroups, instancesWithParams, groupingParam]);
+
+  useEffect(() => {
+    if (currentGroupUuid !== 'none' && !visibleLinkGroups?.some(g => g.uuid === currentGroupUuid)) {
+      setCurrentGroupUuid('none');
+    }
+  }, [currentGroupUuid, visibleLinkGroups]);
+
 // Обработчики фильтров
   const handleFilterChange = useCallback((paramUuid: string, values: string[]) => {
     setFilters(prev => ({
@@ -309,7 +324,7 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
             <Tabs value={currentGroupUuid} onChange={(val)=>setCurrentGroupUuid(val || 'none')} mb={10}>
               <Tabs.List>
                 <Tabs.Tab value="none">Все</Tabs.Tab>
-                {linkGroups?.map(g => (
+                {visibleLinkGroups?.map(g => (
                   <Tabs.Tab key={g.uuid} value={g.uuid}>{g.title}</Tabs.Tab>
                 ))}
               </Tabs.List>
