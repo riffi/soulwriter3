@@ -14,7 +14,8 @@ import {
 import {CollapsedNavbar} from "@/components/layout/NavbarNested/parts/CollapsedNavbar/CollapsedNavbar";
 import {ExpandedNavbar} from "@/components/layout/NavbarNested/parts/ExpandedNavbar/ExpandedNavbar";
 import { useNavigate } from "react-router-dom"; // Added useNavigate
-import { useConnection } from '@/providers/ConnectionStatusProvider/ConnectionStatusProvider'; // Added import
+import { useConnection } from '@/providers/ConnectionStatusProvider/ConnectionStatusProvider';
+import {useUiSettingsStore} from "@/stores/uiSettingsStore/uiSettingsStore"; // Added import
 
 export interface NavLinkItem {
   label: string;
@@ -71,6 +72,7 @@ export const NavbarNested = ({ toggleNavbar, opened }: { toggleNavbar?: () => vo
   const { selectedBook } = useBookStore();
   const navigate = useNavigate(); // Hook for navigation
   const { isOnline } = useConnection(); // Get connection status
+  const { chapterOnlyMode } = useUiSettingsStore();
 
   const handleQuickNoteClick = React.useCallback(() => { // Wrapped with useCallback
     navigate('/notes/new');
@@ -95,7 +97,7 @@ export const NavbarNested = ({ toggleNavbar, opened }: { toggleNavbar?: () => vo
     if (selectedBook) {
       const allDynamicItems: NavLinkGroup[] = [
         { label: 'Рабочий стол', icon: IconDashboard, link: '/book/dashboard' },
-        { label: 'Сцены', icon: IconNotes, link: '/scenes' },
+        { label: chapterOnlyMode ?'Главы' : 'Сцены', icon: IconNotes, link: '/scenes' },
         { label: 'Заметки книги', icon: IconGraph, link: '/book-notes' },
         { label: 'Чтение', icon: IconBooks, link: '/book/reader' },
         {

@@ -2,14 +2,6 @@ import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {KnowledgeBaseDrawer} from "./parts/KnowledgeBaseDrawer";
 import {SceneAnalysisDrawer} from "./parts/SceneAnalysisDrawer";
-import { OpenRouterApi } from "@/api/openRouterApi";
-import { BlockInstanceRepository } from "@/repository/BlockInstance/BlockInstanceRepository";
-import type { IBlockInstance } from "@/entities/BookEntities";
-import { useBookDbConnection } from "@/hooks/useBookDbConnection";
-import { generateUUID } from "@/utils/UUIDUtils";
-import { notifications } from "@mantine/notifications"; // Already imported but good to confirm
-
-
 
 import { useMedia } from "@/providers/MediaQueryProvider/MediaQueryProvider";
 import { useSceneEditor } from "@/components/scenes/SceneEditor/hooks/useSceneEditor";
@@ -24,13 +16,6 @@ import {IBlock} from "@/entities/ConstructorEntities";
 import {BlockRepository} from "@/repository/Block/BlockRepository";
 import {bookDb} from "@/entities/bookDb";
 import {useLiveQuery} from "dexie-react-hooks";
-
-// Local type definitions (assuming they are not globally available or imported from openRouterApi.ts)
-interface KnowledgeBaseEntity {
-    title: string;
-    description: string;
-}
-
 
 
 export const SceneEditor = ({ sceneId, chapter }: SceneEditorProps) => {
