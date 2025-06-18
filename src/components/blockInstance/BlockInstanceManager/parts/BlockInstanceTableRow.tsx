@@ -1,5 +1,5 @@
 import { Group, Badge, Text, Table, Stack } from '@mantine/core';
-import { IconEdit, IconTrash } from '@tabler/icons-react';
+import { IconEdit, IconTrash, IconArrowRightCircleFilled } from '@tabler/icons-react';
 import { IBlockInstance } from '@/entities/BookEntities';
 import {IBlock, IBlockParameter} from "@/entities/ConstructorEntities";
 import {
@@ -17,6 +17,7 @@ interface BlockInstanceTableRowProps {
   displayedParameters?: IBlockParameter[];
   onEdit: (uuid: string) => void;
   onDelete: (instance: IBlockInstance) => void;
+  onMove: (uuid: string) => void;
 }
 
 export const BlockInstanceTableRow = ({
@@ -25,6 +26,7 @@ export const BlockInstanceTableRow = ({
                                         displayedParameters,
                                         onEdit,
                                         onDelete,
+                                        onMove,
                                       }: BlockInstanceTableRowProps) => {
 
   const actions: ActionItem[] = [
@@ -33,6 +35,11 @@ export const BlockInstanceTableRow = ({
       title: 'Редактировать',
       icon: <IconEdit/>,
       color: 'blue'
+    },
+    {
+      key: 'move',
+      title: 'Переместить',
+      icon: <IconArrowRightCircleFilled />,
     },
     {
       key: 'delete',
@@ -49,6 +56,9 @@ export const BlockInstanceTableRow = ({
         break;
       case 'delete':
         onDelete(instance);
+        break;
+      case 'move':
+        onMove(instance.uuid!);
         break;
     }
   };

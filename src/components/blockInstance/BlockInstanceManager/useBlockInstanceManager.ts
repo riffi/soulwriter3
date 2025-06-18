@@ -1,11 +1,12 @@
 import {bookDb} from "@/entities/bookDb";
 import {useLiveQuery} from "dexie-react-hooks";
-import {IBlockInstance, IBlockParameterInstance} from "@/entities/BookEntities";
+import {IBlockInstance, IBlockParameterInstance, IBlockInstanceGroup} from "@/entities/BookEntities";
 import {IBlock, IBlockParameter} from "@/entities/ConstructorEntities";
 import {BlockRepository} from "@/repository/Block/BlockRepository";
 import {BlockParameterRepository} from "@/repository/Block/BlockParameterRepository"; // Added
 import {BlockInstanceRepository} from "@/repository/BlockInstance/BlockInstanceRepository";
 import {BlockParameterInstanceRepository} from "@/repository/BlockInstance/BlockParameterInstanceRepository";
+import {BlockInstanceGroupRepository} from "@/repository/BlockInstance/BlockInstanceGroupRepository";
 
 export interface IBlockParameterInstanceWithDisplayValue extends IBlockParameterInstance {
   displayValue: string;
@@ -22,6 +23,10 @@ export const useBlockInstanceManager = (blockUuid: string, titleSearch?: string)
 
   const block = useLiveQuery<IBlock>(() => {
     return BlockRepository.getByUuid(bookDb, blockUuid);
+  }, [blockUuid]);
+
+  const groups = useLiveQuery<IBlockInstanceGroup[]>(() => {
+    return BlockInstanceGroupRepository.getGroups(bookDb, blockUuid);
   }, [blockUuid]);
 
   const instances = useLiveQuery<IBlockInstance[]>(() => {
@@ -104,6 +109,22 @@ export const useBlockInstanceManager = (blockUuid: string, titleSearch?: string)
     await BlockParameterInstanceRepository.appendDefaultParams(bookDb, data);
   }
 
+  const saveGroup = async (group: IBlockInstanceGroup) => {
+    await BlockInstanceGroupRepository.saveGroup(bookDb, group);
+  };
+
+  const moveGroupUp = async (uuid: string) => {
+    await BlockInstanceGroupRepository.moveGroupUp(bookDb, blockUuid, uuid);
+  };
+
+  const moveGroupDown = async (uuid: string) => {
+    await BlockInstanceGroupRepository.moveGroupDown(bookDb, blockUuid, uuid);
+  };
+
+  const deleteGroup = async (uuid: string) => {
+    await BlockInstanceGroupRepository.deleteGroup(bookDb, uuid);
+  };
+
 
   const deleteBlockInstance = async (data: IBlockInstance) => {
     await BlockInstanceRepository.remove(bookDb, data);
@@ -114,6 +135,11 @@ export const useBlockInstanceManager = (blockUuid: string, titleSearch?: string)
     block,
     instances,
     addBlockInstance,
+    groups,
+    saveGroup,
+    moveGroupUp,
+    moveGroupDown,
+    deleteGroup,
     deleteBlockInstance,
     instancesWithParams,
     displayedParameters

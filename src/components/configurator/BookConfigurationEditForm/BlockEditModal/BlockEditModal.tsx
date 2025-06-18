@@ -46,6 +46,7 @@ export const BlockEditModal  = (props: IBlockEditModalProps) => {
       configurationUuid: props.configurationUuid,
       // Ensure all required IBlock fields are initialized if not in initialData
       useTabs: 0,
+      useGroups: 0,
       displayKind: 'list',
       sceneLinkAllowed: 0,
       showInSceneList: 0,
@@ -62,7 +63,7 @@ export const BlockEditModal  = (props: IBlockEditModalProps) => {
         description: '',
         structureKind: IBlockStructureKind.single,
         configurationUuid: props.configurationUuid,
-        useTabs: 0, displayKind: 'list', sceneLinkAllowed: 0, showInSceneList: 0,
+        useTabs: 0, useGroups: 0, displayKind: 'list', sceneLinkAllowed: 0, showInSceneList: 0,
       } as IBlock);
       setModalTitleForms(props.initialData?.titleForms || { ...defaultTitleForms, nominative: props.initialData?.title || form.values.title || '' });
       setShowApiErrorFields(false);

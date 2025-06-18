@@ -26,6 +26,15 @@ export interface IBlockInstance{
   shortDescription?: string; // Краткое описание экземпляра блока
   icon?: IIcon,
   updatedAt?: string;
+  blockInstanceGroupUuid?: string; // Ссылка на группу экземпляров
+}
+
+export interface IBlockInstanceGroup {
+  id?: number;
+  uuid?: string;
+  blockUuid: string; // Ссылка на блок
+  title: string;
+  order: number;
 }
 
 export interface IBlockInstanceSceneLink{

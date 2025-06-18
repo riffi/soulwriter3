@@ -4,7 +4,7 @@ import {
   IBlockInstanceRelation, IBlockInstanceSceneLink,
   IBlockParameterInstance,
   IBook, IChapter,
-  IScene, ISceneBody
+  IScene, ISceneBody, IBlockInstanceGroup
 } from "@/entities/BookEntities";
 import {baseSchema, BlockAbstractDb} from "@/entities/BlockAbstractDb";
 
@@ -16,7 +16,8 @@ const bookSchema={
   chapters: '++id, title, order',
   sceneBodies: '++id, sceneId',
 
-  blockInstances: '++id, &uuid, blockUuid, title, parentInstanceUuid',
+  blockInstanceGroups: '++id, &uuid, blockUuid, title, order',
+  blockInstances: '++id, &uuid, blockUuid, title, parentInstanceUuid, blockInstanceGroupUuid',
   blockParameterInstances: '++id, &uuid, blockParameterUuid, blockInstanceUuid, blockParameterGroupUuid, value',
   blockInstanceRelations: '++id, &uuid, sourceInstanceUuid, targetInstanceUuid, blockRelationUuid, sourceBlockUuid, targetBlockUuid',
   blockInstanceSceneLinks: '++id, &uuid, blockInstanceUuid, sceneId, blockUuid, title',
@@ -30,11 +31,12 @@ export class BookDB extends BlockAbstractDb{
 
   blockInstanceRelations!: Dexie.Table<IBlockInstanceRelation, number>;
   blockInstances!: Dexie.Table<IBlockInstance, number>;
+  blockInstanceGroups!: Dexie.Table<IBlockInstanceGroup, number>;
   blockParameterInstances!: Dexie.Table<IBlockParameterInstance, number>;
   blockInstanceSceneLinks!: Dexie.Table<IBlockInstanceSceneLink, number>;
   constructor(dbName:string) {
     super(dbName);
-    this.version(4).stores(bookSchema).upgrade(async (tx) => {
+    this.version(5).stores(bookSchema).upgrade(async (tx) => {
       const scenes = await tx.table('scenes').toArray();
       for (const scene of scenes) {
         const body = scene.body || '';

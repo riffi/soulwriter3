@@ -10,12 +10,12 @@ import {
   Box,
   Modal,
   TextInput, Container, Title, Space,
-  MultiSelect, ActionIcon, SegmentedControl
+  MultiSelect, ActionIcon, SegmentedControl, Tabs, Select
 } from '@mantine/core';
 import {
   IconPlus,
   IconFilter,
-  IconX, IconFilterOff, IconCalendar, IconSortAZ, IconSearch
+  IconX, IconFilterOff, IconCalendar, IconSortAZ, IconSearch, IconSettings
 } from '@tabler/icons-react';
 import {useDebouncedValue, useDisclosure} from '@mantine/hooks';
 import {BlockInstanceSortType, useUiSettingsStore} from "@/stores/uiSettingsStore/uiSettingsStore";
@@ -35,6 +35,7 @@ import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
 import {IconViewer} from "@/components/shared/IconViewer/IconViewer";
 import {usePageTitle} from "@/providers/PageTitleProvider/PageTitleProvider";
 import {IBlockParameterDataType, IBlockStructureKind} from "@/entities/ConstructorEntities";
+import {InstanceGroupsModal} from "@/components/blockInstance/BlockInstanceManager/modal/InstanceGroupsModal/InstanceGroupsModal";
 
 export interface IBlockInstanceManagerProps {
   blockUuid: string;
@@ -49,6 +50,11 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
     instances,
     block,
     addBlockInstance,
+    groups,
+    saveGroup,
+    moveGroupUp,
+    moveGroupDown,
+    deleteGroup,
     instancesWithParams,
     displayedParameters,
     deleteBlockInstance
@@ -59,6 +65,10 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
   const [opened, { open, close }] = useDisclosure(false);
   const [newInstanceName, setNewInstanceName] = useState('');
   const [newShortDescription, setNewShortDescription] = useState('');
+  const [currentGroupUuid, setCurrentGroupUuid] = useState<string | 'none'>('none');
+  const [groupsModalOpened, setGroupsModalOpened] = useState(false);
+  const [movingInstanceUuid, setMovingInstanceUuid] = useState<string | null>(null);
+  const [selectedMoveGroup, setSelectedMoveGroup] = useState<string>('none');
 
   const [filtersVisible, { toggle: toggleFilters, close: closeFilters }] = useDisclosure(false);
   const [filters, setFilters] = useState<Record<string, string[]>>({});
@@ -114,6 +124,7 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
         uuid,
         title: newInstanceName.trim(),
         shortDescription: newShortDescription.trim() ? newShortDescription.trim() : undefined,
+        blockInstanceGroupUuid: currentGroupUuid !== 'none' ? currentGroupUuid : undefined,
       };
       await addBlockInstance(newInstance);
       setNewShortDescription('');
@@ -133,6 +144,20 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
     if (result && bookDb) {
       await deleteBlockInstance(data);
     }
+  };
+
+  const handleMoveInstance = (uuid: string) => {
+    setMovingInstanceUuid(uuid);
+  };
+
+  const handleConfirmMove = async () => {
+    if (!movingInstanceUuid) return;
+    const target = selectedMoveGroup === 'none' ? undefined : selectedMoveGroup;
+    await bookDb.blockInstances
+      .where('uuid')
+      .equals(movingInstanceUuid)
+      .modify({ blockInstanceGroupUuid: target });
+    setMovingInstanceUuid(null);
   };
 
 
@@ -194,6 +219,15 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
     return items;
   }, [filteredInstances, blockInstanceSortType]);
 
+  const displayedInstancesByGroup = useMemo(() => {
+    if (block?.useGroups !== 1) return sortedAndFilteredInstances;
+    return sortedAndFilteredInstances.filter(i =>
+      currentGroupUuid === 'none'
+        ? !i.blockInstanceGroupUuid
+        : i.blockInstanceGroupUuid === currentGroupUuid
+    );
+  }, [sortedAndFilteredInstances, currentGroupUuid, block]);
+
 // Обработчики фильтров
   const handleFilterChange = useCallback((paramUuid: string, values: string[]) => {
     setFilters(prev => ({
@@ -226,9 +260,26 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
             backgroundColor: 'rgb(104 151 191)',
             borderRadius: '10px',
           }}>
-            {header}
+          {header}
           </Box>
           <Space h="md"/>
+
+          {block?.useGroups === 1 && (
+            <Tabs
+                value={currentGroupUuid} onChange={(val)=>setCurrentGroupUuid(val || 'none')}
+                mb={10}
+            >
+              <Tabs.List>
+                <Tabs.Tab value="none">Без групп</Tabs.Tab>
+                {groups?.map(g => (
+                  <Tabs.Tab key={g.uuid} value={g.uuid}>{g.title}</Tabs.Tab>
+                ))}
+                <ActionIcon onClick={()=>setGroupsModalOpened(true)} variant="subtle" mt="3">
+                  <IconSettings size="1rem"  />
+                </ActionIcon>
+              </Tabs.List>
+            </Tabs>
+          )}
 
           <Group justify="space-between" mb="md" px={"sm"}>
             <Button
@@ -304,9 +355,9 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
           )}
           <Table highlightOnHover className={classes.table}>
             <>
-              {sortedAndFilteredInstances.length > 0 ? (
+              {displayedInstancesByGroup.length > 0 ? (
                   <Table.Tbody>
-                    {sortedAndFilteredInstances.map((instance) => (
+                    {displayedInstancesByGroup.map((instance) => (
                         <BlockInstanceTableRow
                             key={instance.uuid!}
                             instance={instance}
@@ -314,6 +365,7 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
                             displayedParameters={displayedParameters}
                             onEdit={() => handleEditInstance(instance.uuid!)}
                             onDelete={() => handleDeleteInstance(instance)}
+                            onMove={handleMoveInstance}
                         />
                     ))}
                   </Table.Tbody>
@@ -364,6 +416,27 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
                 Создать
               </Button>
             </Group>
+          </Modal>
+
+          <InstanceGroupsModal
+              opened={groupsModalOpened}
+              onClose={() => setGroupsModalOpened(false)}
+              groups={groups || []}
+              onSaveGroup={(title) => saveGroup({blockUuid: props.blockUuid, title, order: groups?.length || 0})}
+              onMoveGroupUp={moveGroupUp}
+              onMoveGroupDown={moveGroupDown}
+              onDeleteGroup={deleteGroup}
+              onUpdateGroupTitle={(uuid, t) => saveGroup({ ...(groups?.find(g=>g.uuid===uuid)!), title: t })}
+          />
+
+          <Modal opened={!!movingInstanceUuid} onClose={() => setMovingInstanceUuid(null)} title="Переместить экземпляр" fullScreen={isMobile}>
+            <Select
+                label="Группа"
+                data={[{value:'none', label:'Без групп'}, ...(groups||[]).map(g=>({value:g.uuid!, label:g.title}))]}
+                value={selectedMoveGroup}
+                onChange={(v)=>setSelectedMoveGroup(v!)}
+            />
+            <Button fullWidth mt="md" onClick={handleConfirmMove}>Переместить</Button>
           </Modal>
         </Box>
       </Container>

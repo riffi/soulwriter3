@@ -155,6 +155,13 @@ export const MainTabContent = ({ block, onSave }: MainTabContentProps) => {
           />
 
           <Checkbox
+              checked={block?.useGroups === 1}
+              label="Группировать элементы"
+              onChange={(e) => handleBlockPropertyChange({ useGroups: e.currentTarget.checked ? 1 : 0 })}
+              mb="sm"
+          />
+
+          <Checkbox
               checked={block?.sceneLinkAllowed === 1}
               label="Привязка к сцене"
               onChange={(e) => handleBlockPropertyChange({ sceneLinkAllowed: e.currentTarget.checked ? 1 : 0 })}

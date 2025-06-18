@@ -77,6 +77,7 @@ export interface IBlock {
   configurationUuid: string; // Ссылка на конфигурацию
   description: string; // Описание блока
   useTabs: number; // Использовать вкладки
+  useGroups: number; // Группировать элементы
   structureKind: string // Вид структуры
   displayKind: string // Вид отображения
   parentBlockUuid?: string; // Ссылка на родительский блок

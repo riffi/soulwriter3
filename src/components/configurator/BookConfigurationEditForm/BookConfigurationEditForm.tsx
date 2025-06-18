@@ -59,6 +59,7 @@ export const BookConfigurationEditForm = (props: IBookConfigurationEditFormProps
       title: '',
       description: '',
       useTabs: 0,
+      useGroups: 0,
       structureKind: IBlockStructureKind.multiple,
       displayKind: IBlockDisplayKind.list,
     }
@@ -183,6 +184,11 @@ export const BookConfigurationEditForm = (props: IBookConfigurationEditFormProps
                     {c.useTabs === 1 && (
                         <Badge variant="light" color="grey">
                           Со вкладками
+                        </Badge>
+                    )}
+                    {c.useGroups === 1 && (
+                        <Badge variant="light" color="grey">
+                          С группами
                         </Badge>
                     )}
                     {!!c.parentBlockUuid && (
