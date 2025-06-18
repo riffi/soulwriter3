@@ -1,3 +1,6 @@
+import type { IChapter } from "@/entities/BookEntities";
+
 export type SceneEditorProps = {
-  sceneId?: string;
+  sceneId?: number;
+  chapter?: IChapter;
 };

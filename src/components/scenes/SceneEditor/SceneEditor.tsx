@@ -14,6 +14,8 @@ import { notifications } from "@mantine/notifications"; // Already imported but 
 import { useMedia } from "@/providers/MediaQueryProvider/MediaQueryProvider";
 import { useSceneEditor } from "@/components/scenes/SceneEditor/hooks/useSceneEditor";
 import type { SceneEditorProps } from "./types";
+import type { IChapter } from "@/entities/BookEntities";
+import { ChapterRepository } from "@/repository/Scene/ChapterRepository";
 import {IWarningGroup} from "@/components/shared/RichEditor/types";
 import {SceneMobileContent} from "@/components/scenes/SceneEditor/parts/SceneMobileContent";
 import {SceneDesktopContent} from "@/components/scenes/SceneEditor/parts/SceneDesktopContent";
@@ -31,11 +33,26 @@ interface KnowledgeBaseEntity {
 
 
 
-export const SceneEditor = ({ sceneId}: SceneEditorProps) => {
+export const SceneEditor = ({ sceneId, chapter }: SceneEditorProps) => {
     const navigate = useNavigate();
     const { isMobile } = useMedia();
 
     const { scene, saveScene } = useSceneEditor(sceneId);
+    const chapterData = useLiveQuery<IChapter | undefined>(
+        () => {
+            const id = chapter?.id ?? scene?.chapterId;
+            return id ? ChapterRepository.getById(bookDb, id) : undefined;
+        },
+        [chapter?.id, scene?.chapterId]
+    );
+    const handleChapterTitleChange = useCallback(
+        (title: string) => {
+            if (chapterData?.id) {
+                ChapterRepository.update(bookDb, chapterData.id, { title });
+            }
+        },
+        [chapterData?.id]
+    );
 
     const [selectedGroup, setSelectedGroup] = useState<IWarningGroup>();
     const [sceneBody, setSceneBody] = useState("");
@@ -121,6 +138,8 @@ export const SceneEditor = ({ sceneId}: SceneEditorProps) => {
             {scene?.id === sceneId && (<Box>
                 {isMobile ? (
                     <SceneMobileContent
+                        chapter={chapterData}
+                        onChapterTitleChange={handleChapterTitleChange}
                         sceneBody={sceneBody}
                         handleContentChange={handleContentChange}
                         warningGroups={warningGroups}
@@ -136,6 +155,8 @@ export const SceneEditor = ({ sceneId}: SceneEditorProps) => {
                     />
                 ) : (
                     <SceneDesktopContent
+                        chapter={chapterData}
+                        onChapterTitleChange={handleChapterTitleChange}
                         scene={scene}
                         navigate={navigate}
                         saveScene={saveScene}

@@ -23,7 +23,7 @@ interface ChapterRowProps {
   scenes: ISceneWithInstances[];
   chapters: IChapter[];
   onAddScene: () => void;
-  openScene: (sceneId: number) => void;
+  openScene: (sceneId: number, chapter?: IChapter) => void;
   selectedSceneId?: number;
   mode?: 'manager' | 'split';
   chapterOnly?: boolean;
@@ -79,7 +79,7 @@ export const ChapterRow = ({ chapter, scenes, onAddScene, openScene, selectedSce
                 onClick={() => {
                   if (chapterOnly) {
                     if (chapter.contentSceneId !== undefined) {
-                      openScene(chapter.contentSceneId);
+                      openScene(chapter.contentSceneId, chapter);
                     }
                   } else {
                     toggleChapterCollapse(chapter.id);

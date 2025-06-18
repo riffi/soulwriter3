@@ -24,7 +24,7 @@ import {bookDb} from "@/entities/bookDb";
 interface SceneRowProps {
   scene: ISceneWithInstances;
   scenesInChapter: Array<{ id: number }>;
-  openScene: (sceneId: number) => void;
+  openScene: (sceneId: number, chapter?: IChapter) => void;
   scenes: ISceneWithInstances[];
   chapters: IChapter[];
   selectedSceneId?: number;
@@ -59,7 +59,8 @@ export const SceneRow = ({ scene, scenesInChapter, openScene, selectedSceneId, s
   };
 
   const handleClick = () => {
-     openScene(scene.id);
+     const chapterObj = chapters.find(c => c.id === scene.chapterId);
+     openScene(scene.id, chapterObj);
   };
 
   const handleMove = async (newChapterId: number | null) => {

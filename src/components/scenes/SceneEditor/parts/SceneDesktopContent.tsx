@@ -3,7 +3,7 @@ import { RichEditor } from "@/components/shared/RichEditor/RichEditor";
 import { WarningsPanel } from "@/components/scenes/SceneEditor/parts/WarningsPanel/WarningsPanel";
 import { SceneStatusPanel } from "@/components/scenes/SceneEditor/parts/SceneStatusPanel";
 import type { IWarningGroup } from "@/components/shared/RichEditor/types";
-import {IScene} from "@/entities/BookEntities";
+import {IChapter, IScene} from "@/entities/BookEntities";
 import {useHeaderVisibility} from "@/components/scenes/SceneEditor/hooks/useHeaderVisibility";
 import {IconArrowLeft, IconLink, IconEdit, IconEye, IconArrowUp} from "@tabler/icons-react";
 import {InlineEdit} from "@/components/shared/InlineEdit/InlineEdit";
@@ -26,6 +26,8 @@ interface SceneDesktopContentProps {
     toggleFocusMode: () => void;
     openKnowledgeBaseDrawer: () => void;
     openAnalysisDrawer: () => void;
+    chapter?: IChapter;
+    onChapterTitleChange?: (title: string) => void;
 }
 
 export const SceneDesktopContent = ({
@@ -42,6 +44,8 @@ export const SceneDesktopContent = ({
                                         toggleFocusMode,
                                         openKnowledgeBaseDrawer,
                                         openAnalysisDrawer,
+                                        chapter,
+                                        onChapterTitleChange,
                                     }: SceneDesktopContentProps) => {
 
     const { isHeaderVisible, handleEditorScroll } = useHeaderVisibility();
@@ -85,9 +89,15 @@ export const SceneDesktopContent = ({
                                     <Group p={10} justify="space-between" align="center" w="100%">
                                         <Box flex={1}>
                                             <InlineEdit2
-                                                value={scene.title}
+                                                value={chapter ? chapter.title : scene.title}
                                                 size={"xl"}
-                                                onChange={(title) => saveScene({ ...scene, title })}
+                                                onChange={(title) => {
+                                                    if (chapter && onChapterTitleChange) {
+                                                        onChapterTitleChange(title);
+                                                    } else {
+                                                        saveScene({ ...scene, title });
+                                                    }
+                                                }}
                                             />
                                         </Box>
 

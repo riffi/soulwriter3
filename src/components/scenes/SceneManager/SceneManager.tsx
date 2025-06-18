@@ -37,7 +37,7 @@ import {bookDb} from "@/entities/bookDb";
 import {IBlock} from "@/entities/ConstructorEntities";
 
 export interface SceneManagerProps {
-  openScene: (sceneId: number) => void;
+  openScene: (sceneId: number, chapter?: IChapter) => void;
   selectedSceneId?: number | undefined;
   mode?: 'manager' | 'split';
   onToggleMode?: () => void;

@@ -10,7 +10,7 @@ import {useLiveQuery} from "dexie-react-hooks";
 
 interface SceneTableProps {
   openCreateModal: (chapterId: number) => void;
-  openScene: (sceneId: number) => void;
+  openScene: (sceneId: number, chapter?: IChapter) => void;
   selectedSceneId?: number;
   mode?: 'manager' | 'split';
   scenes?: ISceneWithInstances[];

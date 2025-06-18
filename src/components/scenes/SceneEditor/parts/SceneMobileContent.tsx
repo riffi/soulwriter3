@@ -3,7 +3,7 @@ import { RichEditor } from "@/components/shared/RichEditor/RichEditor";
 import { WarningsPanel } from "@/components/scenes/SceneEditor/parts/WarningsPanel/WarningsPanel";
 import { SceneStatusPanel } from "@/components/scenes/SceneEditor/parts/SceneStatusPanel";
 import type { IWarningGroup } from "@/components/shared/RichEditor/types";
-import {IScene} from "@/entities/BookEntities";
+import {IChapter, IScene} from "@/entities/BookEntities";
 import {useEffect} from "react";
 import {InlineEdit} from "@/components/shared/InlineEdit/InlineEdit";
 import {usePageTitle} from "@/providers/PageTitleProvider/PageTitleProvider";
@@ -25,6 +25,8 @@ interface SceneMobileContentProps {
     toggleFocusMode: () => void;
     openKnowledgeBaseDrawer: () => void;
     openAnalysisDrawer: () => void;
+    chapter?: IChapter;
+    onChapterTitleChange?: (title: string) => void;
 }
 
 export const SceneMobileContent = ({
@@ -39,7 +41,9 @@ export const SceneMobileContent = ({
                                        focusMode,
                                        toggleFocusMode,
                                        openKnowledgeBaseDrawer,
-                                       openAnalysisDrawer
+                                       openAnalysisDrawer,
+                                       chapter,
+                                       onChapterTitleChange
                                    }: SceneMobileContentProps) => {
     const { setPageTitle, setTitleElement } = usePageTitle();
     const [linkManagerOpened, { open: openLinkManager, close: closeLinkManager }] = useDisclosure(false);
@@ -56,8 +60,14 @@ export const SceneMobileContent = ({
                 <Group display="flex" align="center" style={{flexGrow:1, paddingLeft:"10px"}} >
                     <Box flex={1} flexGrow={1}>
                         <InlineEdit2
-                            value={scene.title}
-                            onChange={(title) => saveScene({ ...scene, title })}
+                            value={chapter ? chapter.title : scene.title}
+                            onChange={(title) => {
+                                if (chapter && onChapterTitleChange) {
+                                    onChapterTitleChange(title);
+                                } else {
+                                    saveScene({ ...scene, title });
+                                }
+                            }}
                             label=""
                         />
                     </Box>
@@ -101,7 +111,7 @@ export const SceneMobileContent = ({
         return () => {
             setTitleElement(null);
         };
-    }, [scene]);
+    }, [scene, chapter, focusMode]);
 
     return (
         <Container size="xl" p="0" fluid style={focusMode ? { paddingTop: '1rem', paddingBottom: '1rem', height: '100dvh' } : {}}>

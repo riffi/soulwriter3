@@ -5,6 +5,7 @@ import {Box, LoadingOverlay, ActionIcon} from "@mantine/core";
 import {SceneEditor} from "@/components/scenes/SceneEditor/SceneEditor";
 import {SceneManager} from "@/components/scenes/SceneManager/SceneManager";
 import React, {useEffect, useState} from "react";
+import type { IChapter } from "@/entities/BookEntities";
 import {useSceneLayout} from "@/components/scenes/SceneLayout/hooks/useSceneLayout";
 import {
   IconChevronRight,
@@ -16,6 +17,7 @@ export const SceneLayout = () => {
   const { isMobile } = useMedia();
   const navigate = useNavigate();
   const [sceneId, setSceneId] = useState<number | undefined>();
+  const [chapter, setChapter] = useState<IChapter | undefined>();
   const { sceneLayoutMode, setSceneLayoutMode, chapterOnlyMode } = useUiSettingsStore();
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const {scenes, chapters, getScenesWithBlockInstances} = useSceneLayout()
@@ -33,7 +35,7 @@ export const SceneLayout = () => {
 
 
 
-  const openScene = (sceneId: number) => {
+  const openScene = (sceneId: number, chapterParam?: IChapter) => {
     if (isMobile) {
       navigate(`/scene/card?id=${sceneId}`);
     } else {
@@ -42,6 +44,7 @@ export const SceneLayout = () => {
         }
         else{
             setSceneId(sceneId);
+            setChapter(chapterParam);
         }
     }
   };
@@ -136,7 +139,7 @@ export const SceneLayout = () => {
           display: "flex",
           justifyContent: "center",
         }}>
-          {sceneId ? <SceneEditor sceneId={sceneId} /> : <Placeholder />}
+          {sceneId ? <SceneEditor sceneId={sceneId} chapter={chapter} /> : <Placeholder />}
         </Box>
       </Box>
   );
