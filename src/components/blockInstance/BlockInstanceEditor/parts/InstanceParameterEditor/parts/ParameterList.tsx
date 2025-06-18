@@ -1,4 +1,4 @@
-import { ActionIcon, Box, Button, Checkbox, Group, Stack, Text } from "@mantine/core";
+import { ActionIcon, Box, Button, Checkbox, Drawer, Group, Stack, Text } from "@mantine/core";
 import classes from "../../../BlockInstanceEditor.module.css";
 import { IBlockParameterInstance } from "@/entities/BookEntities";
 import { FullParam } from "../../../types";
@@ -9,11 +9,17 @@ import {
 } from "@/entities/ConstructorEntities";
 import { ParameterActions } from "@/components/blockInstance/BlockInstanceEditor/parts/InstanceParameterEditor/parts/ParameterActionsProps";
 import { ParameterEditVariantRenderer } from "@/components/blockInstance/BlockInstanceEditor/parts/InstanceParameterEditor/parts/ParameterEditVariantRenderer";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useDialog } from "@/providers/DialogProvider/DialogProvider";
-import { IconEdit, IconTrash, IconPlus } from "@tabler/icons-react"; // Added IconPlus
+import { IconEdit, IconTrash, IconPlus, IconQuestionMark } from "@tabler/icons-react";
 import { useNavigate } from "react-router-dom";
 import { ParameterViewVariantRenderer } from "@/components/shared/blockParameter/ParameterViewVariantRenderer/ParameterViewVariantRenderer";
+import { useLiveQuery } from "dexie-react-hooks";
+import { KnowledgeBaseRepository } from "@/repository/KnowledgeBaseRepository";
+import { bookDb } from "@/entities/bookDb";
+import { KnowledgeBaseViewer } from "@/components/knowledgeBase/KnowledgeBaseViewer";
+import { useBookStore } from "@/stores/bookStore/bookStore";
+import type { IKnowledgeBasePage } from "@/entities/KnowledgeBaseEntities";
 
 interface ParameterListProps {
     fullParams: FullParam[];
@@ -67,6 +73,35 @@ export const ParameterList = ({
     const { showDialog } = useDialog();
     const navigate = useNavigate(); // Assuming navigate might be used, kept from original context if needed elsewhere
 
+    const { selectedBook } = useBookStore();
+
+    const knowledgeBasePages = useLiveQuery(
+        async () => {
+            const uuids = fullParams
+                .map(fp => fp.parameter?.knowledgeBasePageUuid)
+                .filter((u): u is string => !!u);
+            if (uuids.length === 0) return [] as IKnowledgeBasePage[];
+            return bookDb.knowledgeBasePages.where('uuid').anyOf(uuids).toArray();
+        },
+        [fullParams]
+    ) || [];
+
+    const knowledgeBaseMap = useMemo(() => {
+        const map: Record<string, IKnowledgeBasePage> = {};
+        knowledgeBasePages.forEach(p => {
+            if (p.uuid) map[p.uuid] = p;
+        });
+        return map;
+    }, [knowledgeBasePages]);
+
+    const [kbDrawerOpen, setKbDrawerOpen] = useState(false);
+    const [kbPageUuid, setKbPageUuid] = useState<string | null>(null);
+
+    const openKbDrawer = (uuid: string) => {
+        setKbPageUuid(uuid);
+        setKbDrawerOpen(true);
+    };
+
     const handleStartEdit = (instanceId: number, currentValue: string | number) => {
         setEditingParamInstanceId(instanceId);
         setEditValue(currentValue);
@@ -93,6 +128,7 @@ export const ParameterList = ({
     }, {} as Record<string, FullParam[]>);
 
     return (
+        <>
         <Stack gap="lg" className={classes.parametersStack}> {/* Increased gap for groups */}
             {Object.entries(groupedParams).map(([blockParameterUuid, group]) => {
                 const firstParamInGroup = group[0];
@@ -114,14 +150,24 @@ export const ParameterList = ({
                     return (
                         <Box key={`group-${blockParameterUuid}`} className={classes.parameterGroup}>
                             <Group className={headerClass} justify="space-between" w="100%">
-                                <Text
-                                    fw={500}
-                                    color={"dimmed"}
-                                    style={{ fontSize: "0.8rem" }}
-                                    // className={classes.paramTitle} // paramTitle might have other specific styles not needed here
-                                >
-                                    {parameter.title}
-                                </Text>
+                                <Group gap="xs">
+                                    <Text
+                                        fw={500}
+                                        color={"dimmed"}
+                                        style={{ fontSize: "0.8rem" }}
+                                    >
+                                        {parameter.title}
+                                    </Text>
+                                    {parameter.knowledgeBasePageUuid && knowledgeBaseMap[parameter.knowledgeBasePageUuid] && (
+                                        <ActionIcon
+                                            variant="subtle"
+                                            onClick={() => openKbDrawer(parameter.knowledgeBasePageUuid!)}
+                                            title="Статья"
+                                        >
+                                            <IconQuestionMark size="1rem" />
+                                        </ActionIcon>
+                                    )}
+                                </Group>
                                 {onAddNewInstance && (
                                     <ActionIcon
                                         variant="subtle" // Consistent with other header action icons
@@ -234,14 +280,25 @@ export const ParameterList = ({
                                         : classes.paramHeader
                                 }
                             >
-                                <Text
-                                    fw={500}
-                                    color={"dimmed"}
-                                    style={{ fontSize: "0.8rem" }}
-                                    className={classes.paramTitle}
-                                >
-                                    {parameter?.title}
-                                </Text>
+                                <Group gap="xs">
+                                    <Text
+                                        fw={500}
+                                        color={"dimmed"}
+                                        style={{ fontSize: "0.8rem" }}
+                                        className={classes.paramTitle}
+                                    >
+                                        {parameter?.title}
+                                    </Text>
+                                    {parameter?.knowledgeBasePageUuid && knowledgeBaseMap[parameter.knowledgeBasePageUuid] && (
+                                        <ActionIcon
+                                            variant="subtle"
+                                            onClick={() => openKbDrawer(parameter.knowledgeBasePageUuid!)}
+                                            title="Статья"
+                                        >
+                                            <IconQuestionMark size="1rem" />
+                                        </ActionIcon>
+                                    )}
+                                </Group>
                                 <ParameterActions
                                     isEditing={isEditing}
                                     onEdit={() => handleStartEdit(fullParam.instance.id, fullParam.instance.value || "")}
@@ -310,5 +367,17 @@ export const ParameterList = ({
                 }
             })}
         </Stack>
+        <Drawer
+            opened={kbDrawerOpen}
+            onClose={() => setKbDrawerOpen(false)}
+            size="xl"
+            position="right"
+            title={kbPageUuid ? knowledgeBaseMap[kbPageUuid]?.title : undefined}
+        >
+            {kbPageUuid && (
+                <KnowledgeBaseViewer uuid={kbPageUuid} bookUuid={selectedBook?.uuid} />
+            )}
+        </Drawer>
+    </>
     );
 };

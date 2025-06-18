@@ -10,9 +10,14 @@ import {
   SegmentedControl,
   Text, Title, Button, Drawer, FileInput, Modal, Stack, Image as MantineImage, Space
 } from "@mantine/core";
-import {IconArrowLeft, IconUpload, IconPhoto, IconTrash, IconList, IconChartDots3Filled} from "@tabler/icons-react";
+import {IconArrowLeft, IconUpload, IconPhoto, IconTrash, IconList, IconChartDots3Filled, IconQuestionMark} from "@tabler/icons-react";
 import classes from "./BlockInstanceEditor.module.css";
 import React, {useEffect, useState, useCallback} from "react";
+import { useLiveQuery } from "dexie-react-hooks";
+import { KnowledgeBaseRepository } from "@/repository/KnowledgeBaseRepository";
+import { bookDb } from "@/entities/bookDb";
+import { KnowledgeBaseViewer } from "@/components/knowledgeBase/KnowledgeBaseViewer";
+import { useBookStore } from "@/stores/bookStore/bookStore";
 
 import {InlineEdit} from "@/components/shared/InlineEdit/InlineEdit";
 import {
@@ -51,8 +56,10 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
   const [tabs, setTabs] = useState<Array<{ label: string; value: string }>>([]);
   const [activeTab, setActiveTab] = useState<string | null>(null);
   const [iconDrawerOpen, setIconDrawerOpen] = useState(false);
+  const [kbDrawerOpen, setKbDrawerOpen] = useState(false);
   const navigate = useNavigate();
   const {isMobile} = useMedia();
+  const { selectedBook } = useBookStore();
   const {
     blockInstanceViewMode,
     setBlockInstanceViewMode
@@ -75,6 +82,11 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
     updateBlockInstanceIcon,
   } = useBlockInstanceEditor(props.blockInstanceUuid);
 
+  const knowledgeBasePage = useLiveQuery(() => {
+    if (!block?.knowledgeBasePageUuid) return null;
+    return KnowledgeBaseRepository.getByUuid(bookDb, block.knowledgeBasePageUuid);
+  }, [block?.knowledgeBasePageUuid]);
+
   const header =( <Group>
     <IconViewer
         icon={blockInstance?.icon ?? block?.icon}
@@ -94,6 +106,11 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
     >
       {blockInstance?.title || ''}
     </Title>
+    {knowledgeBasePage && (
+      <ActionIcon variant="subtle" onClick={() => setKbDrawerOpen(true)} title="Статья">
+        <IconQuestionMark size={isMobile ? '1rem' : '1.2rem'} />
+      </ActionIcon>
+    )}
   </Group>)
 
   useEffect(() =>{
@@ -361,6 +378,17 @@ export const BlockInstanceEditor = (props: IBlockInstanceEditorProps) => {
             onSelect={icon => updateBlockInstanceIcon(icon)}
             initialIcon={block?.icon}
         />
+        <Drawer
+            opened={kbDrawerOpen}
+            onClose={() => setKbDrawerOpen(false)}
+            size="xl"
+            position="right"
+            title={knowledgeBasePage?.title}
+        >
+            {knowledgeBasePage && (
+                <KnowledgeBaseViewer uuid={knowledgeBasePage.uuid!} bookUuid={selectedBook?.uuid} />
+            )}
+        </Drawer>
       </>
   );
 };
