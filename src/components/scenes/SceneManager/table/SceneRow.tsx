@@ -18,6 +18,8 @@ import {
 } from "@/entities/BookEntities";
 import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
 import {IconViewer} from "@/components/shared/IconViewer/IconViewer";
+import {SceneRepository} from "@/repository/Scene/SceneRepository";
+import {bookDb} from "@/entities/bookDb";
 
 interface SceneRowProps {
   scene: ISceneWithInstances;
@@ -63,7 +65,7 @@ export const SceneRow = ({ scene, scenesInChapter, openScene, selectedSceneId, s
 
   const handleMove = async (newChapterId: number | null) => {
     try {
-      await recalculateGlobalOrder({
+      await SceneRepository.recalculateGlobalOrder(bookDb,{
         id: scene.id,
         newChapterId
       });

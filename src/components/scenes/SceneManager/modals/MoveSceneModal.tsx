@@ -2,6 +2,11 @@
 import { Modal, Select, Button, Group } from "@mantine/core";
 import { useChapters } from "../useChapters";
 import {useState} from "react";
+import {SceneService} from "@/services/sceneService";
+import {ChapterRepository} from "@/repository/Scene/ChapterRepository";
+import {bookDb} from "@/entities/bookDb";
+import {useLiveQuery} from "dexie-react-hooks";
+import {IChapter} from "@/entities/BookEntities";
 
 interface MoveSceneModalProps {
   opened: boolean;
@@ -11,7 +16,7 @@ interface MoveSceneModalProps {
 }
 
 export const MoveSceneModal = ({ opened, onClose, onMove, currentChapterId }: MoveSceneModalProps) => {
-  const { chapters } = useChapters();
+  const chapters = useLiveQuery<IChapter[]>(() => ChapterRepository.getAll(bookDb), []);
 
   const [selectedChapter, setSelectedChapter] = useState<string | null>(null);
 
@@ -38,6 +43,7 @@ export const MoveSceneModal = ({ opened, onClose, onMove, currentChapterId }: Mo
             value={selectedChapter}
             onChange={setSelectedChapter}
             mb="md"
+            searchable
         />
         <Group justify="flex-end">
           <Button variant="outline" onClick={onClose}>
