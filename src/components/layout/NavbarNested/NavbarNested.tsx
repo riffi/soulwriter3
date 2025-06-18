@@ -131,7 +131,7 @@ export const NavbarNested = ({ toggleNavbar, opened }: { toggleNavbar?: () => vo
       baseItems: [quickNoteItem, ...BASE_MENU_ITEMS], // Prepend quick note item
       dynamicItems
     };
-  }, [selectedBook, blocks, handleQuickNoteClick]); // Added handleQuickNoteClick back
+  }, [selectedBook, blocks, handleQuickNoteClick, bookConfiguration]); // Include bookConfiguration to update menu when it changes
 
   if (!opened) {
     return <CollapsedNavbar
