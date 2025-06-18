@@ -7,7 +7,7 @@ import {IScene} from "@/entities/BookEntities";
 import {useHeaderVisibility} from "@/components/scenes/SceneEditor/hooks/useHeaderVisibility";
 import {IconArrowLeft, IconLink, IconEdit, IconEye, IconArrowUp} from "@tabler/icons-react";
 import {InlineEdit} from "@/components/shared/InlineEdit/InlineEdit";
-import {SceneLinkManager} from "@/components/scenes/SceneEditor/parts/SceneLinkManager";
+import {SceneLinkManager} from "@/components/scenes/SceneEditor/parts/SceneLinkManager/SceneLinkManager";
 import {useDisclosure, useWindowScroll} from "@mantine/hooks";
 import {useEffect, useState} from "react";
 import {InlineEdit2} from "@/components/shared/InlineEdit2/InlineEdit2";

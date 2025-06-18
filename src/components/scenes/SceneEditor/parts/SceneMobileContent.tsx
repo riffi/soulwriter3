@@ -8,7 +8,7 @@ import {useEffect} from "react";
 import {InlineEdit} from "@/components/shared/InlineEdit/InlineEdit";
 import {usePageTitle} from "@/providers/PageTitleProvider/PageTitleProvider";
 import {useKeyboardHeight} from "@/components/scenes/SceneEditor/hooks/useKeyboardHeight";
-import {SceneLinkManager} from "@/components/scenes/SceneEditor/parts/SceneLinkManager";
+import {SceneLinkManager} from "@/components/scenes/SceneEditor/parts/SceneLinkManager/SceneLinkManager";
 import {useDisclosure} from "@mantine/hooks";
 import {IconDatabaseSmile, IconLink, IconReportAnalytics} from "@tabler/icons-react";
 import {InlineEdit2} from "@/components/shared/InlineEdit2/InlineEdit2";

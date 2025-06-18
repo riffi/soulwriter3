@@ -46,6 +46,7 @@ export const DialogProvider: React.FC<{ children: React.ReactNode }> = ({
             onClose={() => handleClose(false)}
             title={title}
             centered
+            zIndex={250}
         >
           <Text mb="sm">{body}</Text>
           <Group>
