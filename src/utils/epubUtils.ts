@@ -443,7 +443,11 @@ export const importEpubFile = async (file: File): Promise<boolean> => {
                     blockInstances: [],
                     blockParameterInstances: [],
                     blockInstanceRelations: [],
-                    bookConfigurations: [],
+                    bookConfigurations: [{
+                        uuid: generateUUID(),
+                        title: newBook.title || 'Untitled Book',
+                        description: '',
+                    }],
                     blocks: [],
                     blockParameterGroups: [],
                     blockParameters: [],

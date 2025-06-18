@@ -2,7 +2,7 @@ import React, { useMemo } from 'react'; // Removed useState
 import { useBookStore } from '@/stores/bookStore/bookStore';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { bookDb } from '@/entities/bookDb';
-import {IBlock, IBlockStructureKind, IIcon} from '@/entities/ConstructorEntities';
+import {IBlock, IBlockStructureKind, IBookConfiguration, IIcon} from '@/entities/ConstructorEntities';
 import {
   IconBooks,
   IconBox,
@@ -80,6 +80,10 @@ export const NavbarNested = ({ toggleNavbar, opened }: { toggleNavbar?: () => vo
     return selectedBook ? bookDb.blocks.toArray() : [];
   }, [selectedBook]);
 
+  const bookConfiguration = useLiveQuery<IBookConfiguration>(async () => {
+    return selectedBook ? bookDb.bookConfigurations.toCollection().first() : null;
+  }, [selectedBook]);
+
   const { baseItems, dynamicItems } = useMemo(() => {
     const quickNoteItem: NavLinkGroup = {
       label: 'Быстрая заметка',
@@ -106,7 +110,7 @@ export const NavbarNested = ({ toggleNavbar, opened }: { toggleNavbar?: () => vo
         {
           label: 'Конфигурация',
           icon: IconDatabaseCog,
-          link: `/configuration/edit/?uuid=${selectedBook.configurationUuid}&bookUuid=${selectedBook.uuid}`
+          link: `/configuration/edit/?uuid=${bookConfiguration?.uuid}&bookUuid=${selectedBook.uuid}`
         },
       ];
 

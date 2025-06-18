@@ -181,6 +181,7 @@ export const BlockInstanceManager = (props: IBlockInstanceManagerProps) => {
     setMovingInstanceUuid(uuid);
   };
 
+  //@TODO перенести в репозиторий и вызывать updateBook
   const handleConfirmMove = async () => {
     if (!movingInstanceUuid) return;
     const target = selectedMoveGroup === 'none' ? undefined : selectedMoveGroup;
