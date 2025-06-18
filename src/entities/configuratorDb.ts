@@ -2,6 +2,7 @@
 import Dexie from 'dexie';
 import {IBook, INote, INoteGroup} from "@/entities/BookEntities";
 import {baseSchema, BlockAbstractDb} from "@/entities/BlockAbstractDb";
+import {IKnowledgeBasePage} from "@/entities/KnowledgeBaseEntities";
 import {IGlobalSettings, IOpenRouterModel} from "@/entities/ConstructorEntities";
 
 const schema = {
@@ -20,9 +21,10 @@ class ConfigDatabase extends BlockAbstractDb {
     notesGroups!: Dexie.Table<INoteGroup, number>;
     globalSettings!: Dexie.Table<IGlobalSettings, number>;
     openRouterModels!: Dexie.Table<IOpenRouterModel, number>;
+    knowledgeBasePages!: Dexie.Table<IKnowledgeBasePage, number>;
     constructor() {
         super('BlocksDatabase');
-        this.version(4).stores(schema).upgrade(async (tx) => {
+        this.version(5).stores(schema).upgrade(async (tx) => {
             await tx.table('books').toCollection().modify(book => {
                 if (book.chapterOnlyMode === undefined) {
                     book.chapterOnlyMode = 1;

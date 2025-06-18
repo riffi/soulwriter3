@@ -6,6 +6,7 @@ import {
   IBook, IChapter,
   IScene, ISceneBody, IBlockInstanceGroup
 } from "@/entities/BookEntities";
+import {IKnowledgeBasePage} from "@/entities/KnowledgeBaseEntities";
 import {baseSchema, BlockAbstractDb} from "@/entities/BlockAbstractDb";
 
 
@@ -34,9 +35,10 @@ export class BookDB extends BlockAbstractDb{
   blockInstanceGroups!: Dexie.Table<IBlockInstanceGroup, number>;
   blockParameterInstances!: Dexie.Table<IBlockParameterInstance, number>;
   blockInstanceSceneLinks!: Dexie.Table<IBlockInstanceSceneLink, number>;
+  knowledgeBasePages!: Dexie.Table<IKnowledgeBasePage, number>;
   constructor(dbName:string) {
     super(dbName);
-    this.version(7).stores(bookSchema).upgrade(async (tx) => {
+    this.version(8).stores(bookSchema).upgrade(async (tx) => {
       await tx.table('books').toCollection().modify(book => {
         if (book.chapterOnlyMode === undefined) {
           book.chapterOnlyMode = 1;

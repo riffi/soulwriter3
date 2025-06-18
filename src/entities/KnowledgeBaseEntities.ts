@@ -14,3 +14,12 @@ export interface KnowledgeBaseEntityDisplay extends KnowledgeBaseEntity {
     instance?: IBlockInstance;
 }
 
+export interface IKnowledgeBasePage {
+    id?: number;
+    uuid?: string;
+    title: string;
+    markdown: string;
+    configurationUuid?: string;
+    bookUuid?: string;
+}
+

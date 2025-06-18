@@ -14,6 +14,7 @@ export const baseSchema={
   blockParameterPossibleValues: '++id, &uuid, parameterUuid, value',
   blocksRelations: '++id, &uuid, sourceBlockUuid, targetBlockUuid, configurationUuid',
   blockTabs: '++id, &uuid, blockUuid, title, relationUuid',
+  knowledgeBasePages: '++id, &uuid, configurationUuid, bookUuid',
 }
 
 export class BlockAbstractDb extends Dexie{
