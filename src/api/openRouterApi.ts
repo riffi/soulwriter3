@@ -132,7 +132,7 @@ const fetchRhymes = async (word: string) => {
   const prompt = `Сгенерируй 7-15 рифм для русского слова '${word}' в формате JSON. 
   Структура: { "rhymes": [...] }. 
   Пример для слова 'дом': { "rhymes": ["том", "сом", "ком", "льдом", "котом"] }. 
-  Только русские слова, включай разные типы рифм (точные, ассонансы и т.д.).;`
+  Только русские слова, включай разные типы рифм (точные, ассонансы и т.д.).`
 
   const data = await fetchCompletions(prompt);
   const content = data.choices[0].message.content;

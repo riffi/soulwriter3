@@ -58,8 +58,6 @@ export const SceneEditor = ({ sceneId, chapter }: SceneEditorProps) => {
 
     const closeKnowledgeBaseDrawer = useCallback(() => {
         setIsDrawerOpen(false);
-        // setSelectedBlock(null); // REMOVE THIS
-        // setKnowledgeBaseEntities([]); // REMOVE THIS
     }, []);
     const closeAnalysisDrawer = useCallback(() => setIsAnalysisDrawerOpen(false), []);
 
@@ -113,7 +111,7 @@ export const SceneEditor = ({ sceneId, chapter }: SceneEditorProps) => {
     if (scene?.id !== sceneId) {
         return (
             <Box pos="relative" style={{minHeight: "100dvh"}}>
-                <LoadingOverlay visible={true} overlayBlur={2} />;
+                <LoadingOverlay visible={true} overlayBlur={2} />
             </Box>
         )
     }
