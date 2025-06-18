@@ -22,11 +22,11 @@ import {
   IconUpload,
   IconCloud,
   IconCloudDown,
-  IconDots, IconBook,
+  IconDots, IconBook, IconQuestionMark,
 } from "@tabler/icons-react";
 import React, {useState, useCallback, useEffect} from "react";
 import { BookEditModal } from "./BookEditModal/BookEditModal";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import Cropper from 'react-easy-crop';
 import { Point, Area } from 'react-easy-crop/types';
 import {IBook} from "@/entities/BookEntities";
@@ -118,7 +118,7 @@ export const BookManager = () => {
   const { isMobile} = useMedia();
   const token = user?.token;
   const navigate = useNavigate();
-  const {setPageTitle} = usePageTitle();
+  const {setTitleElement} = usePageTitle();
 
   const {
     books,
@@ -129,7 +129,16 @@ export const BookManager = () => {
   } = useBookManager();
 
   useEffect(() => {
-    setPageTitle('Книги')
+    const header = (
+      <Group gap="xs">
+        <Text fw={500}>Книги</Text>
+        <ActionIcon component={Link} to={`/knowledge-base/9f64af17-a864-43b5-877a-537d2b5870f4`} variant="subtle" title="Справка">
+          <IconQuestionMark size="1rem" />
+        </ActionIcon>
+      </Group>
+    );
+    setTitleElement(header);
+    return () => setTitleElement(null);
   }, [])
 
   useEffect(() => {

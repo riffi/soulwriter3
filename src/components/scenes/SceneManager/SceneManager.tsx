@@ -15,14 +15,14 @@ import {
   IconFolderOpen,
   IconFolderUp,
   IconNote,
-  IconChevronLeft, IconPlus,
+  IconChevronLeft, IconPlus, IconQuestionMark,
 } from "@tabler/icons-react";
 import { usePageTitle } from "@/providers/PageTitleProvider/PageTitleProvider";
 import { SceneTable } from "./table/SceneTable";
 import { useDisclosure, useDebouncedValue } from "@mantine/hooks";
 import { CreateSceneModal } from "./modals/CreateSceneModal";
 import { CreateChapterModal } from "./modals/CreateChapterModal";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useScenes } from "./useScenes";
 import { useChapters } from "./useChapters";
 import React, {useEffect, useState} from "react";
@@ -46,7 +46,7 @@ export interface SceneManagerProps {
   chapterOnly?: boolean;
 }
 export const SceneManager = (props: SceneManagerProps) => {
-  const { setPageTitle } = usePageTitle();
+  const { setTitleElement } = usePageTitle();
   const [openedCreateModal, { open: openCreateModal, close: closeCreateModal }] = useDisclosure(false);
   const [openedChapterModal, { open: openChapterModal, close: closeChapterModal }] = useDisclosure(false);
   const [chapterForNewScene, setChapterForNewScene] = useState<number | null>(null);
@@ -69,7 +69,16 @@ export const SceneManager = (props: SceneManagerProps) => {
 
 
   useEffect(() =>{
-    setPageTitle('Сцены и главы');
+    const header = (
+      <Group gap="xs">
+        <Text fw={500}>Сцены и главы</Text>
+        <ActionIcon component={Link} to={`/knowledge-base/35683308-29ea-4e37-b3b6-1ad3fe7a9053`} variant="subtle" title="Справка">
+          <IconQuestionMark size="1rem" />
+        </ActionIcon>
+      </Group>
+    );
+    setTitleElement(header);
+    return () => setTitleElement(null);
   }, [])
 
   useEffect(() => {

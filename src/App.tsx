@@ -7,17 +7,21 @@ import '@mantine/notifications/styles.css';
 import {Notifications} from "@mantine/notifications";
 import {DialogProvider} from "@/providers/DialogProvider/DialogProvider";
 import {PageTitleProvider} from "@/providers/PageTitleProvider/PageTitleProvider";
-import React from "react";
+import React, {useEffect} from "react";
 import {MediaQueryProvider} from "@/providers/MediaQueryProvider/MediaQueryProvider";
 import { AuthProvider, useAuth } from "@/providers/AuthProvider/AuthProvider"; // Added useAuth
 import {ReactFlowProvider} from "reactflow";
 import ErrorBoundary from "@/components/ErrorBoundary/ErrorBoundary";
 import { ConnectionStatusProvider } from '@/providers/ConnectionStatusProvider/ConnectionStatusProvider';
 import { useServerSync } from '@/services/bookSyncService';
+import { initKnowledgeBasePages } from './knowledge-base/init';
 
 function AppContent() {
     const { user } = useAuth();
     useServerSync(user?.token);
+    useEffect(() => {
+        initKnowledgeBasePages();
+    }, []);
 
     return (
         <MantineProvider defaultColorScheme={"light"} datesLocale="ru">

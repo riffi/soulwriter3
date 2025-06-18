@@ -1,5 +1,5 @@
 import {useEffect, useState} from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import {
   Container,
   Group,
@@ -16,7 +16,7 @@ import {
   Divider,
   Tabs, Box
 } from '@mantine/core';
-import { IconFolder, IconList, IconPlus, IconEdit, IconTrash, IconNote } from '@tabler/icons-react';
+import { IconFolder, IconList, IconPlus, IconEdit, IconTrash, IconNote, IconQuestionMark } from '@tabler/icons-react';
 import { useNoteManager } from '@/components/notes/hook/useNoteManager';
 import { useLiveQuery } from 'dexie-react-hooks';
 import {FolderList} from "@/components/notes/parts/FolderList";
@@ -62,11 +62,19 @@ export const NoteManager = ({ bookNotesMode = false }: NoteManagerProps) => {
   }, [bookNotesMode, selectedBook, getAllNotes]) || [];
 
   const navigate = useNavigate();
-  const {setPageTitle, setTitleElement} = usePageTitle();
+  const {setTitleElement} = usePageTitle();
 
   useEffect(() => {
-    setPageTitle('Заметки')
-    setTitleElement(<></>)
+    const header = (
+      <Group gap="xs">
+        <Text fw={500}>Заметки</Text>
+        <ActionIcon component={Link} to={`/knowledge-base/b1fa9a49-88aa-4d5e-932d-f9234f6a0a4c`} variant="subtle" title="Справка">
+          <IconQuestionMark size="1rem" />
+        </ActionIcon>
+      </Group>
+    );
+    setTitleElement(header);
+    return () => setTitleElement(null);
   }, [])
 
   const handleGroupSubmit = async () => {

@@ -10,14 +10,14 @@ import {
   Group,
   Space, SimpleGrid, Anchor, Breadcrumbs, Image
 } from "@mantine/core";
-import {IconDownload, IconEdit, IconSettings, IconTablePlus, IconTrash} from "@tabler/icons-react";
+import {IconDownload, IconEdit, IconSettings, IconTablePlus, IconTrash, IconQuestionMark} from "@tabler/icons-react";
 import {
   ConfigurationEditModal
 } from "@/components/configurator/BookConfigurationManager/ConfigurationEditModal/ConfigurationEditModal";
 import React, {useEffect, useState} from "react";
 import {IBookConfiguration} from "@/entities/ConstructorEntities";
 import { notifications } from '@mantine/notifications';
-import {useNavigate} from "react-router-dom";
+import {useNavigate, Link} from "react-router-dom";
 import {usePageTitle} from "@/providers/PageTitleProvider/PageTitleProvider";
 import {configDatabase} from "@/entities/configuratorDb";
 import {exportConfiguration} from "@/utils/configurationBackupManager";
@@ -42,7 +42,7 @@ export const BookConfigurationManager = () =>{
 
   const [isModalOpened, setIsModalOpened] = useState<boolean>(false)
   const [currentBookConfiguration, setCurrentBookConfiguration] = useState<IBookConfiguration>(getBlackConfiguration())
-  const {setPageTitle} = usePageTitle()
+  const {setTitleElement} = usePageTitle()
 
   const breadCrumbs = [
     { title: 'Конфигуратор', href: '/configurator' },
@@ -53,7 +53,16 @@ export const BookConfigurationManager = () =>{
   ));
 
   useEffect(() => {
-    setPageTitle('Конфигуратор')
+    const header = (
+      <Group gap="xs">
+        <Text fw={500}>Конфигуратор</Text>
+        <ActionIcon component={Link} variant="subtle" title="Справка" to={`/knowledge-base/55c7e6af-d9ea-4998-9d1a-52cae8322d8d`}>
+          <IconQuestionMark size="1rem" />
+        </ActionIcon>
+      </Group>
+    );
+    setTitleElement(header);
+    return () => setTitleElement(null);
   }, [])
 
   // Обработчик экспорта
