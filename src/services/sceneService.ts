@@ -88,9 +88,9 @@ async function removeSceneFromChapter(sceneId: number): Promise<ServiceResult> {
   }
 }
 
-async function createChapter(title: string): Promise<ServiceResult<number>> {
+async function createChapter(title: string, chapterOnlyMode: boolean): Promise<ServiceResult<number>> {
   try {
-    const id = await ChapterRepository.create(bookDb, { title });
+    const id = await ChapterRepository.create(bookDb, { title }, chapterOnlyMode);
     if (id === undefined) throw new Error("Failed to create chapter");
     return { success: true, data: id };
   } catch (e: any) {

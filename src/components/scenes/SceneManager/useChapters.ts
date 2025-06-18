@@ -1,11 +1,14 @@
 import { notifications } from "@mantine/notifications";
 import { IChapter } from "@/entities/BookEntities";
 import { SceneService } from '@/services/sceneService';
+import {useUiSettingsStore} from "@/stores/uiSettingsStore/uiSettingsStore";
 
 export const useChapters = (chapters?: IChapter[]) => {
 
+  const { chapterOnlyMode, setChapterOnlyMode } = useUiSettingsStore();
+
   const createChapter = async (title: string) => {
-    const result = await SceneService.createChapter(title);
+    const result = await SceneService.createChapter(title, chapterOnlyMode);
     if (result.success) {
       notifications.show({ title: 'Успех', message: 'Глава успешно создана', color: 'green' });
       return result.data;

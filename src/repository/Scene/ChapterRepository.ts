@@ -11,7 +11,7 @@ export const getAll = async (db: BookDB): Promise<IChapter[]> => {
     return db.chapters.orderBy('order').toArray();
 };
 
-export const create = async (db: BookDB, chapterData: Pick<IChapter, 'title'>): Promise<number | undefined> => {
+export const create = async (db: BookDB, chapterData: Pick<IChapter, 'title'>, chapterOnlyMode: boolean): Promise<number | undefined> => {
     const lastChapter = await db.chapters.orderBy('order').last();
     const newChapter: IChapter = {
         title: chapterData.title,
@@ -23,7 +23,7 @@ export const create = async (db: BookDB, chapterData: Pick<IChapter, 'title'>): 
     // However, to be safe and align with the example:
     delete (newChapter as any).id;
     const newChapterId = await db.chapters.add(newChapter);
-    if (newChapterId !== undefined) {
+    if (newChapterId !== undefined && chapterOnlyMode) {
         const contentSceneId = await SceneRepository.create(db, {
             title: chapterData.title,
             body: '',
