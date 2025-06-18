@@ -2,7 +2,7 @@ import { BookDB } from "@/entities/bookDb";
 import { IBlockInstanceRelation } from "@/entities/BookEntities";
 import { BlockInstanceRepository } from "./BlockInstanceRepository";
 import { updateBlockInstance } from "./BlockInstanceUpdateHelper";
-import {updateBook} from "@/utils/bookSyncUtils";
+import {updateBookLocalUpdatedAt} from "@/utils/bookSyncUtils";
 
 export const getInstanceRelations = async (db: BookDB, blockInstanceUuid: string, relatedBlockUuid?: string) => {
     const [source, target] = await Promise.all([
@@ -44,7 +44,7 @@ export const createRelation = async (
         targetInstance ? updateBlockInstance(db, targetInstance) : Promise.resolve(),
         db.blockInstanceRelations.add(relation)
     ]);
-    await updateBook(db);
+    await updateBookLocalUpdatedAt(db);
 }
 
 export const removeRelation = async (db: BookDB, relation: IBlockInstanceRelation) => {
@@ -61,7 +61,7 @@ export const removeRelation = async (db: BookDB, relation: IBlockInstanceRelatio
         sourceInstance ? updateBlockInstance(db, sourceInstance) : Promise.resolve(),
         targetInstance ? updateBlockInstance(db, targetInstance) : Promise.resolve()
     ]);
-    await updateBook(db);
+    await updateBookLocalUpdatedAt(db);
 }
 
 export const removeAllForInstance = async (db: BookDB, instanceUuid: string) => {
@@ -69,7 +69,7 @@ export const removeAllForInstance = async (db: BookDB, instanceUuid: string) => 
         db.blockInstanceRelations.where('sourceInstanceUuid').equals(instanceUuid).delete(),
         db.blockInstanceRelations.where('targetInstanceUuid').equals(instanceUuid).delete()
     ]);
-    await updateBook(db);
+    await updateBookLocalUpdatedAt(db);
 }
 
 export const BlockInstanceRelationRepository = {

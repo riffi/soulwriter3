@@ -1,6 +1,6 @@
 import { BookDB } from "../../entities/bookDb";
 import { IChapter } from "../../entities/BookEntities";
-import { updateBook } from "@/utils/bookSyncUtils";
+import { updateBookLocalUpdatedAt } from "@/utils/bookSyncUtils";
 import { SceneRepository } from "./SceneRepository"; // For recalculating scene order after chapter deletion
 
 export const getById = async (db: BookDB, chapterId: number): Promise<IChapter | undefined> => {
@@ -35,7 +35,7 @@ export const create = async (db: BookDB, chapterData: Pick<IChapter, 'title'>, c
         }
     }
 
-    await updateBook(db);
+    await updateBookLocalUpdatedAt(db);
     return newChapterId;
 };
 
@@ -45,7 +45,7 @@ export const update = async (db: BookDB, chapterId: number, chapterData: Partial
     if (chapterData.order !== undefined) {
         await SceneRepository.recalculateGlobalOrder(db);
     }
-    await updateBook(db);
+    await updateBookLocalUpdatedAt(db);
 };
 
 export const remove = async (db: BookDB, chapterId: number): Promise<void> => {
@@ -67,7 +67,7 @@ export const remove = async (db: BookDB, chapterId: number): Promise<void> => {
 
     // After scenes are moved to chapterless, their global order needs to be recalculated.
     await SceneRepository.recalculateGlobalOrder(db);
-    await updateBook(db);
+    await updateBookLocalUpdatedAt(db);
 };
 
 export const reorderChapters = async (db: BookDB, activeId: number, overId: number): Promise<void> => {
@@ -100,7 +100,7 @@ export const reorderChapters = async (db: BookDB, activeId: number, overId: numb
     // After chapters are reordered, the global order of scenes needs to be recalculated
     // because scene order depends on chapter order.
     await SceneRepository.recalculateGlobalOrder(db);
-    await updateBook(db);
+    await updateBookLocalUpdatedAt(db);
 };
 
 export const ChapterRepository = {

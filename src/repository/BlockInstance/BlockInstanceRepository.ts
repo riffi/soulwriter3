@@ -6,7 +6,7 @@ import { BlockParameterInstanceRepository } from "./BlockParameterInstanceReposi
 import { updateBlockInstance } from "./BlockInstanceUpdateHelper";
 import {BlockInstanceRelationRepository} from "@/repository/BlockInstance/BlockInstanceRelationRepository";
 import {BlockInstanceSceneLinkRepository} from "@/repository/BlockInstance/BlockInstanceSceneLinkRepository";
-import {updateBook} from "@/utils/bookSyncUtils";
+import {updateBookLocalUpdatedAt} from "@/utils/bookSyncUtils";
 import {IBlock} from "@/entities/ConstructorEntities";
 
 export const getByUuid = async (db: BookDB, blockInstanceUuid: string) => {
@@ -39,7 +39,7 @@ export const create = async (db: BookDB, instance: IBlockInstance) => {
   };
   delete (instanceToCreate as any).id;
   await db.blockInstances.add(instanceToCreate);
-  await updateBook(db);
+  await updateBookLocalUpdatedAt(db);
 }
 
 export const createSingleInstance = async (db: BookDB, block: IBlock): Promise<IBlockInstance | undefined> => {
@@ -52,13 +52,13 @@ export const createSingleInstance = async (db: BookDB, block: IBlock): Promise<I
   await create(db, newInstanceData);
   await BlockParameterInstanceRepository.appendDefaultParams(db, newInstanceData);
   const created = await getByUuid(db, newUuid);
-  await updateBook(db);
+  await updateBookLocalUpdatedAt(db);
   return created;
 }
 
 export const update = async (db: BookDB, instance: IBlockInstance) => {
   await updateBlockInstance(db, instance);
-  await updateBook(db);
+  await updateBookLocalUpdatedAt(db);
 }
 
 export const updateByInstanceUuid = async (db: BookDB, instanceUuid: string, newData: Partial<IBlockInstance>) => {
@@ -71,7 +71,7 @@ export const updateByInstanceUuid = async (db: BookDB, instanceUuid: string, new
     updatedAt: new Date().toISOString(),
   };
   await db.blockInstances.update(mergedData.id!, mergedData);
-  await updateBook(db);
+  await updateBookLocalUpdatedAt(db);
 }
 
 export const remove = async (db: BookDB, instance: IBlockInstance) => {
@@ -81,7 +81,7 @@ export const remove = async (db: BookDB, instance: IBlockInstance) => {
     BlockInstanceSceneLinkRepository.removeLinksForInstance(db, instance.uuid!),
     db.blockInstances.delete(instance.id!)
   ]);
-  await updateBook(db);
+  await updateBookLocalUpdatedAt(db);
 }
 
 export const getChildInstances = async (db: BookDB, parentInstanceUuid: string, childBlockUuid?: string) => {
@@ -99,7 +99,7 @@ export const removeByBlock = async (db: BookDB, blockUuid: string) => {
   for (const instance of instances) {
     await remove(db, instance);
   }
-  await updateBook(db);
+  await updateBookLocalUpdatedAt(db);
 }
 
 export const BlockInstanceRepository = {

@@ -4,7 +4,7 @@ import { generateUUID } from "@/utils/UUIDUtils";
 import { updateBlockInstance } from "./BlockInstanceUpdateHelper";
 import {BlockParameterRepository} from "@/repository/Block/BlockParameterRepository";
 import {IBlockParameter} from "@/entities/ConstructorEntities";
-import { updateBook } from "@/utils/bookSyncUtils";
+import { updateBookLocalUpdatedAt } from "@/utils/bookSyncUtils";
 export const getInstanceParams = async (db: BookDB, instanceUuid: string) => {
     return db.blockParameterInstances
         .where('blockInstanceUuid')
@@ -22,7 +22,7 @@ export const appendDefaultParam = async (db: BookDB, instance: IBlockInstance, p
     };
     await db.blockParameterInstances.add(paramInstance);
     await updateBlockInstance(db, instance);
-    await updateBook(db);
+    await updateBookLocalUpdatedAt(db);
 }
 
 export const appendDefaultParams = async (db: BookDB, instance: IBlockInstance) => {
@@ -41,14 +41,14 @@ export const appendDefaultParams = async (db: BookDB, instance: IBlockInstance) 
 
     await db.blockParameterInstances.bulkAdd(paramInstances);
     await updateBlockInstance(db, instance);
-    await updateBook(db);
+    await updateBookLocalUpdatedAt(db);
 }
 
 export const addParameterInstance = async (db: BookDB, instance: IBlockParameterInstance) => {
     await db.blockParameterInstances.add(instance);
     const blockInstance = await db.blockInstances.get({ uuid: instance.blockInstanceUuid });
     if (blockInstance) await updateBlockInstance(db, blockInstance);
-    await updateBook(db);
+    await updateBookLocalUpdatedAt(db);
 }
 
 
@@ -60,7 +60,7 @@ export const updateParameterInstance = async (db: BookDB, id: number, changes: P
 
     const blockInstance = await db.blockInstances.get({ uuid: paramInstance.blockInstanceUuid });
     if (blockInstance) await updateBlockInstance(db, blockInstance);
-    await updateBook(db);
+    await updateBookLocalUpdatedAt(db);
 }
 
 export const deleteParameterInstance = async (db: BookDB, id: number) => {
@@ -70,7 +70,7 @@ export const deleteParameterInstance = async (db: BookDB, id: number) => {
     await db.blockParameterInstances.delete(id);
     const blockInstance = await db.blockInstances.get({ uuid: paramInstance.blockInstanceUuid });
     if (blockInstance) await updateBlockInstance(db, blockInstance);
-    await updateBook(db);
+    await updateBookLocalUpdatedAt(db);
 }
 
 export const removeAllForInstance = async (db: BookDB, instanceUuid: string) => {
@@ -78,7 +78,7 @@ export const removeAllForInstance = async (db: BookDB, instanceUuid: string) => 
         db.blockParameterInstances.where('blockInstanceUuid').equals(instanceUuid).delete(),
         db.blockParameterInstances.where('value').equals(instanceUuid).delete()
     ]);
-    await updateBook(db);
+    await updateBookLocalUpdatedAt(db);
 }
 
 export const getReferencingParamsToInstance = async (db: BookDB, instanceUuid: string) => {

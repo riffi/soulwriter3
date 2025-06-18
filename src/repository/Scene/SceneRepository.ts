@@ -1,6 +1,6 @@
 import { BookDB } from "@/entities/bookDb";
 import { IScene } from "@/entities/BookEntities";
-import {updateBook} from "@/utils/bookSyncUtils";
+import {updateBookLocalUpdatedAt} from "@/utils/bookSyncUtils";
 
 export const getById = async (db: BookDB, sceneId: number): Promise<IScene | undefined> => {
     const scene = await db.scenes.get(sceneId);
@@ -41,7 +41,7 @@ export const create = async (db: BookDB, sceneData: IScene): Promise<number | un
         await db.sceneBodies.add({ sceneId: newSceneId, body: body || '' });
         await recalculateGlobalOrder(db, { id: newSceneId, newChapterId: sceneData.chapterId ?? null });
     }
-    await updateBook(db);
+    await updateBookLocalUpdatedAt(db);
     return newSceneId;
 };
 
@@ -60,7 +60,7 @@ export const update = async (db: BookDB, sceneId: number, sceneData: Partial<ISc
         await db.sceneBodies.where('sceneId').equals(sceneId).modify({ body });
     }
 
-    await updateBook(db);
+    await updateBookLocalUpdatedAt(db);
 
     // Check if order or chapterId changed and if recalculation is needed
     const newOrder = sceneChanges.order;
@@ -92,7 +92,7 @@ export const remove = async (db: BookDB, sceneId: number): Promise<void> => {
         await db.sceneBodies.where('sceneId').equals(sceneId).delete();
         await db.blockInstanceSceneLinks.where('sceneId').equals(sceneId).delete();
     });
-    await updateBook(db);
+    await updateBookLocalUpdatedAt(db);
 
     // Recalculate order for the chapter the scene belonged to, or globally if it was chapterless
     await recalculateGlobalOrder(db); // Recalculate all orders
@@ -105,7 +105,7 @@ export const updateOrder = async (db: BookDB, sceneId: number, newOrder: number)
     // could conflict with existing orders or create gaps.
     await db.scenes.update(sceneId, { order: newOrder });
     await recalculateGlobalOrder(db); // Ensure data integrity
-    await updateBook(db);
+    await updateBookLocalUpdatedAt(db);
 };
 
 // New function to swap the 'order' property of two scenes
@@ -139,7 +139,7 @@ export const swapOrder = async (db: BookDB, activeId: number, overId: number): P
     // which might then decide if a full recalculation is needed.
     // Let's call recalculateGlobalOrder to ensure consistency after a swap.
     await recalculateGlobalOrder(db);
-    await updateBook(db);
+    await updateBookLocalUpdatedAt(db);
 };
 
 export const recalculateGlobalOrder = async (
@@ -237,7 +237,7 @@ export const recalculateGlobalOrder = async (
     await db.transaction('rw', db.scenes, async () => {
         await Promise.all(updates);
     });
-    await updateBook(db);
+    await updateBookLocalUpdatedAt(db);
 };
 
 export const addSceneToChapter = async (db: BookDB, sceneId: number, chapterId: number): Promise<void> => {
@@ -245,7 +245,7 @@ export const addSceneToChapter = async (db: BookDB, sceneId: number, chapterId: 
     await db.scenes.update(sceneId, { chapterId });
     // After changing a scene's chapter, orders need recalculation.
     await recalculateGlobalOrder(db, { id: sceneId, newChapterId: chapterId });
-    await updateBook(db);
+    await updateBookLocalUpdatedAt(db);
 };
 
 export const removeSceneFromChapter = async (db: BookDB, sceneId: number): Promise<void> => {
@@ -253,7 +253,7 @@ export const removeSceneFromChapter = async (db: BookDB, sceneId: number): Promi
     await db.scenes.update(sceneId, { chapterId: null });
     // After removing a scene from a chapter (making it chapterless), orders need recalculation.
     await recalculateGlobalOrder(db, { id: sceneId, newChapterId: null });
-    await updateBook(db);
+    await updateBookLocalUpdatedAt(db);
 };
 
 export const SceneRepository = {

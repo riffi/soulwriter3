@@ -21,7 +21,7 @@ export const updateBookSyncState = async (
     }
 };
 
-export const updateBook = async (db: BookDB) => {
+export const updateBookLocalUpdatedAt = async (db: BookDB) => {
     const bookUuid = db.name.replace('book_db_', '');
     await updateBookSyncState(bookUuid, 'localChanges');
 };

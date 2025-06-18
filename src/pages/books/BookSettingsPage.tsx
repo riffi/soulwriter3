@@ -7,6 +7,8 @@ import { configDatabase } from "@/entities/configuratorDb";
 import { IBookConfiguration } from "@/entities/ConstructorEntities";
 import {Heading} from "tabler-icons-react";
 import {notifications} from "@mantine/notifications";
+import {updateBookLocalUpdatedAt} from "@/utils/bookSyncUtils";
+import {bookDb} from "@/entities/bookDb";
 
 export const BookSettingsPage = () => {
   const { selectedBook, selectBook } = useBookStore();
@@ -22,6 +24,7 @@ export const BookSettingsPage = () => {
     await BookRepository.update(configDatabase, selectedBook.uuid, {
       chapterOnlyMode: value ? 1 : 0,
     });
+    await updateBookLocalUpdatedAt(bookDb)
     selectBook({ ...selectedBook, chapterOnlyMode: value ? 1 : 0 });
   };
 
@@ -30,7 +33,8 @@ export const BookSettingsPage = () => {
   }
 
   const handleSave = async (data: any) => {
-    await BookRepository.update(configDatabase, selectedBook.uuid, data);
+    await BookRepository.update(configDatabase, selectedBook.uuid, data)
+    await updateBookLocalUpdatedAt(bookDb)
     notifications.show({
       title: 'Данные книги обновлены',
     });

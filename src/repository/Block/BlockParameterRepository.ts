@@ -6,7 +6,7 @@ import {
     IBlockParameterPossibleValue
 } from "@/entities/ConstructorEntities";
 import {generateUUID} from "@/utils/UUIDUtils";
-import { updateBook } from "@/utils/bookSyncUtils";
+import { updateBookLocalUpdatedAt } from "@/utils/bookSyncUtils";
 import {BookDB} from "@/entities/bookDb";
 
 const getParameterGroups = async (db: BlockAbstractDb, blockUuid: string) => {
@@ -80,7 +80,7 @@ const deleteParameterGroup = async (db: BlockAbstractDb, blockUuid: string, grou
         )
     );
     if (db instanceof BookDB) {
-        await updateBook(db as BookDB);
+        await updateBookLocalUpdatedAt(db as BookDB);
     }
 }
 
@@ -103,7 +103,7 @@ const updateParamPossibleValues = async (db: BlockAbstractDb, parameterUuid: str
         )
     );
     if (db instanceof BookDB) {
-        await updateBook(db as BookDB);
+        await updateBookLocalUpdatedAt(db as BookDB);
     }
 }
 
@@ -116,7 +116,7 @@ const appendDefaultParamGroup = async (db: BlockAbstractDb, blockData: IBlock) =
         title: 'Основное',
     })
     if (db instanceof BookDB) {
-        await updateBook(db as BookDB);
+        await updateBookLocalUpdatedAt(db as BookDB);
     }
 }
 
