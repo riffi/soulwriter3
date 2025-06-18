@@ -1,5 +1,6 @@
 import { BookDB } from "@/entities/bookDb";
 import { IScene } from "@/entities/BookEntities";
+import {updateBook} from "@/utils/bookSyncUtils";
 
 export const getById = async (db: BookDB, sceneId: number): Promise<IScene | undefined> => {
     return db.scenes.get(sceneId);

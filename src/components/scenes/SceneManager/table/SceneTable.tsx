@@ -33,6 +33,9 @@ export const SceneTable = ({
   // Функция фильтрации сцен
   const filterScenes = (scenes: ISceneWithInstances[]) => {
     return scenes.filter(scene => {
+      if (!searchQuery && !selectedInstanceUuid) {
+          return true;
+      }
       const matchesSearch = scene.title.toLowerCase().includes(searchQuery?.toLowerCase() || '') ||
           chapters?.find(c => c.id === scene.chapterId)?.title.toLowerCase().includes(searchQuery?.toLowerCase() || '');
 
@@ -48,6 +51,9 @@ export const SceneTable = ({
   // Функция фильтрации глав
   const filterChapters = (chapters: IChapter[], filteredScenes: ISceneWithInstances[]) => {
     return chapters.filter(chapter => {
+        if (!searchQuery && !selectedInstanceUuid) {
+            return true;
+        }
       const hasScenes = filteredScenes.some(scene => scene.chapterId === chapter.id);
       return hasScenes;
     });
