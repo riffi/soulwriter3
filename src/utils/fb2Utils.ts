@@ -35,8 +35,18 @@ export const importFb2File = async (file: File): Promise<boolean> => {
 
         reader.onload = async () => {
             try {
+                const arrayBuffer = reader.result as ArrayBuffer;
+
+                const sample = new Uint8Array(arrayBuffer.slice(0, 512));
+                const sampleText = new TextDecoder('utf-8').decode(sample);
+                const encodingMatch = sampleText.match(/encoding=['"]([^'"]+)['"]/i);
+                const encoding = (encodingMatch ? encodingMatch[1] : 'utf-8').toLowerCase();
+
+                const decoder = new TextDecoder(encoding);
+                const xmlString = decoder.decode(new Uint8Array(arrayBuffer));
+
                 const parser = new DOMParser();
-                const xml = parser.parseFromString(reader.result as string, 'application/xml');
+                const xml = parser.parseFromString(xmlString, 'application/xml');
 
                 const images = new Map<string, string>();
                 xml.querySelectorAll('binary[id]').forEach(bin => {
@@ -161,6 +171,6 @@ export const importFb2File = async (file: File): Promise<boolean> => {
             resolve(false);
         };
 
-        reader.readAsText(file);
+        reader.readAsArrayBuffer(file);
     });
 };
