@@ -48,7 +48,7 @@ import {useAuth} from "@/providers/AuthProvider/AuthProvider";
 import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
 import {usePageTitle} from "@/providers/PageTitleProvider/PageTitleProvider";
 import { getCroppedImg, processImageFile, handleFileChangeForCropping } from "@/utils/imageUtils";
-import {importEpubFile} from "@/utils/epubUtils";
+import {importEpubFile, exportBookToEpub} from "@/utils/epubUtils";
 import {importFb2File} from "@/utils/fb2Utils";
 import {importDocxFile} from "@/utils/docxUtils";
 
@@ -264,6 +264,12 @@ export const BookManager = () => {
   const handleExportBook = async (bookUuid: string) => {
     setLoadingBookId(bookUuid);
     await exportBook(bookUuid);
+    setLoadingBookId(null);
+  };
+
+  const handleExportBookEpub = async (bookUuid: string) => {
+    setLoadingBookId(bookUuid);
+    await exportBookToEpub(bookUuid);
     setLoadingBookId(null);
   };
 
@@ -555,6 +561,12 @@ export const BookManager = () => {
                       onClick={() => handleExportBook(book.uuid)}
                   >
                     Экспорт в файл
+                  </Menu.Item>
+                  <Menu.Item
+                      leftSection={<IconDownload size={14} />}
+                      onClick={() => handleExportBookEpub(book.uuid)}
+                  >
+                    Экспорт в EPUB
                   </Menu.Item>
 
                   {token && (

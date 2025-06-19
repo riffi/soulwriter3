@@ -1,9 +1,12 @@
 // epubUtils.ts
 import ePub, { Book } from 'epubjs';
+import JSZip from 'jszip';
 import { IBook, IChapter, IScene } from "@/entities/BookEntities";
 import { generateUUID } from "@/utils/UUIDUtils";
 import { notifications } from "@mantine/notifications";
 import {BackupData, importBookData} from "@/utils/bookBackupManager";
+import { configDatabase } from "@/entities/configuratorDb";
+import { connectToBookDatabase } from "@/entities/bookDb";
 
 // Helper function to extract text from an HTML string for accurate character counting
 function getTextFromHtml(html: string): string {
@@ -348,4 +351,130 @@ export const importEpubFile = async (file: File): Promise<boolean> => {
 
         reader.readAsArrayBuffer(file);
     });
+};
+
+export const exportBookToEpub = async (bookUuid: string): Promise<boolean> => {
+    try {
+        const book = await configDatabase.books.get({ uuid: bookUuid });
+        if (!book) throw new Error('Book not found');
+
+        const db = connectToBookDatabase(bookUuid);
+        const chapters = await db.chapters.orderBy('order').toArray();
+        const scenes = await db.scenes.toArray();
+        const sceneBodies = await db.sceneBodies.toArray();
+
+        const bodyMap = new Map<number, string>();
+        sceneBodies.forEach(b => bodyMap.set(b.sceneId, b.body));
+
+        scenes.forEach(s => (s as any).body = bodyMap.get(s.id!) || '');
+
+        const chapterData: { title: string; html: string }[] = [];
+
+        if (chapters.length) {
+            chapters.sort((a, b) => (a.order || 0) - (b.order || 0));
+            for (const ch of chapters) {
+                const chScenes = scenes
+                    .filter(s => s.chapterId === ch.id)
+                    .sort((a, b) => (a.order || 0) - (b.order || 0));
+                const html = chScenes.map(s => s.body).join('');
+                chapterData.push({ title: ch.title, html });
+            }
+        } else {
+            scenes.sort((a, b) => (a.order || 0) - (b.order || 0));
+            scenes.forEach((s, idx) => {
+                chapterData.push({ title: s.title || `Chapter ${idx + 1}`, html: s.body });
+            });
+        }
+
+        const imagesToAdd: { id: string; fileName: string; base64: string; mime: string }[] = [];
+        let imageIndex = 1;
+        const parser = new DOMParser();
+
+        chapterData.forEach(ch => {
+            const doc = parser.parseFromString(ch.html, 'text/html');
+            const imgs = Array.from(doc.querySelectorAll('img[src^="data:"]'));
+            imgs.forEach(img => {
+                const src = img.getAttribute('src');
+                if (!src) return;
+                const match = src.match(/^data:([^;]+);base64,(.*)$/);
+                if (!match) return;
+                const mime = match[1];
+                const base64 = match[2];
+                const ext = mime.split('/')[1] || 'img';
+                const fileName = `img${imageIndex}.${ext}`;
+                imagesToAdd.push({ id: `img${imageIndex}`, fileName, base64, mime });
+                img.setAttribute('src', `../images/${fileName}`);
+                imageIndex++;
+            });
+            ch.html = doc.body.innerHTML;
+        });
+
+        const zip = new JSZip();
+        zip.file('mimetype', 'application/epub+zip', { compression: 'STORE' });
+
+        const metaInf = zip.folder('META-INF');
+        const containerXml = `<?xml version="1.0" encoding="UTF-8"?>\n<container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container">\n  <rootfiles>\n    <rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/>\n  </rootfiles>\n</container>`;
+        metaInf.file('container.xml', containerXml);
+
+        const oebps = zip.folder('OEBPS');
+        const textFolder = oebps.folder('text');
+        const imagesFolder = oebps.folder('images');
+
+        const manifestItems: string[] = [
+            '<item id="toc" href="toc.ncx" media-type="application/x-dtbncx+xml"/>'
+        ];
+        const spineItems: string[] = [];
+        const navPoints: string[] = [];
+
+        imagesToAdd.forEach(img => {
+            imagesFolder.file(img.fileName, img.base64, { base64: true });
+            manifestItems.push(`<item id="${img.id}" href="images/${img.fileName}" media-type="${img.mime}"/>`);
+        });
+
+        chapterData.forEach((ch, idx) => {
+            const fileName = `text/chapter${idx + 1}.xhtml`;
+            const htmlContent = `<html xmlns="http://www.w3.org/1999/xhtml"><head><title>${ch.title}</title></head><body>${ch.html}</body></html>`;
+            textFolder.file(`chapter${idx + 1}.xhtml`, htmlContent);
+            manifestItems.push(`<item id="chapter${idx + 1}" href="${fileName}" media-type="application/xhtml+xml"/>`);
+            spineItems.push(`<itemref idref="chapter${idx + 1}"/>`);
+            navPoints.push(`<navPoint id="navPoint-${idx + 1}" playOrder="${idx + 1}"><navLabel><text>${ch.title}</text></navLabel><content src="${fileName}"/></navPoint>`);
+        });
+
+        let coverMeta = '';
+        if (book.cover) {
+            const match = book.cover.match(/^data:([^;]+);base64,(.*)$/);
+            if (match) {
+                const mime = match[1];
+                const base64 = match[2];
+                const ext = mime.split('/')[1] || 'jpg';
+                oebps.file(`cover.${ext}`, base64, { base64: true });
+                manifestItems.push(`<item id="cover-image" href="cover.${ext}" media-type="${mime}"/>`);
+                coverMeta = '<meta name="cover" content="cover-image"/>';
+            }
+        }
+
+        const tocNcx = `<?xml version="1.0" encoding="UTF-8"?>\n<!DOCTYPE ncx PUBLIC "-//NISO//DTD ncx 2005-1//EN" "http://www.daisy.org/z3986/2005/ncx-2005-1.dtd">\n<ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1">\n  <head>\n    <meta name="dtb:uid" content="${book.uuid}"/>\n    <meta name="dtb:depth" content="1"/>\n    <meta name="dtb:totalPageCount" content="0"/>\n    <meta name="dtb:maxPageNumber" content="0"/>\n  </head>\n  <docTitle><text>${book.title}</text></docTitle>\n  <navMap>\n    ${navPoints.join('\n    ')}\n  </navMap>\n</ncx>`;
+        oebps.file('toc.ncx', tocNcx);
+
+        const contentOpf = `<?xml version="1.0" encoding="UTF-8"?>\n<package version="2.0" xmlns="http://www.idpf.org/2007/opf" unique-identifier="BookId">\n  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">\n    <dc:title>${book.title}</dc:title>\n    <dc:creator>${book.author}</dc:creator>\n    <dc:language>ru</dc:language>\n    <dc:identifier id="BookId">${book.uuid}</dc:identifier>\n    ${coverMeta}\n  </metadata>\n  <manifest>\n    ${manifestItems.join('\n    ')}\n  </manifest>\n  <spine toc="toc">\n    ${spineItems.join('\n    ')}\n  </spine>\n</package>`;
+        oebps.file('content.opf', contentOpf);
+
+        const blob = await zip.generateAsync({ type: 'blob', mimeType: 'application/epub+zip' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${book.title}.epub`;
+        a.click();
+        URL.revokeObjectURL(url);
+
+        return true;
+    } catch (error: any) {
+        console.error('EPUB export error', error);
+        notifications.show({
+            title: 'Ошибка',
+            message: 'Не удалось экспортировать EPUB',
+            color: 'red',
+        });
+        return false;
+    }
 };
