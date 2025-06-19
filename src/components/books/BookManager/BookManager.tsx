@@ -11,7 +11,7 @@ import {
   Space,
   Menu,
   LoadingOverlay, Modal, Stack, FileInput, Box, Flex,
-  Tabs
+  Tabs, FileButton
 } from "@mantine/core";
 import {
   IconCheck,
@@ -37,7 +37,8 @@ import {connectToBookDatabase} from "@/entities/bookDb";
 import { inkLuminAPI } from "@/api/inkLuminApi";
 import {
   exportBook,
-  handleFileImport
+  handleFileImport,
+  importBookBackup
 } from "@/utils/bookBackupManager";
 import {
   saveBookToServer,
@@ -266,70 +267,105 @@ export const BookManager = () => {
     setLoadingBookId(null);
   };
 
-  const handleFileImportWithRefresh = async () => {
+  const handleFileImportWithRefresh = async (file?: File) => {
     setLoading(true);
-    const success = await handleFileImport();
+    let success = false;
+    if (file) {
+      success = await importBookBackup(file);
+    } else {
+      success = await handleFileImport();
+    }
     if (success && refreshBooks) {
       await refreshBooks();
     }
     setLoading(false);
   };
 
-  const triggerEpubImport = async () => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.epub';
-    input.onchange = async (event) => {
-      const target = event.target as HTMLInputElement;
-      if (target.files && target.files[0]) {
-        const file = target.files[0];
-        setLoading(true);
-        const success = await importEpubFile(file);
-        if (success && refreshBooks) {
-          await refreshBooks();
+  const triggerEpubImport = async (file?: File) => {
+    if (!file) {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.epub';
+      input.onchange = async (event) => {
+        const target = event.target as HTMLInputElement;
+        if (target.files && target.files[0]) {
+          await triggerEpubImport(target.files[0]);
         }
-        setLoading(false);
-      }
-    };
-    input.click();
+      };
+      input.click();
+      return;
+    }
+    setLoading(true);
+    const success = await importEpubFile(file);
+    if (success && refreshBooks) {
+      await refreshBooks();
+    }
+    setLoading(false);
   };
 
-  const triggerFb2Import = async () => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.fb2';
-    input.onchange = async (event) => {
-      const target = event.target as HTMLInputElement;
-      if (target.files && target.files[0]) {
-        const file = target.files[0];
-        setLoading(true);
-        const success = await importFb2File(file);
-        if (success && refreshBooks) {
-          await refreshBooks();
+  const triggerFb2Import = async (file?: File) => {
+    if (!file) {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.fb2';
+      input.onchange = async (event) => {
+        const target = event.target as HTMLInputElement;
+        if (target.files && target.files[0]) {
+          await triggerFb2Import(target.files[0]);
         }
-        setLoading(false);
-      }
-    };
-    input.click();
+      };
+      input.click();
+      return;
+    }
+    setLoading(true);
+    const success = await importFb2File(file);
+    if (success && refreshBooks) {
+      await refreshBooks();
+    }
+    setLoading(false);
   };
 
-  const triggerDocxImport = async () => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.docx';
-    input.onchange = async (event) => {
-      const target = event.target as HTMLInputElement;
-      if (target.files && target.files[0]) {
-        const file = target.files[0];
-        setLoading(true);
-        const success = await importDocxFile(file);
-        if (success && refreshBooks) {
-          await refreshBooks();
+  const triggerDocxImport = async (file?: File) => {
+    if (!file) {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.docx';
+      input.onchange = async (event) => {
+        const target = event.target as HTMLInputElement;
+        if (target.files && target.files[0]) {
+          await triggerDocxImport(target.files[0]);
         }
-        setLoading(false);
-      }
-    };
-    input.click();
+      };
+      input.click();
+      return;
+    }
+    setLoading(true);
+    const success = await importDocxFile(file);
+    if (success && refreshBooks) {
+      await refreshBooks();
+    }
+    setLoading(false);
+  };
+
+  const handleImportFile = async (file: File | null) => {
+    if (!file) return;
+    const ext = file.name.split('.').pop()?.toLowerCase();
+    switch (ext) {
+      case 'json':
+        await handleFileImportWithRefresh(file);
+        break;
+      case 'epub':
+        await triggerEpubImport(file);
+        break;
+      case 'fb2':
+        await triggerFb2Import(file);
+        break;
+      case 'docx':
+        await triggerDocxImport(file);
+        break;
+      default:
+        notifications.show({ message: 'Неподдерживаемый формат файла', color: 'red' });
+    }
   };
 
   const fetchServerBooks = async () => {
@@ -592,27 +628,13 @@ export const BookManager = () => {
               Добавить
             </Button>
 
-            <Menu withinPortal>
-              <Menu.Target>
-                <Button leftSection={<IconUpload size={20} />} variant="outline">
+            <FileButton onChange={handleImportFile} accept=".json,.docx,.fb2,.epub">
+              {(props) => (
+                <Button {...props} leftSection={<IconUpload size={20} />} variant="outline">
                   Загрузить из файла
                 </Button>
-              </Menu.Target>
-              <Menu.Dropdown>
-                <Menu.Item leftSection={<IconUpload size={14} />} onClick={handleFileImportWithRefresh}>
-                  Импорт из inklumin
-                </Menu.Item>
-                <Menu.Item leftSection={<IconUpload size={14} />} onClick={triggerEpubImport}>
-                  Импорт из EPUB
-                </Menu.Item>
-                <Menu.Item leftSection={<IconUpload size={14} />} onClick={triggerFb2Import}>
-                  Импорт из FB2
-                </Menu.Item>
-                <Menu.Item leftSection={<IconUpload size={14} />} onClick={triggerDocxImport}>
-                  Импорт из DOCX
-                </Menu.Item>
-              </Menu.Dropdown>
-            </Menu>
+              )}
+            </FileButton>
             {token && (
                 <Button
                     leftSection={<IconCloudDown size={20} />}
