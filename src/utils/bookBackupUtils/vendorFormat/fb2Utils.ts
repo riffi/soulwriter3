@@ -1,8 +1,9 @@
 // fb2Utils.ts
-import { IBook, IChapter, IScene } from "@/entities/BookEntities";
-import { generateUUID } from "@/utils/UUIDUtils";
-import { notifications } from "@mantine/notifications";
-import { BackupData, importBookData } from "@/utils/bookBackupManager";
+import { IBook, IChapter, IScene } from '@/entities/BookEntities';
+import { generateUUID } from '@/utils/UUIDUtils';
+import { notifications } from '@mantine/notifications';
+import { importBookData } from '@/utils/bookBackupUtils/bookBackupManager';
+import { buildBackupData, textFromHtml } from '@/utils/bookBackupUtils/vendorFormat/shared';
 
 // Replace <image> tags with <img> and convert binaries to data URLs
 function convertSectionToHtml(section: Element, images: Map<string, string>): string {
@@ -77,7 +78,7 @@ export const importFb2File = async (file: File): Promise<boolean> => {
                 xml.querySelectorAll('body > section').forEach(section => {
                     const chapterTitle = section.querySelector('title > p')?.textContent?.trim() || `Глава ${order}`;
                     const html = convertSectionToHtml(section, images);
-                    const text = new DOMParser().parseFromString(html, 'text/html').body.textContent || '';
+                    const text = textFromHtml(html);
 
                     scenes.push({
                         title: chapterTitle,
@@ -107,40 +108,7 @@ export const importFb2File = async (file: File): Promise<boolean> => {
                     chapterOnlyMode: 1
                 };
 
-                const scenesToImport: Omit<IScene, 'body'>[] = [];
-                const sceneBodies: { sceneId: number; body: string }[] = [];
-                scenes.forEach((scene, index) => {
-                    const sceneId = index + 1;
-                    const { body, ...rest } = scene;
-                    scenesToImport.push({ ...(rest as Omit<IScene, 'body'>), id: sceneId });
-                    sceneBodies.push({ sceneId, body });
-                });
-
-                const backupData: BackupData = {
-                    book: newBook,
-                    chapters,
-                    scenes: scenesToImport,
-                    sceneBodies,
-                    blockInstances: [],
-                    blockParameterInstances: [],
-                    blockInstanceRelations: [],
-                    bookConfigurations: [
-                        {
-                            uuid: generateUUID(),
-                            title: newBook.title,
-                            description: '',
-                        },
-                    ],
-                    blocks: [],
-                    blockParameterGroups: [],
-                    blockParameters: [],
-                    blockParameterPossibleValues: [],
-                    blocksRelations: [],
-                    blockTabs: [],
-                    blockInstanceSceneLinks: [],
-                    blockInstanceGroups: [],
-                    knowledgeBasePages: [],
-                };
+                const backupData = buildBackupData(newBook, chapters, scenes);
 
                 await importBookData(backupData);
 

@@ -1,19 +1,13 @@
 // epubUtils.ts
 import ePub, { Book } from 'epubjs';
 import JSZip from 'jszip';
-import { IBook, IChapter, IScene } from "@/entities/BookEntities";
-import { generateUUID } from "@/utils/UUIDUtils";
-import { notifications } from "@mantine/notifications";
-import {BackupData, importBookData} from "@/utils/bookBackupManager";
-import { configDatabase } from "@/entities/configuratorDb";
-import { connectToBookDatabase } from "@/entities/bookDb";
-
-// Helper function to extract text from an HTML string for accurate character counting
-function getTextFromHtml(html: string): string {
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(html, 'text/html');
-    return doc.body.textContent || "";
-}
+import { IBook, IChapter, IScene } from '@/entities/BookEntities';
+import { generateUUID } from '@/utils/UUIDUtils';
+import { notifications } from '@mantine/notifications';
+import { importBookData } from '@/utils/bookBackupUtils/bookBackupManager';
+import { configDatabase } from '@/entities/configuratorDb';
+import { connectToBookDatabase } from '@/entities/bookDb';
+import { buildBackupData, textFromHtml } from '@/utils/bookBackupUtils/vendorFormat/shared';
 
 /**
  * Находит все изображения в HTML-фрагменте, загружает их из EPUB-архива
@@ -217,7 +211,7 @@ async function extractChaptersAndScenesFromEpub(bookEpub: Book) {
             chapterHtml = `<p>Содержимое главы "${chapterTitle}" не найдено.</p>`;
         }
 
-        const sceneText = getTextFromHtml(chapterHtml);
+        const sceneText = textFromHtml(chapterHtml);
         scenes.push({
             title: chapterTitle,
             body: chapterHtml.trim(),
@@ -284,40 +278,7 @@ export const importEpubFile = async (file: File): Promise<boolean> => {
                 };
                 const { chaptersToCreate, scenes } = await extractChaptersAndScenesFromEpub(bookEpub);
 
-                // Dexie stores scene body in a separate table. Prepare data accordingly
-                const scenesToImport: Omit<IScene, 'body'>[] = [];
-                const sceneBodiesToImport: { sceneId: number; body: string }[] = [];
-
-                scenes.forEach((scene, index) => {
-                    const sceneId = index + 1;
-                    const { body, ...sceneWithoutBody } = scene;
-                    scenesToImport.push({ ...(sceneWithoutBody as Omit<IScene, 'body'>), id: sceneId });
-                    sceneBodiesToImport.push({ sceneId, body: body || '' });
-                });
-
-                const backupData: BackupData = {
-                    book: newBook,
-                    chapters: chaptersToCreate,
-                    scenes: scenesToImport,
-                    sceneBodies: sceneBodiesToImport,
-                    blockInstances: [],
-                    blockParameterInstances: [],
-                    blockInstanceRelations: [],
-                    bookConfigurations: [{
-                        uuid: generateUUID(),
-                        title: newBook.title || 'Untitled Book',
-                        description: '',
-                    }],
-                    blocks: [],
-                    blockParameterGroups: [],
-                    blockParameters: [],
-                    blockParameterPossibleValues: [],
-                    blocksRelations: [],
-                    blockTabs: [],
-                    blockInstanceSceneLinks: [],
-                    blockInstanceGroups: [],
-                    knowledgeBasePages: []
-                };
+                const backupData = buildBackupData(newBook, chaptersToCreate, scenes);
                 await importBookData(backupData)
 
                 notifications.show({

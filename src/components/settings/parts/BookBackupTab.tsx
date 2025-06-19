@@ -5,7 +5,7 @@ import { configDatabase } from '@/entities/configuratorDb';
 import {
   exportBook,
   handleFileImport
-} from '@/utils/bookBackupManager';
+} from '@/utils/bookBackupUtils/bookBackupManager';
 import {
   saveBookToServer,
   loadBookFromServer,

@@ -39,7 +39,7 @@ import {
   exportBook,
   handleFileImport,
   importBookBackup
-} from "@/utils/bookBackupManager";
+} from "@/utils/bookBackupUtils/bookBackupManager";
 import {
   saveBookToServer,
   loadBookFromServer
@@ -48,9 +48,9 @@ import {useAuth} from "@/providers/AuthProvider/AuthProvider";
 import {useMedia} from "@/providers/MediaQueryProvider/MediaQueryProvider";
 import {usePageTitle} from "@/providers/PageTitleProvider/PageTitleProvider";
 import { getCroppedImg, processImageFile, handleFileChangeForCropping } from "@/utils/imageUtils";
-import {importEpubFile, exportBookToEpub} from "@/utils/epubUtils";
-import {importFb2File} from "@/utils/fb2Utils";
-import {importDocxFile} from "@/utils/docxUtils";
+import { importEpubFile, exportBookToEpub } from '@/utils/bookBackupUtils/vendorFormat/epubUtils';
+import { importFb2File } from '@/utils/bookBackupUtils/vendorFormat/fb2Utils';
+import { importDocxFile } from '@/utils/bookBackupUtils/vendorFormat/docxUtils';
 
 const getSyncStateText = (syncState: IBook['syncState']) => {
   switch (syncState) {

@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { inkLuminAPI } from '@/api/inkLuminApi';
 import { configDatabase } from '@/entities/configuratorDb';
 import { BookRepository } from '@/repository/Book/BookRepository';
-import { collectBookBackupData, importBookData, BackupData } from '@/utils/bookBackupManager';
+import { collectBookBackupData, importBookData, BackupData } from '@/utils/bookBackupUtils/bookBackupManager';
 import { IBook } from '@/entities/BookEntities';
 
 /** Save a book to the server */

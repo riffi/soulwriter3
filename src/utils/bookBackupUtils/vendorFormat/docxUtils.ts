@@ -3,28 +3,9 @@ import JSZip from 'jszip';
 import { IBook, IChapter, IScene } from '@/entities/BookEntities';
 import { generateUUID } from '@/utils/UUIDUtils';
 import { notifications } from '@mantine/notifications';
-import { BackupData, importBookData } from '@/utils/bookBackupManager';
-import moment from "moment";
-
-function cleanForWordCount(text: string): string {
-  return text
-      .replace(/[\u200B-\u200D]/g, '') // zero-width chars
-      .replace(/\uFEFF/g, '')          // BOM
-      .replace(/\u2060/g, '')          // Word joiner
-      .replace(/\u00A0/g, ' ')         // non-breaking space
-      .replace(/\r?\n/g, '')           // newlines
-      .replace(/\s+/g, ' ')            // collapse whitespace
-      .trim();                         // trim leading/trailing space
-}
-
-// Helper to extract text from HTML
-
-function textFromHtml(html: string): string {
-  const parser = new DOMParser();
-  const parsedText =  parser.parseFromString(html, 'text/html').body.textContent || '';
-  const cleanedText = cleanForWordCount(parsedText);
-  return cleanedText;
-}
+import { importBookData } from '@/utils/bookBackupUtils/bookBackupManager';
+import moment from 'moment';
+import { buildBackupData, textFromHtml } from '@/utils/bookBackupUtils/vendorFormat/shared';
 
 // Extract relations map from document.xml.rels
 async function getRelations(zip: JSZip): Promise<Map<string, string>> {
@@ -230,40 +211,7 @@ export const importDocxFile = async (file: File): Promise<boolean> => {
           syncState: 'localChanges'
         };
 
-        const scenesToImport: Omit<IScene, 'body'>[] = [];
-        const sceneBodies: { sceneId: number; body: string }[] = [];
-        scenes.forEach((scene, index) => {
-          const sceneId = index + 1;
-          const { body, ...rest } = scene;
-          scenesToImport.push({ ...(rest as Omit<IScene, 'body'>), id: sceneId });
-          sceneBodies.push({ sceneId, body });
-        });
-
-        const backupData: BackupData = {
-          book: newBook,
-          chapters,
-          scenes: scenesToImport,
-          sceneBodies,
-          blockInstances: [],
-          blockParameterInstances: [],
-          blockInstanceRelations: [],
-          bookConfigurations: [
-            {
-              uuid: generateUUID(),
-              title: newBook.title,
-              description: '',
-            },
-          ],
-          blocks: [],
-          blockParameterGroups: [],
-          blockParameters: [],
-          blockParameterPossibleValues: [],
-          blocksRelations: [],
-          blockTabs: [],
-          blockInstanceSceneLinks: [],
-          blockInstanceGroups: [],
-          knowledgeBasePages: [],
-        };
+        const backupData = buildBackupData(newBook, chapters, scenes);
 
         await importBookData(backupData);
 
