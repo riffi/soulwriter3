@@ -35,7 +35,7 @@ export const SceneStatusPanel = (props: { scene: IScene }) => {
         <Box
           style={isMobile ? mobileStyle : desktopStyle}
         >
-          <Text size="sm">Символов: {props.scene?.totalSymbolCountWithSpaces}</Text>
+          <Text size="sm">Символов: {props.scene?.totalSymbolCountWoSpaces} / {props.scene?.totalSymbolCountWithSpaces}</Text>
         </Box>
       </>
   )

@@ -411,7 +411,7 @@ export const BookManager = () => {
                 <Box
                     style={{
                       color: '#ccc',
-                      width: '200px',
+                      width: '100%',
                       height: '285px',
                       backgroundColor: '#f1f1f1',
                       borderRadius: "10px",

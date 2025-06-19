@@ -82,10 +82,21 @@ export const SceneEditor = ({ sceneId, chapter }: SceneEditorProps) => {
     const handleContentChange = useCallback(
         (contentHTML, contentText) => {
             if (!scene?.id || contentHTML === scene.body) return;
+            function cleanForWordCount(text) {
+                return text
+                    .replace(/\u200B/g, '') // zero-width space
+                    .replace(/\u00A0/g, ' ') // non-breaking space → обычный пробел
+                    .replace(/\s+$/g, '') // обрезать пробелы в конце
+                    .replace(/\r?\n/g, ''); // не считать переводы строк
+            }
+
+            const cleanedText = cleanForWordCount(contentText);
+            console.log('Cleaned Text:', cleanedText);
+
             const updatedScene = {
                 ...scene,
                 body: contentHTML,
-                totalSymbolCountWithSpaces: contentText.length,
+                totalSymbolCountWithSpaces: cleanedText.length,
                 totalSymbolCountWoSpaces: contentText.replace(/\s+/g, '').length
             };
 

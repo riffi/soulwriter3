@@ -5,10 +5,24 @@ import { generateUUID } from '@/utils/UUIDUtils';
 import { notifications } from '@mantine/notifications';
 import { BackupData, importBookData } from '@/utils/bookBackupManager';
 
+function cleanForWordCount(text: string): string {
+  return text
+      .replace(/[\u200B-\u200D]/g, '') // zero-width chars
+      .replace(/\uFEFF/g, '')          // BOM
+      .replace(/\u2060/g, '')          // Word joiner
+      .replace(/\u00A0/g, ' ')         // non-breaking space
+      .replace(/\r?\n/g, '')           // newlines
+      .replace(/\s+/g, ' ')            // collapse whitespace
+      .trim();                         // trim leading/trailing space
+}
+
 // Helper to extract text from HTML
+
 function textFromHtml(html: string): string {
   const parser = new DOMParser();
-  return parser.parseFromString(html, 'text/html').body.textContent || '';
+  const parsedText =  parser.parseFromString(html, 'text/html').body.textContent || '';
+  const cleanedText = cleanForWordCount(parsedText);
+  return cleanedText;
 }
 
 // Extract relations map from document.xml.rels
@@ -60,7 +74,7 @@ export const importDocxFile = async (file: File): Promise<boolean> => {
             coreDoc?.getElementsByTagName('dc:title')[0]?.textContent || file.name;
         const author =
             coreDoc?.getElementsByTagName('dc:creator')[0]?.textContent ||
-            'Unknown Author';
+            'Автор не указан';
 
         const relsMap = await getRelations(zip);
         const docXml = await zip.file('word/document.xml')?.async('string');
@@ -159,7 +173,7 @@ export const importDocxFile = async (file: File): Promise<boolean> => {
           configurationTitle: '',
           cover: undefined,
           kind: 'book',
-          description: `Imported from DOCX (${file.name})`,
+          description: `Книга импортирована из (${file.name})`,
           chapterOnlyMode: 1,
         };
 
