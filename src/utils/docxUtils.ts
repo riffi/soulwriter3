@@ -85,6 +85,7 @@ export const importDocxFile = async (file: File): Promise<boolean> => {
 
         const chapters: Omit<IChapter, 'id'>[] = [];
         const scenes: IScene[] = [];
+        let hasHeadings = false;
         let currentTitle = '';
         let currentBody = '';
         let chapterOrder = 1;
@@ -116,11 +117,11 @@ export const importDocxFile = async (file: File): Promise<boolean> => {
               imgHtml = `<img src="data:${mime};base64,${base64}" />`;
             }
           }
-
           const isHeading = styleValNorm
-              ? /(heading\d*|title|subtitle|1|2|3|4|5|6)/i.test(styleValNorm)
+              ? /(heading\d*|title|subtitle)/i.test(styleValNorm)
               : false;
           if (isHeading) {
+            hasHeadings = true;
             if (currentBody) {
               const text = textFromHtml(currentBody);
               scenes.push({
@@ -146,6 +147,7 @@ export const importDocxFile = async (file: File): Promise<boolean> => {
           }
         }
 
+
         // Push the last scene & chapter
         if (currentBody) {
           const text = textFromHtml(currentBody);
@@ -161,6 +163,25 @@ export const importDocxFile = async (file: File): Promise<boolean> => {
             title: currentTitle || `Глава ${chapterOrder}`,
             order: chapterOrder,
             contentSceneId: scenes.length,
+          });
+        }
+
+        // If no headings were detected, keep all text in a single chapter/scene
+        if (!hasHeadings && scenes.length > 1) {
+          const combinedBody = scenes.map(s => s.body).join('');
+          const text = textFromHtml(combinedBody);
+          scenes.splice(0, scenes.length, {
+            title: `Глава 1`,
+            body: combinedBody.trim(),
+            order: 1,
+            chapterId: 1,
+            totalSymbolCountWithSpaces: text.length,
+            totalSymbolCountWoSpaces: text.replace(/\s/g, '').length,
+          });
+          chapters.splice(0, chapters.length, {
+            title: `Глава 1`,
+            order: 1,
+            contentSceneId: 1,
           });
         }
 

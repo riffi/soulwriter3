@@ -592,34 +592,27 @@ export const BookManager = () => {
               Добавить
             </Button>
 
-            <Button
-                leftSection={<IconUpload size={20} />}
-                onClick={handleFileImportWithRefresh}
-                variant="outline"
-            >
-              Загрузить из файла
-            </Button>
-            <Button
-                leftSection={<IconUpload size={20} />}
-                onClick={triggerEpubImport}
-                variant="outline"
-            >
-              Импорт из EPUB
-            </Button>
-            <Button
-                leftSection={<IconUpload size={20} />}
-                onClick={triggerFb2Import}
-                variant="outline"
-            >
-              Импорт из FB2
-            </Button>
-            <Button
-                leftSection={<IconUpload size={20} />}
-                onClick={triggerDocxImport}
-                variant="outline"
-            >
-              Импорт из DOCX
-            </Button>
+            <Menu withinPortal>
+              <Menu.Target>
+                <Button leftSection={<IconUpload size={20} />} variant="outline">
+                  Загрузить из файла
+                </Button>
+              </Menu.Target>
+              <Menu.Dropdown>
+                <Menu.Item leftSection={<IconUpload size={14} />} onClick={handleFileImportWithRefresh}>
+                  Импорт из inklumin
+                </Menu.Item>
+                <Menu.Item leftSection={<IconUpload size={14} />} onClick={triggerEpubImport}>
+                  Импорт из EPUB
+                </Menu.Item>
+                <Menu.Item leftSection={<IconUpload size={14} />} onClick={triggerFb2Import}>
+                  Импорт из FB2
+                </Menu.Item>
+                <Menu.Item leftSection={<IconUpload size={14} />} onClick={triggerDocxImport}>
+                  Импорт из DOCX
+                </Menu.Item>
+              </Menu.Dropdown>
+            </Menu>
             {token && (
                 <Button
                     leftSection={<IconCloudDown size={20} />}
