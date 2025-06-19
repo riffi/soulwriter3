@@ -11,6 +11,7 @@ import {SceneLinkManager} from "@/components/scenes/SceneEditor/parts/SceneLinkM
 import {useDisclosure, useWindowScroll} from "@mantine/hooks";
 import {useEffect, useState} from "react";
 import {InlineEdit2} from "@/components/shared/InlineEdit2/InlineEdit2";
+import styles from './SceneDesktopContent.module.css'
 
 interface SceneDesktopContentProps {
     scene: IScene;
@@ -160,9 +161,11 @@ export const SceneDesktopContent = ({
                                         {sceneBody !== '' && <div
                                             style={{
                                                 textIndent: '1rem',
+                                                width: '100%',
                                             }}
-                                            dangerouslySetInnerHTML={{ __html: sceneBody }}>
-                                        </div>
+                                            dangerouslySetInnerHTML={{ __html: sceneBody }}
+                                            className={styles['readonly-content']}
+                                         />
                                         }
                                         {sceneBody === '' && <div
                                             style={{

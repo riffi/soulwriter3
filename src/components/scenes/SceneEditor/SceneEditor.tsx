@@ -91,7 +91,6 @@ export const SceneEditor = ({ sceneId, chapter }: SceneEditorProps) => {
             }
 
             const cleanedText = cleanForWordCount(contentText);
-            console.log('Cleaned Text:', cleanedText);
 
             const updatedScene = {
                 ...scene,
