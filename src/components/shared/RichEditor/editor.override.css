@@ -75,3 +75,9 @@
 .focus-mode-paragraphs .ProseMirror p[data-is-active-paragraph="true"] {
   opacity: 1;
 }
+
+/* Ensure embedded images fit within the editor */
+.ProseMirror img {
+  max-width: 100%;
+  height: auto;
+}
