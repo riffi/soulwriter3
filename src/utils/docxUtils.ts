@@ -57,6 +57,34 @@ function mimeFromExt(ext: string): string {
   }
 }
 
+export function extractHeadingStyleIds(stylesXml: string): Set<string> {
+  const doc = new DOMParser().parseFromString(stylesXml, 'text/xml');
+  const styles = doc.getElementsByTagName('w:style');
+  const headingStyleIds = new Set<string>();
+
+  for (let i = 0; i < styles.length; i++) {
+    const style = styles[i];
+    const nameNode = style.getElementsByTagName('w:name')[0];
+    const styleId = style.getAttribute('w:styleId');
+
+    if (nameNode && styleId) {
+      const nameVal = nameNode.getAttribute('w:val')?.toLowerCase();
+      if (nameVal && /(heading|заголовок|title|подзаголовок)/i.test(nameVal)) {
+        headingStyleIds.add(styleId);
+      }
+    }
+  }
+
+  return headingStyleIds;
+}
+
+export function isHeadingStyle(styleValNorm: string | null, headingStyleIds: Set<string>): boolean {
+  if (!styleValNorm) return false;
+
+  const norm = styleValNorm.toLowerCase();
+  return /(heading\d*|title|subtitle|заголовок)/i.test(norm) || headingStyleIds.has(styleValNorm);
+}
+
 export const importDocxFile = async (file: File): Promise<boolean> => {
   return new Promise(resolve => {
     const reader = new FileReader();
@@ -79,8 +107,11 @@ export const importDocxFile = async (file: File): Promise<boolean> => {
 
         const relsMap = await getRelations(zip);
         const docXml = await zip.file('word/document.xml')?.async('string');
+        const stylesXml = await zip.file('word/styles.xml')?.async('string');
         if (!docXml) throw new Error('document.xml not found');
+        if (!stylesXml) throw new Error('styles.xml not found');
         const doc = new DOMParser().parseFromString(docXml, 'application/xml');
+        const headingStyleIds = extractHeadingStyleIds(stylesXml);
         const paragraphs = Array.from(doc.querySelectorAll('*|p'));
 
         const chapters: Omit<IChapter, 'id'>[] = [];
@@ -117,9 +148,7 @@ export const importDocxFile = async (file: File): Promise<boolean> => {
               imgHtml = `<img src="data:${mime};base64,${base64}" />`;
             }
           }
-          const isHeading = styleValNorm
-              ? /(heading\d*|title|subtitle)/i.test(styleValNorm)
-              : false;
+          const isHeading = isHeadingStyle(styleValNorm, headingStyleIds)
           if (isHeading) {
             hasHeadings = true;
             if (currentBody) {
