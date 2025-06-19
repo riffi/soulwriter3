@@ -4,6 +4,7 @@ import { IBook, IChapter, IScene } from '@/entities/BookEntities';
 import { generateUUID } from '@/utils/UUIDUtils';
 import { notifications } from '@mantine/notifications';
 import { BackupData, importBookData } from '@/utils/bookBackupManager';
+import moment from "moment";
 
 function cleanForWordCount(text: string): string {
   return text
@@ -71,7 +72,7 @@ export const importDocxFile = async (file: File): Promise<boolean> => {
             ? new DOMParser().parseFromString(coreXml, 'application/xml')
             : null;
         const title =
-            coreDoc?.getElementsByTagName('dc:title')[0]?.textContent || file.name;
+            coreDoc?.getElementsByTagName('dc:title')[0]?.textContent || file.name.replace(('.docx'), '');
         const author =
             coreDoc?.getElementsByTagName('dc:creator')[0]?.textContent ||
             'Автор не указан';
@@ -175,6 +176,8 @@ export const importDocxFile = async (file: File): Promise<boolean> => {
           kind: 'book',
           description: `Книга импортирована из (${file.name})`,
           chapterOnlyMode: 1,
+          localUpdatedAt: moment().toISOString(true),
+          syncState: 'localChanges'
         };
 
         const scenesToImport: Omit<IScene, 'body'>[] = [];
