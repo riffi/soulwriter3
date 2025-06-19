@@ -161,7 +161,7 @@ export const exportBook = async (bookUuid: string) => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `book-backup-${backupData.book.title}-${Date.now()}.json`;
+    a.download = `book-backup-${backupData.book.title}-${Date.now()}.inklumin`;
     a.click();
     URL.revokeObjectURL(url);
 

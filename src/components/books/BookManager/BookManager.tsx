@@ -267,7 +267,7 @@ export const BookManager = () => {
     setLoadingBookId(null);
   };
 
-  const handleFileImportWithRefresh = async (file?: File) => {
+  const triggerImportInkluminFile = async (file?: File) => {
     setLoading(true);
     let success = false;
     if (file) {
@@ -351,8 +351,8 @@ export const BookManager = () => {
     if (!file) return;
     const ext = file.name.split('.').pop()?.toLowerCase();
     switch (ext) {
-      case 'json':
-        await handleFileImportWithRefresh(file);
+      case 'inklumin':
+        await triggerImportInkluminFile(file);
         break;
       case 'epub':
         await triggerEpubImport(file);
@@ -628,7 +628,7 @@ export const BookManager = () => {
               Добавить
             </Button>
 
-            <FileButton onChange={handleImportFile} accept=".json,.docx,.fb2,.epub">
+            <FileButton onChange={handleImportFile} accept=".inklumin,.docx,.fb2,.epub">
               {(props) => (
                 <Button {...props} leftSection={<IconUpload size={20} />} variant="outline">
                   Загрузить из файла
