@@ -49,6 +49,7 @@ import {usePageTitle} from "@/providers/PageTitleProvider/PageTitleProvider";
 import { getCroppedImg, processImageFile, handleFileChangeForCropping } from "@/utils/imageUtils";
 import {importEpubFile} from "@/utils/epubUtils";
 import {importFb2File} from "@/utils/fb2Utils";
+import {importDocxFile} from "@/utils/docxUtils";
 
 const getSyncStateText = (syncState: IBook['syncState']) => {
   switch (syncState) {
@@ -303,6 +304,25 @@ export const BookManager = () => {
         const file = target.files[0];
         setLoading(true);
         const success = await importFb2File(file);
+        if (success && refreshBooks) {
+          await refreshBooks();
+        }
+        setLoading(false);
+      }
+    };
+    input.click();
+  };
+
+  const triggerDocxImport = async () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.docx';
+    input.onchange = async (event) => {
+      const target = event.target as HTMLInputElement;
+      if (target.files && target.files[0]) {
+        const file = target.files[0];
+        setLoading(true);
+        const success = await importDocxFile(file);
         if (success && refreshBooks) {
           await refreshBooks();
         }
@@ -592,6 +612,13 @@ export const BookManager = () => {
                 variant="outline"
             >
               Импорт из FB2
+            </Button>
+            <Button
+                leftSection={<IconUpload size={20} />}
+                onClick={triggerDocxImport}
+                variant="outline"
+            >
+              Импорт из DOCX
             </Button>
             {token && (
                 <Button
